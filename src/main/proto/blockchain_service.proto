@@ -1,0 +1,198 @@
+syntax = "proto3";
+option java_multiple_files = true;
+package com.ampnet.crowdfunding.proto;
+
+/********** IMPORTANT NOTE:***************
+All amount (fiat) values in request and response messages are x100 format integers,
+for example amount: 1550 is actually 15.50 EUR.
+******************************************/
+
+//////// Cooperative contract messages ///////
+
+message GenerateAddWalletTxRequest {
+    string wallet = 1;
+}
+
+message WalletActiveRequest {
+    string wallet_tx_hash = 1;
+}
+
+message WalletActiveResponse {
+    bool active = 1;
+}
+
+
+///////// EUR contract messages //////////
+
+message BalanceRequest {
+    string wallet_tx_hash = 1;
+}
+
+message BalanceResponse {
+    string balance = 1;
+}
+
+message GenerateMintTxRequest {
+    string to_tx_hash = 1;
+    string amount = 2;
+}
+
+message GenerateBurnFromTxRequest {
+    string burn_from_tx_hash = 1;
+}
+
+message GenerateApproveWithdrawTxRequest {
+    string from_tx_hash = 1;
+    string amount = 2;
+}
+
+message GenerateInvestTxRequest {
+    string from_tx_hash = 1;
+    string project_tx_hash = 2;
+    string amount = 3;
+}
+
+///////// Organization contract //////////
+
+
+
+///////// Project contract ///////////////
+
+message GenerateStartRevenueSharesPayoutTxRequest {
+    string from_tx_hash = 1;
+    string project_tx_hash = 2;
+    string revenue = 3;
+}
+
+message GetProjectsInfoRequest {
+    repeated string project_tx_hashes = 1;
+}
+
+message GetProjectsInfoResponse {
+    message ProjectInfo {
+        string project_tx_hash = 1;
+        string total_funds_raised = 2;
+        string investment_cap = 3;
+        string min_per_user_investment = 4;
+        string max_per_user_investment = 5;
+        string ends_at = 6;
+    }
+    repeated ProjectInfo projects = 1;
+}
+
+
+////////// Transaction messages //////////
+
+message PostTxRequest {
+    string data = 1;
+}
+
+message PostTxResponse {
+    string tx_hash = 1;
+}
+
+message PortfolioRequest {
+    string tx_hash = 1;
+}
+
+message PortfolioResponse {
+    message Investment {
+        string project_tx_hash = 1;
+        string amount = 2;
+    }
+    repeated Investment portfolio = 1;
+}
+
+message TransactionsRequest {
+    string tx_hash = 1;
+}
+
+message InvestmentsInProjectRequest {
+    string from_tx_hash = 1;
+    string project_tx_hash = 2;
+}
+
+message TransactionsResponse {
+    message Transaction {
+        enum Type {
+            DEPOSIT = 0;
+            WITHDRAW = 1;
+            INVEST = 2;
+            SHARE_PAYOUT = 3;
+        }
+        string from_tx_hash = 1;
+        string to_tx_hash = 2;
+        string amount = 3;
+        string date = 4;
+        Type type = 5;
+    }
+    repeated Transaction transactions = 1;
+}
+
+///////// Contract create messages /////////
+
+message GenerateCreateOrganizationTxRequest {
+    string from_tx_hash = 1;
+}
+
+message GenerateCreateProjectTxRequest {
+    string from_tx_hash = 1;
+    string organization_tx_hash = 2;
+    string max_investment_per_user = 3;
+    string min_investment_per_user = 4;
+    string investment_cap = 5;
+    string end_investment_time = 6;
+}
+
+////////// Generic messages ////////////////
+
+message RawTxResponse {
+    string tx = 1;
+}
+
+message Empty {
+
+}
+
+
+///////// Service definition ////////////////
+
+service BlockchainService {
+
+    // Cooperative
+
+    rpc GenerateAddWalletTx(GenerateAddWalletTxRequest) returns (RawTxResponse);
+    rpc IsWalletActive(WalletActiveRequest) returns (WalletActiveResponse);
+
+
+    // EUR
+
+    rpc GenerateMintTx(GenerateMintTxRequest) returns (RawTxResponse);
+    rpc GenerateBurnFromTx(GenerateBurnFromTxRequest) returns (RawTxResponse);
+    rpc GenerateApproveWithdrawTx(GenerateApproveWithdrawTxRequest) returns (RawTxResponse);
+    rpc GenerateInvestTx(GenerateInvestTxRequest) returns (RawTxResponse);
+    rpc GetBalance(BalanceRequest) returns (BalanceResponse);
+
+
+    // Organization
+
+
+    // Project
+
+    rpc GenerateStartRevenueSharesPayoutTx(GenerateStartRevenueSharesPayoutTxRequest) returns (RawTxResponse);
+    rpc GetProjectsInfo(GetProjectsInfoRequest) returns (GetProjectsInfoResponse);
+
+    // Contract create
+
+    rpc GenerateCreateOrganizationTx(GenerateCreateOrganizationTxRequest) returns (RawTxResponse);
+    rpc GenerateCreateProjectTx(GenerateCreateProjectTxRequest) returns (RawTxResponse);
+
+
+    // Transactions
+
+    rpc PostTransaction(PostTxRequest) returns (PostTxResponse);
+    rpc GetPortfolio(PortfolioRequest) returns (PortfolioResponse);
+    rpc GetTransactions(TransactionsRequest) returns (TransactionsResponse);
+    rpc GetInvestmentsInProject(InvestmentsInProjectRequest) returns (TransactionsResponse);
+
+}

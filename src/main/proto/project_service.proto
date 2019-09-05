@@ -1,0 +1,42 @@
+syntax = "proto3";
+option java_multiple_files = true;
+package com.ampnet.project.proto;
+
+message GetByUuids {
+    repeated string uuids = 1;
+}
+
+message OrganizationResponse {
+    string uuid = 1;
+    string name = 2;
+    string created_by_user = 3;
+    string created_at = 4;
+    bool approved = 5;
+}
+
+message ProjectResponse {
+    string uuid = 1;
+    string name = 2;
+    string created_by_user =3;
+    uint64 start_date = 4;
+    uint64 end_date = 5;
+    uint64 min_per_user = 6;
+    uint64 max_per_user = 7;
+    uint64 expected_funding = 8;
+    string currency = 9;
+    bool active = 10;
+    string organization_uuid = 11;
+}
+
+message OrganizationsResponse {
+    repeated OrganizationResponse organizations = 1;
+}
+
+message ProjectsResponse {
+    repeated ProjectResponse projects = 1;
+}
+
+service ProjectService {
+    rpc GetOrganizations(GetByUuids) returns (OrganizationsResponse);
+    rpc GetProjects(GetByUuids) returns (ProjectsResponse);
+}

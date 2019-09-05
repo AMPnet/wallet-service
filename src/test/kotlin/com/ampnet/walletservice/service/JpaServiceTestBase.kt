@@ -1,0 +1,87 @@
+package com.ampnet.walletservice.service
+
+import com.ampnet.walletservice.TestBase
+import com.ampnet.walletservice.grpc.blockchain.BlockchainService
+import com.ampnet.walletservice.config.DatabaseCleanerService
+import com.ampnet.walletservice.enums.Currency
+import com.ampnet.walletservice.enums.WalletType
+import com.ampnet.walletservice.persistence.model.Wallet
+import com.ampnet.walletservice.persistence.repository.DocumentRepository
+import com.ampnet.walletservice.persistence.repository.PairWalletCodeRepository
+import com.ampnet.walletservice.persistence.repository.TransactionInfoRepository
+import com.ampnet.walletservice.persistence.repository.WalletRepository
+import com.ampnet.walletservice.service.impl.CloudStorageServiceImpl
+import com.ampnet.walletservice.grpc.mail.MailService
+import com.ampnet.walletservice.grpc.mail.MailServiceImpl
+import com.ampnet.walletservice.grpc.projectservice.ProjectService
+import com.ampnet.walletservice.grpc.projectservice.ProjectServiceImpl
+import com.ampnet.walletservice.persistence.model.File
+import org.junit.jupiter.api.extension.ExtendWith
+import org.junit.jupiter.api.fail
+import org.mockito.Mockito
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
+import org.springframework.context.annotation.Import
+import org.springframework.test.context.junit.jupiter.SpringExtension
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
+import java.time.ZonedDateTime
+import java.util.UUID
+
+@ExtendWith(SpringExtension::class)
+@DataJpaTest
+@Transactional(propagation = Propagation.SUPPORTS)
+@Import(DatabaseCleanerService::class)
+abstract class JpaServiceTestBase : TestBase() {
+
+    @Autowired
+    protected lateinit var databaseCleanerService: DatabaseCleanerService
+    @Autowired
+    protected lateinit var walletRepository: WalletRepository
+    @Autowired
+    protected lateinit var documentRepository: DocumentRepository
+    @Autowired
+    protected lateinit var transactionInfoRepository: TransactionInfoRepository
+    @Autowired
+    protected lateinit var pairWalletCodeRepository: PairWalletCodeRepository
+
+    protected val mockedBlockchainService: BlockchainService = Mockito.mock(BlockchainService::class.java)
+    protected val mockedCloudStorageService: CloudStorageServiceImpl = Mockito.mock(CloudStorageServiceImpl::class.java)
+    protected val mockedMailService: MailService = Mockito.mock(MailServiceImpl::class.java)
+    protected val mockedProjectService: ProjectService = Mockito.mock(ProjectServiceImpl::class.java)
+    protected val userUuid: UUID = UUID.randomUUID()
+    protected val organizationUuid: UUID = UUID.randomUUID()
+    protected val projectUuid: UUID = UUID.randomUUID()
+
+    protected fun createWalletForUser(userUuid: UUID, hash: String) = createWallet(userUuid, hash, WalletType.USER)
+
+    protected fun createWalletForProject(project: UUID, hash: String) = createWallet(project, hash, WalletType.PROJECT)
+
+    protected fun createWalletForOrganization(organization: UUID, hash: String) =
+        createWallet(organization, hash, WalletType.ORG)
+
+    protected fun createWallet(owner: UUID, hash: String, type: WalletType): Wallet {
+        val wallet = Wallet(UUID.randomUUID(), owner, hash, type, Currency.EUR,
+            ZonedDateTime.now(), hash, ZonedDateTime.now())
+        return walletRepository.save(wallet)
+    }
+
+    protected fun saveFile(
+        name: String,
+        link: String,
+        createdByUserUuid: UUID,
+        type: String = "document/type",
+        size: Int = 100
+    ): File {
+        val document = File(0, link, name, type, size, createdByUserUuid, ZonedDateTime.now())
+        return documentRepository.save(document)
+    }
+
+    protected fun getWalletHash(owner: UUID): String {
+        val wallet = walletRepository.findByOwner(owner)
+        if (wallet.isPresent) {
+            return wallet.get().hash ?: fail("Wallet must be activated")
+        }
+        fail("Missing wallet")
+    }
+}
