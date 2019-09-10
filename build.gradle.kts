@@ -2,16 +2,16 @@ import com.google.protobuf.gradle.*
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    val kotlinVersion = "1.3.41"
+    val kotlinVersion = "1.3.50"
     kotlin("plugin.jpa") version kotlinVersion
     kotlin("jvm") version kotlinVersion
     kotlin("plugin.spring") version kotlinVersion
 
-    id("org.springframework.boot") version "2.1.7.RELEASE"
+    id("org.springframework.boot") version "2.1.8.RELEASE"
     id("io.spring.dependency-management") version "1.0.8.RELEASE"
-    id("com.google.cloud.tools.jib") version "1.5.0"
+    id("com.google.cloud.tools.jib") version "1.5.1"
     id("org.jlleitschuh.gradle.ktlint") version "8.2.0"
-    id("io.gitlab.arturbosch.detekt").version("1.0.0")
+    id("io.gitlab.arturbosch.detekt").version("1.0.1")
     id("org.asciidoctor.convert") version "2.3.0"
     id("com.google.protobuf") version "0.8.10"
     idea
