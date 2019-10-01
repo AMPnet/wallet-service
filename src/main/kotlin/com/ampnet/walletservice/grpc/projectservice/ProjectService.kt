@@ -1,7 +1,7 @@
 package com.ampnet.walletservice.grpc.projectservice
 
-import com.ampnet.project.proto.OrganizationResponse
-import com.ampnet.project.proto.ProjectResponse
+import com.ampnet.projectservice.proto.OrganizationResponse
+import com.ampnet.projectservice.proto.ProjectResponse
 import java.util.UUID
 
 interface ProjectService {

@@ -1,9 +1,9 @@
 package com.ampnet.walletservice.grpc.projectservice
 
-import com.ampnet.project.proto.GetByUuids
-import com.ampnet.project.proto.OrganizationResponse
-import com.ampnet.project.proto.ProjectResponse
-import com.ampnet.project.proto.ProjectServiceGrpc
+import com.ampnet.projectservice.proto.GetByUuids
+import com.ampnet.projectservice.proto.OrganizationResponse
+import com.ampnet.projectservice.proto.ProjectResponse
+import com.ampnet.projectservice.proto.ProjectServiceGrpc
 import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.exception.GrpcException
 import com.ampnet.walletservice.exception.ResourceNotFoundException

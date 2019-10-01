@@ -17,6 +17,7 @@ import com.ampnet.walletservice.persistence.repository.PairWalletCodeRepository
 import com.ampnet.walletservice.persistence.repository.WalletRepository
 import com.ampnet.walletservice.service.TransactionInfoService
 import com.ampnet.walletservice.service.WalletService
+import com.ampnet.walletservice.service.pojo.ProjectWithWallet
 import mu.KLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -140,6 +141,25 @@ class WalletServiceImpl(
     @Transactional(readOnly = true)
     override fun getPairWalletCode(code: String): PairWalletCode? {
         return ServiceUtils.wrapOptional(pairWalletCodeRepository.findByCode(code))
+    }
+
+    @Transactional(readOnly = true)
+    override fun getProjectsWithActiveWallet(): List<ProjectWithWallet> {
+        val projectWallets = walletRepository.findActivatedByType(WalletType.PROJECT)
+            .filter { it.hash != null }
+            .associateBy { it.owner }
+        val projectWalletHashes = projectWallets.values.mapNotNull { it.hash }
+        val projectsInfo = blockchainService.getProjectsInfo(projectWalletHashes)
+            .associateBy { it.txHash }
+        return projectService.getProjects(projectWallets.keys)
+            .filter { it.active }
+            .mapNotNull { project ->
+                val uuid = UUID.fromString(project.uuid)
+                projectWallets[uuid]?.let { wallet ->
+                    val balance = projectsInfo[wallet.hash]?.balance
+                    ProjectWithWallet(project, wallet, balance)
+                }
+            }
     }
 
     private fun createWallet(owner: UUID, activationData: String, type: WalletType): Wallet {

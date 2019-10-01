@@ -3,6 +3,7 @@ package com.ampnet.walletservice.grpc.blockchain
 import com.ampnet.walletservice.grpc.blockchain.pojo.BlockchainTransaction
 import com.ampnet.walletservice.grpc.blockchain.pojo.GenerateProjectWalletRequest
 import com.ampnet.walletservice.grpc.blockchain.pojo.Portfolio
+import com.ampnet.walletservice.grpc.blockchain.pojo.ProjectInfoResponse
 import com.ampnet.walletservice.grpc.blockchain.pojo.ProjectInvestmentTxRequest
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionData
 
@@ -19,4 +20,5 @@ interface BlockchainService {
     fun getPortfolio(hash: String): Portfolio
     fun getTransactions(hash: String): List<BlockchainTransaction>
     fun getInvestmentsInProject(userWalletHash: String, projectWalletHash: String): List<BlockchainTransaction>
+    fun getProjectsInfo(hashes: List<String>): List<ProjectInfoResponse>
 }

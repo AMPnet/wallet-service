@@ -73,7 +73,7 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
             testContext.users.add(secondUser)
         }
         suppose("There is user with activated wallet") {
-             testContext.wallet = createWalletForUser(userUuid, testContext.walletHash)
+            testContext.wallet = createWalletForUser(userUuid, testContext.walletHash)
         }
         suppose("Blockchain service will return data for users") {
             Mockito.`when`(
@@ -137,7 +137,7 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
             val orgListResponse: OrganizationWithWalletListResponse =
                 objectMapper.readValue(result.response.contentAsString)
             assertThat(orgListResponse.organizations).hasSize(2)
-            assertThat(orgListResponse.organizations.map { it.uuid })
+            assertThat(orgListResponse.organizations.map { it.organization.uuid })
                 .containsAll(testContext.organizations.map { it.toString() })
             assertThat(orgListResponse.organizations.map { it.wallet.activationData })
                 .doesNotContain(testContext.wallet.hash)
@@ -183,7 +183,7 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
             val projectListResponse: ProjectWithWalletListResponse =
                 objectMapper.readValue(result.response.contentAsString)
             assertThat(projectListResponse.projects).hasSize(2)
-            assertThat(projectListResponse.projects.map { it.uuid })
+            assertThat(projectListResponse.projects.map { it.project.uuid })
                 .containsAll(testContext.projects.map { it.toString() })
             assertThat(projectListResponse.projects.map { it.wallet.activationData })
                 .doesNotContain(testContext.wallet.hash)

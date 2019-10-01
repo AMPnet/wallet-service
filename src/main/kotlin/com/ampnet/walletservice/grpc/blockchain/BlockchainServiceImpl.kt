@@ -9,6 +9,7 @@ import com.ampnet.crowdfunding.proto.GenerateCreateOrganizationTxRequest
 import com.ampnet.crowdfunding.proto.GenerateCreateProjectTxRequest
 import com.ampnet.crowdfunding.proto.GenerateInvestTxRequest
 import com.ampnet.crowdfunding.proto.GenerateMintTxRequest
+import com.ampnet.crowdfunding.proto.GetProjectsInfoRequest
 import com.ampnet.crowdfunding.proto.InvestmentsInProjectRequest
 import com.ampnet.crowdfunding.proto.PortfolioRequest
 import com.ampnet.crowdfunding.proto.PostTxRequest
@@ -21,6 +22,7 @@ import com.ampnet.walletservice.exception.GrpcException
 import com.ampnet.walletservice.grpc.blockchain.pojo.BlockchainTransaction
 import com.ampnet.walletservice.grpc.blockchain.pojo.Portfolio
 import com.ampnet.walletservice.grpc.blockchain.pojo.PortfolioData
+import com.ampnet.walletservice.grpc.blockchain.pojo.ProjectInfoResponse
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
 import mu.KLogging
@@ -235,6 +237,22 @@ class BlockchainServiceImpl(
         } catch (ex: StatusRuntimeException) {
             throw getInternalExceptionFromStatusException(ex,
                 "Could not get investments by user: $userWalletHash in project: $projectWalletHash")
+        }
+    }
+
+    override fun getProjectsInfo(hashes: List<String>): List<ProjectInfoResponse> {
+        logger.debug { "Get projects info for hashes: $hashes" }
+        try {
+            val response = serviceBlockingStub.getProjectsInfo(
+                GetProjectsInfoRequest.newBuilder()
+                    .addAllProjectTxHashes(hashes)
+                    .build()
+            )
+            logger.debug { "Projects info response: $response" }
+            return response.projectsList.map { ProjectInfoResponse(it) }
+        } catch (ex: StatusRuntimeException) {
+            throw getInternalExceptionFromStatusException(ex,
+                "Could not get projects info for hashes: $hashes")
         }
     }
 

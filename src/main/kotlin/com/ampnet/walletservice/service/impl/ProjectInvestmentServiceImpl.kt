@@ -1,6 +1,6 @@
 package com.ampnet.walletservice.service.impl
 
-import com.ampnet.project.proto.ProjectResponse
+import com.ampnet.projectservice.proto.ProjectResponse
 import com.ampnet.walletservice.grpc.blockchain.BlockchainService
 import com.ampnet.walletservice.grpc.blockchain.pojo.ProjectInvestmentTxRequest
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionDataAndInfo

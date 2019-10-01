@@ -126,10 +126,10 @@ class ProjectInvestmentServiceTest : JpaServiceTestBase() {
     @Test
     fun mustThrowExceptionIfProjectDoesNotHaveWallet() {
         suppose("User has a wallet") {
-            createWalletForUser(userUuid, testContext.defaultAddressHash)
+            createWalletForUser(userUuid, testContext.addressHash)
         }
         suppose("User has enough funds") {
-            Mockito.`when`(mockedBlockchainService.getBalance(testContext.defaultAddressHash)).thenReturn(100_000_00)
+            Mockito.`when`(mockedBlockchainService.getBalance(testContext.addressHash)).thenReturn(100_000_00)
         }
         suppose("Project service will return project") {
             Mockito.`when`(
@@ -149,7 +149,7 @@ class ProjectInvestmentServiceTest : JpaServiceTestBase() {
     @Test
     fun mustThrowExceptionIfUserDoesNotEnoughFunds() {
         suppose("User has a wallet") {
-            createWalletForUser(userUuid, testContext.defaultAddressHash)
+            createWalletForUser(userUuid, testContext.addressHash)
         }
         suppose("User does not have enough funds on wallet") {
             testContext.investmentRequest = ProjectInvestmentRequest(projectUuid, userUuid, 100)
@@ -173,7 +173,7 @@ class ProjectInvestmentServiceTest : JpaServiceTestBase() {
     @Test
     fun mustBeAbleToGenerateInvestment() {
         suppose("User has a wallet") {
-            createWalletForUser(userUuid, testContext.defaultAddressHash)
+            createWalletForUser(userUuid, testContext.addressHash)
         }
         suppose("User does have enough funds on wallet") {
             testContext.investmentRequest = ProjectInvestmentRequest(projectUuid, userUuid, 100_00)
@@ -195,20 +195,20 @@ class ProjectInvestmentServiceTest : JpaServiceTestBase() {
             val projectWalletHash = getWalletHash(projectUuid)
             Mockito.`when`(mockedBlockchainService.generateProjectInvestmentTransaction(
                 ProjectInvestmentTxRequest(userWalletHash, projectWalletHash, 100_00))
-            ).thenReturn(testContext.defaultTransactionData)
+            ).thenReturn(testContext.transactionData)
         }
 
         verify("Service will generate transaction") {
             val transactionData = projectInvestmentService
                 .generateInvestInProjectTransaction(testContext.investmentRequest)
-            assertThat(transactionData.transactionData).isEqualTo(testContext.defaultTransactionData)
+            assertThat(transactionData.transactionData).isEqualTo(testContext.transactionData)
         }
     }
 
     @Test
     fun mustNotBeAbleToGenerateInvestmentIfProjectDidReachExpectedFunding() {
         suppose("User has a wallet") {
-            createWalletForUser(userUuid, testContext.defaultAddressHash)
+            createWalletForUser(userUuid, testContext.addressHash)
         }
         suppose("User does have enough funds on wallet") {
             testContext.investmentRequest = ProjectInvestmentRequest(projectUuid, userUuid, 100_00)
@@ -238,22 +238,21 @@ class ProjectInvestmentServiceTest : JpaServiceTestBase() {
     fun mustBeAbleInvestInProject() {
         suppose("Blockchain service will return hash for post transaction") {
             Mockito.`when`(mockedBlockchainService
-                    .postTransaction(testContext.defaultSignedTransaction)
-            ).thenReturn(testContext.defaultTxHash)
+                    .postTransaction(testContext.signedTransaction)
+            ).thenReturn(testContext.txHash)
         }
 
         verify("Service can post project invest transaction") {
-            val txHash = projectInvestmentService.investInProject(testContext.defaultSignedTransaction)
-            assertThat(txHash).isEqualTo(testContext.defaultTxHash)
+            val txHash = projectInvestmentService.investInProject(testContext.signedTransaction)
+            assertThat(txHash).isEqualTo(testContext.txHash)
         }
     }
 
     private class TestContext {
         lateinit var investmentRequest: ProjectInvestmentRequest
-        val defaultAddressHash = "0x4e4ee58ff3a9e9e78c2dfdbac0d1518e4e1039f9189267e1dc8d3e35cbdf7892"
-        val defaultProjectAddressHash = "0x1e4ee58ff3a9e9e78c2dfdbac32133e4e1039f9189267e1dc8d3e35cbdf7111"
-        val defaultSignedTransaction = "SignedTransactionRequest"
-        val defaultTransactionData = TransactionData("data")
-        val defaultTxHash = "0x5432jlhkljkhsf78y7y23rekljhjksadhf6t4632ilhasdfh7836242hluafhds"
+        val addressHash = "0x4e4ee58ff3a9e9e78c2dfdbac0d1518e4e1039f9189267e1dc8d3e35cbdf7892"
+        val signedTransaction = "SignedTransactionRequest"
+        val transactionData = TransactionData("data")
+        val txHash = "0x5432jlhkljkhsf78y7y23rekljhjksadhf6t4632ilhasdfh7836242hluafhds"
     }
 }

@@ -70,6 +70,7 @@ class WebSecurityConfig(
             // TODO: websocket maybe should not be open
             .antMatchers("/websocket/**").permitAll()
             .antMatchers("/actuator/**").permitAll()
+            .antMatchers("/public/**").permitAll()
             .antMatchers("/docs/index.html").permitAll()
             .antMatchers(HttpMethod.POST, "/wallet/pair").permitAll()
             .antMatchers(HttpMethod.GET, "/wallet/pair/*").permitAll()

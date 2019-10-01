@@ -1,7 +1,8 @@
 package com.ampnet.walletservice
 
-import com.ampnet.project.proto.OrganizationResponse
-import com.ampnet.project.proto.ProjectResponse
+import com.ampnet.projectservice.proto.OrganizationResponse
+import com.ampnet.projectservice.proto.ProjectResponse
+import com.ampnet.walletservice.grpc.blockchain.pojo.ProjectInfoResponse
 import org.springframework.test.context.ActiveProfiles
 import java.time.ZonedDateTime
 import java.util.UUID
@@ -21,7 +22,7 @@ abstract class TestBase {
         OrganizationResponse.newBuilder()
             .setUuid(organization.toString())
             .setApproved(true)
-            .setCreatedAt(ZonedDateTime.now().minusDays(1).toInstant().epochSecond.toString())
+            .setCreatedAt(ZonedDateTime.now().minusDays(1).toInstant().epochSecond)
             .setCreatedByUser(user.toString())
             .setName(name)
             .build()
@@ -46,5 +47,18 @@ abstract class TestBase {
             .setMaxPerUser(100000)
             .setExpectedFunding(expectedFunding)
             .setOrganizationUuid(organization.toString())
+            .setDescription("description")
+            .setImageUrl("image-url")
+            .setReturnOnInvestment("return-on-investment")
             .build()
+
+    protected fun getProjectInfoResponse(
+        walletHash: String,
+        balance: Long,
+        investmentCap: Long = 10_000_000_000_00,
+        minPerUser: Long = 100_00,
+        maxPerUser: Long = 10_000_000_00,
+        endsAt: Long = ZonedDateTime.now().plusDays(30).toEpochSecond()
+    ): ProjectInfoResponse =
+        ProjectInfoResponse(walletHash, balance, investmentCap, minPerUser, maxPerUser, endsAt)
 }

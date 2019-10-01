@@ -1,6 +1,6 @@
 syntax = "proto3";
 option java_multiple_files = true;
-package com.ampnet.project.proto;
+package com.ampnet.projectservice.proto;
 
 message GetByUuids {
     repeated string uuids = 1;
@@ -10,7 +10,7 @@ message OrganizationResponse {
     string uuid = 1;
     string name = 2;
     string created_by_user = 3;
-    string created_at = 4;
+    uint64 created_at = 4;
     bool approved = 5;
 }
 
@@ -26,6 +26,9 @@ message ProjectResponse {
     string currency = 9;
     bool active = 10;
     string organization_uuid = 11;
+    string image_url = 12;
+    string description = 13;
+    string returnOnInvestment = 14;
 }
 
 message OrganizationsResponse {

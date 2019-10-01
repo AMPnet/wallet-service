@@ -3,6 +3,7 @@ package com.ampnet.walletservice.service
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionDataAndInfo
 import com.ampnet.walletservice.persistence.model.PairWalletCode
 import com.ampnet.walletservice.persistence.model.Wallet
+import com.ampnet.walletservice.service.pojo.ProjectWithWallet
 import java.util.UUID
 
 interface WalletService {
@@ -15,4 +16,5 @@ interface WalletService {
     fun createOrganizationWallet(organization: UUID, signedTransaction: String): Wallet
     fun generatePairWalletCode(publicKey: String): PairWalletCode
     fun getPairWalletCode(code: String): PairWalletCode?
+    fun getProjectsWithActiveWallet(): List<ProjectWithWallet>
 }

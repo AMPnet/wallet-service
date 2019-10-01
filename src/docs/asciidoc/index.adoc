@@ -64,9 +64,9 @@ include::{snippets}/WalletControllerTest/mustBeAbleToGetOrganizationWallet/http-
 
 ===== Missing organization
 .Request
-include::{snippets}/WalletControllerTest/mustThrowExceptionIfOrganizationIsMissing/http-request.adoc[]
+include::{snippets}/WalletControllerTest/mustReturnNotFoundForMissingOrganizationWallet/http-request.adoc[]
 .Response
-include::{snippets}/WalletControllerTest/mustThrowExceptionIfOrganizationIsMissing/http-response.adoc[]
+include::{snippets}/WalletControllerTest/mustReturnNotFoundForMissingOrganizationWallet/http-response.adoc[]
 
 ==== Get transaction for creating organization wallet
 .Request
@@ -77,19 +77,25 @@ include::{snippets}/WalletControllerTest/mustBeAbleToGetCreateOrganizationWallet
 === Project Wallet
 Collection of endpoints for managing Project wallet
 
-//==== Public - Get project wallet
-//
-//===== Successfully get wallet
-//.Request
-//include::{snippets}/ProjectPublicControllerTest/mustBeAbleToGetProjectWallet/http-request.adoc[]
-//.Response
-//include::{snippets}/ProjectPublicControllerTest/mustBeAbleToGetProjectWallet/http-response.adoc[]
-//
-//===== Project does not have a wallet
-//.Request
-//include::{snippets}/ProjectPublicControllerTest/mustGetNotFoundIfWalletIsMissing/http-request.adoc[]
-//.Response
-//include::{snippets}/ProjectPublicControllerTest/mustGetNotFoundIfWalletIsMissing/http-response.adoc[]
+==== Public - Get project wallet
+
+===== Successfully get wallet
+.Request
+include::{snippets}/PublicWalletControllerTest/mustBeAbleToGetProjectWallet/http-request.adoc[]
+.Response
+include::{snippets}/PublicWalletControllerTest/mustBeAbleToGetProjectWallet/http-response.adoc[]
+
+===== Missing project
+.Request
+include::{snippets}/PublicWalletControllerTest/mustReturnNotFoundForMissingProjectWallet/http-request.adoc[]
+.Response
+include::{snippets}/PublicWalletControllerTest/mustReturnNotFoundForMissingProjectWallet/http-response.adoc[]
+
+===== Active projects
+.Request
+include::{snippets}/PublicWalletControllerTest/mustBeAbleToGetAllActiveProjectsWithWallet/http-request.adoc[]
+.Response
+include::{snippets}/PublicWalletControllerTest/mustBeAbleToGetAllActiveProjectsWithWallet/http-response.adoc[]
 
 ==== Generate transaction to create project wallet
 
@@ -130,12 +136,6 @@ Must have Admin role - privilege: `PrivilegeType.PWA_WALLET`
 include::{snippets}/CooperativeWalletControllerTest/mustBeAbleToGetActivateWalletTransaction/http-request.adoc[]
 .Response
 include::{snippets}/CooperativeWalletControllerTest/mustBeAbleToGetActivateWalletTransaction/http-response.adoc[]
-
-//=== Generate transaction to greenvest in project
-//.Request
-//include::{snippets}/ProjectControllerTest/mustBeAbleToGenerateInvestmentTransaction/http-request.adoc[]
-//.Response
-//include::{snippets}/ProjectControllerTest/mustBeAbleToGenerateInvestmentTransaction/http-response.adoc[]
 
 == Broadcast API
 
@@ -288,3 +288,12 @@ include::{snippets}/PortfolioControllerTest/mustBeAbleToGetMyPortfolioStats/http
 include::{snippets}/PortfolioControllerTest/mustBeAbleToGetInvestmentsInProject/http-request.adoc[]
 .Response
 include::{snippets}/PortfolioControllerTest/mustBeAbleToGetInvestmentsInProject/http-response.adoc[]
+
+== Investment API
+
+=== Generate transaction to invest in project
+.Request
+include::{snippets}/InvestmentControllerTest/mustBeAbleToGenerateProjectInvestmentTransaction/http-request.adoc[]
+.Response
+include::{snippets}/InvestmentControllerTest/mustBeAbleToGenerateProjectInvestmentTransaction/http-response.adoc[]
+

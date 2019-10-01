@@ -318,6 +318,5 @@ class WalletControllerTest : ControllerTestBase() {
         val signedTransaction = "SignedTransaction"
         lateinit var pairWalletCode: String
         lateinit var time: ZonedDateTime
-        lateinit var uuid: UUID
     }
 }

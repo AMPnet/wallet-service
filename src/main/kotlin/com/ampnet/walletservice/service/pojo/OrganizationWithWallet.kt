@@ -1,11 +1,12 @@
 package com.ampnet.walletservice.service.pojo
 
-import com.ampnet.project.proto.OrganizationResponse
+import com.ampnet.projectservice.proto.OrganizationResponse
+import com.ampnet.walletservice.controller.pojo.response.OrganizationControllerResponse
+import com.ampnet.walletservice.controller.pojo.response.WalletResponse
 import com.ampnet.walletservice.persistence.model.Wallet
 
-// TODO: add more organization data
-data class OrganizationWithWallet(val uuid: String, val name: String, val wallet: Wallet) {
+data class OrganizationWithWallet(val organization: OrganizationControllerResponse, val wallet: WalletResponse) {
     constructor(organization: OrganizationResponse, wallet: Wallet) : this(
-        organization.uuid, organization.name, wallet
+        OrganizationControllerResponse(organization), WalletResponse(wallet)
     )
 }

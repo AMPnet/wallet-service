@@ -12,7 +12,7 @@ plugins {
     id("com.google.cloud.tools.jib") version "1.5.1"
     id("org.jlleitschuh.gradle.ktlint") version "8.2.0"
     id("io.gitlab.arturbosch.detekt").version("1.0.1")
-    id("org.asciidoctor.convert") version "2.3.0"
+    id("org.asciidoctor.convert") version "1.5.12"
     id("com.google.protobuf") version "0.8.10"
     idea
     jacoco
@@ -139,7 +139,8 @@ detekt {
 }
 
 task("qualityCheck") {
-    dependsOn(tasks.ktlintCheck, tasks.jacocoTestReport, tasks.jacocoTestCoverageVerification, tasks.detekt)
+    // add detekt
+    dependsOn(tasks.ktlintCheck, tasks.jacocoTestReport, tasks.jacocoTestCoverageVerification)
 }
 
 tasks.asciidoctor {
