@@ -31,7 +31,7 @@ class DepositController(
 
     companion object : KLogging()
 
-    @PostMapping("/api/v1/deposit")
+    @PostMapping("/deposit")
     fun createDeposit(@RequestBody request: AmountRequest): ResponseEntity<DepositResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to create deposit" }
@@ -39,7 +39,7 @@ class DepositController(
         return ResponseEntity.ok(DepositResponse(deposit))
     }
 
-    @GetMapping("/api/v1/deposit")
+    @GetMapping("/deposit")
     fun getPendingDeposit(): ResponseEntity<DepositResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to get pending deposit by user: ${userPrincipal.uuid}" }
@@ -49,7 +49,7 @@ class DepositController(
         return ResponseEntity.notFound().build()
     }
 
-    @GetMapping("/api/v1/deposit/search")
+    @GetMapping("/deposit/search")
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_DEPOSIT)")
     fun getDepositByReference(
         @RequestParam("reference") reference: String
@@ -63,7 +63,7 @@ class DepositController(
         return ResponseEntity.notFound().build()
     }
 
-    @DeleteMapping("/api/v1/deposit/{id}")
+    @DeleteMapping("/deposit/{id}")
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PWA_DEPOSIT)")
     fun deleteDeposit(@PathVariable("id") id: Int): ResponseEntity<Unit> {
         logger.debug { "Received request to delete deposit: $id" }
@@ -71,7 +71,7 @@ class DepositController(
         return ResponseEntity.ok().build()
     }
 
-    @PostMapping("/api/v1/deposit/{id}/approve")
+    @PostMapping("/deposit/{id}/approve")
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PWA_DEPOSIT)")
     fun approveDeposit(
         @PathVariable("id") id: Int,
@@ -87,7 +87,7 @@ class DepositController(
         return ResponseEntity.ok(DepositResponse(deposit))
     }
 
-    @GetMapping("/api/v1/deposit/unapproved")
+    @GetMapping("/deposit/unapproved")
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_DEPOSIT)")
     fun getUnapprovedDeposits(): ResponseEntity<DepositWithUserListResponse> {
         logger.debug { "Received request to get unapproved deposits" }
@@ -96,7 +96,7 @@ class DepositController(
         return ResponseEntity.ok(response)
     }
 
-    @GetMapping("/api/v1/deposit/approved")
+    @GetMapping("/deposit/approved")
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_DEPOSIT)")
     fun getApprovedDeposits(): ResponseEntity<DepositWithUserListResponse> {
         logger.debug { "Received request to get approved deposits" }
@@ -105,7 +105,7 @@ class DepositController(
         return ResponseEntity.ok(response)
     }
 
-    @PostMapping("/api/v1/deposit/{id}/transaction")
+    @PostMapping("/deposit/{id}/transaction")
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PWA_DEPOSIT)")
     fun generateMintTransaction(@PathVariable("id") id: Int): ResponseEntity<TransactionResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()

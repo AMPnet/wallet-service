@@ -19,7 +19,7 @@ plugins {
 }
 
 group = "com.ampnet"
-version = "0.0.1-SNAPSHOT"
+version = "0.0.1"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
@@ -93,7 +93,7 @@ jib {
     val dockerUsername: String = System.getenv("DOCKER_USERNAME") ?: "DOCKER_USERNAME"
     val dockerPassword: String = System.getenv("DOCKER_PASSWORD") ?: "DOCKER_PASSWORD"
     to {
-        image = "ampnet/ampnet-wallet-service:$version"
+        image = "ampnet/wallet-service:$version"
         auth {
             username = dockerUsername
             password = dockerPassword
@@ -139,8 +139,7 @@ detekt {
 }
 
 task("qualityCheck") {
-    // add detekt
-    dependsOn(tasks.ktlintCheck, tasks.jacocoTestReport, tasks.jacocoTestCoverageVerification)
+    dependsOn(tasks.ktlintCheck, tasks.detekt, tasks.jacocoTestReport, tasks.jacocoTestCoverageVerification)
 }
 
 tasks.asciidoctor {

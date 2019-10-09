@@ -1,0 +1,75 @@
+version: 2.1
+
+executors:
+  java-executor:
+    docker:
+      - image: circleci/openjdk:8-jdk
+      - image: circleci/postgres:10.7-ram
+        environment:
+          POSTGRES_USER: wallet_service_test
+          POSTGRES_DB: wallet_service_test
+          POSTGRES_PASSWORD: password
+    working_directory: ~/repo
+    environment:
+      JVM_OPTS: -Xmx3200m
+      TERM: dumb
+
+commands:
+  gradle-depenencies:
+    steps:
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "build.gradle.kts" }}
+            - v1-dependencies-
+      - run: gradle dependencies
+      - save_cache:
+          paths:
+            - ~/.gradle
+          key: v1-dependencies-{{ checksum "build.gradle.kts" }}
+
+jobs:
+  test:
+    executor: java-executor
+    steps:
+      - checkout
+      - gradle-depenencies
+
+      - run:
+          name: Run all tests
+          command: gradle test
+      - run:
+          name: Quality check
+          command: gradle qualityCheck
+
+  deploy:
+    executor: java-executor
+    steps:
+      - add_ssh_keys:
+          fingerprints:
+            - "96:2c:54:e3:52:7c:c8:89:e3:0f:58:44:d8:be:71:fb"
+      - checkout
+      - gradle-depenencies
+
+      - run: gradle build
+      - run:
+          name: Copy docs to static resources
+          command: gradle copyDocs
+      - run:
+          name: Push new docker image
+          command: gradle jib
+
+workflows:
+  version: 2.1
+  test:
+    jobs:
+      - test:
+          filters:
+            branches:
+              ignore: master
+
+  deploy:
+    jobs:
+      - deploy:
+          filters:
+            branches:
+              only: master

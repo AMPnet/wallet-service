@@ -11,7 +11,10 @@ data class ProjectWithInvestmentResponse(val project: ProjectControllerResponse,
     )
 }
 data class PortfolioResponse(val portfolio: List<ProjectWithInvestmentResponse>)
-data class ProjectWithInvestments(val project: ProjectControllerResponse, val transactions: List<BlockchainTransaction>) {
+data class ProjectWithInvestments(
+    val project: ProjectControllerResponse,
+    val transactions: List<BlockchainTransaction>
+) {
     constructor(project: ProjectResponse, transactions: List<BlockchainTransaction>) : this (
         ProjectControllerResponse(project),
         transactions

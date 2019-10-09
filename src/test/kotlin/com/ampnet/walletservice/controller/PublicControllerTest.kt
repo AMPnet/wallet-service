@@ -13,7 +13,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.time.ZonedDateTime
 import java.util.UUID
 
-class PublicWalletControllerTest : ControllerTestBase() {
+class PublicControllerTest : ControllerTestBase() {
 
     private val projectWalletPublicPath = "/public/wallet/project"
 

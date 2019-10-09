@@ -21,6 +21,7 @@ class InvestmentControllerTest : ControllerTestBase() {
 
     @BeforeEach
     fun init() {
+        databaseCleanerService.deleteAllWallets()
         testContext = TestContext()
     }
 

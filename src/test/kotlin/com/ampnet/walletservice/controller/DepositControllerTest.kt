@@ -28,7 +28,7 @@ import java.util.UUID
 
 class DepositControllerTest : ControllerTestBase() {
 
-    private val depositPath = "/api/v1/deposit"
+    private val depositPath = "/deposit"
     private lateinit var testContext: TestContext
 
     @BeforeEach

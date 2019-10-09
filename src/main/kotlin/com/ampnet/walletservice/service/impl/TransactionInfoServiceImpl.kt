@@ -40,24 +40,23 @@ class TransactionInfoServiceImpl(
     }
 
     @Transactional
-    override fun createOrgTransaction(organization: UUID, userUuid: UUID): TransactionInfo {
-        // TODO: change description
-        val description = createOrgDescription.format(organization)
+    override fun createOrgTransaction(organization: UUID, organizationName: String, userUuid: UUID): TransactionInfo {
+        val description = createOrgDescription.format(organizationName)
         val request = CreateTransactionRequest(
                 TransactionType.CREATE_ORG, createOrgTitle, description, userUuid, organization.toString())
         return createTransaction(request)
     }
 
     @Transactional
-    override fun createProjectTransaction(project: UUID, userUuid: UUID): TransactionInfo {
-        // TODO: change description
-        val description = createProjectDescription.format(project)
+    override fun createProjectTransaction(project: UUID, projectName: String, userUuid: UUID): TransactionInfo {
+        val description = createProjectDescription.format(projectName)
         val request = CreateTransactionRequest(
                 TransactionType.CREATE_PROJECT, createProjectTitle, description, userUuid, project.toString())
         return createTransaction(request)
     }
 
     @Transactional
+    @Suppress("MagicNumber")
     override fun createInvestTransaction(projectName: String, amount: Long, userUuid: UUID): TransactionInfo {
         val description = investDescription.format(projectName, amount.toDouble().div(100))
         val request = CreateTransactionRequest(

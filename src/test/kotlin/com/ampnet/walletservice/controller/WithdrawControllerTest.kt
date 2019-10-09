@@ -28,7 +28,7 @@ import java.util.UUID
 
 class WithdrawControllerTest : ControllerTestBase() {
 
-    private val withdrawPath = "/api/v1/withdraw"
+    private val withdrawPath = "/withdraw"
     private lateinit var testContext: TestContext
 
     @BeforeEach

@@ -269,22 +269,14 @@ class BlockchainServiceImpl(
 
     // Status defined in ampenet-blockchain service, for more info see:
     // ampnet-blockchain-service/src/main/kotlin/com/ampnet/crowdfunding/blockchain/enums/ErrorCode.kt
+    @Suppress("ReturnCount")
     private fun getErrorDescriptionFromExceptionStatus(status: Status): GrpcErrorCode {
         val description = status.description?.split(" > ")
-            ?: return GrpcErrorCode(
-                "90",
-                "Could not parse error: ${status.description}"
-            )
+            ?: return GrpcErrorCode("90", "Could not parse error: ${status.description}")
         if (description.size != 2) {
-            return GrpcErrorCode(
-                "91",
-                "Wrong size of error message: $description"
-            )
+            return GrpcErrorCode("91", "Wrong size of error message: $description")
         }
-        return GrpcErrorCode(
-            description[0],
-            description[1]
-        )
+        return GrpcErrorCode(description[0], description[1])
     }
 
     private data class GrpcErrorCode(val code: String, val message: String)

@@ -42,7 +42,6 @@ class WebSecurityConfig(
     @Bean
     fun corsConfigurationSource(): CorsConfigurationSource {
         val configuration = CorsConfiguration()
-        // TODO: change allowed origins
         configuration.allowedOrigins = listOf("*")
         configuration.allowedMethods = listOf(
             HttpMethod.HEAD.name,
@@ -67,7 +66,6 @@ class WebSecurityConfig(
     override fun configure(http: HttpSecurity) {
         http.cors().and().csrf().disable()
             .authorizeRequests()
-            // TODO: websocket maybe should not be open
             .antMatchers("/websocket/**").permitAll()
             .antMatchers("/actuator/**").permitAll()
             .antMatchers("/public/**").permitAll()

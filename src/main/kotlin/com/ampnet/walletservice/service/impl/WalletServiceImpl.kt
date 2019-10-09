@@ -18,7 +18,7 @@ import com.ampnet.walletservice.persistence.repository.WalletRepository
 import com.ampnet.walletservice.service.TransactionInfoService
 import com.ampnet.walletservice.service.WalletService
 import com.ampnet.walletservice.service.pojo.ProjectWithWallet
-import mu.KLogging
+import mu.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
@@ -33,9 +33,11 @@ class WalletServiceImpl(
     private val projectService: ProjectService
 ) : WalletService {
 
-    companion object : KLogging()
-
-    private val charPool: List<Char> = ('A'..'Z') + ('0'..'9')
+    companion object {
+        private val logger = KotlinLogging.logger {}
+        private val charPool: List<Char> = ('A'..'Z') + ('0'..'9')
+        private const val PAIR_WALLET_CODE_LENGTH = 6
+    }
 
     @Transactional(readOnly = true)
     @Throws(GrpcException::class)
@@ -87,7 +89,7 @@ class WalletServiceImpl(
             projectResponse.endDate
         )
         val data = blockchainService.generateProjectWalletTransaction(request)
-        val info = transactionInfoService.createProjectTransaction(project, user)
+        val info = transactionInfoService.createProjectTransaction(project, projectResponse.name, user)
         return TransactionDataAndInfo(data, info)
     }
 
@@ -113,7 +115,8 @@ class WalletServiceImpl(
                 "User: $user did not create this organization: $organization and cannot create a wallet")
         }
         val data = blockchainService.generateCreateOrganizationTransaction(userWalletHash)
-        val info = transactionInfoService.createOrgTransaction(organization, user)
+        val info =
+            transactionInfoService.createOrgTransaction(organization, organizationResponse.name, user)
         logger.debug { "Generated create wallet transaction for organization: $organization" }
         return TransactionDataAndInfo(data, info)
     }
@@ -167,7 +170,8 @@ class WalletServiceImpl(
             throw ResourceAlreadyExistsException(ErrorCode.WALLET_HASH_EXISTS,
                 "Trying to create wallet: $type with existing activationData: $activationData")
         }
-        val wallet = Wallet(UUID.randomUUID(), owner, activationData, type, Currency.EUR, ZonedDateTime.now(), null, null)
+        val wallet = Wallet(UUID.randomUUID(), owner, activationData, type, Currency.EUR, ZonedDateTime.now(),
+            null, null)
         return walletRepository.save(wallet)
     }
 
@@ -184,7 +188,7 @@ class WalletServiceImpl(
         }
     }
 
-    private fun generatePairWalletCode(): String = (1..6)
+    private fun generatePairWalletCode(): String = (1..PAIR_WALLET_CODE_LENGTH)
         .map { kotlin.random.Random.nextInt(0, charPool.size) }
         .map(charPool::get)
         .joinToString("")

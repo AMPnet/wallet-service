@@ -31,7 +31,7 @@ class WithdrawController(
 
     companion object : KLogging()
 
-    @PostMapping("/api/v1/withdraw")
+    @PostMapping("/withdraw")
     fun createWithdraw(@RequestBody request: WithdrawCreateRequest): ResponseEntity<WithdrawResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to create Withdraw:$request by user: ${userPrincipal.uuid}" }
@@ -39,7 +39,7 @@ class WithdrawController(
         return ResponseEntity.ok(WithdrawResponse(withdraw))
     }
 
-    @GetMapping("/api/v1/withdraw")
+    @GetMapping("/withdraw")
     fun getMyWithdraw(): ResponseEntity<WithdrawResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to get my Withdraw by user: ${userPrincipal.uuid}" }
@@ -49,7 +49,7 @@ class WithdrawController(
         return ResponseEntity.notFound().build()
     }
 
-    @DeleteMapping("/api/v1/withdraw/{id}")
+    @DeleteMapping("/withdraw/{id}")
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PWA_WITHDRAW)")
     fun deleteWithdraw(@PathVariable("id") withdrawId: Int): ResponseEntity<Unit> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
@@ -58,7 +58,7 @@ class WithdrawController(
         return ResponseEntity.ok().build()
     }
 
-    @GetMapping("/api/v1/withdraw/approved")
+    @GetMapping("/withdraw/approved")
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_WITHDRAW)")
     fun getApprovedWithdraws(): ResponseEntity<WithdrawWithUserListResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
@@ -67,7 +67,7 @@ class WithdrawController(
         return ResponseEntity.ok(response)
     }
 
-    @GetMapping("/api/v1/withdraw/burned")
+    @GetMapping("/withdraw/burned")
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_WITHDRAW)")
     fun getBurnedWithdraws(): ResponseEntity<WithdrawWithUserListResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
@@ -76,7 +76,7 @@ class WithdrawController(
         return ResponseEntity.ok(response)
     }
 
-    @PostMapping("/api/v1/withdraw/{id}/transaction/approve")
+    @PostMapping("/withdraw/{id}/transaction/approve")
     fun generateApproveTransaction(@PathVariable("id") id: Int): ResponseEntity<TransactionResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.info { "Received request to generate withdraw approval transaction by user: ${userPrincipal.uuid}" }
@@ -84,7 +84,7 @@ class WithdrawController(
         return ResponseEntity.ok(TransactionResponse(transactionDataAndInfo))
     }
 
-    @PostMapping("/api/v1/withdraw/{id}/transaction/burn")
+    @PostMapping("/withdraw/{id}/transaction/burn")
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PWA_WITHDRAW)")
     fun generateBurnTransaction(@PathVariable("id") id: Int): ResponseEntity<TransactionResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
@@ -93,7 +93,7 @@ class WithdrawController(
         return ResponseEntity.ok(TransactionResponse(transactionDataAndInfo))
     }
 
-    @PostMapping("/api/v1/withdraw/{id}/document")
+    @PostMapping("/withdraw/{id}/document")
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PWA_WITHDRAW)")
     fun addDocument(
         @PathVariable("id") id: Int,

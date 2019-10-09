@@ -51,7 +51,6 @@ class CloudStorageServiceImpl(applicationProperties: ApplicationProperties) : Cl
         } catch (ex: S3Exception) {
             logger.warn { ex.message }
             throw InternalException(ErrorCode.INT_FILE_STORAGE, "Could not store file with key: $key on cloud\n" +
-                // TODO: remove ex.message after integration-test fix
                 "Exception message: ${ex.message}")
         }
     }

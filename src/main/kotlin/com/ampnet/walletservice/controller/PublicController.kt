@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
 @RestController
-class PublicWalletController(private val walletService: WalletService) {
+class PublicController(private val walletService: WalletService) {
 
     companion object : KLogging()
 

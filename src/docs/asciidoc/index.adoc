@@ -5,6 +5,31 @@
 :source-highlighter: prettify
 :docinfo: shared
 
+== Public API
+Collection of public endpoints
+
+=== Active projects with wallet
+Get all active projects with wallet
+
+.Request
+include::{snippets}/PublicControllerTest/mustBeAbleToGetAllActiveProjectsWithWallet/http-request.adoc[]
+.Response
+include::{snippets}/PublicControllerTest/mustBeAbleToGetAllActiveProjectsWithWallet/http-response.adoc[]
+
+=== Project Wallet
+
+==== Successfully get wallet
+.Request
+include::{snippets}/PublicControllerTest/mustBeAbleToGetProjectWallet/http-request.adoc[]
+.Response
+include::{snippets}/PublicControllerTest/mustBeAbleToGetProjectWallet/http-response.adoc[]
+
+==== Missing project
+.Request
+include::{snippets}/PublicControllerTest/mustReturnNotFoundForMissingProjectWallet/http-request.adoc[]
+.Response
+include::{snippets}/PublicControllerTest/mustReturnNotFoundForMissingProjectWallet/http-response.adoc[]
+
 == Wallet API
 Collection of endpoints for managing wallets
 
@@ -73,29 +98,6 @@ include::{snippets}/WalletControllerTest/mustReturnNotFoundForMissingOrganizatio
 include::{snippets}/WalletControllerTest/mustBeAbleToGetCreateOrganizationWallet/http-request.adoc[]
 .Response
 include::{snippets}/WalletControllerTest/mustBeAbleToGetCreateOrganizationWallet/http-response.adoc[]
-
-=== Project Wallet
-Collection of endpoints for managing Project wallet
-
-==== Public - Get project wallet
-
-===== Successfully get wallet
-.Request
-include::{snippets}/PublicWalletControllerTest/mustBeAbleToGetProjectWallet/http-request.adoc[]
-.Response
-include::{snippets}/PublicWalletControllerTest/mustBeAbleToGetProjectWallet/http-response.adoc[]
-
-===== Missing project
-.Request
-include::{snippets}/PublicWalletControllerTest/mustReturnNotFoundForMissingProjectWallet/http-request.adoc[]
-.Response
-include::{snippets}/PublicWalletControllerTest/mustReturnNotFoundForMissingProjectWallet/http-response.adoc[]
-
-===== Active projects
-.Request
-include::{snippets}/PublicWalletControllerTest/mustBeAbleToGetAllActiveProjectsWithWallet/http-request.adoc[]
-.Response
-include::{snippets}/PublicWalletControllerTest/mustBeAbleToGetAllActiveProjectsWithWallet/http-response.adoc[]
 
 ==== Generate transaction to create project wallet
 

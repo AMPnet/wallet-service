@@ -7,8 +7,8 @@ import java.util.UUID
 
 interface TransactionInfoService {
     fun activateWalletTransaction(walletUuid: UUID, type: WalletType, userUuid: UUID): TransactionInfo
-    fun createOrgTransaction(organization: UUID, userUuid: UUID): TransactionInfo
-    fun createProjectTransaction(project: UUID, userUuid: UUID): TransactionInfo
+    fun createOrgTransaction(organization: UUID, organizationName: String, userUuid: UUID): TransactionInfo
+    fun createProjectTransaction(project: UUID, projectName: String, userUuid: UUID): TransactionInfo
     fun createInvestTransaction(projectName: String, amount: Long, userUuid: UUID): TransactionInfo
     fun createMintTransaction(request: MintServiceRequest, receivingWallet: String): TransactionInfo
     fun createApprovalTransaction(amount: Long, userUuid: UUID, withdrawId: Int): TransactionInfo

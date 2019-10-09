@@ -15,7 +15,7 @@ import com.ampnet.walletservice.service.StorageService
 import com.ampnet.walletservice.service.TransactionInfoService
 import com.ampnet.walletservice.service.pojo.ApproveDepositRequest
 import com.ampnet.walletservice.service.pojo.MintServiceRequest
-import mu.KLogging
+import mu.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.ZonedDateTime
@@ -31,9 +31,11 @@ class DepositServiceImpl(
     private val mailService: MailService
 ) : DepositService {
 
-    companion object : KLogging()
-
-    private val charPool: List<Char> = ('A'..'Z') + ('0'..'9')
+    companion object {
+        private val logger = KotlinLogging.logger {}
+        private val charPool: List<Char> = ('A'..'Z') + ('0'..'9')
+        private const val DEPOSIT_REFERENCE_LENGTH = 8
+    }
 
     @Transactional
     override fun create(user: UUID, amount: Long): Deposit {
@@ -137,7 +139,7 @@ class DepositServiceImpl(
         }
     }
 
-    private fun generateDepositReference(): String = (1..8)
+    private fun generateDepositReference(): String = (1..DEPOSIT_REFERENCE_LENGTH)
         .map { kotlin.random.Random.nextInt(0, charPool.size) }
         .map(charPool::get)
         .joinToString("")
