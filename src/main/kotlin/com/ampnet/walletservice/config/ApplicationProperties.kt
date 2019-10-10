@@ -4,7 +4,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Configuration
 
 @Configuration
-@ConfigurationProperties(prefix = "com.ampnet.crowdfundingbackend")
+@ConfigurationProperties(prefix = "com.ampnet.walletservice")
 class ApplicationProperties {
     var jwt: JwtProperties = JwtProperties()
     val fileStorage: FileStorageProperties = FileStorageProperties()
