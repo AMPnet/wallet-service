@@ -49,7 +49,7 @@ dependencies {
     implementation("io.github.microutils:kotlin-logging:1.7.6")
     implementation("net.logstash.logback:logstash-logback-encoder:5.3")
     implementation("io.micrometer:micrometer-registry-prometheus:1.1.5")
-    implementation("net.devh:grpc-spring-boot-starter:2.5.0.RELEASE")
+    implementation("net.devh:grpc-client-spring-boot-starter:2.5.0.RELEASE")
     implementation("software.amazon.awssdk:s3:2.5.27")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test") {
