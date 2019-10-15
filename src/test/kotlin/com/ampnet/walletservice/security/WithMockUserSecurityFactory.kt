@@ -1,6 +1,6 @@
 package com.ampnet.walletservice.security
 
-import com.ampnet.walletservice.config.auth.UserPrincipal
+import com.ampnet.core.jwt.UserPrincipal
 import com.ampnet.walletservice.enums.PrivilegeType
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.authority.SimpleGrantedAuthority

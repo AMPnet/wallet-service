@@ -1,7 +1,7 @@
 package com.ampnet.walletservice.controller
 
+import com.ampnet.core.jwt.UserPrincipal
 import com.ampnet.walletservice.exception.TokenException
-import com.ampnet.walletservice.config.auth.UserPrincipal
 import org.springframework.security.core.context.SecurityContextHolder
 import java.time.Instant
 import java.time.ZoneId
