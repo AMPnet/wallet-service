@@ -1,21 +1,23 @@
 package com.ampnet.walletservice.service
 
 import com.ampnet.walletservice.TestBase
-import com.ampnet.walletservice.grpc.blockchain.BlockchainService
 import com.ampnet.walletservice.config.DatabaseCleanerService
 import com.ampnet.walletservice.enums.Currency
 import com.ampnet.walletservice.enums.WalletType
+import com.ampnet.walletservice.grpc.blockchain.BlockchainService
+import com.ampnet.walletservice.grpc.mail.MailService
+import com.ampnet.walletservice.grpc.mail.MailServiceImpl
+import com.ampnet.walletservice.grpc.projectservice.ProjectService
+import com.ampnet.walletservice.grpc.projectservice.ProjectServiceImpl
+import com.ampnet.walletservice.persistence.model.File
 import com.ampnet.walletservice.persistence.model.Wallet
 import com.ampnet.walletservice.persistence.repository.DocumentRepository
 import com.ampnet.walletservice.persistence.repository.PairWalletCodeRepository
 import com.ampnet.walletservice.persistence.repository.TransactionInfoRepository
 import com.ampnet.walletservice.persistence.repository.WalletRepository
 import com.ampnet.walletservice.service.impl.CloudStorageServiceImpl
-import com.ampnet.walletservice.grpc.mail.MailService
-import com.ampnet.walletservice.grpc.mail.MailServiceImpl
-import com.ampnet.walletservice.grpc.projectservice.ProjectService
-import com.ampnet.walletservice.grpc.projectservice.ProjectServiceImpl
-import com.ampnet.walletservice.persistence.model.File
+import java.time.ZonedDateTime
+import java.util.UUID
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.api.fail
 import org.mockito.Mockito
@@ -25,8 +27,6 @@ import org.springframework.context.annotation.Import
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
-import java.time.ZonedDateTime
-import java.util.UUID
 
 @ExtendWith(SpringExtension::class)
 @DataJpaTest

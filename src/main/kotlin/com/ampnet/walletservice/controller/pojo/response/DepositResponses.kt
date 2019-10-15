@@ -1,7 +1,7 @@
 package com.ampnet.walletservice.controller.pojo.response
 
-import com.ampnet.walletservice.persistence.model.Deposit
 import com.ampnet.userservice.proto.UserResponse
+import com.ampnet.walletservice.persistence.model.Deposit
 import java.time.ZonedDateTime
 import java.util.UUID
 

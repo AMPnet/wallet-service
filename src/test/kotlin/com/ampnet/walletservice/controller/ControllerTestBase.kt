@@ -1,12 +1,16 @@
 package com.ampnet.walletservice.controller
 
 import com.ampnet.crowdfundingbackend.exception.ErrorResponse
+import com.ampnet.userservice.proto.UserResponse
 import com.ampnet.walletservice.TestBase
-import com.ampnet.walletservice.grpc.blockchain.BlockchainService
 import com.ampnet.walletservice.config.DatabaseCleanerService
 import com.ampnet.walletservice.enums.Currency
 import com.ampnet.walletservice.enums.WalletType
 import com.ampnet.walletservice.exception.ErrorCode
+import com.ampnet.walletservice.grpc.blockchain.BlockchainService
+import com.ampnet.walletservice.grpc.mail.MailService
+import com.ampnet.walletservice.grpc.projectservice.ProjectService
+import com.ampnet.walletservice.grpc.userservice.UserService
 import com.ampnet.walletservice.persistence.model.Deposit
 import com.ampnet.walletservice.persistence.model.File
 import com.ampnet.walletservice.persistence.model.Wallet
@@ -18,12 +22,10 @@ import com.ampnet.walletservice.persistence.repository.TransactionInfoRepository
 import com.ampnet.walletservice.persistence.repository.WalletRepository
 import com.ampnet.walletservice.persistence.repository.WithdrawRepository
 import com.ampnet.walletservice.service.CloudStorageService
-import com.ampnet.walletservice.grpc.mail.MailService
-import com.ampnet.walletservice.grpc.userservice.UserService
-import com.ampnet.userservice.proto.UserResponse
-import com.ampnet.walletservice.grpc.projectservice.ProjectService
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import java.time.ZonedDateTime
+import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
@@ -42,8 +44,6 @@ import org.springframework.test.web.servlet.MvcResult
 import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
-import java.time.ZonedDateTime
-import java.util.UUID
 
 @ExtendWith(value = [SpringExtension::class, RestDocumentationExtension::class])
 @SpringBootTest

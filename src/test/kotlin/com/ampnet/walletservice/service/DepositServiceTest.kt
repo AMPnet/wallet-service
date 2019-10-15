@@ -9,11 +9,11 @@ import com.ampnet.walletservice.service.impl.DepositServiceImpl
 import com.ampnet.walletservice.service.impl.StorageServiceImpl
 import com.ampnet.walletservice.service.impl.TransactionInfoServiceImpl
 import com.ampnet.walletservice.service.pojo.MintServiceRequest
+import java.time.ZonedDateTime
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
-import java.time.ZonedDateTime
 
 class DepositServiceTest : JpaServiceTestBase() {
 

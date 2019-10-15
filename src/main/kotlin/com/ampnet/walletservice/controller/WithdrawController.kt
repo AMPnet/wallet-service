@@ -5,11 +5,11 @@ import com.ampnet.walletservice.controller.pojo.response.TransactionResponse
 import com.ampnet.walletservice.controller.pojo.response.WithdrawResponse
 import com.ampnet.walletservice.controller.pojo.response.WithdrawWithUserListResponse
 import com.ampnet.walletservice.controller.pojo.response.WithdrawWithUserResponse
+import com.ampnet.walletservice.grpc.userservice.UserService
 import com.ampnet.walletservice.persistence.model.Withdraw
 import com.ampnet.walletservice.service.WalletService
 import com.ampnet.walletservice.service.WithdrawService
 import com.ampnet.walletservice.service.pojo.DocumentSaveRequest
-import com.ampnet.walletservice.grpc.userservice.UserService
 import mu.KLogging
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
