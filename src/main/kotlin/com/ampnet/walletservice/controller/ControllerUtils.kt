@@ -1,7 +1,7 @@
 package com.ampnet.walletservice.controller
 
 import com.ampnet.core.jwt.UserPrincipal
-import com.ampnet.walletservice.exception.TokenException
+import com.ampnet.core.jwt.exception.TokenException
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime

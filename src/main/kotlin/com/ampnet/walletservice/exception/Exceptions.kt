@@ -7,8 +7,6 @@ class ResourceAlreadyExistsException(val errorCode: ErrorCode, exceptionMessage:
 
 class ResourceNotFoundException(val errorCode: ErrorCode, exceptionMessage: String) : Exception(exceptionMessage)
 
-class TokenException(exceptionMessage: String, throwable: Throwable? = null) : Exception(exceptionMessage, throwable)
-
 class InternalException(val errorCode: ErrorCode, exceptionMessage: String, throwable: Throwable? = null) :
     Exception(exceptionMessage, throwable)
 
