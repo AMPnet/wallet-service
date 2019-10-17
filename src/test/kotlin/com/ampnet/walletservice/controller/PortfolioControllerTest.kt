@@ -85,19 +85,20 @@ class PortfolioControllerTest : ControllerTestBase() {
         }
         suppose("Blockchain service will return portfolio stats") {
             val walletHash = getWalletHash(userUuid)
-            val transactions = listOf(
+            val now = ZonedDateTime.now()
+            testContext.transactions = listOf(
                 BlockchainTransaction(walletHash, "to", 1000,
-                    TransactionsResponse.Transaction.Type.INVEST, ZonedDateTime.now()),
-                BlockchainTransaction(walletHash, "to_2", 1000, TransactionsResponse.Transaction.Type.INVEST,
-                    ZonedDateTime.now()),
-                BlockchainTransaction("from", walletHash, 10, TransactionsResponse.Transaction.Type.SHARE_PAYOUT,
-                    ZonedDateTime.now()),
-                BlockchainTransaction("from_2", walletHash, 10, TransactionsResponse.Transaction.Type.SHARE_PAYOUT,
-                    ZonedDateTime.now())
+                    TransactionsResponse.Transaction.Type.INVEST, now.minusYears(1)),
+                BlockchainTransaction(walletHash, "to_2", 1000,
+                    TransactionsResponse.Transaction.Type.INVEST, now.minusMonths(1)),
+                BlockchainTransaction("from", walletHash, 10,
+                    TransactionsResponse.Transaction.Type.SHARE_PAYOUT, now.minusDays(1)),
+                BlockchainTransaction("from_2", walletHash, 10,
+                    TransactionsResponse.Transaction.Type.SHARE_PAYOUT, now)
             )
             Mockito.`when`(
                 blockchainService.getTransactions(getWalletHash(userUuid))
-            ).thenReturn(transactions)
+            ).thenReturn(testContext.transactions)
         }
 
         verify("User can get portfolio stats") {
@@ -108,6 +109,31 @@ class PortfolioControllerTest : ControllerTestBase() {
             val stats: PortfolioStats = objectMapper.readValue(result.response.contentAsString)
             assertThat(stats.investments).isEqualTo(2000)
             assertThat(stats.earnings).isEqualTo(20)
+            assertThat(stats.dateOfFirstInvestment).isEqualTo(testContext.transactions.first().date)
+        }
+    }
+
+    @Test
+    @WithMockCrowdfoundUser
+    fun mustBeAbleToGetEmptyPortfolioStats() {
+        suppose("User has wallet") {
+            createWalletForUser(userUuid, "user-wallet-hash")
+        }
+        suppose("Blockchain service will return portfolio stats") {
+            Mockito.`when`(
+                blockchainService.getTransactions(getWalletHash(userUuid))
+            ).thenReturn(emptyList())
+        }
+
+        verify("User can get portfolio stats") {
+            val result = mockMvc.perform(get("$portfolioPath/stats"))
+                .andExpect(status().isOk)
+                .andReturn()
+
+            val stats: PortfolioStats = objectMapper.readValue(result.response.contentAsString)
+            assertThat(stats.investments).isEqualTo(0)
+            assertThat(stats.earnings).isEqualTo(0)
+            assertThat(stats.dateOfFirstInvestment).isNull()
         }
     }
 
