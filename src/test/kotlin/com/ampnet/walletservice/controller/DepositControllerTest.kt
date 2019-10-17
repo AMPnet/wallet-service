@@ -53,7 +53,7 @@ class DepositControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(
                     post(depositPath)
                             .content(objectMapper.writeValueAsString(request))
-                            .contentType(MediaType.APPLICATION_JSON_UTF8))
+                            .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(MockMvcResultMatchers.status().isOk)
                     .andReturn()
 
@@ -91,7 +91,7 @@ class DepositControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(
                     post(depositPath)
                             .content(objectMapper.writeValueAsString(request))
-                            .contentType(MediaType.APPLICATION_JSON_UTF8))
+                            .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(MockMvcResultMatchers.status().isBadRequest)
                     .andReturn()
             verifyResponseErrorCode(result, ErrorCode.WALLET_MISSING)

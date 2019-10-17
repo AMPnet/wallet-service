@@ -53,7 +53,7 @@ class WithdrawControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(
                     post(withdrawPath)
                             .content(objectMapper.writeValueAsString(request))
-                            .contentType(MediaType.APPLICATION_JSON_UTF8))
+                            .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk)
                     .andReturn()
 
@@ -103,7 +103,7 @@ class WithdrawControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(
                     post(withdrawPath)
                             .content(objectMapper.writeValueAsString(request))
-                            .contentType(MediaType.APPLICATION_JSON_UTF8))
+                            .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isBadRequest)
                     .andReturn()
             verifyResponseErrorCode(result, ErrorCode.WALLET_MISSING)
