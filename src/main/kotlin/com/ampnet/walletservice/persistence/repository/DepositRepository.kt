@@ -12,4 +12,7 @@ interface DepositRepository : JpaRepository<Deposit, Int> {
 
     fun findByReference(reference: String): Optional<Deposit>
     fun findByUserUuid(userUuid: UUID): List<Deposit>
+
+    @Query("SELECT COUNT(DISTINCT deposit.userUuid) FROM Deposit deposit WHERE deposit.approved = true")
+    fun countUsersWithApprovedDeposit(): Int
 }

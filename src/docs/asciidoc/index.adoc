@@ -271,6 +271,14 @@ include::{snippets}/DepositControllerTest/mustBeAbleToGenerateMintTransaction/ht
 .Response
 include::{snippets}/DepositControllerTest/mustBeAbleToGenerateMintTransaction/http-response.adoc[]
 
+== Count users with approved deposit
+Count all users with at least one approved deposit
+
+.Request
+include::{snippets}/DepositControllerTest/mustBeAbleToCountUsersWithApprovedDeposit/http-request.adoc[]
+.Response
+include::{snippets}/DepositControllerTest/mustBeAbleToCountUsersWithApprovedDeposit/http-response.adoc[]
+
 == Portfolio API
 
 === Get transactions with project

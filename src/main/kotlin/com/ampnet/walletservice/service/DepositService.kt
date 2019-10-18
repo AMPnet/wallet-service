@@ -15,4 +15,5 @@ interface DepositService {
     fun getPendingForUser(user: UUID): Deposit?
     fun generateMintTransaction(request: MintServiceRequest): TransactionDataAndInfo
     fun confirmMintTransaction(signedTransaction: String, depositId: Int): Deposit
+    fun countUsersWithApprovedDeposit(): Int
 }
