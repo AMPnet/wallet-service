@@ -6,7 +6,7 @@ data class OrganizationWithWalletResponse(
     val organization: OrganizationControllerResponse,
     val wallet: WalletResponse
 ) {
-    constructor(organizationWithWallet: OrganizationWithWallet): this(
+    constructor(organizationWithWallet: OrganizationWithWallet) : this(
         OrganizationControllerResponse(organizationWithWallet.organization),
         WalletResponse(organizationWithWallet.wallet)
     )

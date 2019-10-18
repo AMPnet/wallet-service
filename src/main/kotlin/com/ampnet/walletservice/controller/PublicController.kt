@@ -4,7 +4,6 @@ import com.ampnet.walletservice.controller.pojo.response.ProjectWithWalletListRe
 import com.ampnet.walletservice.controller.pojo.response.ProjectWithWalletResponse
 import com.ampnet.walletservice.controller.pojo.response.WalletResponse
 import com.ampnet.walletservice.service.WalletService
-import com.ampnet.walletservice.service.pojo.ProjectWithWallet
 import java.util.UUID
 import mu.KLogging
 import org.springframework.http.ResponseEntity
