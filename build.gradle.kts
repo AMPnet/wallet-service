@@ -136,6 +136,9 @@ tasks.jacocoTestCoverageVerification {
 detekt {
     input = files("src/main/kotlin")
 }
+tasks.withType<io.gitlab.arturbosch.detekt.Detekt> {
+    exclude("**/grpc/**")
+}
 
 task("qualityCheck") {
     dependsOn(tasks.ktlintCheck, tasks.detekt, tasks.jacocoTestReport, tasks.jacocoTestCoverageVerification)
