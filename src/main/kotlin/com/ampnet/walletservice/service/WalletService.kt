@@ -7,7 +7,7 @@ import com.ampnet.walletservice.service.pojo.ProjectWithWallet
 import java.util.UUID
 
 interface WalletService {
-    fun getWalletBalance(wallet: Wallet): Long
+    fun getWalletBalance(wallet: Wallet): Long?
     fun getWallet(owner: UUID): Wallet?
     fun createUserWallet(user: UUID, publicKey: String): Wallet
     fun generateTransactionToCreateProjectWallet(project: UUID, user: UUID): TransactionDataAndInfo

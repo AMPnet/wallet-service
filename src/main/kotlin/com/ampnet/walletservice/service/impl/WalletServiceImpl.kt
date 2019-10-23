@@ -41,9 +41,8 @@ class WalletServiceImpl(
 
     @Transactional(readOnly = true)
     @Throws(GrpcException::class)
-    override fun getWalletBalance(wallet: Wallet): Long {
-        val walletHash = wallet.hash
-            ?: throw ResourceNotFoundException(ErrorCode.WALLET_NOT_ACTIVATED, "Wallet not activated")
+    override fun getWalletBalance(wallet: Wallet): Long? {
+        val walletHash = wallet.hash ?: return null
         return blockchainService.getBalance(walletHash)
     }
 
@@ -151,6 +150,10 @@ class WalletServiceImpl(
         val projectWallets = walletRepository.findActivatedByType(WalletType.PROJECT)
             .filter { it.hash != null }
             .associateBy { it.owner }
+        if (projectWallets.isEmpty()) {
+            return emptyList()
+        }
+
         val projectWalletHashes = projectWallets.values.mapNotNull { it.hash }
         val projectsInfo = blockchainService.getProjectsInfo(projectWalletHashes)
             .associateBy { it.txHash }
