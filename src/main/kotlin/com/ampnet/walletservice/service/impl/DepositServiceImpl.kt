@@ -49,8 +49,7 @@ class DepositServiceImpl(
         }
 
         val deposit = Deposit(0, user, generateDepositReference(), false, amount,
-            null, null, null, null, ZonedDateTime.now()
-        )
+            null, null, null, null, ZonedDateTime.now())
         depositRepository.save(deposit)
         mailService.sendDepositRequest(user, amount)
         logger.debug { "Created Deposit for user: $user with amount: $amount" }
@@ -120,6 +119,11 @@ class DepositServiceImpl(
         depositRepository.save(deposit)
         mailService.sendDepositInfo(deposit.userUuid, true)
         return deposit
+    }
+
+    @Transactional(readOnly = true)
+    override fun countUsersWithApprovedDeposit(): Int {
+        return depositRepository.countUsersWithApprovedDeposit()
     }
 
     private fun validateDepositForMintTransaction(deposit: Deposit) {

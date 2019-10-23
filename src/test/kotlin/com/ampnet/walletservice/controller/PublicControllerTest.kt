@@ -101,6 +101,19 @@ class PublicControllerTest : ControllerTestBase() {
         }
     }
 
+    @Test
+    fun mustBeAbleToGetEmptyListOfActiveProjects() {
+        verify("Controller will return empty list") {
+            val result = mockMvc.perform(get("/public/project/active"))
+                .andExpect(status().isOk)
+                .andReturn()
+
+            val projectsResponse: ProjectWithWalletListResponse =
+                objectMapper.readValue(result.response.contentAsString)
+            assertThat(projectsResponse.projects).hasSize(0)
+        }
+    }
+
     private class TestContext {
         lateinit var wallet: Wallet
         lateinit var inactiveProjectWallet: Wallet

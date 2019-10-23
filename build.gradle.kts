@@ -24,7 +24,7 @@ plugins {
 }
 
 group = "com.ampnet"
-version = "0.0.3"
+version = "0.0.4"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
@@ -135,6 +135,9 @@ tasks.jacocoTestCoverageVerification {
 
 detekt {
     input = files("src/main/kotlin")
+}
+tasks.withType<io.gitlab.arturbosch.detekt.Detekt> {
+    exclude("**/grpc/**")
 }
 
 task("qualityCheck") {

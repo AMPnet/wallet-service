@@ -1,6 +1,7 @@
 package com.ampnet.walletservice.controller
 
 import com.ampnet.walletservice.controller.pojo.response.ProjectWithWalletListResponse
+import com.ampnet.walletservice.controller.pojo.response.ProjectWithWalletResponse
 import com.ampnet.walletservice.controller.pojo.response.WalletResponse
 import com.ampnet.walletservice.service.WalletService
 import java.util.UUID
@@ -29,6 +30,7 @@ class PublicController(private val walletService: WalletService) {
     fun getAllActiveProjectsWithWallet(): ResponseEntity<ProjectWithWalletListResponse> {
         logger.debug { "Received request to get project all projects" }
         val projectsResponse = walletService.getProjectsWithActiveWallet()
+            .map { ProjectWithWalletResponse(it) }
         return ResponseEntity.ok(ProjectWithWalletListResponse(projectsResponse))
     }
 }

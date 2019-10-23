@@ -5,6 +5,7 @@ import com.ampnet.walletservice.controller.pojo.response.DepositResponse
 import com.ampnet.walletservice.controller.pojo.response.DepositWithUserListResponse
 import com.ampnet.walletservice.controller.pojo.response.DepositWithUserResponse
 import com.ampnet.walletservice.controller.pojo.response.TransactionResponse
+import com.ampnet.walletservice.controller.pojo.response.UsersWithApprovedDeposit
 import com.ampnet.walletservice.grpc.userservice.UserService
 import com.ampnet.walletservice.persistence.model.Deposit
 import com.ampnet.walletservice.service.DepositService
@@ -113,6 +114,14 @@ class DepositController(
         val serviceRequest = MintServiceRequest(id, userPrincipal.uuid)
         val transactionDataAndInfo = depositService.generateMintTransaction(serviceRequest)
         return ResponseEntity.ok(TransactionResponse(transactionDataAndInfo))
+    }
+
+    @GetMapping("/deposit/count")
+    @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_DEPOSIT)")
+    fun countUsersWithApprovedDeposit(): ResponseEntity<UsersWithApprovedDeposit> {
+        logger.debug { "Received request to count users with approved deposit" }
+        val counted = depositService.countUsersWithApprovedDeposit()
+        return ResponseEntity.ok(UsersWithApprovedDeposit(counted))
     }
 
     private fun createDepositWithUserListResponse(deposits: List<Deposit>): DepositWithUserListResponse {

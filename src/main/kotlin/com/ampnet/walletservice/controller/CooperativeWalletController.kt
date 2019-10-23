@@ -1,7 +1,9 @@
 package com.ampnet.walletservice.controller
 
 import com.ampnet.walletservice.controller.pojo.response.OrganizationWithWalletListResponse
+import com.ampnet.walletservice.controller.pojo.response.OrganizationWithWalletResponse
 import com.ampnet.walletservice.controller.pojo.response.ProjectWithWalletListResponse
+import com.ampnet.walletservice.controller.pojo.response.ProjectWithWalletResponse
 import com.ampnet.walletservice.controller.pojo.response.TransactionResponse
 import com.ampnet.walletservice.controller.pojo.response.UserWithWalletListResponse
 import com.ampnet.walletservice.controller.pojo.response.UserWithWalletResponse
@@ -45,6 +47,7 @@ class CooperativeWalletController(
     fun getUnactivatedOrganizationWallets(): ResponseEntity<OrganizationWithWalletListResponse> {
         logger.debug { "Received request to get list of organizations with unactivated wallet" }
         val organizations = cooperativeWalletService.getOrganizationsWithUnactivatedWallet()
+            .map { OrganizationWithWalletResponse(it) }
         return ResponseEntity.ok(OrganizationWithWalletListResponse(organizations))
     }
 
@@ -53,6 +56,7 @@ class CooperativeWalletController(
     fun getUnactivatedProjectWallets(): ResponseEntity<ProjectWithWalletListResponse> {
         logger.debug { "Received request to get list of projects with unactivated wallet" }
         val projects = cooperativeWalletService.getProjectsWithUnactivatedWallet()
+            .map { ProjectWithWalletResponse(it) }
         return ResponseEntity.ok(ProjectWithWalletListResponse(projects))
     }
 }

@@ -5,6 +5,7 @@ import com.ampnet.walletservice.controller.pojo.response.DepositResponse
 import com.ampnet.walletservice.controller.pojo.response.DepositWithUserListResponse
 import com.ampnet.walletservice.controller.pojo.response.DepositWithUserResponse
 import com.ampnet.walletservice.controller.pojo.response.TransactionResponse
+import com.ampnet.walletservice.controller.pojo.response.UsersWithApprovedDeposit
 import com.ampnet.walletservice.enums.PrivilegeType
 import com.ampnet.walletservice.enums.TransactionType
 import com.ampnet.walletservice.exception.ErrorCode
@@ -359,6 +360,32 @@ class DepositControllerTest : ControllerTestBase() {
             assertThat(transactionInfo.companionData).isEqualTo(testContext.deposits.first().id.toString())
             assertThat(transactionInfo.type).isEqualTo(TransactionType.MINT)
             assertThat(transactionInfo.userUuid).isEqualTo(userUuid)
+        }
+    }
+
+    @Test
+    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PRA_DEPOSIT])
+    fun mustBeAbleToCountUsersWithApprovedDeposit() {
+        suppose("There is unapproved deposit") {
+            createUnapprovedDeposit(UUID.randomUUID())
+        }
+        suppose("There is approved deposit") {
+            createApprovedDeposit(UUID.randomUUID())
+        }
+        suppose("There are approved deposits for the same user") {
+            val user = UUID.randomUUID()
+            createApprovedDeposit(user)
+            createApprovedDeposit(user)
+            createApprovedDeposit(user)
+        }
+
+        verify("Admin user can get counted users with approved deposit") {
+            val result = mockMvc.perform(get("$depositPath/count"))
+                .andExpect(MockMvcResultMatchers.status().isOk)
+                .andReturn()
+
+            val counted: UsersWithApprovedDeposit = objectMapper.readValue(result.response.contentAsString)
+            assertThat(counted.usersWithApprovedDeposit).isEqualTo(2)
         }
     }
 
