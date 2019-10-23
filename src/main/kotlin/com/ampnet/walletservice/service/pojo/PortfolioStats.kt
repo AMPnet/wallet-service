@@ -1,3 +1,5 @@
 package com.ampnet.walletservice.service.pojo
 
-data class PortfolioStats(val investments: Long, val earnings: Long)
+import java.time.ZonedDateTime
+
+data class PortfolioStats(val investments: Long, val earnings: Long, val dateOfFirstInvestment: ZonedDateTime?)

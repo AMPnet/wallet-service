@@ -33,7 +33,10 @@ class PortfolioServiceImpl(
         val transactions = blockchainService.getTransactions(userWallet)
         val investments = sumTransactionForType(transactions, TransactionsResponse.Transaction.Type.INVEST)
         val earnings = sumTransactionForType(transactions, TransactionsResponse.Transaction.Type.SHARE_PAYOUT)
-        return PortfolioStats(investments, earnings)
+        val dateOfFirstInvestment = transactions
+            .filter { it.type == TransactionsResponse.Transaction.Type.INVEST }
+            .minBy { it.date }?.date
+        return PortfolioStats(investments, earnings, dateOfFirstInvestment)
     }
 
     @Transactional(readOnly = true)
