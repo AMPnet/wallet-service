@@ -1,13 +1,13 @@
 package com.ampnet.walletservice.security
 
-import com.ampnet.walletservice.config.auth.UserPrincipal
+import com.ampnet.core.jwt.UserPrincipal
 import com.ampnet.walletservice.enums.PrivilegeType
+import java.util.UUID
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.test.context.support.WithSecurityContextFactory
-import java.util.UUID
 
 class WithMockUserSecurityFactory : WithSecurityContextFactory<WithMockCrowdfoundUser> {
 

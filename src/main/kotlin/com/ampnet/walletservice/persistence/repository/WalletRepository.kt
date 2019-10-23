@@ -2,10 +2,10 @@ package com.ampnet.walletservice.persistence.repository
 
 import com.ampnet.walletservice.enums.WalletType
 import com.ampnet.walletservice.persistence.model.Wallet
-import org.springframework.data.jpa.repository.JpaRepository
-import org.springframework.data.jpa.repository.Query
 import java.util.Optional
 import java.util.UUID
+import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Query
 
 interface WalletRepository : JpaRepository<Wallet, UUID> {
     fun findByOwner(owner: UUID): Optional<Wallet>

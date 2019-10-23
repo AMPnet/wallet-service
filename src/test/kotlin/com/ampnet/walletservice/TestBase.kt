@@ -3,9 +3,9 @@ package com.ampnet.walletservice
 import com.ampnet.projectservice.proto.OrganizationResponse
 import com.ampnet.projectservice.proto.ProjectResponse
 import com.ampnet.walletservice.grpc.blockchain.pojo.ProjectInfoResponse
-import org.springframework.test.context.ActiveProfiles
 import java.time.ZonedDateTime
 import java.util.UUID
+import org.springframework.test.context.ActiveProfiles
 
 @ActiveProfiles("test")
 abstract class TestBase {

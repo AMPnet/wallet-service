@@ -1,7 +1,7 @@
 package com.ampnet.walletservice.service.pojo
 
-import org.springframework.web.multipart.MultipartFile
 import java.util.UUID
+import org.springframework.web.multipart.MultipartFile
 
 data class DocumentSaveRequest(
     val data: ByteArray,

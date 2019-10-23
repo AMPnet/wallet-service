@@ -1,11 +1,12 @@
 package com.ampnet.walletservice.service.impl
 
-import com.ampnet.walletservice.grpc.blockchain.BlockchainService
-import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionDataAndInfo
 import com.ampnet.walletservice.enums.WalletType
 import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.exception.ResourceNotFoundException
+import com.ampnet.walletservice.grpc.blockchain.BlockchainService
+import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionDataAndInfo
 import com.ampnet.walletservice.grpc.projectservice.ProjectService
+import com.ampnet.walletservice.grpc.userservice.UserService
 import com.ampnet.walletservice.persistence.model.Wallet
 import com.ampnet.walletservice.persistence.repository.WalletRepository
 import com.ampnet.walletservice.service.CooperativeWalletService
@@ -13,11 +14,10 @@ import com.ampnet.walletservice.service.TransactionInfoService
 import com.ampnet.walletservice.service.pojo.OrganizationWithWallet
 import com.ampnet.walletservice.service.pojo.ProjectWithWallet
 import com.ampnet.walletservice.service.pojo.UserWithWallet
-import com.ampnet.walletservice.grpc.userservice.UserService
-import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import java.time.ZonedDateTime
 import java.util.UUID
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 @Service
 class CooperativeWalletServiceImpl(

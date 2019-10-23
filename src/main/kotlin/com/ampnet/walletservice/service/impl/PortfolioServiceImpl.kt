@@ -9,9 +9,9 @@ import com.ampnet.walletservice.persistence.repository.WalletRepository
 import com.ampnet.walletservice.service.PortfolioService
 import com.ampnet.walletservice.service.pojo.PortfolioStats
 import com.ampnet.walletservice.service.pojo.ProjectWithInvestment
+import java.util.UUID
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.util.UUID
 
 @Service
 class PortfolioServiceImpl(

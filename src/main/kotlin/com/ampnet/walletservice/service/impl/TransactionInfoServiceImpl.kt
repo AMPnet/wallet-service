@@ -7,9 +7,9 @@ import com.ampnet.walletservice.persistence.repository.TransactionInfoRepository
 import com.ampnet.walletservice.service.TransactionInfoService
 import com.ampnet.walletservice.service.pojo.CreateTransactionRequest
 import com.ampnet.walletservice.service.pojo.MintServiceRequest
+import java.util.UUID
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.util.UUID
 
 @Service
 class TransactionInfoServiceImpl(

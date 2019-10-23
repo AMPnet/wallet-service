@@ -1,11 +1,11 @@
 package com.ampnet.walletservice.controller
 
-import com.ampnet.walletservice.exception.TokenException
-import com.ampnet.walletservice.config.auth.UserPrincipal
-import org.springframework.security.core.context.SecurityContextHolder
+import com.ampnet.core.jwt.UserPrincipal
+import com.ampnet.core.jwt.exception.TokenException
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
+import org.springframework.security.core.context.SecurityContextHolder
 
 internal object ControllerUtils {
     fun getUserPrincipalFromSecurityContext(): UserPrincipal =

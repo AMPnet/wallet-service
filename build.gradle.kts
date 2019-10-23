@@ -1,4 +1,9 @@
-import com.google.protobuf.gradle.*
+import com.google.protobuf.gradle.generateProtoTasks
+import com.google.protobuf.gradle.id
+import com.google.protobuf.gradle.ofSourceSet
+import com.google.protobuf.gradle.plugins
+import com.google.protobuf.gradle.protobuf
+import com.google.protobuf.gradle.protoc
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -7,29 +12,28 @@ plugins {
     kotlin("jvm") version kotlinVersion
     kotlin("plugin.spring") version kotlinVersion
 
-    id("org.springframework.boot") version "2.1.8.RELEASE"
+    id("org.springframework.boot") version "2.2.0.RELEASE"
     id("io.spring.dependency-management") version "1.0.8.RELEASE"
-    id("com.google.cloud.tools.jib") version "1.5.1"
-    id("org.jlleitschuh.gradle.ktlint") version "8.2.0"
-    id("io.gitlab.arturbosch.detekt").version("1.0.1")
-    id("org.asciidoctor.convert") version "1.5.12"
+    id("org.asciidoctor.convert") version "1.5.8"
+    id("com.google.cloud.tools.jib") version "1.6.1"
+    id("org.jlleitschuh.gradle.ktlint") version "9.0.0"
+    id("io.gitlab.arturbosch.detekt").version("1.1.1")
     id("com.google.protobuf") version "0.8.10"
     idea
     jacoco
 }
 
 group = "com.ampnet"
-version = "0.0.2"
+version = "0.0.3"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
     mavenCentral()
+    jcenter()
+    maven(url = "https://jitpack.io")
 }
 
 dependencies {
-    val jjwtVersion = "0.10.7"
-    val junitVersion = "5.3.2"
-
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-security")
@@ -43,23 +47,16 @@ dependencies {
     implementation("org.flywaydb:flyway-core")
     runtimeOnly("org.postgresql:postgresql")
 
-    implementation("io.jsonwebtoken:jjwt-api:$jjwtVersion")
-    runtimeOnly("io.jsonwebtoken:jjwt-impl:$jjwtVersion")
-    implementation("io.jsonwebtoken:jjwt-jackson:$jjwtVersion")
     implementation("io.github.microutils:kotlin-logging:1.7.6")
-    implementation("net.logstash.logback:logstash-logback-encoder:5.3")
-    implementation("io.micrometer:micrometer-registry-prometheus:1.1.5")
-    implementation("net.devh:grpc-client-spring-boot-starter:2.5.0.RELEASE")
+    implementation("net.logstash.logback:logstash-logback-encoder:6.2")
+    implementation("io.micrometer:micrometer-registry-prometheus")
+    implementation("net.devh:grpc-client-spring-boot-starter:2.5.1.RELEASE")
     implementation("software.amazon.awssdk:s3:2.5.27")
+    implementation("com.github.AMPnet:jwt:0.0.2")
 
-    testImplementation("org.springframework.boot:spring-boot-starter-test") {
-        exclude("junit")
-    }
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
     testImplementation("org.springframework.restdocs:spring-restdocs-mockmvc")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:$junitVersion")
-    testRuntime("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 }
 
 tasks.withType<KotlinCompile> {
@@ -79,7 +76,7 @@ protobuf {
     }
     plugins {
         id("grpc") {
-            artifact = "io.grpc:protoc-gen-grpc-java:1.20.0"
+            artifact = "io.grpc:protoc-gen-grpc-java:1.24.0"
         }
     }
     generateProtoTasks {
@@ -107,7 +104,7 @@ jib {
     }
 }
 
-jacoco.toolVersion = "0.8.4"
+jacoco.toolVersion = "0.8.5"
 tasks.jacocoTestReport {
     reports {
         xml.isEnabled = false

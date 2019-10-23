@@ -3,8 +3,8 @@ package com.ampnet.walletservice.websocket
 import com.ampnet.walletservice.websocket.pojo.TxStatusResponse
 import mu.KLogging
 import org.springframework.messaging.MessagingException
-import org.springframework.stereotype.Service
 import org.springframework.messaging.simp.SimpMessagingTemplate
+import org.springframework.stereotype.Service
 
 @Service
 class WebSocketNotificationServiceImpl(
