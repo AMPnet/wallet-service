@@ -41,6 +41,22 @@ class WalletControllerTest : ControllerTestBase() {
 
     /* User Wallet */
     @Test
+    @WithMockCrowdfoundUser(verified = false)
+    fun mustNotBeAbleToCreateWalletWithUnVerifiedAccount() {
+        verify("User can create a wallet") {
+            val request = WalletCreateRequest(testData.publicKey)
+            val result = mockMvc.perform(
+                post(walletPath)
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isConflict)
+                .andReturn()
+            val errorMessage = result.response.errorMessage
+            assertThat(errorMessage).contains("User did not verified his profile.")
+        }
+    }
+
+    @Test
     fun mustBeAbleToGeneratePairWalletCode() {
         suppose("User did not create pair wallet code") {
             databaseCleanerService.deleteAllPairWalletCodes()
