@@ -3,6 +3,7 @@ package com.ampnet.walletservice.controller
 import com.ampnet.walletservice.controller.pojo.response.ProjectWithWalletListResponse
 import com.ampnet.walletservice.controller.pojo.response.WalletResponse
 import com.ampnet.walletservice.persistence.model.Wallet
+import com.ampnet.walletservice.security.WithMockCrowdfoundUser
 import com.fasterxml.jackson.module.kotlin.readValue
 import java.time.ZonedDateTime
 import java.util.UUID
@@ -103,6 +104,20 @@ class PublicControllerTest : ControllerTestBase() {
 
     @Test
     fun mustBeAbleToGetEmptyListOfActiveProjects() {
+        verify("Controller will return empty list") {
+            val result = mockMvc.perform(get("/public/project/active"))
+                .andExpect(status().isOk)
+                .andReturn()
+
+            val projectsResponse: ProjectWithWalletListResponse =
+                objectMapper.readValue(result.response.contentAsString)
+            assertThat(projectsResponse.projects).hasSize(0)
+        }
+    }
+
+    @Test
+    @WithMockCrowdfoundUser(verified = false)
+    fun mustBeAbleToGetActiveProjectsWithUnVerifiedAccount() {
         verify("Controller will return empty list") {
             val result = mockMvc.perform(get("/public/project/active"))
                 .andExpect(status().isOk)

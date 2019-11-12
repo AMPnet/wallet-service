@@ -33,6 +33,14 @@ include::{snippets}/PublicControllerTest/mustReturnNotFoundForMissingProjectWall
 == Wallet API
 Collection of endpoints for managing wallets
 
+=== Unverified user account
+User with unverified account cannot reach `wallet-service` except public routes. To verify check `user-service` docs.
+
+.Request
+include::{snippets}/WalletControllerTest/mustNotBeAbleToCreateWalletWithUnVerifiedAccount/http-request.adoc[]
+.Response
+include::{snippets}/WalletControllerTest/mustNotBeAbleToCreateWalletWithUnVerifiedAccount/http-response.adoc[]
+
 === User Wallet
 Collection of endpoints for managing User wallet
 

@@ -1,8 +1,9 @@
 package com.ampnet.walletservice.config
 
 import com.ampnet.core.jwt.UnauthorizedEntryPoint
+import com.ampnet.core.jwt.filter.DisabledProfileFilter
 import com.ampnet.core.jwt.filter.JwtAuthenticationFilter
-import com.ampnet.core.jwt.filter.ProfileFilter
+import com.ampnet.core.jwt.filter.UnverifiedProfileFilter
 import com.ampnet.core.jwt.provider.JwtAuthenticationProvider
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
@@ -64,7 +65,8 @@ class WebSecurityConfig : WebSecurityConfigurerAdapter() {
     override fun configure(http: HttpSecurity) {
         val unauthorizedHandler = UnauthorizedEntryPoint()
         val authenticationTokenFilter = JwtAuthenticationFilter()
-        val profileFilter = ProfileFilter()
+        val profileFilter = DisabledProfileFilter()
+        val verifiedFilter = UnverifiedProfileFilter()
 
         http.cors().and().csrf().disable()
             .authorizeRequests()
@@ -82,5 +84,6 @@ class WebSecurityConfig : WebSecurityConfigurerAdapter() {
         http
             .addFilterBefore(authenticationTokenFilter, UsernamePasswordAuthenticationFilter::class.java)
             .addFilterAfter(profileFilter, JwtAuthenticationFilter::class.java)
+            .addFilterAfter(verifiedFilter, DisabledProfileFilter::class.java)
     }
 }
