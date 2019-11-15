@@ -6,8 +6,9 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 @ConfigurationProperties(prefix = "com.ampnet.walletservice")
 class ApplicationProperties {
-    var jwt: JwtProperties = JwtProperties()
+    val jwt: JwtProperties = JwtProperties()
     val fileStorage: FileStorageProperties = FileStorageProperties()
+    val grpc: GrpcProperties = GrpcProperties()
 }
 
 class JwtProperties {
@@ -18,4 +19,12 @@ class FileStorageProperties {
     lateinit var url: String
     lateinit var bucket: String
     lateinit var folder: String
+}
+
+@Suppress("MagicNumber")
+class GrpcProperties {
+    var blockchainServiceTimeout: Long = 3000
+    var mailServiceTimeout: Long = 1000
+    var projectServiceTimeout: Long = 1000
+    var userServiceTimeout: Long = 1000
 }

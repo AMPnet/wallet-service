@@ -6,15 +6,18 @@ import com.ampnet.mailservice.proto.Empty
 import com.ampnet.mailservice.proto.MailServiceGrpc
 import com.ampnet.mailservice.proto.WithdrawInfoRequest
 import com.ampnet.mailservice.proto.WithdrawRequest
+import com.ampnet.walletservice.config.ApplicationProperties
 import io.grpc.stub.StreamObserver
 import java.util.UUID
+import java.util.concurrent.TimeUnit
 import mu.KLogging
 import net.devh.boot.grpc.client.channelfactory.GrpcChannelFactory
 import org.springframework.stereotype.Service
 
 @Service
 class MailServiceImpl(
-    private val grpcChannelFactory: GrpcChannelFactory
+    private val grpcChannelFactory: GrpcChannelFactory,
+    private val applicationProperties: ApplicationProperties
 ) : MailService {
 
     companion object : KLogging()
@@ -22,6 +25,7 @@ class MailServiceImpl(
     private val mailServiceStub: MailServiceGrpc.MailServiceStub by lazy {
         val channel = grpcChannelFactory.createChannel("mail-service")
         MailServiceGrpc.newStub(channel)
+            .withDeadlineAfter(applicationProperties.grpc.mailServiceTimeout, TimeUnit.MILLISECONDS)
     }
 
     override fun sendDepositRequest(user: UUID, amount: Long) {

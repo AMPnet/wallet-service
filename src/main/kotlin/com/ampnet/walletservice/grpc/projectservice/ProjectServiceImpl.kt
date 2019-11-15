@@ -4,23 +4,29 @@ import com.ampnet.projectservice.proto.GetByUuids
 import com.ampnet.projectservice.proto.OrganizationResponse
 import com.ampnet.projectservice.proto.ProjectResponse
 import com.ampnet.projectservice.proto.ProjectServiceGrpc
+import com.ampnet.walletservice.config.ApplicationProperties
 import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.exception.GrpcException
 import com.ampnet.walletservice.exception.ResourceNotFoundException
 import io.grpc.StatusRuntimeException
 import java.util.UUID
+import java.util.concurrent.TimeUnit
 import mu.KLogging
 import net.devh.boot.grpc.client.channelfactory.GrpcChannelFactory
 import org.springframework.stereotype.Service
 
 @Service
-class ProjectServiceImpl(private val grpcChannelFactory: GrpcChannelFactory) : ProjectService {
+class ProjectServiceImpl(
+    private val grpcChannelFactory: GrpcChannelFactory,
+    private val applicationProperties: ApplicationProperties
+) : ProjectService {
 
     companion object : KLogging()
 
     private val serviceBlockingStub: ProjectServiceGrpc.ProjectServiceBlockingStub by lazy {
         val channel = grpcChannelFactory.createChannel("project-service")
         ProjectServiceGrpc.newBlockingStub(channel)
+            .withDeadlineAfter(applicationProperties.grpc.projectServiceTimeout, TimeUnit.MILLISECONDS)
     }
 
     @Throws(ResourceNotFoundException::class)

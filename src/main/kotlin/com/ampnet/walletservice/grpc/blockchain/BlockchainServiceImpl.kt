@@ -14,6 +14,7 @@ import com.ampnet.crowdfunding.proto.InvestmentsInProjectRequest
 import com.ampnet.crowdfunding.proto.PortfolioRequest
 import com.ampnet.crowdfunding.proto.PostTxRequest
 import com.ampnet.crowdfunding.proto.TransactionsRequest
+import com.ampnet.walletservice.config.ApplicationProperties
 import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.exception.GrpcException
 import com.ampnet.walletservice.grpc.blockchain.pojo.BlockchainTransaction
@@ -25,13 +26,15 @@ import com.ampnet.walletservice.grpc.blockchain.pojo.ProjectInvestmentTxRequest
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionData
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
+import java.util.concurrent.TimeUnit
 import mu.KLogging
 import net.devh.boot.grpc.client.channelfactory.GrpcChannelFactory
 import org.springframework.stereotype.Service
 
 @Service
 class BlockchainServiceImpl(
-    private val grpcChannelFactory: GrpcChannelFactory
+    private val grpcChannelFactory: GrpcChannelFactory,
+    private val applicationProperties: ApplicationProperties
 ) : BlockchainService {
 
     companion object : KLogging()
@@ -39,6 +42,7 @@ class BlockchainServiceImpl(
     private val serviceBlockingStub: BlockchainServiceGrpc.BlockchainServiceBlockingStub by lazy {
         val channel = grpcChannelFactory.createChannel("blockchain-service")
         BlockchainServiceGrpc.newBlockingStub(channel)
+            .withDeadlineAfter(applicationProperties.grpc.blockchainServiceTimeout, TimeUnit.MILLISECONDS)
     }
 
     override fun getBalance(hash: String): Long {
