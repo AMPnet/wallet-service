@@ -24,7 +24,6 @@ class UserServiceImpl(
     private val serviceBlockingStub: UserServiceGrpc.UserServiceBlockingStub by lazy {
         val channel = grpcChannelFactory.createChannel("user-service")
         UserServiceGrpc.newBlockingStub(channel)
-            .withDeadlineAfter(applicationProperties.grpc.userServiceTimeout, TimeUnit.MILLISECONDS)
     }
 
     override fun getUsers(uuids: Iterable<UUID>): List<UserResponse> {
@@ -33,7 +32,9 @@ class UserServiceImpl(
             val request = GetUsersRequest.newBuilder()
                 .addAllUuids(uuids.map { it.toString() })
                 .build()
-            val response = serviceBlockingStub.getUsers(request).usersList
+            val response = serviceBlockingStub
+                .withDeadlineAfter(applicationProperties.grpc.userServiceTimeout, TimeUnit.MILLISECONDS)
+                .getUsers(request).usersList
             logger.debug { "Fetched users: $response" }
             return response
         } catch (ex: StatusRuntimeException) {

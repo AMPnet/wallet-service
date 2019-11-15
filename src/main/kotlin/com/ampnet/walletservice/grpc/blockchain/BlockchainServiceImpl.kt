@@ -42,17 +42,17 @@ class BlockchainServiceImpl(
     private val serviceBlockingStub: BlockchainServiceGrpc.BlockchainServiceBlockingStub by lazy {
         val channel = grpcChannelFactory.createChannel("blockchain-service")
         BlockchainServiceGrpc.newBlockingStub(channel)
-            .withDeadlineAfter(applicationProperties.grpc.blockchainServiceTimeout, TimeUnit.MILLISECONDS)
     }
 
     override fun getBalance(hash: String): Long {
         logger.debug { "Fetching balance for hash: $hash" }
         try {
-            val response = serviceBlockingStub.getBalance(
-                BalanceRequest.newBuilder()
-                    .setWalletTxHash(hash)
-                    .build()
-            )
+            val response = serviceWithTimeout()
+                .getBalance(
+                    BalanceRequest.newBuilder()
+                        .setWalletTxHash(hash)
+                        .build()
+                )
             logger.info { "Received response: $response" }
             return response.balance.toLongOrNull()
                 ?: throw GrpcException(ErrorCode.INT_GRPC_BLOCKCHAIN, "Cannot get balance as number")
@@ -64,11 +64,12 @@ class BlockchainServiceImpl(
     override fun addWallet(activationData: String): TransactionData {
         logger.info { "Adding wallet with activation data: $activationData" }
         try {
-            val response = serviceBlockingStub.generateAddWalletTx(
-                GenerateAddWalletTxRequest.newBuilder()
-                    .setWallet(activationData)
-                    .build()
-            )
+            val response = serviceWithTimeout()
+                .generateAddWalletTx(
+                    GenerateAddWalletTxRequest.newBuilder()
+                        .setWallet(activationData)
+                        .build()
+                )
             logger.info { "Successfully added wallet: $response" }
             return TransactionData(response)
         } catch (ex: StatusRuntimeException) {
@@ -79,11 +80,12 @@ class BlockchainServiceImpl(
     override fun generateCreateOrganizationTransaction(userWalletHash: String): TransactionData {
         logger.info { "Generating create organization wallet: $userWalletHash" }
         try {
-            val response = serviceBlockingStub.generateCreateOrganizationTx(
-                GenerateCreateOrganizationTxRequest.newBuilder()
-                    .setFromTxHash(userWalletHash)
-                    .build()
-            )
+            val response = serviceWithTimeout()
+                .generateCreateOrganizationTx(
+                    GenerateCreateOrganizationTxRequest.newBuilder()
+                        .setFromTxHash(userWalletHash)
+                        .build()
+                )
             logger.info { "Successfully created organization wallet" }
             return TransactionData(response)
         } catch (ex: StatusRuntimeException) {
@@ -95,16 +97,17 @@ class BlockchainServiceImpl(
     override fun generateProjectWalletTransaction(request: GenerateProjectWalletRequest): TransactionData {
         logger.info { "Generating create project wallet transaction" }
         try {
-            val response = serviceBlockingStub.generateCreateProjectTx(
-                GenerateCreateProjectTxRequest.newBuilder()
-                    .setFromTxHash(request.userWalletHash)
-                    .setOrganizationTxHash(request.organizationHash)
-                    .setMaxInvestmentPerUser(request.maxPerUser.toString())
-                    .setMinInvestmentPerUser(request.minPerUser.toString())
-                    .setInvestmentCap(request.investmentCap.toString())
-                    .setEndInvestmentTime(request.endDateInMillis.toString())
-                    .build()
-            )
+            val response = serviceWithTimeout()
+                .generateCreateProjectTx(
+                    GenerateCreateProjectTxRequest.newBuilder()
+                        .setFromTxHash(request.userWalletHash)
+                        .setOrganizationTxHash(request.organizationHash)
+                        .setMaxInvestmentPerUser(request.maxPerUser.toString())
+                        .setMinInvestmentPerUser(request.minPerUser.toString())
+                        .setInvestmentCap(request.investmentCap.toString())
+                        .setEndInvestmentTime(request.endDateInMillis.toString())
+                        .build()
+                )
             logger.info { "Successfully created project wallet" }
             return TransactionData(response)
         } catch (ex: StatusRuntimeException) {
@@ -115,11 +118,12 @@ class BlockchainServiceImpl(
     override fun postTransaction(transaction: String): String {
         logger.info { "Posting transaction" }
         try {
-            val response = serviceBlockingStub.postTransaction(
-                PostTxRequest.newBuilder()
-                    .setData(transaction)
-                    .build()
-            )
+            val response = serviceWithTimeout()
+                .postTransaction(
+                    PostTxRequest.newBuilder()
+                        .setData(transaction)
+                        .build()
+                )
             logger.info { "Successfully posted transaction: ${response.txHash}" }
             return response.txHash
         } catch (ex: StatusRuntimeException) {
@@ -131,13 +135,14 @@ class BlockchainServiceImpl(
         logger.info { "User: ${request.userWalletHash} is investing to project: ${request.projectWalletHash} " +
             "with amount ${request.amount}" }
         try {
-            val response = serviceBlockingStub.generateInvestTx(
-                GenerateInvestTxRequest.newBuilder()
-                    .setFromTxHash(request.userWalletHash)
-                    .setProjectTxHash(request.projectWalletHash)
-                    .setAmount(request.amount.toString())
-                    .build()
-            )
+            val response = serviceWithTimeout()
+                .generateInvestTx(
+                    GenerateInvestTxRequest.newBuilder()
+                        .setFromTxHash(request.userWalletHash)
+                        .setProjectTxHash(request.projectWalletHash)
+                        .setAmount(request.amount.toString())
+                        .build()
+                )
             logger.info { "Successfully generated investment transaction" }
             return TransactionData(response)
         } catch (ex: StatusRuntimeException) {
@@ -149,12 +154,13 @@ class BlockchainServiceImpl(
     override fun generateMintTransaction(toHash: String, amount: Long): TransactionData {
         logger.info { "Generating Mint transaction toHash: $toHash with amount = $amount" }
         try {
-            val response = serviceBlockingStub.generateMintTx(
-                GenerateMintTxRequest.newBuilder()
-                    .setToTxHash(toHash)
-                    .setAmount(amount.toString())
-                    .build()
-            )
+            val response = serviceWithTimeout()
+                .generateMintTx(
+                    GenerateMintTxRequest.newBuilder()
+                        .setToTxHash(toHash)
+                        .setAmount(amount.toString())
+                        .build()
+                )
             logger.info { "Successfully generated mint transaction" }
             return TransactionData(response)
         } catch (ex: StatusRuntimeException) {
@@ -165,11 +171,12 @@ class BlockchainServiceImpl(
     override fun generateBurnTransaction(burnFromTxHash: String): TransactionData {
         logger.info { "Generating Burn transaction burnFromTxHash: $burnFromTxHash" }
         try {
-            val response = serviceBlockingStub.generateBurnFromTx(
-                GenerateBurnFromTxRequest.newBuilder()
-                    .setBurnFromTxHash(burnFromTxHash)
-                    .build()
-            )
+            val response = serviceWithTimeout()
+                .generateBurnFromTx(
+                    GenerateBurnFromTxRequest.newBuilder()
+                        .setBurnFromTxHash(burnFromTxHash)
+                        .build()
+                )
             logger.info { "Successfully generated burn transaction" }
             return TransactionData(response)
         } catch (ex: StatusRuntimeException) {
@@ -180,12 +187,13 @@ class BlockchainServiceImpl(
     override fun generateApproveBurnTransaction(burnFromTxHash: String, amount: Long): TransactionData {
         logger.info { "Generating Approve Burn Transaction burnFromTxHash: $burnFromTxHash with amount = $amount" }
         try {
-            val response = serviceBlockingStub.generateApproveWithdrawTx(
-                GenerateApproveWithdrawTxRequest.newBuilder()
-                    .setFromTxHash(burnFromTxHash)
-                    .setAmount(amount.toString())
-                    .build()
-            )
+            val response = serviceWithTimeout()
+                .generateApproveWithdrawTx(
+                    GenerateApproveWithdrawTxRequest.newBuilder()
+                        .setFromTxHash(burnFromTxHash)
+                        .setAmount(amount.toString())
+                        .build()
+                )
             logger.info { "Successfully generated approve burn transaction" }
             return TransactionData(response)
         } catch (ex: StatusRuntimeException) {
@@ -196,11 +204,12 @@ class BlockchainServiceImpl(
     override fun getPortfolio(hash: String): Portfolio {
         logger.debug { "Get user portfolio for wallet hash: $hash" }
         try {
-            val response = serviceBlockingStub.getPortfolio(
-                PortfolioRequest.newBuilder()
-                    .setTxHash(hash)
-                    .build()
-            )
+            val response = serviceWithTimeout()
+                .getPortfolio(
+                    PortfolioRequest.newBuilder()
+                        .setTxHash(hash)
+                        .build()
+                )
             logger.debug { "User portfolio response: $response" }
             val portfolioData = response.portfolioList.map { PortfolioData(it) }
             return Portfolio(portfolioData)
@@ -212,11 +221,12 @@ class BlockchainServiceImpl(
     override fun getTransactions(hash: String): List<BlockchainTransaction> {
         logger.debug { "Get transactions for wallet hash: $hash" }
         try {
-            val response = serviceBlockingStub.getTransactions(
-                TransactionsRequest.newBuilder()
-                    .setTxHash(hash)
-                    .build()
-            )
+            val response = serviceWithTimeout()
+                .getTransactions(
+                    TransactionsRequest.newBuilder()
+                        .setTxHash(hash)
+                        .build()
+                )
             logger.debug { "Transactions response: $response" }
             return response.transactionsList.map { BlockchainTransaction(it) }
         } catch (ex: StatusRuntimeException) {
@@ -230,12 +240,13 @@ class BlockchainServiceImpl(
     ): List<BlockchainTransaction> {
         logger.debug { "Get investments by user: $userWalletHash in project: $projectWalletHash" }
         try {
-            val response = serviceBlockingStub.getInvestmentsInProject(
-                InvestmentsInProjectRequest.newBuilder()
-                    .setFromTxHash(userWalletHash)
-                    .setProjectTxHash(projectWalletHash)
-                    .build()
-            )
+            val response = serviceWithTimeout()
+                .getInvestmentsInProject(
+                    InvestmentsInProjectRequest.newBuilder()
+                        .setFromTxHash(userWalletHash)
+                        .setProjectTxHash(projectWalletHash)
+                        .build()
+                )
             logger.debug { "Investments in project response: $response" }
             return response.transactionsList.map { BlockchainTransaction(it) }
         } catch (ex: StatusRuntimeException) {
@@ -247,11 +258,12 @@ class BlockchainServiceImpl(
     override fun getProjectsInfo(hashes: List<String>): List<ProjectInfoResponse> {
         logger.debug { "Get projects info for hashes: $hashes" }
         try {
-            val response = serviceBlockingStub.getProjectsInfo(
-                GetProjectsInfoRequest.newBuilder()
-                    .addAllProjectTxHashes(hashes)
-                    .build()
-            )
+            val response = serviceWithTimeout()
+                .getProjectsInfo(
+                    GetProjectsInfoRequest.newBuilder()
+                        .addAllProjectTxHashes(hashes)
+                        .build()
+                )
             logger.debug { "Projects info response: $response" }
             return response.projectsList.map { ProjectInfoResponse(it) }
         } catch (ex: StatusRuntimeException) {
@@ -259,6 +271,9 @@ class BlockchainServiceImpl(
                 "Could not get projects info for hashes: $hashes")
         }
     }
+
+    private fun serviceWithTimeout() = serviceBlockingStub
+        .withDeadlineAfter(applicationProperties.grpc.blockchainServiceTimeout, TimeUnit.MILLISECONDS)
 
     private fun getInternalExceptionFromStatusException(
         ex: StatusRuntimeException,

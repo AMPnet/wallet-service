@@ -26,7 +26,6 @@ class ProjectServiceImpl(
     private val serviceBlockingStub: ProjectServiceGrpc.ProjectServiceBlockingStub by lazy {
         val channel = grpcChannelFactory.createChannel("project-service")
         ProjectServiceGrpc.newBlockingStub(channel)
-            .withDeadlineAfter(applicationProperties.grpc.projectServiceTimeout, TimeUnit.MILLISECONDS)
     }
 
     @Throws(ResourceNotFoundException::class)
@@ -47,7 +46,7 @@ class ProjectServiceImpl(
             val request = GetByUuids.newBuilder()
                 .addAllUuids(uuids.map { it.toString() })
                 .build()
-            val response = serviceBlockingStub.getOrganizations(request).organizationsList
+            val response = serviceWithTimeout().getOrganizations(request).organizationsList
             logger.debug { "Fetched organizations: $response" }
             return response
         } catch (ex: StatusRuntimeException) {
@@ -61,11 +60,14 @@ class ProjectServiceImpl(
             val request = GetByUuids.newBuilder()
                 .addAllUuids(uuids.map { it.toString() })
                 .build()
-            val response = serviceBlockingStub.getProjects(request).projectsList
+            val response = serviceWithTimeout().getProjects(request).projectsList
             logger.debug { "Fetched projects: $response" }
             return response
         } catch (ex: StatusRuntimeException) {
             throw GrpcException(ErrorCode.INT_GRPC_PROJECT, "Failed to fetch projects. ${ex.localizedMessage}")
         }
     }
+
+    private fun serviceWithTimeout() = serviceBlockingStub
+        .withDeadlineAfter(applicationProperties.grpc.projectServiceTimeout, TimeUnit.MILLISECONDS)
 }
