@@ -7,6 +7,9 @@ import com.ampnet.mailservice.proto.MailServiceGrpc
 import com.ampnet.mailservice.proto.WithdrawInfoRequest
 import com.ampnet.mailservice.proto.WithdrawRequest
 import com.ampnet.walletservice.config.ApplicationProperties
+import com.ampnet.walletservice.exception.ErrorCode
+import com.ampnet.walletservice.exception.GrpcException
+import io.grpc.StatusRuntimeException
 import io.grpc.stub.StreamObserver
 import java.util.UUID
 import java.util.concurrent.TimeUnit
@@ -28,35 +31,55 @@ class MailServiceImpl(
     }
 
     override fun sendDepositRequest(user: UUID, amount: Long) {
-        val request = DepositRequest.newBuilder()
+        logger.debug { "Sending deposit request mail" }
+        try {
+            val request = DepositRequest.newBuilder()
                 .setUser(user.toString())
                 .setAmount(amount)
                 .build()
-        serviceWithTimeout().sendDepositRequest(request, createSteamObserver("deposit request mail to: $user"))
+            serviceWithTimeout().sendDepositRequest(request, createSteamObserver("deposit request mail to: $user"))
+        } catch (ex: StatusRuntimeException) {
+            throw GrpcException(ErrorCode.INT_GRPC_MAIL, "Failed to send deposit request mail. ${ex.localizedMessage}")
+        }
     }
 
     override fun sendDepositInfo(user: UUID, minted: Boolean) {
-        val request = DepositInfoRequest.newBuilder()
+        logger.debug { "Sending deposit info mail" }
+        try {
+            val request = DepositInfoRequest.newBuilder()
                 .setUser(user.toString())
                 .setMinted(minted)
                 .build()
-        serviceWithTimeout().sendDepositInfo(request, createSteamObserver("deposit info mail to: $user"))
+            serviceWithTimeout().sendDepositInfo(request, createSteamObserver("deposit info mail to: $user"))
+        } catch (ex: StatusRuntimeException) {
+            throw GrpcException(ErrorCode.INT_GRPC_MAIL, "Failed to send deposit info mail. ${ex.localizedMessage}")
+        }
     }
 
     override fun sendWithdrawRequest(user: UUID, amount: Long) {
-        val request = WithdrawRequest.newBuilder()
+        logger.debug { "Sending withdraw request mail" }
+        try {
+            val request = WithdrawRequest.newBuilder()
                 .setUser(user.toString())
                 .setAmount(amount)
                 .build()
-        serviceWithTimeout().sendWithdrawRequest(request, createSteamObserver("withdraw request mail to: $user"))
+            serviceWithTimeout().sendWithdrawRequest(request, createSteamObserver("withdraw request mail to: $user"))
+        } catch (ex: StatusRuntimeException) {
+            throw GrpcException(ErrorCode.INT_GRPC_MAIL, "Failed to send withdraw request mail. ${ex.localizedMessage}")
+        }
     }
 
     override fun sendWithdrawInfo(user: UUID, burned: Boolean) {
-        val request = WithdrawInfoRequest.newBuilder()
+        logger.debug { "Sending withdraw info mail" }
+        try {
+            val request = WithdrawInfoRequest.newBuilder()
                 .setUser(user.toString())
                 .setBurned(burned)
                 .build()
-        serviceWithTimeout().sendWithdrawInfo(request, createSteamObserver("withdraw info mail to: $user"))
+            serviceWithTimeout().sendWithdrawInfo(request, createSteamObserver("withdraw info mail to: $user"))
+        } catch (ex: StatusRuntimeException) {
+            throw GrpcException(ErrorCode.INT_GRPC_MAIL, "Failed to send withdraw info mail. ${ex.localizedMessage}")
+        }
     }
 
     private fun serviceWithTimeout() = mailServiceStub

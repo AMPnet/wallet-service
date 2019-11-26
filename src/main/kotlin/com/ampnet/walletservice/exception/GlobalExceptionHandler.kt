@@ -1,6 +1,5 @@
 package com.ampnet.walletservice.exception
 
-import com.ampnet.crowdfundingbackend.exception.ErrorResponse
 import mu.KLogging
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.ExceptionHandler

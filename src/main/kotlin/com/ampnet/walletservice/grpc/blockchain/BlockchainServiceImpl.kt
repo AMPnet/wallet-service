@@ -24,7 +24,6 @@ import com.ampnet.walletservice.grpc.blockchain.pojo.PortfolioData
 import com.ampnet.walletservice.grpc.blockchain.pojo.ProjectInfoResponse
 import com.ampnet.walletservice.grpc.blockchain.pojo.ProjectInvestmentTxRequest
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionData
-import io.grpc.Status
 import io.grpc.StatusRuntimeException
 import java.util.concurrent.TimeUnit
 import mu.KLogging
@@ -279,7 +278,7 @@ class BlockchainServiceImpl(
         ex: StatusRuntimeException,
         message: String
     ): GrpcException {
-        val grpcErrorCode = getErrorDescriptionFromExceptionStatus(ex.status)
+        val grpcErrorCode = getErrorDescriptionFromExceptionStatus(ex)
         val errorCode = ErrorCode.INT_GRPC_BLOCKCHAIN
         errorCode.specificCode = grpcErrorCode.code
         errorCode.message = grpcErrorCode.message
@@ -288,12 +287,10 @@ class BlockchainServiceImpl(
 
     // Status defined in ampenet-blockchain service, for more info see:
     // ampnet-blockchain-service/src/main/kotlin/com/ampnet/crowdfunding/blockchain/enums/ErrorCode.kt
-    @Suppress("ReturnCount")
-    private fun getErrorDescriptionFromExceptionStatus(status: Status): GrpcErrorCode {
-        val description = status.description?.split(" > ")
-            ?: return GrpcErrorCode("90", "Could not parse error: ${status.description}")
+    private fun getErrorDescriptionFromExceptionStatus(ex: StatusRuntimeException): GrpcErrorCode {
+        val description = ex.status.description?.split(" > ") ?: throw ex
         if (description.size != 2) {
-            return GrpcErrorCode("91", "Wrong size of error message: $description")
+            throw ex
         }
         return GrpcErrorCode(description[0], description[1])
     }

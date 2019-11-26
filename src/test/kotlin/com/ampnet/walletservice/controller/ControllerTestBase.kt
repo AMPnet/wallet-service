@@ -1,12 +1,12 @@
 package com.ampnet.walletservice.controller
 
-import com.ampnet.crowdfundingbackend.exception.ErrorResponse
 import com.ampnet.userservice.proto.UserResponse
 import com.ampnet.walletservice.TestBase
 import com.ampnet.walletservice.config.DatabaseCleanerService
 import com.ampnet.walletservice.enums.Currency
 import com.ampnet.walletservice.enums.WalletType
 import com.ampnet.walletservice.exception.ErrorCode
+import com.ampnet.walletservice.exception.ErrorResponse
 import com.ampnet.walletservice.grpc.blockchain.BlockchainService
 import com.ampnet.walletservice.grpc.mail.MailService
 import com.ampnet.walletservice.grpc.projectservice.ProjectService
