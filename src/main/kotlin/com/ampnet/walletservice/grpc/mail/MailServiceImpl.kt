@@ -7,8 +7,6 @@ import com.ampnet.mailservice.proto.MailServiceGrpc
 import com.ampnet.mailservice.proto.WithdrawInfoRequest
 import com.ampnet.mailservice.proto.WithdrawRequest
 import com.ampnet.walletservice.config.ApplicationProperties
-import com.ampnet.walletservice.exception.ErrorCode
-import com.ampnet.walletservice.exception.GrpcException
 import io.grpc.StatusRuntimeException
 import io.grpc.stub.StreamObserver
 import java.util.UUID
@@ -39,7 +37,7 @@ class MailServiceImpl(
                 .build()
             serviceWithTimeout().sendDepositRequest(request, createSteamObserver("deposit request mail to: $user"))
         } catch (ex: StatusRuntimeException) {
-            throw GrpcException(ErrorCode.INT_GRPC_MAIL, "Failed to send deposit request mail. ${ex.localizedMessage}")
+            logger.warn("Failed to send deposit request mail.", ex)
         }
     }
 
@@ -52,7 +50,7 @@ class MailServiceImpl(
                 .build()
             serviceWithTimeout().sendDepositInfo(request, createSteamObserver("deposit info mail to: $user"))
         } catch (ex: StatusRuntimeException) {
-            throw GrpcException(ErrorCode.INT_GRPC_MAIL, "Failed to send deposit info mail. ${ex.localizedMessage}")
+            logger.warn("Failed to send deposit info mail.", ex)
         }
     }
 
@@ -65,7 +63,7 @@ class MailServiceImpl(
                 .build()
             serviceWithTimeout().sendWithdrawRequest(request, createSteamObserver("withdraw request mail to: $user"))
         } catch (ex: StatusRuntimeException) {
-            throw GrpcException(ErrorCode.INT_GRPC_MAIL, "Failed to send withdraw request mail. ${ex.localizedMessage}")
+            logger.warn("Failed to send withdraw request mail.", ex)
         }
     }
 
@@ -78,7 +76,7 @@ class MailServiceImpl(
                 .build()
             serviceWithTimeout().sendWithdrawInfo(request, createSteamObserver("withdraw info mail to: $user"))
         } catch (ex: StatusRuntimeException) {
-            throw GrpcException(ErrorCode.INT_GRPC_MAIL, "Failed to send withdraw info mail. ${ex.localizedMessage}")
+            logger.warn("Failed to send withdraw info mail.", ex)
         }
     }
 
