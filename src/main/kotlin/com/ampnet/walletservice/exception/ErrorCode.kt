@@ -2,9 +2,6 @@ package com.ampnet.walletservice.exception
 
 enum class ErrorCode(val categoryCode: String, var specificCode: String, var message: String) {
 
-    // Users: 03
-    USER_ROLE_MISSING("03", "02", "Missing user role"),
-
     // Wallet: 05
     WALLET_MISSING("05", "01", "Missing wallet"),
     WALLET_EXISTS("05", "02", "Active user cannot create additional wallet"),
@@ -37,9 +34,10 @@ enum class ErrorCode(val categoryCode: String, var specificCode: String, var mes
     // Internal: 08
     INT_FILE_STORAGE("08", "01", "Could not upload document on cloud file storage"),
     INT_INVALID_VALUE("08", "02", "Invalid value in request"),
-    INT_GRPC_BLOCKCHAIN("08", "50", "Failed gRPC call to blockchain service"),
-    INT_GRPC_USER("08", "50", "Failed gRPC call to user service"),
-    INT_GRPC_PROJECT("08", "50", "Failed gRPC call to project service"),
+    INT_GRPC_BLOCKCHAIN("08", "03", "Failed gRPC call to blockchain service"),
+    INT_GRPC_USER("08", "04", "Failed gRPC call to user service"),
+    INT_GRPC_PROJECT("08", "05", "Failed gRPC call to project service"),
+    INT_GRPC_MAIL("08", "06", "Failed gRPC call to mail service"),
 
     // Transaction: 09
     TX_MISSING("09", "01", "Non existing transaction"),
