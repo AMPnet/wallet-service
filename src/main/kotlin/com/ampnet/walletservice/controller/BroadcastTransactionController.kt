@@ -23,6 +23,7 @@ class BroadcastTransactionController(
         @RequestParam(name = "tx_sig", required = true) signedTransaction: String
     ): ResponseEntity<TxHashResponse> {
         logger.info { "Received request to broadcast transaction with id: $txId" }
+        logger.debug { "Received request to broadcast transaction with sig: $signedTransaction" }
         val txHash = broadcastService.broadcast(txId, signedTransaction)
         notificationService.notifyTxBroadcast(txId, "BROADCAST")
         return ResponseEntity.ok(TxHashResponse(txHash))
