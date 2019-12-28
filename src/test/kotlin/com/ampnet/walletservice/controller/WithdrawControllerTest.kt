@@ -42,10 +42,10 @@ class WithdrawControllerTest : ControllerTestBase() {
     fun mustBeAbleToCreateWithdraw() {
         suppose("User has a wallet") {
             databaseCleanerService.deleteAllWallets()
-            createWalletForUser(userUuid, testContext.walletHash)
+            createWalletForUser(userUuid, walletHash)
         }
         suppose("User has enough funds on wallet") {
-            Mockito.`when`(blockchainService.getBalance(testContext.walletHash)).thenReturn(testContext.amount)
+            Mockito.`when`(blockchainService.getBalance(walletHash)).thenReturn(testContext.amount)
         }
 
         verify("User can create Withdraw") {
@@ -167,7 +167,7 @@ class WithdrawControllerTest : ControllerTestBase() {
         }
         suppose("User has a wallet") {
             databaseCleanerService.deleteAllWallets()
-            createWalletForUser(userUuid, testContext.walletHash)
+            createWalletForUser(userUuid, walletHash)
         }
         suppose("User service will return user data") {
             Mockito.`when`(userService.getUsers(listOf(userUuid))).thenReturn(listOf(createUserResponse(userUuid)))
@@ -188,7 +188,7 @@ class WithdrawControllerTest : ControllerTestBase() {
             assertThat(withdraw.approvedTxHash).isEqualTo(testContext.approvedTx)
             assertThat(withdraw.approvedAt).isBeforeOrEqualTo(ZonedDateTime.now())
             assertThat(withdraw.user?.uuid).isEqualTo(userUuid)
-            assertThat(withdraw.userWallet).isEqualTo(testContext.walletHash)
+            assertThat(withdraw.userWallet).isEqualTo(walletHash)
             assertThat(withdraw.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
             assertThat(withdraw.burnedAt).isNull()
             assertThat(withdraw.burnedBy).isNull()
@@ -206,7 +206,7 @@ class WithdrawControllerTest : ControllerTestBase() {
         }
         suppose("User has a wallet") {
             databaseCleanerService.deleteAllWallets()
-            createWalletForUser(userUuid, testContext.walletHash)
+            createWalletForUser(userUuid, walletHash)
         }
         suppose("User service will return user data") {
             Mockito.`when`(userService.getUsers(listOf(userUuid))).thenReturn(listOf(createUserResponse(userUuid)))
@@ -227,7 +227,7 @@ class WithdrawControllerTest : ControllerTestBase() {
             assertThat(withdraw.approvedTxHash).isEqualTo(testContext.approvedTx)
             assertThat(withdraw.approvedAt).isBeforeOrEqualTo(ZonedDateTime.now())
             assertThat(withdraw.user?.uuid).isEqualTo(userUuid)
-            assertThat(withdraw.userWallet).isEqualTo(testContext.walletHash)
+            assertThat(withdraw.userWallet).isEqualTo(walletHash)
             assertThat(withdraw.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
             assertThat(withdraw.burnedAt).isNotNull()
             assertThat(withdraw.burnedBy).isNotNull()
@@ -253,7 +253,7 @@ class WithdrawControllerTest : ControllerTestBase() {
         }
         suppose("User has a wallet") {
             databaseCleanerService.deleteAllWallets()
-            createWalletForUser(userUuid, testContext.walletHash)
+            createWalletForUser(userUuid, walletHash)
         }
         suppose("User has created withdraw") {
             testContext.withdraw = createWithdraw(userUuid)
@@ -261,7 +261,7 @@ class WithdrawControllerTest : ControllerTestBase() {
         suppose("Blockchain service will return approve burn transaction") {
             testContext.transactionData = TransactionData("approve-burn-transaction")
             Mockito.`when`(
-                    blockchainService.generateApproveBurnTransaction(testContext.walletHash, testContext.amount)
+                    blockchainService.generateApproveBurnTransaction(walletHash, testContext.amount)
             ).thenReturn(testContext.transactionData)
         }
 
@@ -293,7 +293,7 @@ class WithdrawControllerTest : ControllerTestBase() {
         }
         suppose("User has a wallet") {
             databaseCleanerService.deleteAllWallets()
-            createWalletForUser(userUuid, testContext.walletHash)
+            createWalletForUser(userUuid, walletHash)
         }
         suppose("User has created withdraw") {
             testContext.withdraw = createApprovedWithdraw(userUuid)
@@ -301,7 +301,7 @@ class WithdrawControllerTest : ControllerTestBase() {
         suppose("Blockchain service will return approve burn transaction") {
             testContext.transactionData = TransactionData("approve-burn-transaction")
             Mockito.`when`(
-                blockchainService.generateBurnTransaction(testContext.walletHash)
+                blockchainService.generateBurnTransaction(walletHash)
             ).thenReturn(testContext.transactionData)
         }
 
@@ -333,7 +333,7 @@ class WithdrawControllerTest : ControllerTestBase() {
         }
         suppose("User has a wallet") {
             databaseCleanerService.deleteAllWallets()
-            createWalletForUser(userUuid, testContext.walletHash)
+            createWalletForUser(userUuid, walletHash)
         }
         suppose("User has created withdraw") {
             testContext.withdraw = createApprovedWithdraw(userUuid)
@@ -371,7 +371,6 @@ class WithdrawControllerTest : ControllerTestBase() {
     private class TestContext {
         val amount = 1000L
         val bankAccount = "AL35202111090000000001234567"
-        val walletHash = "0xa2addee8b62501fb423c8e69a6867a02eaa021a16f66583050a5dd643ad7e41b"
         val approvedTx = "approved-tx"
         val burnedTx = "burned-tx"
         val documentLink = "doc-link"

@@ -24,8 +24,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 class BroadcastTransactionControllerTest : ControllerTestBase() {
 
     private val broadcastPath = "/tx_broadcast"
-    private val signedTransaction = "SignedTransaction"
-    private val txHash = "tx_hash"
+    private val txHash = "th_2cNtX3hdmGPHq8sgHb6Lcu87iEc3E6feHTWczQAViQjmP7evbP"
     private val activationData = "activation_data"
 
     private lateinit var testContext: TestContext

@@ -197,7 +197,7 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
     }
 
     private class TestContext {
-        val activationData = "0x5CA9a71B1d01849C0a95490Cc00559717fCF0D1d"
+        val activationData = "th_HKYbpdgc8yhGvMaEmpk2KK9AXE3yz8kf5imyv52XVwcnqZKei"
         val walletHash = "th_R26wx2hTnhmgDKJhXC9GAH3evCRnTyyXg4fivLLEAyiAcVW2K"
         val users = mutableListOf<UUID>()
         val organizations = mutableListOf<UUID>()

@@ -43,7 +43,7 @@ class DepositControllerTest : ControllerTestBase() {
     fun mustBeAbleToCreateDeposit() {
         suppose("User has a wallet") {
             databaseCleanerService.deleteAllWallets()
-            createWalletForUser(userUuid, testContext.walletHash)
+            createWalletForUser(userUuid, walletHash)
         }
         suppose("User has approved deposit") {
             createApprovedDeposit(userUuid, "tx_hash")
@@ -325,7 +325,7 @@ class DepositControllerTest : ControllerTestBase() {
     fun mustBeAbleToGenerateMintTransaction() {
         suppose("User has a wallet") {
             databaseCleanerService.deleteAllWallets()
-            createWalletForUser(userUuid, testContext.walletHash)
+            createWalletForUser(userUuid, walletHash)
         }
         suppose("Transaction info is clean") {
             databaseCleanerService.deleteAllTransactionInfo()
@@ -337,7 +337,7 @@ class DepositControllerTest : ControllerTestBase() {
         suppose("Blockchain service will return tx") {
             testContext.transactionData = TransactionData("signed-transaction")
             Mockito.`when`(
-                blockchainService.generateMintTransaction(testContext.walletHash, testContext.amount)
+                blockchainService.generateMintTransaction(walletHash, testContext.amount)
             ).thenReturn(testContext.transactionData)
         }
 
@@ -397,7 +397,6 @@ class DepositControllerTest : ControllerTestBase() {
 
     private class TestContext {
         val amount = 30_000L
-        val walletHash = "0xa2addee8b62501fb423c8e69a6867a02eaa021a16f66583050a5dd643ad7e41b"
         var deposits = listOf<Deposit>()
         val documentLink = "document-link"
         lateinit var multipartFile: MockMultipartFile

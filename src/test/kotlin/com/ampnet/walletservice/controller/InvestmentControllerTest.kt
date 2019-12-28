@@ -33,7 +33,7 @@ class InvestmentControllerTest : ControllerTestBase() {
             Mockito.`when`(blockchainService.getBalance(getWalletHash(projectWallet))).thenReturn(0)
         }
         suppose("User has wallet") {
-            createWalletForUser(userUuid, testContext.addressHash)
+            createWalletForUser(userUuid, walletHash)
         }
         suppose("User does have enough funds on wallet") {
             val userWalletHash = getWalletHash(userUuid)
@@ -67,7 +67,6 @@ class InvestmentControllerTest : ControllerTestBase() {
     }
 
     private class TestContext {
-        val addressHash = "0x4e4ee58ff3a9e9e78c2dfdbac0d1518e4e1039f9189267e1dc8d3e35cbdf7892"
         val transactionData = TransactionData("data")
         val investment = 100_00L
     }

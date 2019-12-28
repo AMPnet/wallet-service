@@ -50,10 +50,11 @@ import org.springframework.web.context.WebApplicationContext
 @ActiveProfiles("GrpcServiceMockConfig, CloudStorageMockConfig")
 abstract class ControllerTestBase : TestBase() {
 
-    protected val defaultEmail = "user@email.com"
     protected val userUuid: UUID = UUID.fromString("89fb3b1c-9c0a-11e9-a2a3-2a2ae2dbcce4")
-    protected val organizationUuid = UUID.randomUUID()
-    protected val projectUuid = UUID.randomUUID()
+    protected val organizationUuid: UUID = UUID.randomUUID()
+    protected val projectUuid: UUID = UUID.randomUUID()
+    protected val walletHash = "th_K3LCJLUQ1m2EsYmcNafGnRyEdDDgfPDGfZhmZ1YgbvAG35PQu"
+    protected val signedTransaction = "tx_+RFNCwH4QrhARSL55I0DqhQePPV3J4ycxHpA9OkqnncvEJrYOThmo2h...signed-tx..."
 
     @Autowired
     protected lateinit var objectMapper: ObjectMapper

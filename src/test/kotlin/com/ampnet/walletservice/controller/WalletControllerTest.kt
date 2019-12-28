@@ -31,12 +31,12 @@ class WalletControllerTest : ControllerTestBase() {
     private val projectWalletPath = "/wallet/project"
     private val organizationWalletPath = "/wallet/organization"
 
-    private lateinit var testData: TestData
+    private lateinit var testContext: TestContext
 
     @BeforeEach
     fun initTestData() {
         databaseCleanerService.deleteAllWallets()
-        testData = TestData()
+        testContext = TestContext()
     }
 
     /* User Wallet */
@@ -44,7 +44,7 @@ class WalletControllerTest : ControllerTestBase() {
     @WithMockCrowdfoundUser(verified = false)
     fun mustNotBeAbleToCreateWalletWithUnVerifiedAccount() {
         verify("User can create a wallet") {
-            val request = WalletCreateRequest(testData.publicKey)
+            val request = WalletCreateRequest(testContext.publicKey)
             val result = mockMvc.perform(
                 post(walletPath)
                     .content(objectMapper.writeValueAsString(request))
@@ -63,7 +63,7 @@ class WalletControllerTest : ControllerTestBase() {
         }
 
         verify("User can generate pair wallet code") {
-            val request = WalletCreateRequest(testData.publicKey)
+            val request = WalletCreateRequest(testContext.publicKey)
             val result = mockMvc.perform(
                     post("$walletPath/pair")
                             .content(objectMapper.writeValueAsString(request))
@@ -74,14 +74,14 @@ class WalletControllerTest : ControllerTestBase() {
             val pairWalletResponse: PairWalletResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(pairWalletResponse.code).isNotEmpty()
             assertThat(pairWalletResponse.publicKey).isEqualTo(request.publicKey)
-            testData.pairWalletCode = pairWalletResponse.code
+            testContext.pairWalletCode = pairWalletResponse.code
         }
         verify("Pair wallet code is stored") {
-            val optionalPairWalletCode = pairWalletCodeRepository.findByPublicKey(testData.publicKey)
+            val optionalPairWalletCode = pairWalletCodeRepository.findByPublicKey(testContext.publicKey)
             assertThat(optionalPairWalletCode).isPresent
             val pairWalletCode = optionalPairWalletCode.get()
-            assertThat(pairWalletCode.code).isEqualTo(testData.pairWalletCode)
-            assertThat(pairWalletCode.publicKey).isEqualTo(testData.publicKey)
+            assertThat(pairWalletCode.code).isEqualTo(testContext.pairWalletCode)
+            assertThat(pairWalletCode.publicKey).isEqualTo(testContext.publicKey)
             assertThat(pairWalletCode.createdAt).isBefore(ZonedDateTime.now())
         }
     }
@@ -102,19 +102,19 @@ class WalletControllerTest : ControllerTestBase() {
     fun mustReturnPairWalletCode() {
         suppose("User did create pair wallet code") {
             databaseCleanerService.deleteAllPairWalletCodes()
-            testData.pairWalletCode = "N4CD12"
-            val pairWalletCode = PairWalletCode(0, testData.publicKey, testData.pairWalletCode, ZonedDateTime.now())
+            testContext.pairWalletCode = "N4CD12"
+            val pairWalletCode = PairWalletCode(0, testContext.publicKey, testContext.pairWalletCode, ZonedDateTime.now())
             pairWalletCodeRepository.save(pairWalletCode)
         }
 
         verify("User can pair wallet code") {
-            val result = mockMvc.perform(get("$walletPath/pair/${testData.pairWalletCode}"))
+            val result = mockMvc.perform(get("$walletPath/pair/${testContext.pairWalletCode}"))
                     .andExpect(status().isOk)
                     .andReturn()
 
             val pairWalletResponse: PairWalletResponse = objectMapper.readValue(result.response.contentAsString)
-            assertThat(pairWalletResponse.code).isEqualTo(testData.pairWalletCode)
-            assertThat(pairWalletResponse.publicKey).isEqualTo(testData.publicKey)
+            assertThat(pairWalletResponse.code).isEqualTo(testContext.pairWalletCode)
+            assertThat(pairWalletResponse.publicKey).isEqualTo(testContext.publicKey)
         }
     }
 
@@ -122,11 +122,11 @@ class WalletControllerTest : ControllerTestBase() {
     @WithMockCrowdfoundUser
     fun mustBeAbleToGetOwnWallet() {
         suppose("User wallet exists") {
-            testData.wallet = createWalletForUser(userUuid, testData.hash)
+            testContext.wallet = createWalletForUser(userUuid, testContext.hash)
         }
         suppose("User has some funds on wallet") {
-            testData.balance = 100_00
-            Mockito.`when`(blockchainService.getBalance(testData.hash)).thenReturn(testData.balance)
+            testContext.balance = 100_00
+            Mockito.`when`(blockchainService.getBalance(testContext.hash)).thenReturn(testContext.balance)
         }
 
         verify("Controller returns user wallet response") {
@@ -135,13 +135,13 @@ class WalletControllerTest : ControllerTestBase() {
                     .andReturn()
 
             val walletResponse: WalletResponse = objectMapper.readValue(result.response.contentAsString)
-            assertThat(walletResponse.uuid).isEqualTo(testData.wallet.uuid)
-            assertThat(walletResponse.hash).isEqualTo(testData.hash)
-            assertThat(walletResponse.currency).isEqualTo(testData.wallet.currency)
-            assertThat(walletResponse.type).isEqualTo(testData.wallet.type)
+            assertThat(walletResponse.uuid).isEqualTo(testContext.wallet.uuid)
+            assertThat(walletResponse.hash).isEqualTo(testContext.hash)
+            assertThat(walletResponse.currency).isEqualTo(testContext.wallet.currency)
+            assertThat(walletResponse.type).isEqualTo(testContext.wallet.type)
             assertThat(walletResponse.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
 
-            assertThat(walletResponse.balance).isEqualTo(testData.balance)
+            assertThat(walletResponse.balance).isEqualTo(testContext.balance)
         }
     }
 
@@ -158,7 +158,7 @@ class WalletControllerTest : ControllerTestBase() {
     @WithMockCrowdfoundUser
     fun mustBeAbleToCreateWallet() {
         verify("User can create a wallet") {
-            val request = WalletCreateRequest(testData.publicKey)
+            val request = WalletCreateRequest(testContext.publicKey)
             val result = mockMvc.perform(
                     post(walletPath)
                             .content(objectMapper.writeValueAsString(request))
@@ -168,20 +168,20 @@ class WalletControllerTest : ControllerTestBase() {
 
             val walletResponse: WalletResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(walletResponse.uuid).isNotNull()
-            assertThat(walletResponse.activationData).isEqualTo(testData.publicKey)
+            assertThat(walletResponse.activationData).isEqualTo(testContext.publicKey)
             assertThat(walletResponse.currency).isEqualTo(Currency.EUR)
             assertThat(walletResponse.type).isEqualTo(WalletType.USER)
             assertThat(walletResponse.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
             assertThat(walletResponse.hash).isNull()
             assertThat(walletResponse.activatedAt).isNull()
 
-            testData.walletUuid = walletResponse.uuid
+            testContext.walletUuid = walletResponse.uuid
         }
         verify("Wallet is created") {
             val userWallet = walletRepository.findByOwner(userUuid)
             assertThat(userWallet).isPresent
             val wallet = userWallet.get()
-            assertThat(wallet.activationData).isEqualTo(testData.publicKey)
+            assertThat(wallet.activationData).isEqualTo(testContext.publicKey)
             assertThat(wallet.hash).isNull()
         }
     }
@@ -190,11 +190,11 @@ class WalletControllerTest : ControllerTestBase() {
     @WithMockCrowdfoundUser
     fun mustNotBeAbleToCreateAdditionalWallet() {
         suppose("User wallet exists") {
-            testData.wallet = createWalletForUser(userUuid, testData.publicKey)
+            testContext.wallet = createWalletForUser(userUuid, testContext.publicKey)
         }
 
         verify("User cannot create a wallet") {
-            val request = WalletCreateRequest(testData.publicKey)
+            val request = WalletCreateRequest(testContext.publicKey)
             mockMvc.perform(
                     post(walletPath)
                             .content(objectMapper.writeValueAsString(request))
@@ -208,26 +208,26 @@ class WalletControllerTest : ControllerTestBase() {
     @WithMockCrowdfoundUser
     fun mustBeAbleToGetCreateProjectWalletTransaction() {
         suppose("User has a wallet") {
-            testData.wallet = createWalletForUser(userUuid, testData.hash)
+            testContext.wallet = createWalletForUser(userUuid, testContext.hash)
         }
         suppose("Organization has a wallet") {
-            createWalletForOrganization(organizationUuid, testData.hash2)
+            createWalletForOrganization(organizationUuid, testContext.hash2)
         }
         suppose("Blockchain service successfully generates transaction to create project wallet") {
             val orgWalletHash = getWalletHash(organizationUuid)
             val userWalletHash = getWalletHash(userUuid)
-            testData.transactionData = TransactionData(testData.signedTransaction)
-            testData.time = ZonedDateTime.now().plusDays(30)
+            testContext.transactionData = TransactionData(signedTransaction)
+            testContext.time = ZonedDateTime.now().plusDays(30)
             val request = GenerateProjectWalletRequest(userWalletHash, orgWalletHash, 100000, 100, 10000000,
-                testData.time.toInstant().toEpochMilli())
+                testContext.time.toInstant().toEpochMilli())
             Mockito.`when`(
                     blockchainService.generateProjectWalletTransaction(request)
-            ).thenReturn(testData.transactionData)
+            ).thenReturn(testContext.transactionData)
         }
         suppose("Project service will return project") {
             Mockito.`when`(
                 projectService.getProject(projectUuid)
-            ).thenReturn(getProjectResponse(projectUuid, userUuid, organizationUuid, endDate = testData.time))
+            ).thenReturn(getProjectResponse(projectUuid, userUuid, organizationUuid, endDate = testContext.time))
         }
 
         verify("User can get transaction to sign") {
@@ -237,7 +237,7 @@ class WalletControllerTest : ControllerTestBase() {
                     .andReturn()
 
             val transactionResponse: TransactionResponse = objectMapper.readValue(result.response.contentAsString)
-            assertThat(transactionResponse.tx).isEqualTo(testData.transactionData.tx)
+            assertThat(transactionResponse.tx).isEqualTo(testContext.transactionData.tx)
             assertThat(transactionResponse.txId).isNotNull()
             assertThat(transactionResponse.info.txType).isEqualTo(TransactionType.CREATE_PROJECT)
         }
@@ -247,7 +247,7 @@ class WalletControllerTest : ControllerTestBase() {
     @WithMockCrowdfoundUser
     fun mustNotBeAbleToGetCreateProjectWalletTransactionIfWalletExits() {
         suppose("Project wallet exists") {
-            testData.wallet = createWalletForProject(projectUuid, testData.hash)
+            testContext.wallet = createWalletForProject(projectUuid, testContext.hash)
         }
 
         verify("User cannot get create wallet transaction") {
@@ -264,7 +264,7 @@ class WalletControllerTest : ControllerTestBase() {
     @WithMockCrowdfoundUser
     fun mustBeAbleToGetOrganizationWallet() {
         suppose("Organization has a wallet") {
-            testData.wallet = createWalletForOrganization(organizationUuid, testData.hash)
+            testContext.wallet = createWalletForOrganization(organizationUuid, testContext.hash)
         }
 
         verify("User can fetch organization wallet") {
@@ -274,10 +274,10 @@ class WalletControllerTest : ControllerTestBase() {
                     .andReturn()
 
             val walletResponse: WalletResponse = objectMapper.readValue(result.response.contentAsString)
-            assertThat(walletResponse.uuid).isEqualTo(testData.wallet.uuid)
-            assertThat(walletResponse.hash).isEqualTo(testData.hash)
-            assertThat(walletResponse.currency).isEqualTo(testData.wallet.currency)
-            assertThat(walletResponse.type).isEqualTo(testData.wallet.type)
+            assertThat(walletResponse.uuid).isEqualTo(testContext.wallet.uuid)
+            assertThat(walletResponse.hash).isEqualTo(testContext.hash)
+            assertThat(walletResponse.currency).isEqualTo(testContext.wallet.currency)
+            assertThat(walletResponse.type).isEqualTo(testContext.wallet.type)
             assertThat(walletResponse.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
         }
     }
@@ -295,13 +295,13 @@ class WalletControllerTest : ControllerTestBase() {
     @WithMockCrowdfoundUser
     fun mustBeAbleToGetCreateOrganizationWallet() {
         suppose("User wallet exists") {
-            testData.wallet = createWalletForUser(userUuid, testData.publicKey)
+            testContext.wallet = createWalletForUser(userUuid, testContext.publicKey)
         }
         suppose("Blockchain service successfully creates organization") {
-            testData.transactionData = TransactionData(testData.signedTransaction)
+            testContext.transactionData = TransactionData(signedTransaction)
             Mockito.`when`(
                 blockchainService.generateCreateOrganizationTransaction(getWalletHash(userUuid))
-            ).thenReturn(testData.transactionData)
+            ).thenReturn(testContext.transactionData)
         }
         suppose("Project service will return project") {
             Mockito.`when`(
@@ -317,21 +317,20 @@ class WalletControllerTest : ControllerTestBase() {
                     .andReturn()
 
             val transactionResponse: TransactionResponse = objectMapper.readValue(result.response.contentAsString)
-            assertThat(transactionResponse.tx).isEqualTo(testData.transactionData.tx)
+            assertThat(transactionResponse.tx).isEqualTo(testContext.transactionData.tx)
             assertThat(transactionResponse.txId).isNotNull()
             assertThat(transactionResponse.info.txType).isEqualTo(TransactionType.CREATE_ORG)
         }
     }
 
-    private class TestData {
+    private class TestContext {
         lateinit var wallet: Wallet
         lateinit var transactionData: TransactionData
         lateinit var walletUuid: UUID
-        var hash = "0x4e4ee58ff3a9e9e78c2dfdbac0d1518e4e1039f9189267e1dc8d3e35cbdf7892"
-        var hash2 = "0x4e4ee58ff3a9e9e78c2dfdbac0d1518e4e1039f9189267e1dc8d3e35cbdf7893"
-        val publicKey = "0xC2D7CF95645D33006175B78989035C7c9061d3F9"
+        var hash = "th_foKr5RbgAVq84nZaF6bNfPSnjmFQ39VhQeWPetgGDwv1BNAnV"
+        var hash2 = "th_2YjFd1mPzriyKfzojwuZxKJZaqNJGmTnUvqnNfwoZTV6n7NYxB"
+        val publicKey = "ak_RYkcTuYcyxQ6fWZsL2G3Kj3K5WCRUEXsi76bPUNkEsoHc52Wp"
         var balance: Long = -1
-        val signedTransaction = "SignedTransaction"
         lateinit var pairWalletCode: String
         lateinit var time: ZonedDateTime
     }
