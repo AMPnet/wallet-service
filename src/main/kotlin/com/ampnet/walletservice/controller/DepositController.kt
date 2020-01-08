@@ -128,11 +128,12 @@ class DepositController(
 
     private fun createDepositWithUserListResponse(depositsPage: Page<Deposit>): DepositWithUserListResponse {
         val deposits = depositsPage.toList()
-        val users = userService.getUsers(deposits.map { it.userUuid }.toSet())
+        val users = userService
+            .getUsers(deposits.map { it.userUuid }.toSet())
+            .associateBy { it.uuid }
         val depositWithUserList = mutableListOf<DepositWithUserResponse>()
         deposits.forEach { deposit ->
-            val userUuid = deposit.userUuid.toString()
-            val user = users.find { it.uuid == userUuid }
+            val user = users[deposit.userUuid.toString()]
             depositWithUserList.add(DepositWithUserResponse(deposit, user))
         }
         return DepositWithUserListResponse(depositWithUserList, depositsPage.number, depositsPage.totalPages)

@@ -110,12 +110,13 @@ class WithdrawController(
 
     private fun generateResponseFromWithdraws(withdrawsPage: Page<Withdraw>): WithdrawWithUserListResponse {
         val withdraws = withdrawsPage.toList()
-        val users = userService.getUsers(withdraws.map { it.userUuid }.toSet())
+        val users = userService
+            .getUsers(withdraws.map { it.userUuid }.toSet())
+            .associateBy { it.uuid }
         val withdrawWithUserList = mutableListOf<WithdrawWithUserResponse>()
         withdraws.forEach { withdraw ->
             val wallet = walletService.getWallet(withdraw.userUuid)?.hash.orEmpty()
-            val userUuid = withdraw.userUuid.toString()
-            val userResponse = users.find { it.uuid == userUuid }
+            val userResponse = users[withdraw.userUuid.toString()]
             withdrawWithUserList.add(WithdrawWithUserResponse(withdraw, userResponse, wallet))
         }
         return WithdrawWithUserListResponse(withdrawWithUserList, withdrawsPage.number, withdrawsPage.totalPages)
