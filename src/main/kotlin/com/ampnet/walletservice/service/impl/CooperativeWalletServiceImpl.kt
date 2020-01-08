@@ -16,6 +16,9 @@ import com.ampnet.walletservice.service.pojo.ProjectWithWallet
 import com.ampnet.walletservice.service.pojo.UserWithWallet
 import java.time.ZonedDateTime
 import java.util.UUID
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -45,36 +48,42 @@ class CooperativeWalletServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun getAllUserWithUnactivatedWallet(): List<UserWithWallet> {
-        val wallets = walletRepository.findUnactivatedByType(WalletType.USER).associateBy { it.owner }
+    override fun getAllUserWithUnactivatedWallet(pageable: Pageable): Page<UserWithWallet> {
+        val walletsPage = walletRepository.findUnactivatedByType(WalletType.USER, pageable)
+        val wallets = walletsPage.toList().associateBy { it.owner }
         val users = userService.getUsers(wallets.keys)
-        return users.mapNotNull { user ->
+        val usersWithWallet = users.mapNotNull { user ->
             wallets[UUID.fromString(user.uuid)]?.let { wallet ->
                 UserWithWallet(user, wallet)
             }
         }
+        return PageImpl<UserWithWallet>(usersWithWallet, pageable, walletsPage.totalElements)
     }
 
     @Transactional(readOnly = true)
-    override fun getOrganizationsWithUnactivatedWallet(): List<OrganizationWithWallet> {
-        val wallets = walletRepository.findUnactivatedByType(WalletType.ORG).associateBy { it.owner }
+    override fun getOrganizationsWithUnactivatedWallet(pageable: Pageable): Page<OrganizationWithWallet> {
+        val walletsPage = walletRepository.findUnactivatedByType(WalletType.ORG, pageable)
+        val wallets = walletsPage.toList().associateBy { it.owner }
         val organizations = projectService.getOrganizations(wallets.keys)
-        return organizations.mapNotNull { organization ->
+        val organizationsWithWallet = organizations.mapNotNull { organization ->
             wallets[UUID.fromString(organization.uuid)]?.let { wallet ->
                 OrganizationWithWallet(organization, wallet)
             }
         }
+        return PageImpl<OrganizationWithWallet>(organizationsWithWallet, pageable, walletsPage.totalElements)
     }
 
     @Transactional(readOnly = true)
-    override fun getProjectsWithUnactivatedWallet(): List<ProjectWithWallet> {
-        val wallets = walletRepository.findUnactivatedByType(WalletType.PROJECT).associateBy { it.owner }
+    override fun getProjectsWithUnactivatedWallet(pageable: Pageable): Page<ProjectWithWallet> {
+        val walletsPage = walletRepository.findUnactivatedByType(WalletType.PROJECT, pageable)
+        val wallets = walletsPage.toList().associateBy { it.owner }
         val projects = projectService.getProjects(wallets.keys)
-        return projects.mapNotNull { project ->
+        val projectsWithWallet = projects.mapNotNull { project ->
             wallets[UUID.fromString(project.uuid)]?.let { wallet ->
                 ProjectWithWallet(project, wallet)
             }
         }
+        return PageImpl<ProjectWithWallet>(projectsWithWallet, pageable, walletsPage.totalElements)
     }
 
     private fun getWalletByUuid(walletUuid: UUID): Wallet = walletRepository.findById(walletUuid).orElseThrow {

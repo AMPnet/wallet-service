@@ -1,15 +1,13 @@
 package com.ampnet.walletservice.controller
 
 import com.ampnet.walletservice.controller.pojo.response.OrganizationWithWalletListResponse
-import com.ampnet.walletservice.controller.pojo.response.OrganizationWithWalletResponse
 import com.ampnet.walletservice.controller.pojo.response.ProjectWithWalletListResponse
-import com.ampnet.walletservice.controller.pojo.response.ProjectWithWalletResponse
 import com.ampnet.walletservice.controller.pojo.response.TransactionResponse
 import com.ampnet.walletservice.controller.pojo.response.UserWithWalletListResponse
-import com.ampnet.walletservice.controller.pojo.response.UserWithWalletResponse
 import com.ampnet.walletservice.service.CooperativeWalletService
 import java.util.UUID
 import mu.KLogging
+import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
@@ -35,28 +33,25 @@ class CooperativeWalletController(
 
     @GetMapping("/cooperative/wallet/user")
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_WALLET)")
-    fun getUnactivatedUserWallets(): ResponseEntity<UserWithWalletListResponse> {
+    fun getUnactivatedUserWallets(pageable: Pageable): ResponseEntity<UserWithWalletListResponse> {
         logger.debug { "Received request to get list of users with unactivated wallet" }
-        val users = cooperativeWalletService.getAllUserWithUnactivatedWallet()
-        val usersResponse = users.map { UserWithWalletResponse(it) }
-        return ResponseEntity.ok(UserWithWalletListResponse(usersResponse))
+        val users = cooperativeWalletService.getAllUserWithUnactivatedWallet(pageable)
+        return ResponseEntity.ok(UserWithWalletListResponse(users))
     }
 
     @GetMapping("/cooperative/wallet/organization")
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_WALLET)")
-    fun getUnactivatedOrganizationWallets(): ResponseEntity<OrganizationWithWalletListResponse> {
+    fun getUnactivatedOrganizationWallets(pageable: Pageable): ResponseEntity<OrganizationWithWalletListResponse> {
         logger.debug { "Received request to get list of organizations with unactivated wallet" }
-        val organizations = cooperativeWalletService.getOrganizationsWithUnactivatedWallet()
-            .map { OrganizationWithWalletResponse(it) }
+        val organizations = cooperativeWalletService.getOrganizationsWithUnactivatedWallet(pageable)
         return ResponseEntity.ok(OrganizationWithWalletListResponse(organizations))
     }
 
     @GetMapping("/cooperative/wallet/project")
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_WALLET)")
-    fun getUnactivatedProjectWallets(): ResponseEntity<ProjectWithWalletListResponse> {
+    fun getUnactivatedProjectWallets(pageable: Pageable): ResponseEntity<ProjectWithWalletListResponse> {
         logger.debug { "Received request to get list of projects with unactivated wallet" }
-        val projects = cooperativeWalletService.getProjectsWithUnactivatedWallet()
-            .map { ProjectWithWalletResponse(it) }
+        val projects = cooperativeWalletService.getProjectsWithUnactivatedWallet(pageable)
         return ResponseEntity.ok(ProjectWithWalletListResponse(projects))
     }
 }

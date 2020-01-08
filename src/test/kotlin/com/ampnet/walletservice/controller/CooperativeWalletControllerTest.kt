@@ -85,7 +85,11 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
         }
 
         verify("Admin can get a list of users with unactivated wallet") {
-            val result = mockMvc.perform(get("$cooperativeWalletPath/user"))
+            val result = mockMvc.perform(
+                get("$cooperativeWalletPath/user")
+                    .param("size", "20")
+                    .param("page", "0")
+                    .param("sort", "createdAt,desc"))
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -94,7 +98,10 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
             assertThat(userListResponse.users.map { it.user.uuid })
                 .containsAll(testContext.users)
                 .doesNotContain(userUuid)
-            assertThat(userListResponse.users.map { it.wallet }).doesNotContain(WalletResponse(testContext.wallet, 0))
+            assertThat(userListResponse.users.map { it.wallet })
+                .doesNotContain(WalletResponse(testContext.wallet, 0))
+            assertThat(userListResponse.page).isEqualTo(0)
+            assertThat(userListResponse.totalPages).isEqualTo(1)
         }
     }
 
@@ -130,7 +137,11 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
         }
 
         verify("Admin can get a list of organization with unactivated wallet") {
-            val result = mockMvc.perform(get("$cooperativeWalletPath/organization"))
+            val result = mockMvc.perform(
+                get("$cooperativeWalletPath/organization")
+                    .param("size", "20")
+                    .param("page", "0")
+                    .param("sort", "createdAt,desc"))
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -141,6 +152,8 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
                 .containsAll(testContext.organizations.map { it.toString() })
             assertThat(orgListResponse.organizations.map { it.wallet.activationData })
                 .doesNotContain(testContext.wallet.hash)
+            assertThat(orgListResponse.page).isEqualTo(0)
+            assertThat(orgListResponse.totalPages).isEqualTo(1)
         }
     }
 
@@ -176,7 +189,11 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
         }
 
         verify("Admin can get a list of projects with unactivated wallet") {
-            val result = mockMvc.perform(get("$cooperativeWalletPath/project"))
+            val result = mockMvc.perform(
+                get("$cooperativeWalletPath/project")
+                    .param("size", "20")
+                    .param("page", "0")
+                    .param("sort", "createdAt,desc"))
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -187,6 +204,8 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
                 .containsAll(testContext.projects.map { it.toString() })
             assertThat(projectListResponse.projects.map { it.wallet.activationData })
                 .doesNotContain(testContext.wallet.hash)
+            assertThat(projectListResponse.page).isEqualTo(0)
+            assertThat(projectListResponse.totalPages).isEqualTo(1)
         }
     }
 
