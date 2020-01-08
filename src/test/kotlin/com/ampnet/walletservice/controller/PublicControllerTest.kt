@@ -17,6 +17,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 class PublicControllerTest : ControllerTestBase() {
 
     private val projectWalletPublicPath = "/public/wallet/project"
+    private val publicProjectActivePath = "/public/project/active"
 
     private lateinit var testContext: TestContext
 
@@ -95,7 +96,7 @@ class PublicControllerTest : ControllerTestBase() {
 
         verify("Controller will return active project") {
             val result = mockMvc.perform(
-                get("/public/project/active")
+                get(publicProjectActivePath)
                     .param("size", "20")
                     .param("page", "0")
                     .param("sort", "createdAt,desc"))
@@ -117,7 +118,7 @@ class PublicControllerTest : ControllerTestBase() {
     @Test
     fun mustBeAbleToGetEmptyListOfActiveProjects() {
         verify("Controller will return empty list") {
-            val result = mockMvc.perform(get("/public/project/active"))
+            val result = mockMvc.perform(get(publicProjectActivePath))
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -131,7 +132,7 @@ class PublicControllerTest : ControllerTestBase() {
     @WithMockCrowdfoundUser(verified = false)
     fun mustBeAbleToGetActiveProjectsWithUnVerifiedAccount() {
         verify("Controller will return empty list") {
-            val result = mockMvc.perform(get("/public/project/active"))
+            val result = mockMvc.perform(get(publicProjectActivePath))
                 .andExpect(status().isOk)
                 .andReturn()
 

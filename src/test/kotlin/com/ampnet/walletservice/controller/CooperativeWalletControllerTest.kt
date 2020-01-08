@@ -25,7 +25,8 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 class CooperativeWalletControllerTest : ControllerTestBase() {
 
-    private val cooperativeWalletPath = "/cooperative/wallet/"
+    private val cooperativeWalletPath = "/cooperative/wallet"
+    private val createdAtDesc = "createdAt,desc"
 
     private lateinit var testContext: TestContext
 
@@ -89,7 +90,7 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
                 get("$cooperativeWalletPath/user")
                     .param("size", "20")
                     .param("page", "0")
-                    .param("sort", "createdAt,desc"))
+                    .param("sort", createdAtDesc))
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -141,7 +142,7 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
                 get("$cooperativeWalletPath/organization")
                     .param("size", "20")
                     .param("page", "0")
-                    .param("sort", "createdAt,desc"))
+                    .param("sort", createdAtDesc))
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -193,7 +194,7 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
                 get("$cooperativeWalletPath/project")
                     .param("size", "20")
                     .param("page", "0")
-                    .param("sort", "createdAt,desc"))
+                    .param("sort", createdAtDesc))
                 .andExpect(status().isOk)
                 .andReturn()
 
