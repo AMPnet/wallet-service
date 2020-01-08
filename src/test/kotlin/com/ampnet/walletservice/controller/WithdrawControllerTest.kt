@@ -162,21 +162,26 @@ class WithdrawControllerTest : ControllerTestBase() {
     fun mustBeAbleToGetApprovedWithdraws() {
         suppose("Some withdraws are created") {
             val approvedWithdraw = createApprovedWithdraw(userUuid)
+            val secondApprovedWithdraw = createApprovedWithdraw(userUuid)
             val unapprovedWithdraw = createWithdraw(userUuid)
-            testContext.withdraws = listOf(approvedWithdraw, unapprovedWithdraw)
+            testContext.withdraws = listOf(approvedWithdraw, secondApprovedWithdraw, unapprovedWithdraw)
         }
         suppose("User has a wallet") {
             databaseCleanerService.deleteAllWallets()
             createWalletForUser(userUuid, walletHash)
         }
         suppose("User service will return user data") {
-            Mockito.`when`(userService.getUsers(listOf(userUuid))).thenReturn(listOf(createUserResponse(userUuid)))
+            Mockito.`when`(userService.getUsers(setOf(userUuid))).thenReturn(listOf(createUserResponse(userUuid)))
         }
 
         verify("Admin can get list of approved withdraws") {
-            val result = mockMvc.perform(get("$withdrawPath/approved"))
-                    .andExpect(status().isOk)
-                    .andReturn()
+            val result = mockMvc.perform(
+                get("$withdrawPath/approved")
+                    .param("size", "1")
+                    .param("page", "0")
+                    .param("sort", "approvedAt,desc"))
+                .andExpect(status().isOk)
+                .andReturn()
 
             val withdrawList: WithdrawWithUserListResponse =
                     objectMapper.readValue(result.response.contentAsString)
@@ -209,13 +214,17 @@ class WithdrawControllerTest : ControllerTestBase() {
             createWalletForUser(userUuid, walletHash)
         }
         suppose("User service will return user data") {
-            Mockito.`when`(userService.getUsers(listOf(userUuid))).thenReturn(listOf(createUserResponse(userUuid)))
+            Mockito.`when`(userService.getUsers(setOf(userUuid))).thenReturn(listOf(createUserResponse(userUuid)))
         }
 
         verify("Admin can get list of burned withdraws") {
-            val result = mockMvc.perform(get("$withdrawPath/burned"))
-                    .andExpect(status().isOk)
-                    .andReturn()
+            val result = mockMvc.perform(
+                get("$withdrawPath/burned")
+                    .param("size", "20")
+                    .param("page", "0")
+                    .param("sort", "burnedAt,desc"))
+                .andExpect(status().isOk)
+                .andReturn()
 
             val withdrawList: WithdrawWithUserListResponse =
                     objectMapper.readValue(result.response.contentAsString)

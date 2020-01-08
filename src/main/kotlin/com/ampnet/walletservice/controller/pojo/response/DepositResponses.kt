@@ -53,4 +53,8 @@ data class DepositWithUserResponse(
     )
 }
 
-data class DepositWithUserListResponse(val deposits: List<DepositWithUserResponse>)
+data class DepositWithUserListResponse(
+    val deposits: List<DepositWithUserResponse>,
+    val page: Int,
+    val totalPages: Int
+)

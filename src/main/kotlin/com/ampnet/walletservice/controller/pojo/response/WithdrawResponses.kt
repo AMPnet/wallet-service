@@ -63,4 +63,8 @@ data class WithdrawWithUserResponse(
     )
 }
 
-data class WithdrawWithUserListResponse(val withdraws: List<WithdrawWithUserResponse>)
+data class WithdrawWithUserListResponse(
+    val withdraws: List<WithdrawWithUserResponse>,
+    val page: Int,
+    val totalPages: Int
+)

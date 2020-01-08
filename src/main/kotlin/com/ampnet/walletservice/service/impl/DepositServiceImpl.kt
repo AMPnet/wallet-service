@@ -18,6 +18,8 @@ import com.ampnet.walletservice.service.pojo.MintServiceRequest
 import java.time.ZonedDateTime
 import java.util.UUID
 import mu.KotlinLogging
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -85,8 +87,8 @@ class DepositServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun getAllWithDocuments(approved: Boolean): List<Deposit> {
-        return depositRepository.findAllWithFile(approved)
+    override fun getAllWithDocuments(approved: Boolean, pageable: Pageable): Page<Deposit> {
+        return depositRepository.findAllWithFile(approved, pageable)
     }
 
     @Transactional(readOnly = true)

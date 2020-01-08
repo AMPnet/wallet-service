@@ -136,7 +136,7 @@ class DepositControllerTest : ControllerTestBase() {
             testContext.deposits = listOf(deposit)
         }
         suppose("User service will return user") {
-            Mockito.`when`(userService.getUsers(listOf(userUuid))).thenReturn(listOf(createUserResponse(userUuid)))
+            Mockito.`when`(userService.getUsers(setOf(userUuid))).thenReturn(listOf(createUserResponse(userUuid)))
         }
 
         verify("Admin can search deposit by reference") {
@@ -213,21 +213,21 @@ class DepositControllerTest : ControllerTestBase() {
             testContext.deposits = listOf(deposit)
         }
         suppose("File storage will store document") {
-            testContext.multipartFile = MockMultipartFile("file", "test.txt",
-                    "text/plain", "Some document data".toByteArray())
+            testContext.multipartFile = MockMultipartFile(
+                "file", "test.txt", "text/plain", "Some document data".toByteArray())
             Mockito.`when`(
-                    cloudStorageService.saveFile(testContext.multipartFile.originalFilename,
-                            testContext.multipartFile.bytes)
+                cloudStorageService.saveFile(testContext.multipartFile.originalFilename,
+                    testContext.multipartFile.bytes)
             ).thenReturn(testContext.documentLink)
         }
 
         verify("Admin can approve deposit") {
             val depositId = testContext.deposits.first().id
             val result = mockMvc.perform(
-                    fileUpload("$depositPath/$depositId/approve?amount=${testContext.amount}")
-                            .file(testContext.multipartFile))
-                    .andExpect(MockMvcResultMatchers.status().isOk)
-                    .andReturn()
+                fileUpload("$depositPath/$depositId/approve?amount=${testContext.amount}")
+                    .file(testContext.multipartFile))
+                .andExpect(MockMvcResultMatchers.status().isOk)
+                .andReturn()
 
             val depositResponse: DepositResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(depositResponse.id).isEqualTo(depositId)
@@ -279,13 +279,17 @@ class DepositControllerTest : ControllerTestBase() {
             testContext.deposits = listOf(unapproved, approved)
         }
         suppose("User service will return user") {
-            Mockito.`when`(userService.getUsers(listOf(userUuid))).thenReturn(listOf(createUserResponse(userUuid)))
+            Mockito.`when`(userService.getUsers(setOf(userUuid))).thenReturn(listOf(createUserResponse(userUuid)))
         }
 
         verify("User can get unapproved deposit") {
-            val result = mockMvc.perform(get("$depositPath/unapproved"))
-                    .andExpect(MockMvcResultMatchers.status().isOk)
-                    .andReturn()
+            val result = mockMvc.perform(
+                get("$depositPath/unapproved")
+                    .param("size", "20")
+                    .param("page", "0")
+                    .param("sort", "createdAt,desc"))
+                .andExpect(MockMvcResultMatchers.status().isOk)
+                .andReturn()
 
             val deposits: DepositWithUserListResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(deposits.deposits).hasSize(1)
@@ -304,13 +308,17 @@ class DepositControllerTest : ControllerTestBase() {
             testContext.deposits = listOf(unapproved, approved)
         }
         suppose("User service will return user") {
-            Mockito.`when`(userService.getUsers(listOf(userUuid))).thenReturn(listOf(createUserResponse(userUuid)))
+            Mockito.`when`(userService.getUsers(setOf(userUuid))).thenReturn(listOf(createUserResponse(userUuid)))
         }
 
         verify("User can get approved deposit") {
-            val result = mockMvc.perform(get("$depositPath/approved"))
-                    .andExpect(MockMvcResultMatchers.status().isOk)
-                    .andReturn()
+            val result = mockMvc.perform(
+                get("$depositPath/approved")
+                    .param("size", "20")
+                    .param("page", "0")
+                    .param("sort", "approvedAt,desc"))
+                .andExpect(MockMvcResultMatchers.status().isOk)
+                .andReturn()
 
             val deposits: DepositWithUserListResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(deposits.deposits).hasSize(1)

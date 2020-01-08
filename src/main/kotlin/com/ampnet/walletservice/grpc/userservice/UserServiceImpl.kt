@@ -26,7 +26,7 @@ class UserServiceImpl(
         UserServiceGrpc.newBlockingStub(channel)
     }
 
-    override fun getUsers(uuids: Iterable<UUID>): List<UserResponse> {
+    override fun getUsers(uuids: Set<UUID>): List<UserResponse> {
         logger.debug { "Fetching users: $uuids" }
         try {
             val request = GetUsersRequest.newBuilder()
