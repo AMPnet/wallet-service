@@ -198,9 +198,9 @@ class ProjectInvestmentServiceTest : JpaServiceTestBase() {
         }
 
         verify("Service will generate transaction") {
-            val transactionData = projectInvestmentService
+            val transactionDataAndInfo = projectInvestmentService
                 .generateInvestInProjectTransaction(testContext.investmentRequest)
-            assertThat(transactionData.transactionData).isEqualTo(transactionData)
+            assertThat(transactionDataAndInfo.transactionData).isEqualTo(transactionData)
         }
     }
 
