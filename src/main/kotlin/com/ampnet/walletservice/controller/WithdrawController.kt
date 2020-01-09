@@ -11,6 +11,8 @@ import com.ampnet.walletservice.service.WalletService
 import com.ampnet.walletservice.service.WithdrawService
 import com.ampnet.walletservice.service.pojo.DocumentSaveRequest
 import mu.KLogging
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -60,19 +62,19 @@ class WithdrawController(
 
     @GetMapping("/withdraw/approved")
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_WITHDRAW)")
-    fun getApprovedWithdraws(): ResponseEntity<WithdrawWithUserListResponse> {
+    fun getApprovedWithdraws(pageable: Pageable): ResponseEntity<WithdrawWithUserListResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to get all approved withdraws by user: ${userPrincipal.uuid}" }
-        val response = generateResponseFromWithdraws(withdrawService.getAllApproved())
+        val response = generateResponseFromWithdraws(withdrawService.getAllApproved(pageable))
         return ResponseEntity.ok(response)
     }
 
     @GetMapping("/withdraw/burned")
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_WITHDRAW)")
-    fun getBurnedWithdraws(): ResponseEntity<WithdrawWithUserListResponse> {
+    fun getBurnedWithdraws(pageable: Pageable): ResponseEntity<WithdrawWithUserListResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to get all burned withdraws by user: ${userPrincipal.uuid}" }
-        val response = generateResponseFromWithdraws(withdrawService.getAllBurned())
+        val response = generateResponseFromWithdraws(withdrawService.getAllBurned(pageable))
         return ResponseEntity.ok(response)
     }
 
@@ -106,15 +108,17 @@ class WithdrawController(
         return ResponseEntity.ok(WithdrawResponse(withdraw))
     }
 
-    private fun generateResponseFromWithdraws(withdraws: List<Withdraw>): WithdrawWithUserListResponse {
-        val users = userService.getUsers(withdraws.map { it.userUuid })
+    private fun generateResponseFromWithdraws(withdrawsPage: Page<Withdraw>): WithdrawWithUserListResponse {
+        val withdraws = withdrawsPage.toList()
+        val users = userService
+            .getUsers(withdraws.map { it.userUuid }.toSet())
+            .associateBy { it.uuid }
         val withdrawWithUserList = mutableListOf<WithdrawWithUserResponse>()
         withdraws.forEach { withdraw ->
             val wallet = walletService.getWallet(withdraw.userUuid)?.hash.orEmpty()
-            val userUuid = withdraw.userUuid.toString()
-            val userResponse = users.find { it.uuid == userUuid }
+            val userResponse = users[withdraw.userUuid.toString()]
             withdrawWithUserList.add(WithdrawWithUserResponse(withdraw, userResponse, wallet))
         }
-        return WithdrawWithUserListResponse(withdrawWithUserList)
+        return WithdrawWithUserListResponse(withdrawWithUserList, withdrawsPage.number, withdrawsPage.totalPages)
     }
 }

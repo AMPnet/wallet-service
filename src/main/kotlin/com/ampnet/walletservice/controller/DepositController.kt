@@ -13,6 +13,8 @@ import com.ampnet.walletservice.service.pojo.ApproveDepositRequest
 import com.ampnet.walletservice.service.pojo.DocumentSaveRequest
 import com.ampnet.walletservice.service.pojo.MintServiceRequest
 import mu.KLogging
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -57,7 +59,7 @@ class DepositController(
     ): ResponseEntity<DepositWithUserResponse> {
         logger.debug { "Received request to get find deposit by reference: $reference" }
         depositService.findByReference(reference)?.let {
-            val user = userService.getUsers(listOf(it.userUuid)).firstOrNull()
+            val user = userService.getUsers(setOf(it.userUuid)).firstOrNull()
             val response = DepositWithUserResponse(it, user)
             return ResponseEntity.ok(response)
         }
@@ -90,18 +92,18 @@ class DepositController(
 
     @GetMapping("/deposit/unapproved")
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_DEPOSIT)")
-    fun getUnapprovedDeposits(): ResponseEntity<DepositWithUserListResponse> {
+    fun getUnapprovedDeposits(pageable: Pageable): ResponseEntity<DepositWithUserListResponse> {
         logger.debug { "Received request to get unapproved deposits" }
-        val deposits = depositService.getAllWithDocuments(false)
+        val deposits = depositService.getAllWithDocuments(false, pageable)
         val response = createDepositWithUserListResponse(deposits)
         return ResponseEntity.ok(response)
     }
 
     @GetMapping("/deposit/approved")
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_DEPOSIT)")
-    fun getApprovedDeposits(): ResponseEntity<DepositWithUserListResponse> {
+    fun getApprovedDeposits(pageable: Pageable): ResponseEntity<DepositWithUserListResponse> {
         logger.debug { "Received request to get approved deposits" }
-        val deposits = depositService.getAllWithDocuments(true)
+        val deposits = depositService.getAllWithDocuments(true, pageable)
         val response = createDepositWithUserListResponse(deposits)
         return ResponseEntity.ok(response)
     }
@@ -124,14 +126,16 @@ class DepositController(
         return ResponseEntity.ok(UsersWithApprovedDeposit(counted))
     }
 
-    private fun createDepositWithUserListResponse(deposits: List<Deposit>): DepositWithUserListResponse {
-        val users = userService.getUsers(deposits.map { it.userUuid })
+    private fun createDepositWithUserListResponse(depositsPage: Page<Deposit>): DepositWithUserListResponse {
+        val deposits = depositsPage.toList()
+        val users = userService
+            .getUsers(deposits.map { it.userUuid }.toSet())
+            .associateBy { it.uuid }
         val depositWithUserList = mutableListOf<DepositWithUserResponse>()
         deposits.forEach { deposit ->
-            val userUuid = deposit.userUuid.toString()
-            val user = users.find { it.uuid == userUuid }
+            val user = users[deposit.userUuid.toString()]
             depositWithUserList.add(DepositWithUserResponse(deposit, user))
         }
-        return DepositWithUserListResponse(depositWithUserList)
+        return DepositWithUserListResponse(depositWithUserList, depositsPage.number, depositsPage.totalPages)
     }
 }

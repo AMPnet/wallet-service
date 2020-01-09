@@ -20,6 +20,9 @@ import com.ampnet.walletservice.service.pojo.ProjectWithWallet
 import java.time.ZonedDateTime
 import java.util.UUID
 import mu.KotlinLogging
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -145,18 +148,20 @@ class WalletServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun getProjectsWithActiveWallet(): List<ProjectWithWallet> {
-        val projectWallets = walletRepository.findActivatedByType(WalletType.PROJECT)
+    override fun getProjectsWithActiveWallet(pageable: Pageable): Page<ProjectWithWallet> {
+        val walletsPage = walletRepository.findActivatedByType(WalletType.PROJECT, pageable)
+        val projectWallets = walletsPage.toList()
             .filter { it.hash != null }
             .associateBy { it.owner }
         if (projectWallets.isEmpty()) {
-            return emptyList()
+            return PageImpl<ProjectWithWallet>(emptyList(), pageable, walletsPage.totalElements)
         }
 
         val projectWalletHashes = projectWallets.values.mapNotNull { it.hash }
         val projectsInfo = blockchainService.getProjectsInfo(projectWalletHashes)
+            .toList()
             .associateBy { it.txHash }
-        return projectService.getProjects(projectWallets.keys)
+        val projectsWithWallet = projectService.getProjects(projectWallets.keys)
             .filter { it.active }
             .mapNotNull { project ->
                 val uuid = UUID.fromString(project.uuid)
@@ -165,6 +170,7 @@ class WalletServiceImpl(
                     ProjectWithWallet(project, wallet, balance)
                 }
             }
+        return PageImpl<ProjectWithWallet>(projectsWithWallet, pageable, walletsPage.totalElements)
     }
 
     private fun createWallet(owner: UUID, activationData: String, type: WalletType): Wallet {

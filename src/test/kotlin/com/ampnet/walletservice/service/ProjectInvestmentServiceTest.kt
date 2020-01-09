@@ -4,7 +4,6 @@ import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.exception.InvalidRequestException
 import com.ampnet.walletservice.exception.ResourceNotFoundException
 import com.ampnet.walletservice.grpc.blockchain.pojo.ProjectInvestmentTxRequest
-import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionData
 import com.ampnet.walletservice.service.impl.ProjectInvestmentServiceImpl
 import com.ampnet.walletservice.service.impl.TransactionInfoServiceImpl
 import com.ampnet.walletservice.service.pojo.ProjectInvestmentRequest
@@ -195,13 +194,13 @@ class ProjectInvestmentServiceTest : JpaServiceTestBase() {
             val projectWalletHash = getWalletHash(projectUuid)
             Mockito.`when`(mockedBlockchainService.generateProjectInvestmentTransaction(
                 ProjectInvestmentTxRequest(userWalletHash, projectWalletHash, 100_00))
-            ).thenReturn(testContext.transactionData)
+            ).thenReturn(transactionData)
         }
 
         verify("Service will generate transaction") {
-            val transactionData = projectInvestmentService
+            val transactionDataAndInfo = projectInvestmentService
                 .generateInvestInProjectTransaction(testContext.investmentRequest)
-            assertThat(transactionData.transactionData).isEqualTo(testContext.transactionData)
+            assertThat(transactionDataAndInfo.transactionData).isEqualTo(transactionData)
         }
     }
 
@@ -238,21 +237,18 @@ class ProjectInvestmentServiceTest : JpaServiceTestBase() {
     fun mustBeAbleInvestInProject() {
         suppose("Blockchain service will return hash for post transaction") {
             Mockito.`when`(mockedBlockchainService
-                    .postTransaction(testContext.signedTransaction)
-            ).thenReturn(testContext.txHash)
+                    .postTransaction(signedTransaction)
+            ).thenReturn(txHash)
         }
 
         verify("Service can post project invest transaction") {
-            val txHash = projectInvestmentService.investInProject(testContext.signedTransaction)
-            assertThat(txHash).isEqualTo(testContext.txHash)
+            val txHash = projectInvestmentService.investInProject(signedTransaction)
+            assertThat(txHash).isEqualTo(txHash)
         }
     }
 
     private class TestContext {
         lateinit var investmentRequest: ProjectInvestmentRequest
-        val addressHash = "0x4e4ee58ff3a9e9e78c2dfdbac0d1518e4e1039f9189267e1dc8d3e35cbdf7892"
-        val signedTransaction = "SignedTransactionRequest"
-        val transactionData = TransactionData("data")
-        val txHash = "0x5432jlhkljkhsf78y7y23rekljhjksadhf6t4632ilhasdfh7836242hluafhds"
+        val addressHash = "th_4e4ee58ff3a9e9e78c2dfdbac0d1518e4e1039f9189267e1dc8d3e35cbdf7892"
     }
 }

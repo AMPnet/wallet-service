@@ -1,7 +1,6 @@
 package com.ampnet.walletservice.controller.pojo.response
 
 import com.ampnet.walletservice.enums.TransactionType
-import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionData
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionDataAndInfo
 import com.ampnet.walletservice.persistence.model.TransactionInfo
 
@@ -28,5 +27,3 @@ data class TransactionInfoResponse(
         transactionInfo.description
     )
 }
-
-data class TransactionAndLinkResponse(val tx: TransactionData, val link: String)

@@ -17,6 +17,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 class PublicControllerTest : ControllerTestBase() {
 
     private val projectWalletPublicPath = "/public/wallet/project"
+    private val publicProjectActivePath = "/public/project/active"
 
     private lateinit var testContext: TestContext
 
@@ -65,7 +66,7 @@ class PublicControllerTest : ControllerTestBase() {
         }
         suppose("Second inactive project wallet exists") {
             testContext.inactiveProjectWallet =
-                createWalletForProject(UUID.randomUUID(), "0x49bC6a8219c798394726f8e86E040A878da1d00A")
+                createWalletForProject(UUID.randomUUID(), "th_49bC6a8219c798394726f8e86E040A878da1d00A")
         }
         suppose("Blockchain service will return projects info") {
             val inactiveWalletHash = getWalletHash(testContext.inactiveProjectWallet)
@@ -74,6 +75,12 @@ class PublicControllerTest : ControllerTestBase() {
             ).thenReturn(
                 listOf(getProjectInfoResponse(walletHash, testContext.projectBalance),
                     getProjectInfoResponse(inactiveWalletHash, testContext.projectBalance - 100))
+            )
+            Mockito.`when`(
+                blockchainService.getProjectsInfo(listOf(inactiveWalletHash, walletHash))
+            ).thenReturn(
+                listOf(getProjectInfoResponse(inactiveWalletHash, testContext.projectBalance - 100),
+                    getProjectInfoResponse(walletHash, testContext.projectBalance))
             )
         }
         suppose("Project service will return projects") {
@@ -88,7 +95,11 @@ class PublicControllerTest : ControllerTestBase() {
         }
 
         verify("Controller will return active project") {
-            val result = mockMvc.perform(get("/public/project/active"))
+            val result = mockMvc.perform(
+                get(publicProjectActivePath)
+                    .param("size", "20")
+                    .param("page", "0")
+                    .param("sort", "createdAt,desc"))
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -99,13 +110,15 @@ class PublicControllerTest : ControllerTestBase() {
             assertThat(projectWithWallet.project.uuid).isEqualTo(projectUuid.toString())
             assertThat(projectWithWallet.wallet.uuid).isEqualTo(testContext.wallet.uuid)
             assertThat(projectWithWallet.wallet.balance).isEqualTo(testContext.projectBalance)
+            assertThat(projectsResponse.page).isEqualTo(0)
+            assertThat(projectsResponse.totalPages).isEqualTo(1)
         }
     }
 
     @Test
     fun mustBeAbleToGetEmptyListOfActiveProjects() {
         verify("Controller will return empty list") {
-            val result = mockMvc.perform(get("/public/project/active"))
+            val result = mockMvc.perform(get(publicProjectActivePath))
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -119,7 +132,7 @@ class PublicControllerTest : ControllerTestBase() {
     @WithMockCrowdfoundUser(verified = false)
     fun mustBeAbleToGetActiveProjectsWithUnVerifiedAccount() {
         verify("Controller will return empty list") {
-            val result = mockMvc.perform(get("/public/project/active"))
+            val result = mockMvc.perform(get(publicProjectActivePath))
                 .andExpect(status().isOk)
                 .andReturn()
 

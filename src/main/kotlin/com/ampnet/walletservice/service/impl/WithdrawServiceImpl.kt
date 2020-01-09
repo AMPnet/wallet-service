@@ -17,6 +17,8 @@ import com.ampnet.walletservice.service.pojo.DocumentSaveRequest
 import java.time.ZonedDateTime
 import java.util.UUID
 import mu.KLogging
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -38,13 +40,13 @@ class WithdrawServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun getAllApproved(): List<Withdraw> {
-        return withdrawRepository.findAllApproved()
+    override fun getAllApproved(pageable: Pageable): Page<Withdraw> {
+        return withdrawRepository.findAllApproved(pageable)
     }
 
     @Transactional(readOnly = true)
-    override fun getAllBurned(): List<Withdraw> {
-        return withdrawRepository.findAllBurned()
+    override fun getAllBurned(pageable: Pageable): Page<Withdraw> {
+        return withdrawRepository.findAllBurned(pageable)
     }
 
     @Transactional

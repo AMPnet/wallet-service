@@ -2,7 +2,6 @@ package com.ampnet.walletservice.service
 
 import com.ampnet.walletservice.exception.InvalidRequestException
 import com.ampnet.walletservice.exception.ResourceAlreadyExistsException
-import com.ampnet.walletservice.persistence.model.Wallet
 import com.ampnet.walletservice.persistence.model.Withdraw
 import com.ampnet.walletservice.persistence.repository.WithdrawRepository
 import com.ampnet.walletservice.service.impl.StorageServiceImpl
@@ -25,10 +24,6 @@ class WithdrawServiceTest : JpaServiceTestBase() {
         val transactionInfoService = TransactionInfoServiceImpl(transactionInfoRepository)
         WithdrawServiceImpl(walletRepository, withdrawRepository, mockedBlockchainService, transactionInfoService,
                 storageServiceImpl, mockedMailService)
-    }
-    private val userWallet: Wallet by lazy {
-        databaseCleanerService.deleteAllWallets()
-        createWalletForUser(userUuid, "user-wallet-hash")
     }
     private val bankAccount = "bank-account"
     private lateinit var withdraw: Withdraw
@@ -165,7 +160,7 @@ class WithdrawServiceTest : JpaServiceTestBase() {
 
         verify("Service will throw exception when user tries to burn unapproved withdraw") {
             assertThrows<InvalidRequestException> {
-                withdrawService.burn("signed-transaction", withdraw.id)
+                withdrawService.burn(signedTransaction, withdraw.id)
             }
         }
     }
@@ -178,7 +173,7 @@ class WithdrawServiceTest : JpaServiceTestBase() {
 
         verify("Service will throw exception when user tries to generate burn tx for burned withdraw") {
             assertThrows<InvalidRequestException> {
-                withdrawService.burn("signed-transaction", withdraw.id)
+                withdrawService.burn(signedTransaction, withdraw.id)
             }
         }
     }

@@ -5,6 +5,7 @@ import com.ampnet.walletservice.config.DatabaseCleanerService
 import com.ampnet.walletservice.enums.Currency
 import com.ampnet.walletservice.enums.WalletType
 import com.ampnet.walletservice.grpc.blockchain.BlockchainService
+import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionData
 import com.ampnet.walletservice.grpc.mail.MailService
 import com.ampnet.walletservice.grpc.mail.MailServiceImpl
 import com.ampnet.walletservice.grpc.projectservice.ProjectService
@@ -52,6 +53,9 @@ abstract class JpaServiceTestBase : TestBase() {
     protected val userUuid: UUID = UUID.randomUUID()
     protected val organizationUuid: UUID = UUID.randomUUID()
     protected val projectUuid: UUID = UUID.randomUUID()
+    protected val signedTransaction = "signed-transaction"
+    protected val txHash = "tx-hash"
+    protected val transactionData = TransactionData("data")
 
     protected fun createWalletForUser(userUuid: UUID, hash: String) = createWallet(userUuid, hash, WalletType.USER)
 
