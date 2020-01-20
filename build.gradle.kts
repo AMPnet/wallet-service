@@ -7,24 +7,24 @@ import com.google.protobuf.gradle.protoc
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    val kotlinVersion = "1.3.60"
+    val kotlinVersion = "1.3.61"
     kotlin("plugin.jpa") version kotlinVersion
     kotlin("jvm") version kotlinVersion
     kotlin("plugin.spring") version kotlinVersion
 
-    id("org.springframework.boot") version "2.2.1.RELEASE"
+    id("org.springframework.boot") version "2.2.2.RELEASE"
     id("io.spring.dependency-management") version "1.0.8.RELEASE"
     id("org.asciidoctor.convert") version "1.5.8"
     id("com.google.cloud.tools.jib") version "1.8.0"
     id("org.jlleitschuh.gradle.ktlint") version "9.1.1"
-    id("io.gitlab.arturbosch.detekt").version("1.2.0")
-    id("com.google.protobuf") version "0.8.10"
+    id("io.gitlab.arturbosch.detekt").version("1.4.0")
+    id("com.google.protobuf") version "0.8.11"
     idea
     jacoco
 }
 
 group = "com.ampnet"
-version = "0.1.1"
+version = "0.1.2"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
@@ -48,9 +48,9 @@ dependencies {
 
     implementation("io.github.microutils:kotlin-logging:1.7.8")
     implementation("io.micrometer:micrometer-registry-prometheus")
-    implementation("net.devh:grpc-client-spring-boot-starter:2.5.1.RELEASE")
+    implementation("net.devh:grpc-client-spring-boot-starter:2.6.2.RELEASE")
     implementation("software.amazon.awssdk:s3:2.5.27")
-    implementation("com.github.AMPnet:jwt:0.0.3")
+    implementation("com.github.AMPnet:jwt:v0.0.4")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
@@ -70,11 +70,11 @@ tasks.test {
 
 protobuf {
     protoc {
-        artifact = "com.google.protobuf:protoc:3.7.1"
+        artifact = "com.google.protobuf:protoc:3.10.0"
     }
     plugins {
         id("grpc") {
-            artifact = "io.grpc:protoc-gen-grpc-java:1.24.2"
+            artifact = "io.grpc:protoc-gen-grpc-java:1.25.0"
         }
     }
     generateProtoTasks {
