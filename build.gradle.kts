@@ -105,7 +105,8 @@ jib {
 jacoco.toolVersion = "0.8.5"
 tasks.jacocoTestReport {
     reports {
-        xml.isEnabled = false
+        xml.isEnabled = true
+        xml.destination = file("$buildDir/reports/jacoco/report.xml")
         csv.isEnabled = false
         html.destination = file("$buildDir/reports/jacoco/html")
     }
