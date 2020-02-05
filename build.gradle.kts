@@ -151,7 +151,7 @@ tasks.asciidoctor {
         "version" to version,
         "date" to SimpleDateFormat("yyyy-MM-dd").format(Date())
     ))
-    // dependsOn(tasks.test)
+    dependsOn(tasks.test)
 }
 
 tasks.register<Copy>("copyDocs") {
