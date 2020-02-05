@@ -1,15 +1,28 @@
 = AMPnet Wallet Service API Documentation
+Version {version}, {date}
+:doctype: book
 :toc: left
 :sectnums:
 :toclevels: 2
 :source-highlighter: prettify
 :docinfo: shared
+:icons: font
+
+== Introduction
+This document contains generated documentation for `AMPnet wallet service`. Wallet service contains all endpoints
+need to manage user, project and organization wallets for AMPnet crowdfunding project.
+Source code is available on https://github.com/AMPnet/wallet-service[Github].
+
+IMPORTANT: **User with unverified account cannot reach wallet service except public routes.**
+To verify check `user service` docs. Unverified accounts will get link:#unverified[HTTP code 409]
 
 == Public API
 Collection of public endpoints
 
 === Active projects with wallet
-Get all active projects with wallet
+Get all active projects with wallet.
+List of all organizations is pageable. Define size of the list using param: `size` and page number with param: `page`.
+List can be sorted using param: `sort` (e.g. `sort=createdAt,desc`).
 
 .Request
 include::{snippets}/PublicControllerTest/mustBeAbleToGetAllActiveProjectsWithWallet/http-request.adoc[]
@@ -31,18 +44,16 @@ include::{snippets}/PublicControllerTest/mustReturnNotFoundForMissingProjectWall
 include::{snippets}/PublicControllerTest/mustReturnNotFoundForMissingProjectWallet/http-response.adoc[]
 
 == Wallet API
-Collection of endpoints for managing wallets
+All requests need header: `Authorization: Bearer JWT`.
 
+[[unverified]]
 === Unverified user account
-User with unverified account cannot reach `wallet-service` except public routes. To verify check `user-service` docs.
-
 .Request
 include::{snippets}/WalletControllerTest/mustNotBeAbleToCreateWalletWithUnVerifiedAccount/http-request.adoc[]
 .Response
 include::{snippets}/WalletControllerTest/mustNotBeAbleToCreateWalletWithUnVerifiedAccount/http-response.adoc[]
 
 === User Wallet
-Collection of endpoints for managing User wallet
 
 ==== Pair wallet
 
@@ -85,7 +96,6 @@ include::{snippets}/WalletControllerTest/mustNotBeAbleToCreateAdditionalWallet/h
 include::{snippets}/WalletControllerTest/mustNotBeAbleToCreateAdditionalWallet/http-response.adoc[]
 
 === Organization Wallet
-Collection of endpoints for managing Organization wallet
 
 ==== Get Organization wallet
 
@@ -116,7 +126,6 @@ include::{snippets}/WalletControllerTest/mustBeAbleToGetCreateProjectWalletTrans
 include::{snippets}/WalletControllerTest/mustBeAbleToGetCreateProjectWalletTransaction/http-response.adoc[]
 
 === Wallet Activation
-Collection of endpoints for activating wallets by cooperative
 
 ==== Get unactivated wallets
 Must have Admin role - privilege: `PrivilegeType.PRA_WALLET`
@@ -162,6 +171,7 @@ include::{snippets}/BroadcastTransactionControllerTest/mustNotBeAbleToPostNonExi
 include::{snippets}/BroadcastTransactionControllerTest/mustNotBeAbleToPostNonExistingTransaction/http-response.adoc[]
 
 == Withdraw API
+All requests need header: `Authorization: Bearer JWT`.
 
 === Create Withdraw
 .Request
@@ -221,6 +231,7 @@ include::{snippets}/WithdrawControllerTest/mustBeAbleToGenerateBurnTransaction/h
 include::{snippets}/WithdrawControllerTest/mustBeAbleToGenerateBurnTransaction/http-response.adoc[]
 
 == Deposit API
+All requests need header: `Authorization: Bearer JWT`.
 
 === Create Deposit
 .Request
@@ -288,6 +299,7 @@ include::{snippets}/DepositControllerTest/mustBeAbleToCountUsersWithApprovedDepo
 include::{snippets}/DepositControllerTest/mustBeAbleToCountUsersWithApprovedDeposit/http-response.adoc[]
 
 == Portfolio API
+All requests need header: `Authorization: Bearer JWT`.
 
 === Get transactions with project
 .Request
@@ -308,6 +320,7 @@ include::{snippets}/PortfolioControllerTest/mustBeAbleToGetInvestmentsInProject/
 include::{snippets}/PortfolioControllerTest/mustBeAbleToGetInvestmentsInProject/http-response.adoc[]
 
 == Investment API
+All requests need header: `Authorization: Bearer JWT`.
 
 === Generate transaction to invest in project
 .Request
