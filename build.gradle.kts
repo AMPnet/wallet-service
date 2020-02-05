@@ -4,6 +4,8 @@ import com.google.protobuf.gradle.ofSourceSet
 import com.google.protobuf.gradle.plugins
 import com.google.protobuf.gradle.protobuf
 import com.google.protobuf.gradle.protoc
+import java.text.SimpleDateFormat
+import java.util.Date
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -24,7 +26,7 @@ plugins {
 }
 
 group = "com.ampnet"
-version = "0.1.2"
+version = "0.1.3"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
@@ -144,8 +146,12 @@ task("qualityCheck") {
 }
 
 tasks.asciidoctor {
-    attributes(mapOf("snippets" to file("build/generated-snippets")))
-    dependsOn(tasks.test)
+    attributes(mapOf(
+        "snippets" to file("build/generated-snippets"),
+        "version" to version,
+        "date" to SimpleDateFormat("yyyy-MM-dd").format(Date())
+    ))
+    // dependsOn(tasks.test)
 }
 
 tasks.register<Copy>("copyDocs") {
