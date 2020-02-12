@@ -6,7 +6,7 @@ import com.ampnet.walletservice.service.pojo.MintServiceRequest
 import java.util.UUID
 
 interface TransactionInfoService {
-    fun activateWalletTransaction(walletUuid: UUID, type: WalletType, userUuid: UUID): TransactionInfo
+    fun activateWalletTransaction(walletUuid: UUID, walletType: WalletType, userUuid: UUID): TransactionInfo
     fun createOrgTransaction(organization: UUID, organizationName: String, userUuid: UUID): TransactionInfo
     fun createProjectTransaction(project: UUID, projectName: String, userUuid: UUID): TransactionInfo
     fun createInvestTransaction(projectName: String, amount: Long, userUuid: UUID): TransactionInfo

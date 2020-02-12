@@ -23,7 +23,7 @@ data class TransactionInfoResponse(
 ) {
     constructor(transactionInfo: TransactionInfo) : this(
         transactionInfo.type,
-        transactionInfo.title,
+        transactionInfo.type.title,
         transactionInfo.description
     )
 }

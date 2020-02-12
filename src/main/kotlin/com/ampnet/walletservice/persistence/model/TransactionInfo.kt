@@ -21,17 +21,14 @@ data class TransactionInfo(
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 16)
-    var type: TransactionType,
+    val type: TransactionType,
 
     @Column(nullable = false)
-    var title: String,
+    val description: String,
 
     @Column(nullable = false)
-    var description: String,
-
-    @Column(nullable = false)
-    var userUuid: UUID,
+    val userUuid: UUID,
 
     @Column(nullable = true, length = 128)
-    var companionData: String?
+    val companionData: String?
 )
