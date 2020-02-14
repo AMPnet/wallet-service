@@ -203,15 +203,15 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
     }
 
     @Test
-    fun mustBeAbleToPostSignedInvestAllowanceTransaction() {
-        suppose("TransactionInfo exists for invest allowance transaction") {
+    fun mustBeAbleToPostSignedInvestTransaction() {
+        suppose("TransactionInfo exists for invest transaction") {
             testContext.transactionInfo = createTransactionInfo(TransactionType.INVEST, userUuid)
         }
-        suppose("Blockchain service will accept signed transaction for project investment") {
+        suppose("Blockchain service will accept signed transaction for project investment confirmation") {
             Mockito.`when`(blockchainService.postTransaction(signedTransaction)).thenReturn(txHash)
         }
 
-        verify("User can post signed transaction to invest in project") {
+        verify("User can post signed transaction to confirm investment in project") {
             val request = TxBroadcastRequest(testContext.transactionInfo.id, signedTransaction)
             val result = mockMvc.perform(
                 post(broadcastPath)
@@ -230,11 +230,11 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
     }
 
     @Test
-    fun mustBeAbleToPostSignedInvestTransaction() {
-        suppose("TransactionInfo exists for invest transaction") {
-            testContext.transactionInfo = createTransactionInfo(TransactionType.INVEST, userUuid)
+    fun mustBeAbleToPostCancelInvestsInProjectTransaction() {
+        suppose("TransactionInfo exists for cancel invests in project transaction") {
+            testContext.transactionInfo = createTransactionInfo(TransactionType.CANCEL_INVEST, userUuid)
         }
-        suppose("Blockchain service will accept signed transaction for project investment confirmation") {
+        suppose("Blockchain service will accept signed transaction to cancel investments in project") {
             Mockito.`when`(blockchainService.postTransaction(signedTransaction)).thenReturn(txHash)
         }
 

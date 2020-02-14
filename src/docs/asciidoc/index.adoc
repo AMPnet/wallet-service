@@ -328,3 +328,8 @@ include::{snippets}/InvestmentControllerTest/mustBeAbleToGenerateProjectInvestme
 .Response
 include::{snippets}/InvestmentControllerTest/mustBeAbleToGenerateProjectInvestmentTransaction/http-response.adoc[]
 
+=== Generate transaction to cancel all investments in project
+.Request
+include::{snippets}/InvestmentControllerTest/mustBeAbleToGenerateCancelInvestmentsInProjectTransaction/http-request.adoc[]
+.Response
+include::{snippets}/InvestmentControllerTest/mustBeAbleToGenerateCancelInvestmentsInProjectTransaction/http-response.adoc[]

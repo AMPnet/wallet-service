@@ -10,6 +10,7 @@ interface TransactionInfoService {
     fun createOrgTransaction(organization: UUID, organizationName: String, userUuid: UUID): TransactionInfo
     fun createProjectTransaction(project: UUID, projectName: String, userUuid: UUID): TransactionInfo
     fun createInvestTransaction(projectName: String, amount: Long, userUuid: UUID): TransactionInfo
+    fun cancelInvestmentTransaction(projectName: String, userUuid: UUID): TransactionInfo
     fun createMintTransaction(request: MintServiceRequest, receivingWallet: String): TransactionInfo
     fun createApprovalTransaction(amount: Long, userUuid: UUID, withdrawId: Int): TransactionInfo
     fun createBurnTransaction(amount: Long, userUuid: UUID, withdrawId: Int): TransactionInfo

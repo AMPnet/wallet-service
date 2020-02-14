@@ -50,6 +50,14 @@ class TransactionInfoServiceImpl(
     }
 
     @Transactional
+    override fun cancelInvestmentTransaction(projectName: String, userUuid: UUID): TransactionInfo {
+        val type = TransactionType.CANCEL_INVEST
+        val description = type.description.format(projectName)
+        val request = CreateTransactionRequest(type, description, userUuid)
+        return createTransaction(request)
+    }
+
+    @Transactional
     override fun createMintTransaction(request: MintServiceRequest, receivingWallet: String): TransactionInfo {
         val type = TransactionType.MINT
         val description = type.description.format(receivingWallet)

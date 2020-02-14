@@ -150,6 +150,28 @@ class BlockchainServiceImpl(
         }
     }
 
+    override fun generateCancelInvestmentsInProject(
+        userWalletHash: String,
+        projectWalletHash: String
+    ): TransactionData {
+        logger.info { "User: $userWalletHash is canceling investments in project: $projectWalletHash" }
+        try {
+            // TODO: generate cancel investments in project!
+            val response = serviceWithTimeout()
+                .generateInvestTx(
+                    GenerateInvestTxRequest.newBuilder()
+                        .setFromTxHash(userWalletHash)
+                        .setProjectTxHash(projectWalletHash)
+                        .build()
+                )
+            logger.info { "Successfully generated cancel investments in project: $projectWalletHash transaction" }
+            return TransactionData(response)
+        } catch (ex: StatusRuntimeException) {
+            throw getInternalExceptionFromStatusException(
+                ex, "Could not cancel invests in project: $projectWalletHash by user: $userWalletHash")
+        }
+    }
+
     override fun generateMintTransaction(toHash: String, amount: Long): TransactionData {
         logger.info { "Generating Mint transaction toHash: $toHash with amount = $amount" }
         try {

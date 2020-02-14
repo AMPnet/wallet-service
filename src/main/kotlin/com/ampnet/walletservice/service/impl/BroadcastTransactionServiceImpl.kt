@@ -39,6 +39,7 @@ class BroadcastTransactionServiceImpl(
             TransactionType.CREATE_ORG -> createOrganizationWallet(transactionInfo, signedTransaction)
             TransactionType.CREATE_PROJECT -> createProjectWallet(transactionInfo, signedTransaction)
             TransactionType.INVEST -> projectInvestmentService.investInProject(signedTransaction)
+            TransactionType.CANCEL_INVEST -> projectInvestmentService.cancelInvestmentsInProject(signedTransaction)
             TransactionType.MINT -> confirmMintTransaction(transactionInfo, signedTransaction)
             TransactionType.BURN_APPROVAL ->
                 confirmApprovalTransaction(transactionInfo, signedTransaction)

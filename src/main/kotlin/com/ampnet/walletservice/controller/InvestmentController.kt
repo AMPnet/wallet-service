@@ -28,4 +28,15 @@ class InvestmentController(private val projectInvestmentService: ProjectInvestme
         val transaction = projectInvestmentService.generateInvestInProjectTransaction(request)
         return ResponseEntity.ok(TransactionResponse(transaction))
     }
+
+    @GetMapping("/invest/project/{projectUuid}/cancel")
+    fun generateCancelInvestmentsInProjectTransaction(
+        @PathVariable("projectUuid") projectUuid: UUID
+    ): ResponseEntity<TransactionResponse> {
+        logger.debug { "Received request to generate cancel invests in project transaction for project: $projectUuid" }
+        val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
+        val transaction = projectInvestmentService
+            .generateCancelInvestmentsInProjectTransaction(projectUuid, userPrincipal.uuid)
+        return ResponseEntity.ok(TransactionResponse(transaction))
+    }
 }

@@ -14,6 +14,7 @@ interface BlockchainService {
     fun generateProjectWalletTransaction(request: GenerateProjectWalletRequest): TransactionData
     fun postTransaction(transaction: String): String
     fun generateProjectInvestmentTransaction(request: ProjectInvestmentTxRequest): TransactionData
+    fun generateCancelInvestmentsInProject(userWalletHash: String, projectWalletHash: String): TransactionData
     fun generateMintTransaction(toHash: String, amount: Long): TransactionData
     fun generateBurnTransaction(burnFromTxHash: String): TransactionData
     fun generateApproveBurnTransaction(burnFromTxHash: String, amount: Long): TransactionData
