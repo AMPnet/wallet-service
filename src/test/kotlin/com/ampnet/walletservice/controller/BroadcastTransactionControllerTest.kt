@@ -238,7 +238,7 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
             Mockito.`when`(blockchainService.postTransaction(signedTransaction)).thenReturn(txHash)
         }
 
-        verify("User can post signed transaction to confirm investment in project") {
+        verify("User can post signed transaction to cancel all investments in project") {
             val request = TxBroadcastRequest(testContext.transactionInfo.id, signedTransaction)
             val result = mockMvc.perform(
                 post(broadcastPath)
@@ -269,7 +269,7 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
             Mockito.`when`(blockchainService.postTransaction(signedTransaction)).thenReturn(txHash)
         }
 
-        verify("User can post signed transaction to confirm investment in project") {
+        verify("User can post signed transaction to mint funds") {
             val request = TxBroadcastRequest(testContext.transactionInfo.id, signedTransaction)
             val result = mockMvc.perform(
                 post(broadcastPath)
