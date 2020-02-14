@@ -6,12 +6,12 @@ import com.ampnet.walletservice.grpc.blockchain.pojo.ProjectInvestmentTxRequest
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionData
 import com.ampnet.walletservice.security.WithMockCrowdfoundUser
 import com.fasterxml.jackson.module.kotlin.readValue
-import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 class InvestmentControllerTest : ControllerTestBase() {
 
@@ -54,15 +54,51 @@ class InvestmentControllerTest : ControllerTestBase() {
 
         verify("User can generate invest project transaction") {
             val result = mockMvc.perform(
-                MockMvcRequestBuilders.get("$projectInvestmentPath/$projectUuid")
+                get("$projectInvestmentPath/$projectUuid")
                     .param("amount", testContext.investment.toString()))
-                .andExpect(MockMvcResultMatchers.status().isOk)
+                .andExpect(status().isOk)
                 .andReturn()
 
             val transactionResponse: TransactionResponse = objectMapper.readValue(result.response.contentAsString)
-            Assertions.assertThat(transactionResponse.tx).isEqualTo(testContext.transactionData.tx)
-            Assertions.assertThat(transactionResponse.txId).isNotNull()
-            Assertions.assertThat(transactionResponse.info.txType).isEqualTo(TransactionType.INVEST)
+            assertThat(transactionResponse.tx).isEqualTo(testContext.transactionData.tx)
+            assertThat(transactionResponse.txId).isNotNull()
+            assertThat(transactionResponse.info.txType).isEqualTo(TransactionType.INVEST)
+        }
+    }
+
+    @Test
+    @WithMockCrowdfoundUser
+    fun mustBeAbleToGenerateCancelInvestmentsInProjectTransaction() {
+        suppose("Project has empty wallet") {
+            val projectWallet = createWalletForProject(projectUuid, "project-wallet")
+            Mockito.`when`(blockchainService.getBalance(getWalletHash(projectWallet))).thenReturn(0)
+        }
+        suppose("User has wallet") {
+            createWalletForUser(userUuid, walletHash)
+        }
+        suppose("Project service will return project") {
+            Mockito.`when`(
+                projectService.getProject(projectUuid)
+            ).thenReturn(getProjectResponse(projectUuid, userUuid, organizationUuid))
+        }
+        suppose("Blockchain service will generate cancel investments transaction") {
+            val userWalletHash = getWalletHash(userUuid)
+            val projectWalletHash = getWalletHash(projectUuid)
+            Mockito.`when`(
+                blockchainService.generateCancelInvestmentsInProject(userWalletHash, projectWalletHash)
+            ).thenReturn(testContext.transactionData)
+        }
+
+        verify("User can generate cancel invests in project transaction") {
+            val result = mockMvc.perform(
+                get("$projectInvestmentPath/$projectUuid/cancel"))
+                .andExpect(status().isOk)
+                .andReturn()
+
+            val transactionResponse: TransactionResponse = objectMapper.readValue(result.response.contentAsString)
+            assertThat(transactionResponse.tx).isEqualTo(testContext.transactionData.tx)
+            assertThat(transactionResponse.txId).isNotNull()
+            assertThat(transactionResponse.info.txType).isEqualTo(TransactionType.CANCEL_INVEST)
         }
     }
 

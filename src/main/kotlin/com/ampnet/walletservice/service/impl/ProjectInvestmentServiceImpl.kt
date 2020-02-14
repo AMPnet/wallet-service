@@ -13,6 +13,7 @@ import com.ampnet.walletservice.service.ProjectInvestmentService
 import com.ampnet.walletservice.service.TransactionInfoService
 import com.ampnet.walletservice.service.pojo.ProjectInvestmentRequest
 import java.time.ZonedDateTime
+import java.util.UUID
 import mu.KLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -53,7 +54,26 @@ class ProjectInvestmentServiceImpl(
         return TransactionDataAndInfo(data, info)
     }
 
+    @Transactional
+    override fun generateCancelInvestmentsInProjectTransaction(
+        projectUuid: UUID,
+        userUuid: UUID
+    ): TransactionDataAndInfo {
+        logger.debug { "Generating cancel investments in project $projectUuid by user $userUuid" }
+        val projectResponse = projectService.getProject(projectUuid)
+
+        val userWalletHash = ServiceUtils.getWalletHash(userUuid, walletRepository)
+        val projectWalletHash = ServiceUtils.getWalletHash(projectUuid, walletRepository)
+        val data = blockchainService.generateCancelInvestmentsInProject(userWalletHash, projectWalletHash)
+        val info = transactionInfoService.cancelInvestmentTransaction(projectResponse.name, userUuid)
+        logger.debug { "Generated cancel investments in project $projectUuid by user $userUuid" }
+        return TransactionDataAndInfo(data, info)
+    }
+
     override fun investInProject(signedTransaction: String): String =
+        blockchainService.postTransaction(signedTransaction)
+
+    override fun cancelInvestmentsInProject(signedTransaction: String): String =
         blockchainService.postTransaction(signedTransaction)
 
     private fun verifyProjectIsStillActive(project: ProjectResponse) {

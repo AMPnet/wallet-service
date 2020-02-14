@@ -58,9 +58,7 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
                 createTransactionInfo(TransactionType.WALLET_ACTIVATE, userUuid, testContext.wallet.uuid.toString())
         }
         suppose("Blockchain service successfully generates transaction to create organization wallet") {
-            Mockito.`when`(
-                blockchainService.postTransaction(signedTransaction)
-            ).thenReturn(txHash)
+            Mockito.`when`(blockchainService.postTransaction(signedTransaction)).thenReturn(txHash)
         }
 
         verify("User can create organization wallet") {
@@ -95,9 +93,7 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
                 createTransactionInfo(TransactionType.CREATE_ORG, userUuid, organizationUuid.toString())
         }
         suppose("Blockchain service successfully generates transaction to create organization wallet") {
-            Mockito.`when`(
-                    blockchainService.postTransaction(signedTransaction)
-            ).thenReturn(activationData)
+            Mockito.`when`(blockchainService.postTransaction(signedTransaction)).thenReturn(activationData)
         }
 
         verify("User can create organization wallet") {
@@ -155,9 +151,7 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
                 createTransactionInfo(TransactionType.CREATE_PROJECT, userUuid, projectUuid.toString())
         }
         suppose("Blockchain service successfully adds project wallet") {
-            Mockito.`when`(
-                    blockchainService.postTransaction(signedTransaction)
-            ).thenReturn(activationData)
+            Mockito.`when`(blockchainService.postTransaction(signedTransaction)).thenReturn(activationData)
         }
 
         verify("User can create project wallet") {
@@ -209,17 +203,15 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
     }
 
     @Test
-    fun mustBeAbleToPostSignedInvestAllowanceTransaction() {
-        suppose("TransactionInfo exists for invest allowance transaction") {
+    fun mustBeAbleToPostSignedInvestTransaction() {
+        suppose("TransactionInfo exists for invest transaction") {
             testContext.transactionInfo = createTransactionInfo(TransactionType.INVEST, userUuid)
         }
-        suppose("Blockchain service will accept signed transaction for project investment") {
-            Mockito.`when`(
-                    blockchainService.postTransaction(signedTransaction)
-            ).thenReturn(txHash)
+        suppose("Blockchain service will accept signed transaction for project investment confirmation") {
+            Mockito.`when`(blockchainService.postTransaction(signedTransaction)).thenReturn(txHash)
         }
 
-        verify("User can post signed transaction to invest in project") {
+        verify("User can post signed transaction to confirm investment in project") {
             val request = TxBroadcastRequest(testContext.transactionInfo.id, signedTransaction)
             val result = mockMvc.perform(
                 post(broadcastPath)
@@ -238,17 +230,15 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
     }
 
     @Test
-    fun mustBeAbleToPostSignedInvestTransaction() {
-        suppose("TransactionInfo exists for invest transaction") {
-            testContext.transactionInfo = createTransactionInfo(TransactionType.INVEST, userUuid)
+    fun mustBeAbleToPostCancelInvestsInProjectTransaction() {
+        suppose("TransactionInfo exists for cancel invests in project transaction") {
+            testContext.transactionInfo = createTransactionInfo(TransactionType.CANCEL_INVEST, userUuid)
         }
-        suppose("Blockchain service will accept signed transaction for project investment confirmation") {
-            Mockito.`when`(
-                    blockchainService.postTransaction(signedTransaction)
-            ).thenReturn(txHash)
+        suppose("Blockchain service will accept signed transaction to cancel investments in project") {
+            Mockito.`when`(blockchainService.postTransaction(signedTransaction)).thenReturn(txHash)
         }
 
-        verify("User can post signed transaction to confirm investment in project") {
+        verify("User can post signed transaction to cancel all investments in project") {
             val request = TxBroadcastRequest(testContext.transactionInfo.id, signedTransaction)
             val result = mockMvc.perform(
                 post(broadcastPath)
@@ -276,12 +266,10 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
                 createTransactionInfo(TransactionType.MINT, userUuid, testContext.deposit.id.toString())
         }
         suppose("Blockchain service will accept signed transaction for project investment confirmation") {
-            Mockito.`when`(
-                    blockchainService.postTransaction(signedTransaction)
-            ).thenReturn(txHash)
+            Mockito.`when`(blockchainService.postTransaction(signedTransaction)).thenReturn(txHash)
         }
 
-        verify("User can post signed transaction to confirm investment in project") {
+        verify("User can post signed transaction to mint funds") {
             val request = TxBroadcastRequest(testContext.transactionInfo.id, signedTransaction)
             val result = mockMvc.perform(
                 post(broadcastPath)
@@ -299,7 +287,7 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
         }
         verify("Mail notification is sent") {
             Mockito.verify(mailService, Mockito.times(1))
-                    .sendDepositInfo(userUuid, true)
+                .sendDepositInfo(userUuid, true)
         }
     }
 
@@ -310,12 +298,10 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
         }
         suppose("TransactionInfo exists for withdraw approval transaction") {
             testContext.transactionInfo =
-                    createTransactionInfo(TransactionType.BURN_APPROVAL, userUuid, testContext.withdraw.id.toString())
+                createTransactionInfo(TransactionType.BURN_APPROVAL, userUuid, testContext.withdraw.id.toString())
         }
         suppose("Blockchain service will accept signed transaction for burn approval") {
-            Mockito.`when`(
-                    blockchainService.postTransaction(signedTransaction)
-            ).thenReturn(txHash)
+            Mockito.`when`(blockchainService.postTransaction(signedTransaction)).thenReturn(txHash)
         }
 
         verify("User can post signed transaction to confirm burn approval") {
@@ -346,9 +332,7 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
                 createTransactionInfo(TransactionType.BURN, userUuid, testContext.withdraw.id.toString())
         }
         suppose("Blockchain service will accept signed transaction for issuer burn") {
-            Mockito.`when`(
-                    blockchainService.postTransaction(signedTransaction)
-            ).thenReturn(txHash)
+            Mockito.`when`(blockchainService.postTransaction(signedTransaction)).thenReturn(txHash)
         }
 
         verify("User can post signed transaction to confirm burn") {
@@ -369,7 +353,7 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
         }
         verify("Mail notification is sent") {
             Mockito.verify(mailService, Mockito.times(1))
-                    .sendWithdrawInfo(userUuid, true)
+                .sendWithdrawInfo(userUuid, true)
         }
     }
 
@@ -378,7 +362,7 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
         userUuid: UUID,
         companionData: String? = null
     ): TransactionInfo {
-        val transactionInfo = TransactionInfo(0, type, "title", "description", userUuid, companionData)
+        val transactionInfo = TransactionInfo(0, type, "description", userUuid, companionData)
         return transactionInfoRepository.save(transactionInfo)
     }
 

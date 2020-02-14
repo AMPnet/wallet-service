@@ -64,6 +64,17 @@ message GenerateStartRevenueSharesPayoutTxRequest {
     string revenue = 3;
 }
 
+message GenerateApproveProjectWithdrawTxRequest {
+    string from_tx_hash = 1;
+    string project_tx_hash = 2;
+    string amount = 3;
+}
+
+message GenerateCancelInvestmentTxRequest {
+    string from_tx_hash = 1;
+    string project_tx_hash = 2;
+}
+
 message GetProjectsInfoRequest {
     repeated string project_tx_hashes = 1;
 }
@@ -76,8 +87,18 @@ message GetProjectsInfoResponse {
         string min_per_user_investment = 4;
         string max_per_user_investment = 5;
         string ends_at = 6;
+        bool payout_in_process = 7;
     }
     repeated ProjectInfo projects = 1;
+}
+
+message IsInvestmentCancelableRequest {
+    string investor_tx_hash = 1;
+    string project_tx_hash = 2;
+}
+
+message IsInvestmentCancelableResponse {
+    bool can_cancel = 1;
 }
 
 
@@ -127,6 +148,20 @@ message TransactionsResponse {
         Type type = 5;
     }
     repeated Transaction transactions = 1;
+}
+
+message TransactionInfoRequest {
+    string tx_hash = 1;
+}
+
+message TransactionInfoResponse {
+    string hash = 1;
+    string from_wallet = 2;
+    string to_wallet = 3;
+    string state = 4;
+    string type = 5;
+    string amount = 6;
+    string supervisor_status = 7;
 }
 
 ///////// Contract create messages /////////
@@ -179,6 +214,9 @@ service BlockchainService {
 
     // Project
 
+    rpc GenerateApproveProjectWithdrawTx(GenerateApproveProjectWithdrawTxRequest) returns (RawTxResponse);
+    rpc GenerateCancelInvestmentTx(GenerateCancelInvestmentTxRequest) returns (RawTxResponse);
+    rpc IsInvestmentCancelable(IsInvestmentCancelableRequest) returns (IsInvestmentCancelableResponse);
     rpc GenerateStartRevenueSharesPayoutTx(GenerateStartRevenueSharesPayoutTxRequest) returns (RawTxResponse);
     rpc GetProjectsInfo(GetProjectsInfoRequest) returns (GetProjectsInfoResponse);
 
@@ -194,5 +232,5 @@ service BlockchainService {
     rpc GetPortfolio(PortfolioRequest) returns (PortfolioResponse);
     rpc GetTransactions(TransactionsRequest) returns (TransactionsResponse);
     rpc GetInvestmentsInProject(InvestmentsInProjectRequest) returns (TransactionsResponse);
-
+    rpc GetTransactionInfo(TransactionInfoRequest) returns (TransactionInfoResponse);
 }

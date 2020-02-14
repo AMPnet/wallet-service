@@ -5,6 +5,7 @@ import com.ampnet.crowdfunding.proto.BlockchainServiceGrpc
 import com.ampnet.crowdfunding.proto.GenerateAddWalletTxRequest
 import com.ampnet.crowdfunding.proto.GenerateApproveWithdrawTxRequest
 import com.ampnet.crowdfunding.proto.GenerateBurnFromTxRequest
+import com.ampnet.crowdfunding.proto.GenerateCancelInvestmentTxRequest
 import com.ampnet.crowdfunding.proto.GenerateCreateOrganizationTxRequest
 import com.ampnet.crowdfunding.proto.GenerateCreateProjectTxRequest
 import com.ampnet.crowdfunding.proto.GenerateInvestTxRequest
@@ -147,6 +148,27 @@ class BlockchainServiceImpl(
         } catch (ex: StatusRuntimeException) {
             throw getInternalExceptionFromStatusException(
                 ex, "Could not invest in project: ${request.projectWalletHash}")
+        }
+    }
+
+    override fun generateCancelInvestmentsInProject(
+        userWalletHash: String,
+        projectWalletHash: String
+    ): TransactionData {
+        logger.info { "User: $userWalletHash is canceling investments in project: $projectWalletHash" }
+        try {
+            val response = serviceWithTimeout()
+                .generateCancelInvestmentTx(
+                    GenerateCancelInvestmentTxRequest.newBuilder()
+                        .setFromTxHash(userWalletHash)
+                        .setProjectTxHash(projectWalletHash)
+                        .build()
+                )
+            logger.info { "Successfully generated cancel investments in project: $projectWalletHash transaction" }
+            return TransactionData(response)
+        } catch (ex: StatusRuntimeException) {
+            throw getInternalExceptionFromStatusException(
+                ex, "Could not cancel invests in project: $projectWalletHash by user: $userWalletHash")
         }
     }
 
