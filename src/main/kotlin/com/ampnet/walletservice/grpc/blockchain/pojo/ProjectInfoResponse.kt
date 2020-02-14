@@ -8,7 +8,8 @@ data class ProjectInfoResponse(
     val investmentCap: Long,
     val minPerUser: Long,
     val maxPerUser: Long,
-    val endsAt: Long
+    val endsAt: Long,
+    val payoutInProcess: Boolean
 ) {
     constructor(response: GetProjectsInfoResponse.ProjectInfo) : this(
         response.projectTxHash,
@@ -16,6 +17,7 @@ data class ProjectInfoResponse(
         response.investmentCap.toLong(),
         response.minPerUserInvestment.toLong(),
         response.maxPerUserInvestment.toLong(),
-        response.endsAt.toLong()
+        response.endsAt.toLong(),
+        response.payoutInProcess
     )
 }

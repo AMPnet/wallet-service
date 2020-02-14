@@ -5,6 +5,7 @@ import com.ampnet.crowdfunding.proto.BlockchainServiceGrpc
 import com.ampnet.crowdfunding.proto.GenerateAddWalletTxRequest
 import com.ampnet.crowdfunding.proto.GenerateApproveWithdrawTxRequest
 import com.ampnet.crowdfunding.proto.GenerateBurnFromTxRequest
+import com.ampnet.crowdfunding.proto.GenerateCancelInvestmentTxRequest
 import com.ampnet.crowdfunding.proto.GenerateCreateOrganizationTxRequest
 import com.ampnet.crowdfunding.proto.GenerateCreateProjectTxRequest
 import com.ampnet.crowdfunding.proto.GenerateInvestTxRequest
@@ -156,10 +157,9 @@ class BlockchainServiceImpl(
     ): TransactionData {
         logger.info { "User: $userWalletHash is canceling investments in project: $projectWalletHash" }
         try {
-            // TODO: generate cancel investments in project!
             val response = serviceWithTimeout()
-                .generateInvestTx(
-                    GenerateInvestTxRequest.newBuilder()
+                .generateCancelInvestmentTx(
+                    GenerateCancelInvestmentTxRequest.newBuilder()
                         .setFromTxHash(userWalletHash)
                         .setProjectTxHash(projectWalletHash)
                         .build()

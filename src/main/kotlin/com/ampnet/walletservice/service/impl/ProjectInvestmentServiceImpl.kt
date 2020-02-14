@@ -13,10 +13,10 @@ import com.ampnet.walletservice.service.ProjectInvestmentService
 import com.ampnet.walletservice.service.TransactionInfoService
 import com.ampnet.walletservice.service.pojo.ProjectInvestmentRequest
 import java.time.ZonedDateTime
+import java.util.UUID
 import mu.KLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.util.UUID
 
 @Service
 class ProjectInvestmentServiceImpl(

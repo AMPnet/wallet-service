@@ -166,8 +166,10 @@ class WalletServiceImpl(
             .mapNotNull { project ->
                 val uuid = UUID.fromString(project.uuid)
                 projectWallets[uuid]?.let { wallet ->
-                    val balance = projectsInfo[wallet.hash]?.balance
-                    ProjectWithWallet(project, wallet, balance)
+                    val projectInfo = projectsInfo[wallet.hash]
+                    val balance = projectInfo?.balance
+                    val payoutInProcess = projectInfo?.payoutInProcess
+                    ProjectWithWallet(project, wallet, balance, payoutInProcess)
                 }
             }
         return PageImpl<ProjectWithWallet>(projectsWithWallet, pageable, walletsPage.totalElements)

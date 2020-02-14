@@ -60,5 +60,5 @@ abstract class TestBase {
         maxPerUser: Long = 10_000_000_00,
         endsAt: Long = ZonedDateTime.now().plusDays(30).toEpochSecond()
     ): ProjectInfoResponse =
-        ProjectInfoResponse(walletHash, balance, investmentCap, minPerUser, maxPerUser, endsAt)
+        ProjectInfoResponse(walletHash, balance, investmentCap, minPerUser, maxPerUser, endsAt, false)
 }
