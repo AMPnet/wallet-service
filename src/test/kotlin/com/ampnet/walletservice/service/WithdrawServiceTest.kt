@@ -6,32 +6,23 @@ import com.ampnet.walletservice.exception.InternalException
 import com.ampnet.walletservice.exception.InvalidRequestException
 import com.ampnet.walletservice.exception.ResourceAlreadyExistsException
 import com.ampnet.walletservice.persistence.model.Withdraw
-import com.ampnet.walletservice.persistence.repository.WithdrawRepository
-import com.ampnet.walletservice.service.impl.StorageServiceImpl
 import com.ampnet.walletservice.service.impl.TransactionInfoServiceImpl
 import com.ampnet.walletservice.service.impl.WithdrawServiceImpl
 import com.ampnet.walletservice.service.pojo.WithdrawCreateServiceRequest
-import java.time.ZonedDateTime
 import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
-import org.springframework.beans.factory.annotation.Autowired
 
 class WithdrawServiceTest : JpaServiceTestBase() {
 
-    @Autowired
-    lateinit var withdrawRepository: WithdrawRepository
-
     private val withdrawService: WithdrawService by lazy {
-        val storageServiceImpl = StorageServiceImpl(documentRepository, mockedCloudStorageService)
         val transactionInfoService = TransactionInfoServiceImpl(transactionInfoRepository)
         WithdrawServiceImpl(walletRepository, withdrawRepository, mockedBlockchainService, transactionInfoService,
-                storageServiceImpl, mockedMailService, mockedProjectService)
+            mockedMailService, mockedProjectService)
     }
-    private val bankAccount = "bank-account"
     private lateinit var withdraw: Withdraw
 
     @BeforeEach
@@ -211,92 +202,6 @@ class WithdrawServiceTest : JpaServiceTestBase() {
                 withdrawService.generateApprovalTransaction(withdraw.id, userUuid)
             }
         }
-    }
-
-    @Test
-    fun mustThrowExceptionForConfirmingApprovedTx() {
-        suppose("User has approved withdraw") {
-            withdraw = createApprovedWithdraw(userUuid)
-        }
-
-        verify("Service will throw exception when user tries to confirm already approved tx") {
-            assertThrows<InvalidRequestException> {
-                withdrawService.confirmApproval("signed-transaction", withdraw.id)
-            }
-        }
-    }
-
-    /* Burn */
-    @Test
-    fun mustThrowExceptionForGeneratingBurnTxBeforeApproval() {
-        suppose("User created withdraw") {
-            withdraw = createWithdraw(userUuid)
-        }
-
-        verify("Service will throw exception when user tries to generate burn tx for unapproved withdraw") {
-            assertThrows<InvalidRequestException> {
-                withdrawService.generateBurnTransaction(withdraw.id, userUuid)
-            }
-        }
-    }
-
-    @Test
-    fun mustThrowExceptionForGeneratingBurnTxForBurnedWithdraw() {
-        suppose("Withdraw is burned") {
-            withdraw = createBurnedWithdraw(userUuid)
-        }
-
-        verify("Service will throw exception when user tries to generate burn tx for burned withdraw") {
-            assertThrows<InvalidRequestException> {
-                withdrawService.generateBurnTransaction(withdraw.id, userUuid)
-            }
-        }
-    }
-
-    @Test
-    fun mustThrowExceptionForBurningUnapprovedWithdraw() {
-        suppose("Withdraw is not approved") {
-            withdraw = createWithdraw(userUuid)
-        }
-
-        verify("Service will throw exception when user tries to burn unapproved withdraw") {
-            assertThrows<InvalidRequestException> {
-                withdrawService.burn(signedTransaction, withdraw.id)
-            }
-        }
-    }
-
-    @Test
-    fun mustThrowExceptionForBurningAlreadyBurnedWithdraw() {
-        suppose("Withdraw is burned") {
-            withdraw = createBurnedWithdraw(userUuid)
-        }
-
-        verify("Service will throw exception when user tries to generate burn tx for burned withdraw") {
-            assertThrows<InvalidRequestException> {
-                withdrawService.burn(signedTransaction, withdraw.id)
-            }
-        }
-    }
-
-    private fun createBurnedWithdraw(user: UUID, type: WalletType = WalletType.USER): Withdraw {
-        val withdraw = Withdraw(0, user, 100L, ZonedDateTime.now(), user, bankAccount,
-                "approved-tx", ZonedDateTime.now(),
-                "burned-tx", ZonedDateTime.now(), UUID.randomUUID(), null, type)
-        return withdrawRepository.save(withdraw)
-    }
-
-    private fun createApprovedWithdraw(user: UUID, type: WalletType = WalletType.USER): Withdraw {
-        val withdraw = Withdraw(0, user, 100L, ZonedDateTime.now(), user, bankAccount,
-                "approved-tx", ZonedDateTime.now(),
-                null, null, null, null, type)
-        return withdrawRepository.save(withdraw)
-    }
-
-    private fun createWithdraw(user: UUID, type: WalletType = WalletType.USER): Withdraw {
-        val withdraw = Withdraw(0, user, 100L, ZonedDateTime.now(), userUuid, bankAccount,
-                null, null, null, null, null, null, type)
-        return withdrawRepository.save(withdraw)
     }
 
     private fun createUserWithdrawServiceRequest() =

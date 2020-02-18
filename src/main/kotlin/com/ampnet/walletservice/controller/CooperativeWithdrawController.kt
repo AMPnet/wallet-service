@@ -7,8 +7,8 @@ import com.ampnet.walletservice.controller.pojo.response.WithdrawWithUserRespons
 import com.ampnet.walletservice.enums.WalletType
 import com.ampnet.walletservice.grpc.userservice.UserService
 import com.ampnet.walletservice.persistence.model.Withdraw
+import com.ampnet.walletservice.service.CooperativeWithdrawService
 import com.ampnet.walletservice.service.WalletService
-import com.ampnet.walletservice.service.WithdrawService
 import com.ampnet.walletservice.service.pojo.DocumentSaveRequest
 import mu.KLogging
 import org.springframework.data.domain.Page
@@ -24,7 +24,7 @@ import org.springframework.web.multipart.MultipartFile
 
 @RestController
 class CooperativeWithdrawController(
-    private val withdrawService: WithdrawService,
+    private val cooperativeWithdrawService: CooperativeWithdrawService,
     private val userService: UserService,
     private val walletService: WalletService
 ) {
@@ -41,7 +41,7 @@ class CooperativeWithdrawController(
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to get all approved withdraws by user: ${userPrincipal.uuid}" }
         val response = generateResponseFromWithdraws(
-            withdrawService.getAllApproved(type, pageable)
+            cooperativeWithdrawService.getAllApproved(type, pageable)
         )
         return ResponseEntity.ok(response)
     }
@@ -56,7 +56,7 @@ class CooperativeWithdrawController(
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to get all burned withdraws by user: ${userPrincipal.uuid}" }
         val response = generateResponseFromWithdraws(
-            withdrawService.getAllBurned(type, pageable)
+            cooperativeWithdrawService.getAllBurned(type, pageable)
         )
         return ResponseEntity.ok(response)
     }
@@ -66,7 +66,7 @@ class CooperativeWithdrawController(
     fun generateBurnTransaction(@PathVariable("id") id: Int): ResponseEntity<TransactionResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.info { "Received request to generate withdraw burn transaction by user: ${userPrincipal.uuid}" }
-        val transactionDataAndInfo = withdrawService.generateBurnTransaction(id, userPrincipal.uuid)
+        val transactionDataAndInfo = cooperativeWithdrawService.generateBurnTransaction(id, userPrincipal.uuid)
         return ResponseEntity.ok(TransactionResponse(transactionDataAndInfo))
     }
 
@@ -79,7 +79,7 @@ class CooperativeWithdrawController(
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Adding document for withdraw" }
         val documentRequest = DocumentSaveRequest(file, userPrincipal.uuid)
-        val withdraw = withdrawService.addDocument(id, documentRequest)
+        val withdraw = cooperativeWithdrawService.addDocument(id, documentRequest)
         return ResponseEntity.ok(WithdrawResponse(withdraw))
     }
 
