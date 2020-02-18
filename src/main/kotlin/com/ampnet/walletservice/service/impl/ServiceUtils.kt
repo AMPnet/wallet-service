@@ -1,5 +1,6 @@
 package com.ampnet.walletservice.service.impl
 
+import com.ampnet.projectservice.proto.ProjectResponse
 import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.exception.InvalidRequestException
 import com.ampnet.walletservice.exception.ResourceNotFoundException
@@ -12,10 +13,20 @@ internal object ServiceUtils {
         return if (optional.isPresent) optional.get() else null
     }
 
+    @Throws(InvalidRequestException::class, ResourceNotFoundException::class)
     fun getWalletHash(owner: UUID, walletRepository: WalletRepository): String {
         val wallet = walletRepository.findByOwner(owner).orElseThrow {
             throw ResourceNotFoundException(ErrorCode.WALLET_MISSING, "Wallet missing for owner: $owner")
         }
         return wallet.hash ?: throw InvalidRequestException(ErrorCode.WALLET_NOT_ACTIVATED, "Wallet not activated")
+    }
+
+    @Throws(InvalidRequestException::class)
+    fun validateUserIsProjectOwner(user: UUID, projectResponse: ProjectResponse) {
+        if (projectResponse.createdByUser != user.toString()) {
+            throw InvalidRequestException(ErrorCode.PRJ_MISSING_PRIVILEGE,
+                "User: $user did not create this project: ${projectResponse.uuid} " +
+                    "and cannot create a Withdraw for project")
+        }
     }
 }

@@ -6,6 +6,7 @@ import com.ampnet.walletservice.controller.pojo.response.WithdrawResponse
 import com.ampnet.walletservice.controller.pojo.response.WithdrawWithUserListResponse
 import com.ampnet.walletservice.enums.PrivilegeType
 import com.ampnet.walletservice.enums.TransactionType
+import com.ampnet.walletservice.enums.WalletType
 import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionData
 import com.ampnet.walletservice.persistence.model.Withdraw
@@ -45,20 +46,21 @@ class WithdrawControllerTest : ControllerTestBase() {
             createWalletForUser(userUuid, walletHash)
         }
         suppose("User has enough funds on wallet") {
-            Mockito.`when`(blockchainService.getBalance(walletHash)).thenReturn(testContext.amount)
+            Mockito.`when`(blockchainService.getBalance(walletHash))
+                .thenReturn(testContext.amount)
         }
 
         verify("User can create Withdraw") {
             val request = WithdrawCreateRequest(testContext.amount, testContext.bankAccount)
             val result = mockMvc.perform(
-                    post(withdrawPath)
-                            .content(objectMapper.writeValueAsString(request))
-                            .contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isOk)
-                    .andReturn()
+                post(withdrawPath)
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk)
+                .andReturn()
 
             val withdrawResponse: WithdrawResponse = objectMapper.readValue(result.response.contentAsString)
-            assertThat(withdrawResponse.user).isEqualTo(userUuid)
+            assertThat(withdrawResponse.owner).isEqualTo(userUuid)
             assertThat(withdrawResponse.amount).isEqualTo(testContext.amount)
             assertThat(withdrawResponse.bankAccount).isEqualTo(testContext.bankAccount)
             assertThat(withdrawResponse.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
@@ -74,10 +76,11 @@ class WithdrawControllerTest : ControllerTestBase() {
             val withdraws = withdrawRepository.findAll()
             assertThat(withdraws).hasSize(1)
             val withdraw = withdraws.first()
-            assertThat(withdraw.userUuid).isEqualTo(userUuid)
+            assertThat(withdraw.ownerUuid).isEqualTo(userUuid)
             assertThat(withdraw.amount).isEqualTo(testContext.amount)
             assertThat(withdraw.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
             assertThat(withdraw.bankAccount).isEqualTo(testContext.bankAccount)
+            assertThat(withdraw.createdBy).isEqualTo(userUuid)
             assertThat(withdraw.approvedAt).isNull()
             assertThat(withdraw.approvedTxHash).isNull()
             assertThat(withdraw.burnedAt).isNull()
@@ -87,7 +90,67 @@ class WithdrawControllerTest : ControllerTestBase() {
         }
         verify("Mail notification is sent") {
             Mockito.verify(mailService, Mockito.times(1))
-                    .sendWithdrawRequest(userUuid, testContext.amount)
+                .sendWithdrawRequest(userUuid, testContext.amount)
+        }
+    }
+
+    @Test
+    @WithMockCrowdfoundUser
+    fun mustBeAbleToCreateProjectWithdraw() {
+        suppose("Project has a wallet") {
+            databaseCleanerService.deleteAllWallets()
+            createWalletForProject(projectUuid, walletHash)
+        }
+        suppose("Project has enough funds on wallet") {
+            Mockito.`when`(blockchainService.getBalance(walletHash))
+                .thenReturn(testContext.amount)
+        }
+        suppose("Project service will return project") {
+            Mockito.`when`(projectService.getProject(projectUuid))
+                .thenReturn(createProjectResponse(projectUuid, userUuid))
+        }
+
+        verify("User can create Project Withdraw") {
+            val request = WithdrawCreateRequest(testContext.amount, testContext.bankAccount)
+            val result = mockMvc.perform(
+                post("$withdrawPath/project/$projectUuid")
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk)
+                .andReturn()
+
+            val withdrawResponse: WithdrawResponse = objectMapper.readValue(result.response.contentAsString)
+            assertThat(withdrawResponse.owner).isEqualTo(projectUuid)
+            assertThat(withdrawResponse.amount).isEqualTo(testContext.amount)
+            assertThat(withdrawResponse.bankAccount).isEqualTo(testContext.bankAccount)
+            assertThat(withdrawResponse.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
+            assertThat(withdrawResponse.approvedAt).isNull()
+            assertThat(withdrawResponse.approvedAt).isNull()
+            assertThat(withdrawResponse.approvedTxHash).isNull()
+            assertThat(withdrawResponse.burnedAt).isNull()
+            assertThat(withdrawResponse.burnedTxHash).isNull()
+            assertThat(withdrawResponse.burnedBy).isNull()
+            assertThat(withdrawResponse.documentResponse).isNull()
+        }
+        verify("Withdraw is created") {
+            val withdraws = withdrawRepository.findAll()
+            assertThat(withdraws).hasSize(1)
+            val withdraw = withdraws.first()
+            assertThat(withdraw.ownerUuid).isEqualTo(projectUuid)
+            assertThat(withdraw.amount).isEqualTo(testContext.amount)
+            assertThat(withdraw.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
+            assertThat(withdraw.bankAccount).isEqualTo(testContext.bankAccount)
+            assertThat(withdraw.createdBy).isEqualTo(userUuid)
+            assertThat(withdraw.approvedAt).isNull()
+            assertThat(withdraw.approvedTxHash).isNull()
+            assertThat(withdraw.burnedAt).isNull()
+            assertThat(withdraw.burnedTxHash).isNull()
+            assertThat(withdraw.burnedBy).isNull()
+            assertThat(withdraw.file).isNull()
+        }
+        verify("Mail notification is sent") {
+            Mockito.verify(mailService, Mockito.times(1))
+                .sendWithdrawRequest(userUuid, testContext.amount)
         }
     }
 
@@ -101,11 +164,11 @@ class WithdrawControllerTest : ControllerTestBase() {
         verify("Controller will return bad request") {
             val request = WithdrawCreateRequest(testContext.amount, testContext.bankAccount)
             val result = mockMvc.perform(
-                    post(withdrawPath)
-                            .content(objectMapper.writeValueAsString(request))
-                            .contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isBadRequest)
-                    .andReturn()
+                post(withdrawPath)
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest)
+                .andReturn()
             verifyResponseErrorCode(result, ErrorCode.WALLET_MISSING)
         }
     }
@@ -119,11 +182,11 @@ class WithdrawControllerTest : ControllerTestBase() {
 
         verify("User can get pending withdraw") {
             val result = mockMvc.perform(get(withdrawPath))
-                    .andExpect(status().isOk)
-                    .andReturn()
+                .andExpect(status().isOk)
+                .andReturn()
 
             val withdrawResponse: WithdrawResponse = objectMapper.readValue(result.response.contentAsString)
-            assertThat(withdrawResponse.user).isEqualTo(userUuid)
+            assertThat(withdrawResponse.owner).isEqualTo(userUuid)
         }
     }
 
@@ -132,7 +195,7 @@ class WithdrawControllerTest : ControllerTestBase() {
     fun mustBeGetNotFoundForNoPendingWithdraw() {
         verify("User will get not found for no pending withdraw") {
             mockMvc.perform(get(withdrawPath))
-                    .andExpect(status().isNotFound)
+                .andExpect(status().isNotFound)
         }
     }
 
@@ -145,7 +208,7 @@ class WithdrawControllerTest : ControllerTestBase() {
 
         verify("Admin can delete withdraw") {
             mockMvc.perform(delete("$withdrawPath/${testContext.withdraw.id}"))
-                    .andExpect(status().isOk)
+                .andExpect(status().isOk)
         }
         verify("Withdraw is deleted") {
             val deletedWithdraw = withdrawRepository.findById(testContext.withdraw.id)
@@ -153,7 +216,7 @@ class WithdrawControllerTest : ControllerTestBase() {
         }
         verify("Mail notification is sent") {
             Mockito.verify(mailService, Mockito.times(1))
-                    .sendWithdrawInfo(userUuid, false)
+                .sendWithdrawInfo(userUuid, false)
         }
     }
 
@@ -166,12 +229,16 @@ class WithdrawControllerTest : ControllerTestBase() {
             val unapprovedWithdraw = createWithdraw(userUuid)
             testContext.withdraws = listOf(approvedWithdraw, secondApprovedWithdraw, unapprovedWithdraw)
         }
+        suppose("Some project has approved withdraw") {
+            createApprovedWithdraw(UUID.randomUUID(), type = WalletType.PROJECT)
+        }
         suppose("User has a wallet") {
             databaseCleanerService.deleteAllWallets()
             createWalletForUser(userUuid, walletHash)
         }
         suppose("User service will return user data") {
-            Mockito.`when`(userService.getUsers(setOf(userUuid))).thenReturn(listOf(createUserResponse(userUuid)))
+            Mockito.`when`(userService.getUsers(setOf(userUuid)))
+                .thenReturn(listOf(createUserResponse(userUuid)))
         }
 
         verify("Admin can get list of approved withdraws") {
@@ -183,8 +250,7 @@ class WithdrawControllerTest : ControllerTestBase() {
                 .andExpect(status().isOk)
                 .andReturn()
 
-            val withdrawList: WithdrawWithUserListResponse =
-                    objectMapper.readValue(result.response.contentAsString)
+            val withdrawList: WithdrawWithUserListResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(withdrawList.withdraws).hasSize(1)
             val withdraw = withdrawList.withdraws.first()
             assertThat(withdraw.amount).isEqualTo(testContext.amount)
@@ -209,12 +275,16 @@ class WithdrawControllerTest : ControllerTestBase() {
             val burnedWithdraw = createBurnedWithdraw(userUuid)
             testContext.withdraws = listOf(approvedWithdraw, burnedWithdraw)
         }
+        suppose("Some project has burned withdraw") {
+            createBurnedWithdraw(UUID.randomUUID(), type = WalletType.PROJECT)
+        }
         suppose("User has a wallet") {
             databaseCleanerService.deleteAllWallets()
             createWalletForUser(userUuid, walletHash)
         }
         suppose("User service will return user data") {
-            Mockito.`when`(userService.getUsers(setOf(userUuid))).thenReturn(listOf(createUserResponse(userUuid)))
+            Mockito.`when`(userService.getUsers(setOf(userUuid)))
+                .thenReturn(listOf(createUserResponse(userUuid)))
         }
 
         verify("Admin can get list of burned withdraws") {
@@ -226,8 +296,7 @@ class WithdrawControllerTest : ControllerTestBase() {
                 .andExpect(status().isOk)
                 .andReturn()
 
-            val withdrawList: WithdrawWithUserListResponse =
-                    objectMapper.readValue(result.response.contentAsString)
+            val withdrawList: WithdrawWithUserListResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(withdrawList.withdraws).hasSize(1)
             val withdraw = withdrawList.withdraws.first()
             assertThat(withdraw.amount).isEqualTo(testContext.amount)
@@ -250,7 +319,7 @@ class WithdrawControllerTest : ControllerTestBase() {
     fun mustNotBeAbleToGetWithdrawListWithUserRole() {
         verify("User will get forbidden") {
             mockMvc.perform(get("$withdrawPath/approved"))
-                    .andExpect(status().isForbidden)
+                .andExpect(status().isForbidden)
         }
     }
 
@@ -275,9 +344,10 @@ class WithdrawControllerTest : ControllerTestBase() {
         }
 
         verify("User can generate approval transaction") {
-            val result = mockMvc.perform(post("$withdrawPath/${testContext.withdraw.id}/transaction/approve"))
-                    .andExpect(status().isOk)
-                    .andReturn()
+            val result = mockMvc.perform(
+                post("$withdrawPath/${testContext.withdraw.id}/transaction/approve"))
+                .andExpect(status().isOk)
+                .andReturn()
 
             val transactionResponse: TransactionResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(transactionResponse.tx).isEqualTo(testContext.transactionData.tx)
@@ -315,9 +385,10 @@ class WithdrawControllerTest : ControllerTestBase() {
         }
 
         verify("User can generate approval transaction") {
-            val result = mockMvc.perform(post("$withdrawPath/${testContext.withdraw.id}/transaction/burn"))
-                    .andExpect(status().isOk)
-                    .andReturn()
+            val result = mockMvc.perform(
+                post("$withdrawPath/${testContext.withdraw.id}/transaction/burn"))
+                .andExpect(status().isOk)
+                .andReturn()
 
             val transactionResponse: TransactionResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(transactionResponse.tx).isEqualTo(testContext.transactionData.tx)
@@ -348,20 +419,18 @@ class WithdrawControllerTest : ControllerTestBase() {
             testContext.withdraw = createApprovedWithdraw(userUuid)
         }
         suppose("File storage will store document") {
-            testContext.multipartFile = MockMultipartFile("file", "test.txt",
-                    "text/plain", "DocumentData".toByteArray())
+            testContext.multipartFile = MockMultipartFile("file", "test.txt", "text/plain", "DocumentData".toByteArray())
             Mockito.`when`(
-                    cloudStorageService.saveFile(testContext.multipartFile.originalFilename,
-                            testContext.multipartFile.bytes)
+                cloudStorageService.saveFile(testContext.multipartFile.originalFilename,
+                    testContext.multipartFile.bytes)
             ).thenReturn(testContext.documentLink)
         }
 
         verify("Admin can add document") {
             val result = mockMvc.perform(
-                    fileUpload("$withdrawPath/${testContext.withdraw.id}/document")
-                            .file(testContext.multipartFile))
-                    .andExpect(MockMvcResultMatchers.status().isOk)
-                    .andReturn()
+                fileUpload("$withdrawPath/${testContext.withdraw.id}/document").file(testContext.multipartFile))
+                .andExpect(MockMvcResultMatchers.status().isOk)
+                .andReturn()
 
             val withdrawResponse: WithdrawResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(withdrawResponse.id).isEqualTo(testContext.withdraw.id)
@@ -369,11 +438,11 @@ class WithdrawControllerTest : ControllerTestBase() {
         }
     }
 
-    private fun createBurnedWithdraw(user: UUID): Withdraw {
+    private fun createBurnedWithdraw(user: UUID, type: WalletType = WalletType.USER): Withdraw {
         val document = saveFile("withdraw-doc", "doc-link", "type", 1, user)
-        val withdraw = Withdraw(0, user, testContext.amount, ZonedDateTime.now(), testContext.bankAccount,
-                testContext.approvedTx, ZonedDateTime.now(),
-                testContext.burnedTx, ZonedDateTime.now(), UUID.randomUUID(), document)
+        val withdraw = Withdraw(0, user, testContext.amount, ZonedDateTime.now(), user, testContext.bankAccount,
+            testContext.approvedTx, ZonedDateTime.now(),
+            testContext.burnedTx, ZonedDateTime.now(), UUID.randomUUID(), document, type)
         return withdrawRepository.save(withdraw)
     }
 

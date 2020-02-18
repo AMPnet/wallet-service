@@ -7,7 +7,7 @@ import java.util.UUID
 
 data class WithdrawResponse(
     val id: Int,
-    val user: UUID,
+    val owner: UUID,
     val amount: Long,
     val approvedTxHash: String?,
     val approvedAt: ZonedDateTime?,
@@ -20,7 +20,7 @@ data class WithdrawResponse(
 ) {
     constructor(withdraw: Withdraw) : this (
         withdraw.id,
-        withdraw.userUuid,
+        withdraw.ownerUuid,
         withdraw.amount,
         withdraw.approvedTxHash,
         withdraw.approvedAt,
@@ -62,9 +62,10 @@ data class WithdrawWithUserResponse(
         withdraw.file?.let { DocumentResponse(it) }
     )
 }
-
 data class WithdrawWithUserListResponse(
     val withdraws: List<WithdrawWithUserResponse>,
     val page: Int,
     val totalPages: Int
 )
+
+// TODO: add WithdrawWithProjectResponse

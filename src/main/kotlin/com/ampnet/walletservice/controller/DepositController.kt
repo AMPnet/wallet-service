@@ -52,6 +52,7 @@ class DepositController(
         return ResponseEntity.notFound().build()
     }
 
+    // TODO: extract to CooperativeDepositController
     @GetMapping("/deposit/search")
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_DEPOSIT)")
     fun getDepositByReference(
