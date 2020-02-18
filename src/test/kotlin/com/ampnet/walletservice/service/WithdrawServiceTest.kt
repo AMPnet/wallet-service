@@ -2,6 +2,7 @@ package com.ampnet.walletservice.service
 
 import com.ampnet.walletservice.enums.WalletType
 import com.ampnet.walletservice.exception.ErrorCode
+import com.ampnet.walletservice.exception.InternalException
 import com.ampnet.walletservice.exception.InvalidRequestException
 import com.ampnet.walletservice.exception.ResourceAlreadyExistsException
 import com.ampnet.walletservice.persistence.model.Withdraw
@@ -36,6 +37,25 @@ class WithdrawServiceTest : JpaServiceTestBase() {
     @BeforeEach
     fun init() {
         databaseCleanerService.deleteAllWithdraws()
+    }
+
+    /* Get */
+    @Test
+    fun mustThrowExceptionIfUserNotProjectOwnerGetWithdraw() {
+        suppose("Project has created withdraw") {
+            createWithdraw(projectUuid, WalletType.PROJECT)
+        }
+        suppose("Project service will return project") {
+            Mockito.`when`(mockedProjectService.getProject(projectUuid))
+                .thenReturn(createProjectResponse(projectUuid, userUuid))
+        }
+
+        verify("Service will throw exception user is missing project privilege") {
+            val exception = assertThrows<InvalidRequestException> {
+                withdrawService.getPendingForProject(projectUuid, UUID.randomUUID())
+            }
+            assertThat(exception.errorCode).isEqualTo(ErrorCode.PRJ_MISSING_PRIVILEGE)
+        }
     }
 
     /* Create */
@@ -113,9 +133,56 @@ class WithdrawServiceTest : JpaServiceTestBase() {
         }
 
         verify("Service will throw exception when user tries to delete burned withdraw") {
-            assertThrows<InvalidRequestException> {
-                withdrawService.deleteWithdraw(withdraw.id)
+            val exception = assertThrows<InvalidRequestException> {
+                withdrawService.deleteWithdraw(withdraw.id, userUuid)
             }
+            assertThat(exception.errorCode).isEqualTo(ErrorCode.WALLET_WITHDRAW_BURNED)
+        }
+    }
+
+    @Test
+    fun mustThrowExceptionForDeletingOthersWithdraw() {
+        suppose("User created withdraw") {
+            withdraw = createWithdraw(UUID.randomUUID())
+        }
+
+        verify("Service will throw exception when user tries to delete others withdraw") {
+            val exception = assertThrows<InvalidRequestException> {
+                withdrawService.deleteWithdraw(withdraw.id, userUuid)
+            }
+            assertThat(exception.errorCode).isEqualTo(ErrorCode.USER_MISSING_PRIVILEGE)
+        }
+    }
+
+    @Test
+    fun mustThrowExceptionForDeletingOtherProjectWithdraw() {
+        suppose("Project created withdraw") {
+            withdraw = createWithdraw(projectUuid, WalletType.PROJECT)
+        }
+        suppose("Project service will return project") {
+            Mockito.`when`(mockedProjectService.getProject(projectUuid))
+                .thenReturn(createProjectResponse(projectUuid, userUuid))
+        }
+
+        verify("Service will throw exception when user tries to delete others project withdraw") {
+            val exception = assertThrows<InvalidRequestException> {
+                withdrawService.deleteWithdraw(withdraw.id, UUID.randomUUID())
+            }
+            assertThat(exception.errorCode).isEqualTo(ErrorCode.PRJ_MISSING_PRIVILEGE)
+        }
+    }
+
+    @Test
+    fun mustThrowExceptionForDeletingOrganizationWithdraw() {
+        suppose("Withdraw created withdraw") {
+            withdraw = createWithdraw(organizationUuid, WalletType.ORG)
+        }
+
+        verify("Service will throw exception when user tries to delete others project withdraw") {
+            val exception = assertThrows<InternalException> {
+                withdrawService.deleteWithdraw(withdraw.id, userUuid)
+            }
+            assertThat(exception.errorCode).isEqualTo(ErrorCode.INT_INVALID_VALUE)
         }
     }
 
@@ -227,7 +294,7 @@ class WithdrawServiceTest : JpaServiceTestBase() {
     }
 
     private fun createWithdraw(user: UUID, type: WalletType = WalletType.USER): Withdraw {
-        val withdraw = Withdraw(0, user, 100L, ZonedDateTime.now(), user, bankAccount,
+        val withdraw = Withdraw(0, user, 100L, ZonedDateTime.now(), userUuid, bankAccount,
                 null, null, null, null, null, null, type)
         return withdrawRepository.save(withdraw)
     }

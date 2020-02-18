@@ -2,6 +2,7 @@ package com.ampnet.walletservice.service.impl
 
 import com.ampnet.walletservice.enums.WalletType
 import com.ampnet.walletservice.exception.ErrorCode
+import com.ampnet.walletservice.exception.InternalException
 import com.ampnet.walletservice.exception.InvalidRequestException
 import com.ampnet.walletservice.exception.ResourceAlreadyExistsException
 import com.ampnet.walletservice.exception.ResourceNotFoundException
@@ -39,8 +40,15 @@ class WithdrawServiceImpl(
     companion object : KLogging()
 
     @Transactional(readOnly = true)
-    override fun getPendingForUser(user: UUID): Withdraw? {
+    override fun getPendingForOwner(user: UUID): Withdraw? {
         return withdrawRepository.findByOwnerUuid(user).find { it.approvedTxHash == null }
+    }
+
+    @Transactional(readOnly = true)
+    override fun getPendingForProject(project: UUID, user: UUID): Withdraw? {
+        val projectResponse = projectService.getProject(project)
+        ServiceUtils.validateUserIsProjectOwner(user, projectResponse)
+        return withdrawRepository.findByOwnerUuid(project).find { it.approvedTxHash == null }
     }
 
     @Transactional(readOnly = true)
@@ -76,12 +84,23 @@ class WithdrawServiceImpl(
     }
 
     @Transactional
-    override fun deleteWithdraw(withdrawId: Int) {
+    override fun deleteWithdraw(withdrawId: Int, user: UUID) {
         val withdraw = getWithdraw(withdrawId)
         if (withdraw.burnedTxHash != null) {
             throw InvalidRequestException(ErrorCode.WALLET_WITHDRAW_BURNED, "Cannot delete burned Withdraw")
         }
-        // TODO: check if the user is the owner of the withdraw
+        when (withdraw.type) {
+            WalletType.USER -> {
+                if (withdraw.ownerUuid != user) {
+                    throw InvalidRequestException(ErrorCode.USER_MISSING_PRIVILEGE, "Not your withdraw")
+                }
+            }
+            WalletType.PROJECT -> {
+                val projectResponse = projectService.getProject(withdraw.ownerUuid)
+                ServiceUtils.validateUserIsProjectOwner(user, projectResponse)
+            }
+            WalletType.ORG -> throw InternalException(ErrorCode.INT_INVALID_VALUE, "Organization withdraw not possible")
+        }
         logger.info { "Deleting Withdraw with id: $withdraw" }
         withdrawRepository.delete(withdraw)
         mailService.sendWithdrawInfo(withdraw.ownerUuid, false)
