@@ -2,9 +2,12 @@ package com.ampnet.walletservice.controller
 
 import com.ampnet.walletservice.controller.pojo.response.TransactionResponse
 import com.ampnet.walletservice.controller.pojo.response.WithdrawResponse
+import com.ampnet.walletservice.controller.pojo.response.WithdrawWithProjectListResponse
+import com.ampnet.walletservice.controller.pojo.response.WithdrawWithProjectResponse
 import com.ampnet.walletservice.controller.pojo.response.WithdrawWithUserListResponse
 import com.ampnet.walletservice.controller.pojo.response.WithdrawWithUserResponse
 import com.ampnet.walletservice.enums.WalletType
+import com.ampnet.walletservice.grpc.projectservice.ProjectService
 import com.ampnet.walletservice.grpc.userservice.UserService
 import com.ampnet.walletservice.persistence.model.Withdraw
 import com.ampnet.walletservice.service.CooperativeWithdrawService
@@ -26,37 +29,52 @@ import org.springframework.web.multipart.MultipartFile
 class CooperativeWithdrawController(
     private val cooperativeWithdrawService: CooperativeWithdrawService,
     private val userService: UserService,
-    private val walletService: WalletService
+    private val walletService: WalletService,
+    private val projectService: ProjectService
 ) {
 
     companion object : KLogging()
 
-    // TODO: different response for user and project
     @GetMapping("/cooperative/withdraw/approved")
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_WITHDRAW)")
-    fun getApprovedWithdraws(
-        @RequestParam(defaultValue = "USER") type: WalletType,
-        pageable: Pageable
-    ): ResponseEntity<WithdrawWithUserListResponse> {
+    fun getApprovedUserWithdraws(pageable: Pageable): ResponseEntity<WithdrawWithUserListResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to get all approved withdraws by user: ${userPrincipal.uuid}" }
-        val response = generateResponseFromWithdraws(
-            cooperativeWithdrawService.getAllApproved(type, pageable)
+        val response = generateUserResponseWithWithdraws(
+            cooperativeWithdrawService.getAllApproved(WalletType.USER, pageable)
         )
         return ResponseEntity.ok(response)
     }
 
-    // TODO: different response for user and project
+    @GetMapping("/cooperative/withdraw/approved/project")
+    @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_WITHDRAW)")
+    fun getApprovedProjectWithdraws(pageable: Pageable): ResponseEntity<WithdrawWithProjectListResponse> {
+        val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
+        logger.debug { "Received request to get all approved withdraws by user: ${userPrincipal.uuid}" }
+        val response = generateProjectResponseWithWithdraws(
+            cooperativeWithdrawService.getAllApproved(WalletType.PROJECT, pageable)
+        )
+        return ResponseEntity.ok(response)
+    }
+
     @GetMapping("/cooperative/withdraw/burned")
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_WITHDRAW)")
-    fun getBurnedWithdraws(
-        @RequestParam(defaultValue = "USER") type: WalletType,
-        pageable: Pageable
-    ): ResponseEntity<WithdrawWithUserListResponse> {
+    fun getBurnedUserWithdraws(pageable: Pageable): ResponseEntity<WithdrawWithUserListResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to get all burned withdraws by user: ${userPrincipal.uuid}" }
-        val response = generateResponseFromWithdraws(
-            cooperativeWithdrawService.getAllBurned(type, pageable)
+        val response = generateUserResponseWithWithdraws(
+            cooperativeWithdrawService.getAllBurned(WalletType.USER, pageable)
+        )
+        return ResponseEntity.ok(response)
+    }
+
+    @GetMapping("/cooperative/withdraw/burned/project")
+    @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_WITHDRAW)")
+    fun getBurnedProjectWithdraws(pageable: Pageable): ResponseEntity<WithdrawWithProjectListResponse> {
+        val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
+        logger.debug { "Received request to get all burned withdraws by user: ${userPrincipal.uuid}" }
+        val response = generateProjectResponseWithWithdraws(
+            cooperativeWithdrawService.getAllBurned(WalletType.PROJECT, pageable)
         )
         return ResponseEntity.ok(response)
     }
@@ -83,7 +101,7 @@ class CooperativeWithdrawController(
         return ResponseEntity.ok(WithdrawResponse(withdraw))
     }
 
-    private fun generateResponseFromWithdraws(withdrawsPage: Page<Withdraw>): WithdrawWithUserListResponse {
+    private fun generateUserResponseWithWithdraws(withdrawsPage: Page<Withdraw>): WithdrawWithUserListResponse {
         val withdraws = withdrawsPage.toList()
         val users = userService
             .getUsers(withdraws.map { it.ownerUuid }.toSet())
@@ -95,5 +113,19 @@ class CooperativeWithdrawController(
             withdrawWithUserList.add(WithdrawWithUserResponse(withdraw, userResponse, wallet))
         }
         return WithdrawWithUserListResponse(withdrawWithUserList, withdrawsPage.number, withdrawsPage.totalPages)
+    }
+
+    private fun generateProjectResponseWithWithdraws(withdrawsPage: Page<Withdraw>): WithdrawWithProjectListResponse {
+        val withdraws = withdrawsPage.toList()
+        val projects = projectService
+            .getProjects(withdraws.map { it.ownerUuid }.toSet())
+            .associateBy { it.uuid }
+        val withdrawWithProjectList = mutableListOf<WithdrawWithProjectResponse>()
+        withdraws.forEach { withdraw ->
+            val wallet = walletService.getWallet(withdraw.ownerUuid)?.hash.orEmpty()
+            val projectResponse = projects[withdraw.ownerUuid.toString()]
+            withdrawWithProjectList.add(WithdrawWithProjectResponse(withdraw, projectResponse, wallet))
+        }
+        return WithdrawWithProjectListResponse(withdrawWithProjectList, withdrawsPage.number, withdrawsPage.totalPages)
     }
 }

@@ -2,6 +2,7 @@ package com.ampnet.walletservice.controller
 
 import com.ampnet.walletservice.controller.pojo.response.TransactionResponse
 import com.ampnet.walletservice.controller.pojo.response.WithdrawResponse
+import com.ampnet.walletservice.controller.pojo.response.WithdrawWithProjectListResponse
 import com.ampnet.walletservice.controller.pojo.response.WithdrawWithUserListResponse
 import com.ampnet.walletservice.enums.PrivilegeType
 import com.ampnet.walletservice.enums.TransactionType
@@ -36,7 +37,7 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
 
     @Test
     @WithMockCrowdfoundUser(privileges = [PrivilegeType.PRA_WITHDRAW])
-    fun mustBeAbleToGetApprovedWithdraws() {
+    fun mustBeAbleToGetApprovedUserWithdraws() {
         suppose("Some withdraws are created") {
             val approvedWithdraw = createApprovedWithdraw(userUuid)
             val secondApprovedWithdraw = createApprovedWithdraw(userUuid)
@@ -55,7 +56,7 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
                 .thenReturn(listOf(createUserResponse(userUuid)))
         }
 
-        verify("Admin can get list of approved withdraws") {
+        verify("Admin can get list of approved user withdraws") {
             val result = mockMvc.perform(
                 get("$withdrawPath/approved")
                     .param("size", "1")
@@ -83,7 +84,54 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
 
     @Test
     @WithMockCrowdfoundUser(privileges = [PrivilegeType.PRA_WITHDRAW])
-    fun mustBeAbleToGetBurnedWithdraws() {
+    fun mustBeAbleToGetApprovedProjectWithdraws() {
+        suppose("Some withdraws are created") {
+            val approvedWithdraw = createApprovedWithdraw(projectUuid, type = WalletType.PROJECT)
+            val secondApprovedWithdraw = createApprovedWithdraw(projectUuid, type = WalletType.PROJECT)
+            val unapprovedWithdraw = createWithdraw(projectUuid, type = WalletType.PROJECT)
+            testContext.withdraws = listOf(approvedWithdraw, secondApprovedWithdraw, unapprovedWithdraw)
+        }
+        suppose("Some user has approved withdraw") {
+            createApprovedWithdraw(UUID.randomUUID())
+        }
+        suppose("Project has a wallet") {
+            databaseCleanerService.deleteAllWallets()
+            createWalletForProject(projectUuid, walletHash)
+        }
+        suppose("Project service will return project data") {
+            Mockito.`when`(projectService.getProjects(setOf(projectUuid)))
+                .thenReturn(listOf(createProjectResponse(projectUuid, userUuid)))
+        }
+
+        verify("Admin can get list of approved project withdraws") {
+            val result = mockMvc.perform(
+                get("$withdrawPath/approved/project")
+                    .param("size", "1")
+                    .param("page", "0")
+                    .param("sort", "approvedAt,desc"))
+                .andExpect(status().isOk)
+                .andReturn()
+
+            val withdrawList: WithdrawWithProjectListResponse = objectMapper.readValue(result.response.contentAsString)
+            assertThat(withdrawList.withdraws).hasSize(1)
+            val withdraw = withdrawList.withdraws.first()
+            assertThat(withdraw.amount).isEqualTo(testContext.amount)
+            assertThat(withdraw.id).isNotNull()
+            assertThat(withdraw.bankAccount).isNotNull()
+            assertThat(withdraw.approvedTxHash).isEqualTo(testContext.approvedTx)
+            assertThat(withdraw.approvedAt).isBeforeOrEqualTo(ZonedDateTime.now())
+            assertThat(withdraw.project?.uuid).isEqualTo(projectUuid.toString())
+            assertThat(withdraw.projectWallet).isEqualTo(walletHash)
+            assertThat(withdraw.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
+            assertThat(withdraw.burnedAt).isNull()
+            assertThat(withdraw.burnedBy).isNull()
+            assertThat(withdraw.burnedTxHash).isNull()
+        }
+    }
+
+    @Test
+    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PRA_WITHDRAW])
+    fun mustBeAbleToGetBurnedUserWithdraws() {
         suppose("Some withdraws are created") {
             val approvedWithdraw = createApprovedWithdraw(userUuid)
             val burnedWithdraw = createBurnedWithdraw(userUuid)
@@ -101,7 +149,7 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
                 .thenReturn(listOf(createUserResponse(userUuid)))
         }
 
-        verify("Admin can get list of burned withdraws") {
+        verify("Admin can get list of burned user withdraws") {
             val result = mockMvc.perform(
                 get("$withdrawPath/burned")
                     .param("size", "20")
@@ -120,6 +168,53 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
             assertThat(withdraw.approvedAt).isBeforeOrEqualTo(ZonedDateTime.now())
             assertThat(withdraw.user?.uuid).isEqualTo(userUuid)
             assertThat(withdraw.userWallet).isEqualTo(walletHash)
+            assertThat(withdraw.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
+            assertThat(withdraw.burnedAt).isNotNull()
+            assertThat(withdraw.burnedBy).isNotNull()
+            assertThat(withdraw.burnedTxHash).isEqualTo(testContext.burnedTx)
+            assertThat(withdraw.documentResponse).isNotNull()
+        }
+    }
+
+    @Test
+    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PRA_WITHDRAW])
+    fun mustBeAbleToGetBurnedProjectWithdraws() {
+        suppose("Some withdraws are created") {
+            val approvedWithdraw = createApprovedWithdraw(projectUuid, type = WalletType.PROJECT)
+            val burnedWithdraw = createBurnedWithdraw(projectUuid, type = WalletType.PROJECT)
+            testContext.withdraws = listOf(approvedWithdraw, burnedWithdraw)
+        }
+        suppose("Some user has burned withdraw") {
+            createBurnedWithdraw(UUID.randomUUID(), type = WalletType.USER)
+        }
+        suppose("Project has a wallet") {
+            databaseCleanerService.deleteAllWallets()
+            createWalletForProject(projectUuid, walletHash)
+        }
+        suppose("Project service will return project") {
+            Mockito.`when`(projectService.getProjects(setOf(projectUuid)))
+                .thenReturn(listOf(createProjectResponse(projectUuid, userUuid)))
+        }
+
+        verify("Admin can get list of burned project withdraws") {
+            val result = mockMvc.perform(
+                get("$withdrawPath/burned/project")
+                    .param("size", "20")
+                    .param("page", "0")
+                    .param("sort", "burnedAt,desc"))
+                .andExpect(status().isOk)
+                .andReturn()
+
+            val withdrawList: WithdrawWithProjectListResponse = objectMapper.readValue(result.response.contentAsString)
+            assertThat(withdrawList.withdraws).hasSize(1)
+            val withdraw = withdrawList.withdraws.first()
+            assertThat(withdraw.amount).isEqualTo(testContext.amount)
+            assertThat(withdraw.id).isNotNull()
+            assertThat(withdraw.bankAccount).isEqualTo(testContext.bankAccount)
+            assertThat(withdraw.approvedTxHash).isEqualTo(testContext.approvedTx)
+            assertThat(withdraw.approvedAt).isBeforeOrEqualTo(ZonedDateTime.now())
+            assertThat(withdraw.project?.uuid).isEqualTo(projectUuid.toString())
+            assertThat(withdraw.projectWallet).isEqualTo(walletHash)
             assertThat(withdraw.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
             assertThat(withdraw.burnedAt).isNotNull()
             assertThat(withdraw.burnedBy).isNotNull()

@@ -324,20 +324,35 @@ include::{snippets}/CooperativeWalletControllerTest/mustBeAbleToGetActivateWalle
 
 === Withdraw
 
-==== Get Withdraws
+==== Approved Withdraws
 Must have Admin role - privilege: `PrivilegeType.PRA_WITHDRAW`
 
-===== Approved
+===== User
 .Request
-include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToGetApprovedWithdraws/http-request.adoc[]
+include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToGetApprovedUserWithdraws/http-request.adoc[]
 .Response
-include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToGetApprovedWithdraws/http-response.adoc[]
+include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToGetApprovedUserWithdraws/http-response.adoc[]
 
-===== Burned
+===== Project
 .Request
-include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToGetBurnedWithdraws/http-request.adoc[]
+include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToGetApprovedProjectWithdraws/http-request.adoc[]
 .Response
-include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToGetBurnedWithdraws/http-response.adoc[]
+include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToGetApprovedProjectWithdraws/http-response.adoc[]
+
+==== Burned Withdraws
+Must have Admin role - privilege: `PrivilegeType.PRA_WITHDRAW`
+
+===== User
+.Request
+include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToGetBurnedUserWithdraws/http-request.adoc[]
+.Response
+include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToGetBurnedUserWithdraws/http-response.adoc[]
+
+===== Project
+.Request
+include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToGetBurnedProjectWithdraws/http-request.adoc[]
+.Response
+include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToGetBurnedProjectWithdraws/http-response.adoc[]
 
 ==== Upload Document
 Must have Admin role - privilege: `PrivilegeType.PRA_WITHDRAW`
