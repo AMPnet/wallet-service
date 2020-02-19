@@ -36,7 +36,7 @@ class PublicControllerTest : ControllerTestBase() {
             Mockito.`when`(blockchainService.getBalance(walletHash)).thenReturn(testContext.walletBalance)
         }
 
-        verify("User can get wallet") {
+        verify("User can get project wallet") {
             val result = mockMvc.perform(get("$projectWalletPublicPath/$projectUuid"))
                 .andExpect(status().isOk)
                 .andReturn()
@@ -94,7 +94,7 @@ class PublicControllerTest : ControllerTestBase() {
             )
         }
 
-        verify("Controller will return active project") {
+        verify("Controller will return only active project") {
             val result = mockMvc.perform(
                 get(publicProjectActivePath)
                     .param("size", "20")
@@ -117,7 +117,7 @@ class PublicControllerTest : ControllerTestBase() {
 
     @Test
     fun mustBeAbleToGetEmptyListOfActiveProjects() {
-        verify("Controller will return empty list") {
+        verify("Controller will return empty list of active projects") {
             val result = mockMvc.perform(get(publicProjectActivePath))
                 .andExpect(status().isOk)
                 .andReturn()
@@ -131,7 +131,7 @@ class PublicControllerTest : ControllerTestBase() {
     @Test
     @WithMockCrowdfoundUser(verified = false)
     fun mustBeAbleToGetActiveProjectsWithUnVerifiedAccount() {
-        verify("Controller will return empty list") {
+        verify("User with unverified account can access public project path") {
             val result = mockMvc.perform(get(publicProjectActivePath))
                 .andExpect(status().isOk)
                 .andReturn()

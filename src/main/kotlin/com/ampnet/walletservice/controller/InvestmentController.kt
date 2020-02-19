@@ -16,6 +16,8 @@ class InvestmentController(private val projectInvestmentService: ProjectInvestme
 
     companion object : KLogging()
 
+    // TODO: change both mappings to PostMapping
+
     @GetMapping("/invest/project/{projectUuid}")
     fun generateProjectInvestmentTransaction(
         @PathVariable("projectUuid") projectUuid: UUID,

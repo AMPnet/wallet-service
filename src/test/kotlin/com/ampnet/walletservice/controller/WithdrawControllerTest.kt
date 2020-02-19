@@ -82,7 +82,7 @@ class WithdrawControllerTest : ControllerTestBase() {
             assertThat(withdraw.burnedBy).isNull()
             assertThat(withdraw.file).isNull()
         }
-        verify("Mail notification is sent") {
+        verify("Mail notification for created withdraw is sent") {
             Mockito.verify(mailService, Mockito.times(1))
                 .sendWithdrawRequest(userUuid, testContext.amount)
         }
@@ -142,7 +142,7 @@ class WithdrawControllerTest : ControllerTestBase() {
             assertThat(withdraw.burnedBy).isNull()
             assertThat(withdraw.file).isNull()
         }
-        verify("Mail notification is sent") {
+        verify("Mail notification for created project withdraw to user is sent") {
             Mockito.verify(mailService, Mockito.times(1))
                 .sendWithdrawRequest(userUuid, testContext.amount)
         }
@@ -155,7 +155,7 @@ class WithdrawControllerTest : ControllerTestBase() {
             databaseCleanerService.deleteAllWallets()
         }
 
-        verify("Controller will return bad request") {
+        verify("Controller will return bad request if user is missing wallet") {
             val request = WithdrawCreateRequest(testContext.amount, testContext.bankAccount)
             val result = mockMvc.perform(
                 post(withdrawPath)
@@ -174,7 +174,7 @@ class WithdrawControllerTest : ControllerTestBase() {
             testContext.withdraw = createWithdraw(userUuid)
         }
 
-        verify("User can get pending withdraw") {
+        verify("User can get his pending withdraw") {
             val result = mockMvc.perform(get(withdrawPath))
                 .andExpect(status().isOk)
                 .andReturn()
@@ -195,7 +195,7 @@ class WithdrawControllerTest : ControllerTestBase() {
                 .thenReturn(createProjectResponse(projectUuid, userUuid))
         }
 
-        verify("User can get pending withdraw") {
+        verify("User can get pending project withdraw") {
             val result = mockMvc.perform(get("$withdrawPath/project/$projectUuid"))
                 .andExpect(status().isOk)
                 .andReturn()
@@ -221,7 +221,7 @@ class WithdrawControllerTest : ControllerTestBase() {
             testContext.withdraw = createApprovedWithdraw(userUuid)
         }
 
-        verify("Admin can delete withdraw") {
+        verify("User can delete withdraw") {
             mockMvc.perform(delete("$withdrawPath/${testContext.withdraw.id}"))
                 .andExpect(status().isOk)
         }
@@ -229,7 +229,7 @@ class WithdrawControllerTest : ControllerTestBase() {
             val deletedWithdraw = withdrawRepository.findById(testContext.withdraw.id)
             assertThat(deletedWithdraw).isNotPresent
         }
-        verify("Mail notification is sent") {
+        verify("Mail notification for deleted withdraw is sent") {
             Mockito.verify(mailService, Mockito.times(1))
                 .sendWithdrawInfo(userUuid, false)
         }

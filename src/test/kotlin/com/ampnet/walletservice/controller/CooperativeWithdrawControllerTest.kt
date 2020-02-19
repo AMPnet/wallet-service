@@ -38,7 +38,7 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
     @Test
     @WithMockCrowdfoundUser(privileges = [PrivilegeType.PRA_WITHDRAW])
     fun mustBeAbleToGetApprovedUserWithdraws() {
-        suppose("Some withdraws are created") {
+        suppose("Approved and unapproved  user withdraws are created") {
             val approvedWithdraw = createApprovedWithdraw(userUuid)
             val secondApprovedWithdraw = createApprovedWithdraw(userUuid)
             val unapprovedWithdraw = createWithdraw(userUuid)
@@ -56,7 +56,7 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
                 .thenReturn(listOf(createUserResponse(userUuid)))
         }
 
-        verify("Admin can get list of approved user withdraws") {
+        verify("Cooperative can get list of approved user withdraws") {
             val result = mockMvc.perform(
                 get("$withdrawPath/approved")
                     .param("size", "1")
@@ -85,7 +85,7 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
     @Test
     @WithMockCrowdfoundUser(privileges = [PrivilegeType.PRA_WITHDRAW])
     fun mustBeAbleToGetApprovedProjectWithdraws() {
-        suppose("Some withdraws are created") {
+        suppose("Approved and unapproved project withdraws are created") {
             val approvedWithdraw = createApprovedWithdraw(projectUuid, type = WalletType.PROJECT)
             val secondApprovedWithdraw = createApprovedWithdraw(projectUuid, type = WalletType.PROJECT)
             val unapprovedWithdraw = createWithdraw(projectUuid, type = WalletType.PROJECT)
@@ -103,7 +103,7 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
                 .thenReturn(listOf(createProjectResponse(projectUuid, userUuid)))
         }
 
-        verify("Admin can get list of approved project withdraws") {
+        verify("Cooperative can get list of approved project withdraws") {
             val result = mockMvc.perform(
                 get("$withdrawPath/approved/project")
                     .param("size", "1")
@@ -132,7 +132,7 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
     @Test
     @WithMockCrowdfoundUser(privileges = [PrivilegeType.PRA_WITHDRAW])
     fun mustBeAbleToGetBurnedUserWithdraws() {
-        suppose("Some withdraws are created") {
+        suppose("Approved and burned user withdraws are created") {
             val approvedWithdraw = createApprovedWithdraw(userUuid)
             val burnedWithdraw = createBurnedWithdraw(userUuid)
             testContext.withdraws = listOf(approvedWithdraw, burnedWithdraw)
@@ -149,7 +149,7 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
                 .thenReturn(listOf(createUserResponse(userUuid)))
         }
 
-        verify("Admin can get list of burned user withdraws") {
+        verify("Cooperative can get list of burned user withdraws") {
             val result = mockMvc.perform(
                 get("$withdrawPath/burned")
                     .param("size", "20")
@@ -179,7 +179,7 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
     @Test
     @WithMockCrowdfoundUser(privileges = [PrivilegeType.PRA_WITHDRAW])
     fun mustBeAbleToGetBurnedProjectWithdraws() {
-        suppose("Some withdraws are created") {
+        suppose("Approved and burned project withdraws are created") {
             val approvedWithdraw = createApprovedWithdraw(projectUuid, type = WalletType.PROJECT)
             val burnedWithdraw = createBurnedWithdraw(projectUuid, type = WalletType.PROJECT)
             testContext.withdraws = listOf(approvedWithdraw, burnedWithdraw)
@@ -196,7 +196,7 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
                 .thenReturn(listOf(createProjectResponse(projectUuid, userUuid)))
         }
 
-        verify("Admin can get list of burned project withdraws") {
+        verify("Cooperative can get list of burned project withdraws") {
             val result = mockMvc.perform(
                 get("$withdrawPath/burned/project")
                     .param("size", "20")
@@ -226,7 +226,7 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
     @Test
     @WithMockCrowdfoundUser
     fun mustNotBeAbleToGetWithdrawListWithUserRole() {
-        verify("User will get forbidden") {
+        verify("User will get forbidden for accessing cooperative path") {
             mockMvc.perform(get("$withdrawPath/approved"))
                 .andExpect(status().isForbidden)
         }
@@ -242,17 +242,16 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
             databaseCleanerService.deleteAllWallets()
             createWalletForUser(userUuid, walletHash)
         }
-        suppose("User has created withdraw") {
+        suppose("User has created approved withdraw") {
             testContext.withdraw = createApprovedWithdraw(userUuid)
         }
         suppose("Blockchain service will return approve burn transaction") {
             testContext.transactionData = TransactionData("approve-burn-transaction")
-            Mockito.`when`(
-                blockchainService.generateBurnTransaction(walletHash)
-            ).thenReturn(testContext.transactionData)
+            Mockito.`when`(blockchainService.generateBurnTransaction(walletHash))
+                .thenReturn(testContext.transactionData)
         }
 
-        verify("User can generate approval transaction") {
+        verify("User can generate burn transaction") {
             val result = mockMvc.perform(
                 post("$withdrawPath/${testContext.withdraw.id}/transaction/burn"))
                 .andExpect(status().isOk)
@@ -263,7 +262,7 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
             assertThat(transactionResponse.txId).isNotNull()
             assertThat(transactionResponse.info.txType).isEqualTo(TransactionType.BURN)
         }
-        verify("Transaction info is created") {
+        verify("TransactionInfo for burn is created") {
             val transactionInfos = transactionInfoRepository.findAll()
             assertThat(transactionInfos).hasSize(1)
             val transactionInfo = transactionInfos.first()
@@ -283,7 +282,7 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
             databaseCleanerService.deleteAllWallets()
             createWalletForUser(userUuid, walletHash)
         }
-        suppose("User has created withdraw") {
+        suppose("User has created approved withdraw") {
             testContext.withdraw = createApprovedWithdraw(userUuid)
         }
         suppose("File storage will store document") {
@@ -295,7 +294,7 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
             ).thenReturn(testContext.documentLink)
         }
 
-        verify("Admin can add document") {
+        verify("Cooperative can add document for withdraw") {
             val result = mockMvc.perform(
                 fileUpload("$withdrawPath/${testContext.withdraw.id}/document").file(testContext.multipartFile))
                 .andExpect(status().isOk)

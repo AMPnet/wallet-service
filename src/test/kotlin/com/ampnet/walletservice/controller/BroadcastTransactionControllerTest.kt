@@ -57,11 +57,11 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
             testContext.transactionInfo =
                 createTransactionInfo(TransactionType.WALLET_ACTIVATE, userUuid, testContext.wallet.uuid.toString())
         }
-        suppose("Blockchain service successfully generates transaction to create organization wallet") {
+        suppose("Blockchain service successfully generates transaction to activate wallet") {
             Mockito.`when`(blockchainService.postTransaction(signedTransaction)).thenReturn(txHash)
         }
 
-        verify("User can create organization wallet") {
+        verify("Cooperative can activate wallet") {
             val request = TxBroadcastRequest(testContext.transactionInfo.id, signedTransaction)
             val result = mockMvc.perform(
                 post(broadcastPath)
@@ -80,7 +80,7 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
             assertThat(wallet.hash).isEqualTo(txHash)
             assertThat(wallet.activatedAt).isBeforeOrEqualTo(ZonedDateTime.now())
         }
-        verify("TransactionInfo is deleted") {
+        verify("TransactionInfo for wallet activation is deleted") {
             val transactionInfo = transactionInfoRepository.findById(testContext.transactionInfo.id)
             assertThat(transactionInfo).isNotPresent
         }
@@ -88,7 +88,7 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
 
     @Test
     fun mustBeAbleToCreateOrganizationWallet() {
-        suppose("TransactionInfo exists for create organization wallet") {
+        suppose("TransactionInfo exists for creating organization wallet") {
             testContext.transactionInfo =
                 createTransactionInfo(TransactionType.CREATE_ORG, userUuid, organizationUuid.toString())
         }
@@ -120,7 +120,7 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
             assertThat(organizationWallet.hash).isNull()
             assertThat(organizationWallet.activatedAt).isNull()
         }
-        verify("TransactionInfo is deleted") {
+        verify("TransactionInfo for creating organization wallet is deleted") {
             val transactionInfo = transactionInfoRepository.findById(testContext.transactionInfo.id)
             assertThat(transactionInfo).isNotPresent
         }
@@ -132,7 +132,7 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
             testContext.transactionInfo = createTransactionInfo(TransactionType.CREATE_ORG, userUuid)
         }
 
-        verify("User can create organization wallet") {
+        verify("User cannot create organization wallet if data is missing") {
             val request = TxBroadcastRequest(testContext.transactionInfo.id, signedTransaction)
             val result = mockMvc.perform(
                 post(broadcastPath)
@@ -146,11 +146,11 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
 
     @Test
     fun mustBeAbleToCreateProjectWalletWithTransaction() {
-        suppose("TransactionInfo exists for create project wallet") {
+        suppose("TransactionInfo exists for creating project wallet") {
             testContext.transactionInfo =
                 createTransactionInfo(TransactionType.CREATE_PROJECT, userUuid, projectUuid.toString())
         }
-        suppose("Blockchain service successfully adds project wallet") {
+        suppose("Blockchain service successfully generates data to create project wallet") {
             Mockito.`when`(blockchainService.postTransaction(signedTransaction)).thenReturn(activationData)
         }
 
@@ -166,7 +166,7 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
             val txHashResponse: TxHashResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(txHashResponse.txHash).isEqualTo(activationData)
         }
-        verify("Wallet is created") {
+        verify("Project wallet is created") {
             val optionalWallet = walletRepository.findByOwner(projectUuid)
             assertThat(optionalWallet).isPresent
             val projectWallet = optionalWallet.get()
@@ -178,7 +178,7 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
             assertThat(projectWallet.hash).isNull()
             assertThat(projectWallet.activatedAt).isNull()
         }
-        verify("TransactionInfo is deleted") {
+        verify("TransactionInfo for creating project wallet is deleted") {
             val transactionInfo = transactionInfoRepository.findById(testContext.transactionInfo.id)
             assertThat(transactionInfo).isNotPresent
         }
@@ -186,11 +186,11 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
 
     @Test
     fun mustThrowErrorIfCompanionProjectIdIsMissing() {
-        suppose("TransactionInfo exists for create project wallet but without companion project id") {
+        suppose("TransactionInfo exists for creating project wallet but without companion project id") {
             testContext.transactionInfo = createTransactionInfo(TransactionType.CREATE_PROJECT, userUuid)
         }
 
-        verify("User can create organization wallet") {
+        verify("User cannot create project wallet if data is missing") {
             val request = TxBroadcastRequest(testContext.transactionInfo.id, signedTransaction)
             val result = mockMvc.perform(
                 post(broadcastPath)
@@ -223,7 +223,7 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
             val txHashResponse: TxHashResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(txHashResponse.txHash).isEqualTo(txHash)
         }
-        verify("TransactionInfo is deleted") {
+        verify("TransactionInfo for investing is deleted") {
             val transactionInfo = transactionInfoRepository.findById(testContext.transactionInfo.id)
             assertThat(transactionInfo).isNotPresent
         }
@@ -250,7 +250,7 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
             val txHashResponse: TxHashResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(txHashResponse.txHash).isEqualTo(txHash)
         }
-        verify("TransactionInfo is deleted") {
+        verify("TransactionInfo for canceling investments in project is deleted") {
             val transactionInfo = transactionInfoRepository.findById(testContext.transactionInfo.id)
             assertThat(transactionInfo).isNotPresent
         }
@@ -258,18 +258,18 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
 
     @Test
     fun mustBeAbleToPostSignedMintTransaction() {
-        suppose("Deposit approved exists") {
+        suppose("Approved deposit exists") {
             testContext.deposit = createApprovedDeposit(userUuid)
         }
-        suppose("TransactionInfo exists for invest transaction") {
+        suppose("TransactionInfo exists for mint transaction") {
             testContext.transactionInfo =
                 createTransactionInfo(TransactionType.MINT, userUuid, testContext.deposit.id.toString())
         }
-        suppose("Blockchain service will accept signed transaction for project investment confirmation") {
+        suppose("Blockchain service will accept signed transaction for mint transaction") {
             Mockito.`when`(blockchainService.postTransaction(signedTransaction)).thenReturn(txHash)
         }
 
-        verify("User can post signed transaction to mint funds") {
+        verify("Cooperative can post signed transaction to mint funds") {
             val request = TxBroadcastRequest(testContext.transactionInfo.id, signedTransaction)
             val result = mockMvc.perform(
                 post(broadcastPath)
@@ -281,11 +281,11 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
             val txHashResponse: TxHashResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(txHashResponse.txHash).isEqualTo(txHash)
         }
-        verify("TransactionInfo is deleted") {
+        verify("TransactionInfo for minting is deleted") {
             val transactionInfo = transactionInfoRepository.findById(testContext.transactionInfo.id)
             assertThat(transactionInfo).isNotPresent
         }
-        verify("Mail notification is sent") {
+        verify("Mail notification for minting/deposit is sent") {
             Mockito.verify(mailService, Mockito.times(1))
                 .sendDepositInfo(userUuid, true)
         }
@@ -296,7 +296,7 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
         suppose("Withdraw exists") {
             testContext.withdraw = createWithdraw(userUuid)
         }
-        suppose("TransactionInfo exists for withdraw approval transaction") {
+        suppose("TransactionInfo exists for burn approval transaction") {
             testContext.transactionInfo =
                 createTransactionInfo(TransactionType.BURN_APPROVAL, userUuid, testContext.withdraw.id.toString())
         }
@@ -316,7 +316,7 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
             val txHashResponse: TxHashResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(txHashResponse.txHash).isEqualTo(txHash)
         }
-        verify("TransactionInfo is deleted") {
+        verify("TransactionInfo for burn approval is deleted") {
             val transactionInfo = transactionInfoRepository.findById(testContext.transactionInfo.id)
             assertThat(transactionInfo).isNotPresent
         }
@@ -324,7 +324,7 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
 
     @Test
     fun mustBeAbleToPostSignedBurnTransaction() {
-        suppose("Withdraw approved exists") {
+        suppose("Approved withdraw exists") {
             testContext.withdraw = createApprovedWithdraw(userUuid)
         }
         suppose("TransactionInfo exists for withdraw burn transaction") {
@@ -335,7 +335,7 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
             Mockito.`when`(blockchainService.postTransaction(signedTransaction)).thenReturn(txHash)
         }
 
-        verify("User can post signed transaction to confirm burn") {
+        verify("Cooperative can post signed transaction to confirm burn") {
             val request = TxBroadcastRequest(testContext.transactionInfo.id, signedTransaction)
             val result = mockMvc.perform(
                 post(broadcastPath)
@@ -347,11 +347,11 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
             val txHashResponse: TxHashResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(txHashResponse.txHash).isEqualTo(txHash)
         }
-        verify("TransactionInfo is deleted") {
+        verify("TransactionInfo for burning is deleted") {
             val transactionInfo = transactionInfoRepository.findById(testContext.transactionInfo.id)
             assertThat(transactionInfo).isNotPresent
         }
-        verify("Mail notification is sent") {
+        verify("Mail notification burning/withdraw is sent") {
             Mockito.verify(mailService, Mockito.times(1))
                 .sendWithdrawInfo(userUuid, true)
         }

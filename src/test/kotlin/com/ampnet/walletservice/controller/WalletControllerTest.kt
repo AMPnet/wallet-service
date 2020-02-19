@@ -41,22 +41,6 @@ class WalletControllerTest : ControllerTestBase() {
 
     /* User Wallet */
     @Test
-    @WithMockCrowdfoundUser(verified = false)
-    fun mustNotBeAbleToCreateWalletWithUnVerifiedAccount() {
-        verify("User can create a wallet") {
-            val request = WalletCreateRequest(testContext.publicKey)
-            val result = mockMvc.perform(
-                post(walletPath)
-                    .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isConflict)
-                .andReturn()
-            val errorMessage = result.response.errorMessage
-            assertThat(errorMessage).contains("User did not verified his profile.")
-        }
-    }
-
-    @Test
     fun mustBeAbleToGeneratePairWalletCode() {
         suppose("User did not create pair wallet code") {
             databaseCleanerService.deleteAllPairWalletCodes()
@@ -65,11 +49,11 @@ class WalletControllerTest : ControllerTestBase() {
         verify("User can generate pair wallet code") {
             val request = WalletCreateRequest(testContext.publicKey)
             val result = mockMvc.perform(
-                    post("$walletPath/pair")
-                            .content(objectMapper.writeValueAsString(request))
-                            .contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isOk)
-                    .andReturn()
+                post("$walletPath/pair")
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk)
+                .andReturn()
 
             val pairWalletResponse: PairWalletResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(pairWalletResponse.code).isNotEmpty()
@@ -94,7 +78,7 @@ class WalletControllerTest : ControllerTestBase() {
 
         verify("User will get not found for non existing pair wallet code") {
             mockMvc.perform(get("$walletPath/pair/000000"))
-                    .andExpect(status().isNotFound)
+                .andExpect(status().isNotFound)
         }
     }
 
@@ -108,9 +92,10 @@ class WalletControllerTest : ControllerTestBase() {
         }
 
         verify("User can pair wallet code") {
-            val result = mockMvc.perform(get("$walletPath/pair/${testContext.pairWalletCode}"))
-                    .andExpect(status().isOk)
-                    .andReturn()
+            val result = mockMvc.perform(
+                get("$walletPath/pair/${testContext.pairWalletCode}"))
+                .andExpect(status().isOk)
+                .andReturn()
 
             val pairWalletResponse: PairWalletResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(pairWalletResponse.code).isEqualTo(testContext.pairWalletCode)
@@ -129,10 +114,11 @@ class WalletControllerTest : ControllerTestBase() {
             Mockito.`when`(blockchainService.getBalance(testContext.hash)).thenReturn(testContext.balance)
         }
 
-        verify("Controller returns user wallet response") {
-            val result = mockMvc.perform(get(walletPath))
-                    .andExpect(status().isOk)
-                    .andReturn()
+        verify("User can get his wallet") {
+            val result = mockMvc.perform(
+                get(walletPath))
+                .andExpect(status().isOk)
+                .andReturn()
 
             val walletResponse: WalletResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(walletResponse.uuid).isEqualTo(testContext.wallet.uuid)
@@ -148,9 +134,9 @@ class WalletControllerTest : ControllerTestBase() {
     @Test
     @WithMockCrowdfoundUser
     fun mustReturnNotFoundForMissingWallet() {
-        verify("Controller returns 404 for missing wallet") {
+        verify("Controller returns not found if user does not have a wallet") {
             mockMvc.perform(get(walletPath))
-                    .andExpect(status().isNotFound)
+                .andExpect(status().isNotFound)
         }
     }
 
@@ -160,11 +146,11 @@ class WalletControllerTest : ControllerTestBase() {
         verify("User can create a wallet") {
             val request = WalletCreateRequest(testContext.publicKey)
             val result = mockMvc.perform(
-                    post(walletPath)
-                            .content(objectMapper.writeValueAsString(request))
-                            .contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isOk)
-                    .andReturn()
+                post(walletPath)
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk)
+                .andReturn()
 
             val walletResponse: WalletResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(walletResponse.uuid).isNotNull()
@@ -193,13 +179,29 @@ class WalletControllerTest : ControllerTestBase() {
             testContext.wallet = createWalletForUser(userUuid, testContext.publicKey)
         }
 
-        verify("User cannot create a wallet") {
+        verify("User cannot create additional wallet") {
             val request = WalletCreateRequest(testContext.publicKey)
             mockMvc.perform(
-                    post(walletPath)
-                            .content(objectMapper.writeValueAsString(request))
-                            .contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isBadRequest)
+                post(walletPath)
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest)
+        }
+    }
+
+    @Test
+    @WithMockCrowdfoundUser(verified = false)
+    fun mustNotBeAbleToCreateWalletWithUnVerifiedAccount() {
+        verify("Unverified user cannot create a wallet") {
+            val request = WalletCreateRequest(testContext.publicKey)
+            val result = mockMvc.perform(
+                post(walletPath)
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isConflict)
+                .andReturn()
+            val errorMessage = result.response.errorMessage
+            assertThat(errorMessage).contains("User did not verified his profile.")
         }
     }
 
@@ -230,11 +232,11 @@ class WalletControllerTest : ControllerTestBase() {
             ).thenReturn(getProjectResponse(projectUuid, userUuid, organizationUuid, endDate = testContext.time))
         }
 
-        verify("User can get transaction to sign") {
+        verify("User can get transaction to create project wallet") {
             val result = mockMvc.perform(
-                    get("$projectWalletPath/$projectUuid/transaction"))
-                    .andExpect(status().isOk)
-                    .andReturn()
+                get("$projectWalletPath/$projectUuid/transaction"))
+                .andExpect(status().isOk)
+                .andReturn()
 
             val transactionResponse: TransactionResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(transactionResponse.tx).isEqualTo(testContext.transactionData.tx)
@@ -250,11 +252,11 @@ class WalletControllerTest : ControllerTestBase() {
             testContext.wallet = createWalletForProject(projectUuid, testContext.hash)
         }
 
-        verify("User cannot get create wallet transaction") {
+        verify("User cannot get create project wallet transaction for additional wallet") {
             val response = mockMvc.perform(
-                    get("$projectWalletPath/$projectUuid/transaction"))
-                    .andExpect(status().isBadRequest)
-                    .andReturn()
+                get("$projectWalletPath/$projectUuid/transaction"))
+                .andExpect(status().isBadRequest)
+                .andReturn()
             verifyResponseErrorCode(response, ErrorCode.WALLET_EXISTS)
         }
     }
@@ -269,9 +271,9 @@ class WalletControllerTest : ControllerTestBase() {
 
         verify("User can fetch organization wallet") {
             val result = mockMvc.perform(
-                    get("$organizationWalletPath/$organizationUuid"))
-                    .andExpect(status().isOk)
-                    .andReturn()
+                get("$organizationWalletPath/$organizationUuid"))
+                .andExpect(status().isOk)
+                .andReturn()
 
             val walletResponse: WalletResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(walletResponse.uuid).isEqualTo(testContext.wallet.uuid)
@@ -285,9 +287,9 @@ class WalletControllerTest : ControllerTestBase() {
     @Test
     @WithMockCrowdfoundUser
     fun mustReturnNotFoundForMissingOrganizationWallet() {
-        verify("Controller will return not found") {
+        verify("Controller will return not found for non exiting organization wallet") {
             mockMvc.perform(get("$organizationWalletPath/${UUID.randomUUID()}"))
-                    .andExpect(status().isNotFound)
+                .andExpect(status().isNotFound)
         }
     }
 
@@ -303,18 +305,18 @@ class WalletControllerTest : ControllerTestBase() {
                 blockchainService.generateCreateOrganizationTransaction(getWalletHash(userUuid))
             ).thenReturn(testContext.transactionData)
         }
-        suppose("Project service will return project") {
+        suppose("Project service will return organization") {
             Mockito.`when`(
                 projectService.getOrganization(organizationUuid)
             ).thenReturn(getOrganizationResponse(organizationUuid, userUuid))
         }
 
-        verify("User can get transaction create organization wallet") {
+        verify("User can get transaction to create organization wallet") {
             val path = "$organizationWalletPath/$organizationUuid/transaction"
             val result = mockMvc.perform(
-                    get(path))
-                    .andExpect(status().isOk)
-                    .andReturn()
+                get(path))
+                .andExpect(status().isOk)
+                .andReturn()
 
             val transactionResponse: TransactionResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(transactionResponse.tx).isEqualTo(testContext.transactionData.tx)

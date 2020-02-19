@@ -49,7 +49,7 @@ class DepositControllerTest : ControllerTestBase() {
             createApprovedDeposit(userUuid, "tx_hash")
         }
 
-        verify("User can create deposit") {
+        verify("User can create new deposit") {
             val request = AmountRequest(testContext.amount)
             val result = mockMvc.perform(
                     post(depositPath)
@@ -65,7 +65,7 @@ class DepositControllerTest : ControllerTestBase() {
             assertThat(deposit.reference).isNotNull()
             assertThat(deposit.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
         }
-        verify("Deposit is stored") {
+        verify("User deposit is stored") {
             val deposits = depositRepository.findAll()
             assertThat(deposits).hasSize(2)
             val deposit = deposits.first { it.approved.not() }
@@ -87,7 +87,7 @@ class DepositControllerTest : ControllerTestBase() {
             databaseCleanerService.deleteAllWallets()
         }
 
-        verify("User can create deposit") {
+        verify("User cannot create deposit without wallet") {
             val request = AmountRequest(testContext.amount)
             val result = mockMvc.perform(
                     post(depositPath)
@@ -102,12 +102,12 @@ class DepositControllerTest : ControllerTestBase() {
     @Test
     @WithMockCrowdfoundUser
     fun mustBeAbleToGetPendingDeposit() {
-        suppose("Deposit exists") {
+        suppose("User deposit exists") {
             val deposit = createUnapprovedDeposit(userUuid)
             testContext.deposits = listOf(deposit)
         }
 
-        verify("User can get pending deposit") {
+        verify("User can his get pending deposit") {
             val result = mockMvc.perform(get(depositPath))
                     .andExpect(MockMvcResultMatchers.status().isOk)
                     .andReturn()
@@ -122,7 +122,7 @@ class DepositControllerTest : ControllerTestBase() {
     @Test
     @WithMockCrowdfoundUser
     fun mustGetNotFoundForNoPendingDeposit() {
-        verify("User can get pending deposit") {
+        verify("User gets not found for non pending deposit") {
             mockMvc.perform(get(depositPath))
                     .andExpect(MockMvcResultMatchers.status().isNotFound)
         }
@@ -131,7 +131,7 @@ class DepositControllerTest : ControllerTestBase() {
     @Test
     @WithMockCrowdfoundUser(privileges = [PrivilegeType.PRA_DEPOSIT])
     fun mustBeAbleToSearchByReference() {
-        suppose("Deposit exists") {
+        suppose("User deposit exists") {
             val deposit = createUnapprovedDeposit(userUuid)
             testContext.deposits = listOf(deposit)
         }
@@ -139,7 +139,7 @@ class DepositControllerTest : ControllerTestBase() {
             Mockito.`when`(userService.getUsers(setOf(userUuid))).thenReturn(listOf(createUserResponse(userUuid)))
         }
 
-        verify("Admin can search deposit by reference") {
+        verify("Cooperative can search deposit by reference") {
             val savedDeposit = testContext.deposits.first()
             val result = mockMvc.perform(
                     get("$depositPath/search").param("reference", savedDeposit.reference))
@@ -155,12 +155,12 @@ class DepositControllerTest : ControllerTestBase() {
     @Test
     @WithMockCrowdfoundUser(privileges = [PrivilegeType.PRA_DEPOSIT])
     fun mustNotBeAbleToFindByNonExistingReference() {
-        suppose("Deposit exists") {
+        suppose("User deposit exists") {
             val deposit = createUnapprovedDeposit(userUuid)
             testContext.deposits = listOf(deposit)
         }
 
-        verify("Admin cannot search non-existing deposit by reference") {
+        verify("Cooperative gets not found for searching deposit by non-existing reference") {
             mockMvc.perform(
                     get("$depositPath/search").param("reference", "non-existing"))
                     .andExpect(MockMvcResultMatchers.status().isNotFound)
@@ -170,21 +170,21 @@ class DepositControllerTest : ControllerTestBase() {
     @Test
     @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWA_DEPOSIT])
     fun mustBeAbleToDeleteDeposit() {
-        suppose("Deposit exists") {
+        suppose("Unapproved user deposit exists") {
             val deposit = createUnapprovedDeposit(userUuid)
             testContext.deposits = listOf(deposit)
         }
 
-        verify("Admin can delete deposit") {
+        verify("Cooperative can delete unapproved user deposit") {
             mockMvc.perform(
                     delete("$depositPath/${testContext.deposits.first().id}"))
                     .andExpect(MockMvcResultMatchers.status().isOk)
         }
-        verify("Deposit is deleted") {
+        verify("Unapproved deposit is deleted") {
             val optionalDeposit = depositRepository.findById(testContext.deposits.first().id)
             assertThat(optionalDeposit).isNotPresent
         }
-        verify("Mail notification is sent") {
+        verify("Mail notification for deleting deposit is sent") {
             Mockito.verify(mailService, Mockito.times(1))
                     .sendDepositInfo(userUuid, false)
         }
@@ -193,12 +193,12 @@ class DepositControllerTest : ControllerTestBase() {
     @Test
     @WithMockCrowdfoundUser
     fun mustNotBeAbleToDeleteWithoutAdminPrivileges() {
-        suppose("Deposit exists") {
+        suppose("Unapproved user deposit exists") {
             val deposit = createUnapprovedDeposit(userUuid)
             testContext.deposits = listOf(deposit)
         }
 
-        verify("User without admin role cannot delete deposit") {
+        verify("User without admin role cannot delete unapproved deposit") {
             mockMvc.perform(
                     delete("$depositPath/${testContext.deposits.first().id}"))
                     .andExpect(MockMvcResultMatchers.status().isForbidden)
@@ -208,7 +208,7 @@ class DepositControllerTest : ControllerTestBase() {
     @Test
     @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWA_DEPOSIT])
     fun mustBeAbleToApproveDeposit() {
-        suppose("Deposit exists") {
+        suppose("Unapproved user deposit exists") {
             val deposit = createUnapprovedDeposit(userUuid)
             testContext.deposits = listOf(deposit)
         }
@@ -221,7 +221,7 @@ class DepositControllerTest : ControllerTestBase() {
             ).thenReturn(testContext.documentLink)
         }
 
-        verify("Admin can approve deposit") {
+        verify("Cooperative can approve user deposit") {
             val depositId = testContext.deposits.first().id
             val result = mockMvc.perform(
                 fileUpload("$depositPath/$depositId/approve?amount=${testContext.amount}")
@@ -234,7 +234,7 @@ class DepositControllerTest : ControllerTestBase() {
             assertThat(depositResponse.approved).isEqualTo(true)
             assertThat(depositResponse.documentResponse?.link).isEqualTo(testContext.documentLink)
         }
-        verify("Deposit is approved") {
+        verify("User deposit is approved") {
             val optionalDeposit = depositRepository.findById(testContext.deposits.first().id)
             assertThat(optionalDeposit).isPresent
             val approvedDeposit = optionalDeposit.get()
@@ -258,7 +258,7 @@ class DepositControllerTest : ControllerTestBase() {
             ).thenReturn(testContext.documentLink)
         }
 
-        verify("Admin can not approve non-existing deposit") {
+        verify("Cooperative cannot approve non-existing deposit") {
             val result = mockMvc.perform(
                     fileUpload("$depositPath/0/approve")
                             .file(testContext.multipartFile)
@@ -282,7 +282,7 @@ class DepositControllerTest : ControllerTestBase() {
             Mockito.`when`(userService.getUsers(setOf(userUuid))).thenReturn(listOf(createUserResponse(userUuid)))
         }
 
-        verify("User can get unapproved deposit") {
+        verify("Cooperative can get unapproved user deposits") {
             val result = mockMvc.perform(
                 get("$depositPath/unapproved")
                     .param("size", "20")
@@ -307,11 +307,11 @@ class DepositControllerTest : ControllerTestBase() {
             val approved = createApprovedDeposit(userUuid)
             testContext.deposits = listOf(unapproved, approved)
         }
-        suppose("User service will return user") {
+        suppose("User service will return user data") {
             Mockito.`when`(userService.getUsers(setOf(userUuid))).thenReturn(listOf(createUserResponse(userUuid)))
         }
 
-        verify("User can get approved deposit") {
+        verify("Cooperative can get approved deposits") {
             val result = mockMvc.perform(
                 get("$depositPath/approved")
                     .param("size", "20")
@@ -338,18 +338,18 @@ class DepositControllerTest : ControllerTestBase() {
         suppose("Transaction info is clean") {
             databaseCleanerService.deleteAllTransactionInfo()
         }
-        suppose("Approved deposit exists") {
+        suppose("Approved user deposit exists") {
             val approved = createApprovedDeposit(userUuid, amount = testContext.amount)
             testContext.deposits = listOf(approved)
         }
-        suppose("Blockchain service will return tx") {
+        suppose("Blockchain service will return mint transaction") {
             testContext.transactionData = TransactionData("signed-transaction")
             Mockito.`when`(
                 blockchainService.generateMintTransaction(walletHash, testContext.amount)
             ).thenReturn(testContext.transactionData)
         }
 
-        verify("Admin can generate mint transaction") {
+        verify("Cooperative can generate mint transaction") {
             val depositId = testContext.deposits.first().id
             val result = mockMvc.perform(
                     post("$depositPath/$depositId/transaction"))
@@ -361,7 +361,7 @@ class DepositControllerTest : ControllerTestBase() {
             assertThat(transactionResponse.txId).isNotNull()
             assertThat(transactionResponse.info.txType).isEqualTo(TransactionType.MINT)
         }
-        verify("Transaction info is created") {
+        verify("TransactionInfo for mint transaction is created") {
             val transactionInfos = transactionInfoRepository.findAll()
             assertThat(transactionInfos).hasSize(1)
             val transactionInfo = transactionInfos[0]
@@ -387,7 +387,7 @@ class DepositControllerTest : ControllerTestBase() {
             createApprovedDeposit(user)
         }
 
-        verify("Admin user can get counted users with approved deposit") {
+        verify("Cooperative user can get statistics about counted users with approved deposit") {
             val result = mockMvc.perform(get("$depositPath/count"))
                 .andExpect(MockMvcResultMatchers.status().isOk)
                 .andReturn()
