@@ -182,8 +182,14 @@ abstract class ControllerTestBase : TestBase() {
         return withdrawRepository.save(withdraw)
     }
 
-    protected fun createWithdraw(owner: UUID, amount: Long = 1000, type: WalletType = WalletType.USER): Withdraw {
-        val withdraw = Withdraw(0, owner, amount, ZonedDateTime.now(), owner, "bank-account",
+    protected fun createWithdraw(
+        owner: UUID,
+        amount: Long = 1000,
+        type: WalletType = WalletType.USER,
+        userUuid: UUID? = null
+    ): Withdraw {
+        val user = userUuid ?: owner
+        val withdraw = Withdraw(0, owner, amount, ZonedDateTime.now(), user, "bank-account",
             null, null, null, null, null, null, type)
         return withdrawRepository.save(withdraw)
     }

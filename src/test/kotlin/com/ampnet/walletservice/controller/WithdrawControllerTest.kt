@@ -276,6 +276,51 @@ class WithdrawControllerTest : ControllerTestBase() {
         }
     }
 
+    @Test
+    @WithMockCrowdfoundUser
+    fun mustBeAbleToGenerateApprovalTransactionForProject() {
+        suppose("Transaction info is clean") {
+            databaseCleanerService.deleteAllTransactionInfo()
+        }
+        suppose("Project has wallet") {
+            databaseCleanerService.deleteAllWallets()
+            createWalletForProject(projectUuid, walletHash)
+        }
+        suppose("Project has withdraw") {
+            testContext.withdraw = createWithdraw(projectUuid, type = WalletType.PROJECT, userUuid = userUuid)
+        }
+        suppose("Project service will return project") {
+            Mockito.`when`(projectService.getProject(projectUuid))
+                .thenReturn(createProjectResponse(projectUuid, userUuid))
+        }
+        suppose("Blockchain service will return approve burn transaction") {
+            testContext.transactionData = TransactionData("approve-burn-transaction")
+            Mockito.`when`(
+                blockchainService.generateApproveBurnTransaction(walletHash, testContext.amount)
+            ).thenReturn(testContext.transactionData)
+        }
+
+        verify("User can generate approval transaction") {
+            val result = mockMvc.perform(
+                post("$withdrawPath/${testContext.withdraw.id}/transaction/approve"))
+                .andExpect(status().isOk)
+                .andReturn()
+
+            val transactionResponse: TransactionResponse = objectMapper.readValue(result.response.contentAsString)
+            assertThat(transactionResponse.tx).isEqualTo(testContext.transactionData.tx)
+            assertThat(transactionResponse.txId).isNotNull()
+            assertThat(transactionResponse.info.txType).isEqualTo(TransactionType.BURN_APPROVAL)
+        }
+        verify("Transaction info is created") {
+            val transactionInfos = transactionInfoRepository.findAll()
+            assertThat(transactionInfos).hasSize(1)
+            val transactionInfo = transactionInfos.first()
+            assertThat(transactionInfo.companionData).isEqualTo(testContext.withdraw.id.toString())
+            assertThat(transactionInfo.type).isEqualTo(TransactionType.BURN_APPROVAL)
+            assertThat(transactionInfo.userUuid).isEqualTo(userUuid)
+        }
+    }
+
     private class TestContext {
         val amount = 1000L
         val bankAccount = "AL35202111090000000001234567"

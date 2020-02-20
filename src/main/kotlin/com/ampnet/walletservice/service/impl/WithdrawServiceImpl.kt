@@ -70,20 +70,9 @@ class WithdrawServiceImpl(
     @Transactional
     override fun deleteWithdraw(withdrawId: Int, user: UUID) {
         val withdraw = ServiceUtils.getWithdraw(withdrawId, withdrawRepository)
+        validateUserCanEditWithdraw(withdraw, user)
         if (withdraw.burnedTxHash != null) {
             throw InvalidRequestException(ErrorCode.WALLET_WITHDRAW_BURNED, "Cannot delete burned Withdraw")
-        }
-        when (withdraw.type) {
-            WalletType.USER -> {
-                if (withdraw.ownerUuid != user) {
-                    throw InvalidRequestException(ErrorCode.USER_MISSING_PRIVILEGE, "Not your withdraw")
-                }
-            }
-            WalletType.PROJECT -> {
-                val projectResponse = projectService.getProject(withdraw.ownerUuid)
-                ServiceUtils.validateUserIsProjectOwner(user, projectResponse)
-            }
-            WalletType.ORG -> throw InternalException(ErrorCode.INT_INVALID_VALUE, "Organization withdraw not possible")
         }
         logger.info { "Deleting Withdraw with id: $withdraw" }
         withdrawRepository.delete(withdraw)
@@ -93,14 +82,28 @@ class WithdrawServiceImpl(
     @Transactional
     override fun generateApprovalTransaction(withdrawId: Int, user: UUID): TransactionDataAndInfo {
         val withdraw = ServiceUtils.getWithdraw(withdrawId, withdrawRepository)
-        if (withdraw.ownerUuid != user) {
-            throw InvalidRequestException(ErrorCode.WALLET_WITHDRAW_MISSING, "Withdraw does not belong to this user")
-        }
+        validateUserCanEditWithdraw(withdraw, user)
         ServiceUtils.validateWithdrawForApproval(withdraw)
-        val userWallet = ServiceUtils.getWalletHash(withdraw.ownerUuid, walletRepository)
-        val data = blockchainService.generateApproveBurnTransaction(userWallet, withdraw.amount)
+        val ownerWallet = ServiceUtils.getWalletHash(withdraw.ownerUuid, walletRepository)
+        val data = blockchainService.generateApproveBurnTransaction(ownerWallet, withdraw.amount)
         val info = transactionInfoService.createApprovalTransaction(withdraw.amount, user, withdraw.id)
         return TransactionDataAndInfo(data, info)
+    }
+
+    private fun validateUserCanEditWithdraw(withdraw: Withdraw, user: UUID) {
+        when (withdraw.type) {
+            WalletType.USER -> {
+                if (withdraw.ownerUuid != user) {
+                    throw InvalidRequestException(
+                        ErrorCode.USER_MISSING_PRIVILEGE, "Withdraw does not belong to this user")
+                }
+            }
+            WalletType.PROJECT -> {
+                val projectResponse = projectService.getProject(withdraw.ownerUuid)
+                ServiceUtils.validateUserIsProjectOwner(user, projectResponse)
+            }
+            WalletType.ORG -> throw InternalException(ErrorCode.INT_INVALID_VALUE, "Organization withdraw not possible")
+        }
     }
 
     private fun checkIfOwnerHasEnoughFunds(owner: UUID, amount: Long) {
