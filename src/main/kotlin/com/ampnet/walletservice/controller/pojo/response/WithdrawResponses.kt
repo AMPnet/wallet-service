@@ -1,5 +1,6 @@
 package com.ampnet.walletservice.controller.pojo.response
 
+import com.ampnet.projectservice.proto.ProjectResponse
 import com.ampnet.userservice.proto.UserResponse
 import com.ampnet.walletservice.persistence.model.Withdraw
 import java.time.ZonedDateTime
@@ -7,7 +8,7 @@ import java.util.UUID
 
 data class WithdrawResponse(
     val id: Int,
-    val user: UUID,
+    val owner: UUID,
     val amount: Long,
     val approvedTxHash: String?,
     val approvedAt: ZonedDateTime?,
@@ -20,7 +21,7 @@ data class WithdrawResponse(
 ) {
     constructor(withdraw: Withdraw) : this (
         withdraw.id,
-        withdraw.userUuid,
+        withdraw.ownerUuid,
         withdraw.amount,
         withdraw.approvedTxHash,
         withdraw.approvedAt,
@@ -62,9 +63,43 @@ data class WithdrawWithUserResponse(
         withdraw.file?.let { DocumentResponse(it) }
     )
 }
-
 data class WithdrawWithUserListResponse(
     val withdraws: List<WithdrawWithUserResponse>,
+    val page: Int,
+    val totalPages: Int
+)
+
+data class WithdrawWithProjectResponse(
+    val id: Int,
+    val project: ProjectControllerResponse?,
+    val amount: Long,
+    val approvedTxHash: String?,
+    val approvedAt: ZonedDateTime?,
+    val burnedTxHash: String?,
+    val burnedBy: UUID?,
+    val burnedAt: ZonedDateTime?,
+    val createdAt: ZonedDateTime,
+    val bankAccount: String,
+    val projectWallet: String,
+    val documentResponse: DocumentResponse?
+) {
+    constructor(withdraw: Withdraw, project: ProjectResponse?, projectWallet: String) : this(
+        withdraw.id,
+        project?.let { ProjectControllerResponse(it) },
+        withdraw.amount,
+        withdraw.approvedTxHash,
+        withdraw.approvedAt,
+        withdraw.burnedTxHash,
+        withdraw.burnedBy,
+        withdraw.burnedAt,
+        withdraw.createdAt,
+        withdraw.bankAccount,
+        projectWallet,
+        withdraw.file?.let { DocumentResponse(it) }
+    )
+}
+data class WithdrawWithProjectListResponse(
+    val withdraws: List<WithdrawWithProjectResponse>,
     val page: Int,
     val totalPages: Int
 )

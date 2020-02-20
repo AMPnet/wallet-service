@@ -1,9 +1,12 @@
 package com.ampnet.walletservice.persistence.model
 
+import com.ampnet.walletservice.enums.WalletType
 import java.time.ZonedDateTime
 import java.util.UUID
 import javax.persistence.Column
 import javax.persistence.Entity
+import javax.persistence.EnumType
+import javax.persistence.Enumerated
 import javax.persistence.FetchType
 import javax.persistence.GeneratedValue
 import javax.persistence.GenerationType
@@ -20,13 +23,16 @@ data class Withdraw(
     val id: Int,
 
     @Column(nullable = false)
-    val userUuid: UUID,
+    val ownerUuid: UUID,
 
     @Column(nullable = false)
     val amount: Long,
 
     @Column(nullable = false)
     val createdAt: ZonedDateTime,
+
+    @Column(nullable = false)
+    val createdBy: UUID,
 
     @Column(nullable = false, length = 64)
     val bankAccount: String,
@@ -48,5 +54,9 @@ data class Withdraw(
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "file_id")
-    var file: File?
+    var file: File?,
+
+    @Column(nullable = false, length = 8)
+    @Enumerated(EnumType.STRING)
+    val type: WalletType
 )

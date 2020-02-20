@@ -8,11 +8,11 @@ import com.ampnet.walletservice.exception.ResourceNotFoundException
 import com.ampnet.walletservice.persistence.model.TransactionInfo
 import com.ampnet.walletservice.service.BroadcastTransactionService
 import com.ampnet.walletservice.service.CooperativeWalletService
+import com.ampnet.walletservice.service.CooperativeWithdrawService
 import com.ampnet.walletservice.service.DepositService
 import com.ampnet.walletservice.service.ProjectInvestmentService
 import com.ampnet.walletservice.service.TransactionInfoService
 import com.ampnet.walletservice.service.WalletService
-import com.ampnet.walletservice.service.WithdrawService
 import java.util.UUID
 import mu.KLogging
 import org.springframework.stereotype.Service
@@ -21,8 +21,8 @@ import org.springframework.stereotype.Service
 class BroadcastTransactionServiceImpl(
     private val walletService: WalletService,
     private val cooperativeWalletService: CooperativeWalletService,
+    private val cooperativeWithdrawService: CooperativeWithdrawService,
     private val depositService: DepositService,
-    private val withdrawService: WithdrawService,
     private val projectInvestmentService: ProjectInvestmentService,
     private val transactionInfoService: TransactionInfoService
 ) : BroadcastTransactionService {
@@ -77,14 +77,14 @@ class BroadcastTransactionServiceImpl(
 
     private fun confirmApprovalTransaction(transactionInfo: TransactionInfo, signedTransaction: String): String {
         val withdrawId = getIdFromCompanionData(transactionInfo)
-        val withdraw = withdrawService.confirmApproval(signedTransaction, withdrawId)
+        val withdraw = cooperativeWithdrawService.confirmApproval(signedTransaction, withdrawId)
         return withdraw.approvedTxHash
             ?: throw ResourceNotFoundException(ErrorCode.TX_MISSING, "Missing approvedTxHash for withdraw transaction")
     }
 
     private fun burnTransaction(transactionInfo: TransactionInfo, signedTransaction: String): String {
         val withdrawId = getIdFromCompanionData(transactionInfo)
-        val withdraw = withdrawService.burn(signedTransaction, withdrawId)
+        val withdraw = cooperativeWithdrawService.burn(signedTransaction, withdrawId)
         return withdraw.burnedTxHash
             ?: throw ResourceNotFoundException(ErrorCode.TX_MISSING, "Missing burnedTxHash for withdraw transaction")
     }

@@ -119,13 +119,13 @@ class PortfolioControllerTest : ControllerTestBase() {
         suppose("User has wallet") {
             createWalletForUser(userUuid, "user-wallet-hash")
         }
-        suppose("Blockchain service will return portfolio stats") {
+        suppose("Blockchain service will return empty portfolio stats") {
             Mockito.`when`(
                 blockchainService.getTransactions(getWalletHash(userUuid))
             ).thenReturn(emptyList())
         }
 
-        verify("User can get portfolio stats") {
+        verify("User can get empty portfolio stats") {
             val result = mockMvc.perform(get("$portfolioPath/stats"))
                 .andExpect(status().isOk)
                 .andReturn()
@@ -177,7 +177,7 @@ class PortfolioControllerTest : ControllerTestBase() {
     @Test
     @WithMockCrowdfoundUser
     fun mustGetNotFoundForInvestmentsInNonExistingProject() {
-        verify("Controller will return not found for non existing project") {
+        verify("Controller will return not found for portfolio in non existing project") {
             val response = mockMvc.perform(get("$portfolioPath/project/${UUID.randomUUID()}"))
                 .andExpect(status().isBadRequest)
                 .andReturn()

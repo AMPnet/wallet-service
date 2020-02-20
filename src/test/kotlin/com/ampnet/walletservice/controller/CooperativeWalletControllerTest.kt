@@ -39,17 +39,17 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
     @Test
     @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWA_WALLET])
     fun mustBeAbleToGetActivateWalletTransaction() {
-        suppose("User created wallet") {
+        suppose("Unactivated user created wallet") {
             testContext.wallet = createUnactivatedWallet(userUuid, testContext.activationData, WalletType.USER)
         }
-        suppose("Blockchain service will return transaction") {
+        suppose("Blockchain service will return transaction data for activating user wallet") {
             testContext.transactionData = TransactionData(testContext.walletHash)
             Mockito.`when`(
                 blockchainService.addWallet(testContext.activationData)
             ).thenReturn(testContext.transactionData)
         }
 
-        verify("Admin can generate activate wallet transaction") {
+        verify("Cooperative can generate activate wallet transaction") {
             val result = mockMvc.perform(
                 post("$cooperativeWalletPath/${testContext.wallet.uuid}/transaction"))
                 .andExpect(status().isOk)
@@ -76,7 +76,7 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
         suppose("There is user with activated wallet") {
             testContext.wallet = createWalletForUser(userUuid, testContext.walletHash)
         }
-        suppose("Blockchain service will return data for users") {
+        suppose("User service will return data for users") {
             Mockito.`when`(
                 userService.getUsers(testContext.users.toSet())
             ).thenReturn(listOf(createUserResponse(testContext.users[0]), createUserResponse(testContext.users[1])))
@@ -85,7 +85,7 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
             ).thenReturn(listOf(createUserResponse(testContext.users[1]), createUserResponse(testContext.users[0])))
         }
 
-        verify("Admin can get a list of users with unactivated wallet") {
+        verify("Cooperative can get a list of users with unactivated wallet") {
             val result = mockMvc.perform(
                 get("$cooperativeWalletPath/user")
                     .param("size", "20")
@@ -120,7 +120,7 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
         suppose("There is organization with activated wallet") {
             testContext.wallet = createWalletForOrganization(organizationUuid, testContext.walletHash)
         }
-        suppose("Project service will return organizations") {
+        suppose("Project service will return organizations data") {
             Mockito.`when`(
                 projectService.getOrganizations(testContext.organizations.toSet())
             ).thenReturn(
@@ -137,7 +137,7 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
             )
         }
 
-        verify("Admin can get a list of organization with unactivated wallet") {
+        verify("Cooperative can get a list of organization with unactivated wallet") {
             val result = mockMvc.perform(
                 get("$cooperativeWalletPath/organization")
                     .param("size", "20")
@@ -172,7 +172,7 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
         suppose("There is projects with activated wallet") {
             testContext.wallet = createWalletForProject(projectUuid, testContext.walletHash)
         }
-        suppose("Project service will return projects") {
+        suppose("Project service will return projects data") {
             Mockito.`when`(
                 projectService.getProjects(testContext.projects.toSet())
             ).thenReturn(
@@ -189,7 +189,7 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
             )
         }
 
-        verify("Admin can get a list of projects with unactivated wallet") {
+        verify("Cooperative can get a list of projects with unactivated wallet") {
             val result = mockMvc.perform(
                 get("$cooperativeWalletPath/project")
                     .param("size", "20")

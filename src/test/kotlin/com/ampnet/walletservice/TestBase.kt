@@ -2,6 +2,7 @@ package com.ampnet.walletservice
 
 import com.ampnet.projectservice.proto.OrganizationResponse
 import com.ampnet.projectservice.proto.ProjectResponse
+import com.ampnet.walletservice.enums.Currency
 import com.ampnet.walletservice.grpc.blockchain.pojo.ProjectInfoResponse
 import java.time.ZonedDateTime
 import java.util.UUID
@@ -61,4 +62,22 @@ abstract class TestBase {
         endsAt: Long = ZonedDateTime.now().plusDays(30).toEpochSecond()
     ): ProjectInfoResponse =
         ProjectInfoResponse(walletHash, balance, investmentCap, minPerUser, maxPerUser, endsAt, false)
+
+    protected fun createProjectResponse(project: UUID, createBy: UUID): ProjectResponse =
+        ProjectResponse.newBuilder()
+            .setUuid(project.toString())
+            .setCreatedByUser(createBy.toString())
+            .setActive(true)
+            .setName("Project name")
+            .setCurrency(Currency.EUR.name)
+            .setDescription("Description")
+            .setStartDate(ZonedDateTime.now().minusDays(1).toEpochSecond())
+            .setEndDate(ZonedDateTime.now().plusDays(30).toEpochSecond())
+            .setExpectedFunding(10_000_000_00)
+            .setImageUrl("image-url")
+            .setMaxPerUser(10_000_00)
+            .setMinPerUser(1_00)
+            .setOrganizationUuid(UUID.randomUUID().toString())
+            .setReturnOnInvestment("5%")
+            .build()
 }

@@ -32,12 +32,12 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.restdocs.RestDocumentationContextProvider
 import org.springframework.restdocs.RestDocumentationExtension
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation
 import org.springframework.restdocs.operation.preprocess.Preprocessors
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers
-import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.MvcResult
@@ -47,7 +47,6 @@ import org.springframework.web.context.WebApplicationContext
 
 @ExtendWith(value = [SpringExtension::class, RestDocumentationExtension::class])
 @SpringBootTest
-@ActiveProfiles("GrpcServiceMockConfig, CloudStorageMockConfig")
 abstract class ControllerTestBase : TestBase() {
 
     protected val userUuid: UUID = UUID.fromString("89fb3b1c-9c0a-11e9-a2a3-2a2ae2dbcce4")
@@ -63,11 +62,7 @@ abstract class ControllerTestBase : TestBase() {
     @Autowired
     protected lateinit var walletRepository: WalletRepository
     @Autowired
-    protected lateinit var blockchainService: BlockchainService
-    @Autowired
     protected lateinit var transactionInfoRepository: TransactionInfoRepository
-    @Autowired
-    protected lateinit var cloudStorageService: CloudStorageService
     @Autowired
     protected lateinit var pairWalletCodeRepository: PairWalletCodeRepository
     @Autowired
@@ -75,27 +70,30 @@ abstract class ControllerTestBase : TestBase() {
     @Autowired
     protected lateinit var withdrawRepository: WithdrawRepository
     @Autowired
-    protected lateinit var userService: UserService
-    @Autowired
-    protected lateinit var mailService: MailService
-    @Autowired
-    protected lateinit var projectService: ProjectService
-    @Autowired
     private lateinit var documentRepository: DocumentRepository
+    @MockBean
+    protected lateinit var userService: UserService
+    @MockBean
+    protected lateinit var mailService: MailService
+    @MockBean
+    protected lateinit var projectService: ProjectService
+    @MockBean
+    protected lateinit var blockchainService: BlockchainService
+    @MockBean
+    protected lateinit var cloudStorageService: CloudStorageService
 
     protected lateinit var mockMvc: MockMvc
 
     @BeforeEach
     fun init(wac: WebApplicationContext, restDocumentation: RestDocumentationContextProvider) {
         mockMvc = MockMvcBuilders.webAppContextSetup(wac)
-                .apply<DefaultMockMvcBuilder>(SecurityMockMvcConfigurers.springSecurity())
-                .apply<DefaultMockMvcBuilder>(MockMvcRestDocumentation.documentationConfiguration(restDocumentation))
-                .alwaysDo<DefaultMockMvcBuilder>(MockMvcRestDocumentation.document(
-                        "{ClassName}/{methodName}",
-                        Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                        Preprocessors.preprocessResponse(Preprocessors.prettyPrint())
-                ))
-                .build()
+            .apply<DefaultMockMvcBuilder>(SecurityMockMvcConfigurers.springSecurity())
+            .apply<DefaultMockMvcBuilder>(MockMvcRestDocumentation.documentationConfiguration(restDocumentation))
+            .alwaysDo<DefaultMockMvcBuilder>(MockMvcRestDocumentation.document(
+                "{ClassName}/{methodName}",
+                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                Preprocessors.preprocessResponse(Preprocessors.prettyPrint())))
+            .build()
     }
 
     protected fun getResponseErrorCode(errorCode: ErrorCode): String {
@@ -117,7 +115,8 @@ abstract class ControllerTestBase : TestBase() {
         createWallet(organization, hash, WalletType.ORG)
 
     private fun createWallet(owner: UUID, hash: String, type: WalletType): Wallet {
-        val wallet = Wallet(UUID.randomUUID(), owner, hash, type, Currency.EUR, ZonedDateTime.now(), hash, ZonedDateTime.now())
+        val wallet = Wallet(UUID.randomUUID(), owner, hash, type, Currency.EUR,
+            ZonedDateTime.now(), hash, ZonedDateTime.now())
         return walletRepository.save(wallet)
     }
 
@@ -153,14 +152,13 @@ abstract class ControllerTestBase : TestBase() {
         first: String = "First",
         last: String = "Last",
         enabled: Boolean = true
-    ): UserResponse =
-            UserResponse.newBuilder()
-                    .setUuid(uuid.toString())
-                    .setEmail(email)
-                    .setFirstName(first)
-                    .setLastName(last)
-                    .setEnabled(enabled)
-                    .build()
+    ): UserResponse = UserResponse.newBuilder()
+        .setUuid(uuid.toString())
+        .setEmail(email)
+        .setFirstName(first)
+        .setLastName(last)
+        .setEnabled(enabled)
+        .build()
 
     protected fun createApprovedDeposit(
         user: UUID,
@@ -169,20 +167,24 @@ abstract class ControllerTestBase : TestBase() {
     ): Deposit {
         val document = saveFile("doc", "document-link", "type", 1, user)
         val deposit = Deposit(0, user, "S34SDGFT", true, amount,
-                user, ZonedDateTime.now(), document, txHash, ZonedDateTime.now())
+            user, ZonedDateTime.now(), document, txHash, ZonedDateTime.now())
         return depositRepository.save(deposit)
     }
 
-    protected fun createApprovedWithdraw(user: UUID, amount: Long = 1000): Withdraw {
-        val withdraw = Withdraw(0, user, amount, ZonedDateTime.now(), "bank-account",
-                "approved-tx", ZonedDateTime.now(),
-                null, null, null, null)
+    protected fun createApprovedWithdraw(
+        owner: UUID,
+        amount: Long = 1000,
+        type: WalletType = WalletType.USER
+    ): Withdraw {
+        val withdraw = Withdraw(0, owner, amount, ZonedDateTime.now(), owner, "bank-account",
+            "approved-tx", ZonedDateTime.now(),
+            null, null, null, null, type)
         return withdrawRepository.save(withdraw)
     }
 
-    protected fun createWithdraw(user: UUID, amount: Long = 1000): Withdraw {
-        val withdraw = Withdraw(0, user, amount, ZonedDateTime.now(), "bank-account",
-                null, null, null, null, null, null)
+    protected fun createWithdraw(owner: UUID, amount: Long = 1000, type: WalletType = WalletType.USER): Withdraw {
+        val withdraw = Withdraw(0, owner, amount, ZonedDateTime.now(), owner, "bank-account",
+            null, null, null, null, null, null, type)
         return withdrawRepository.save(withdraw)
     }
 }

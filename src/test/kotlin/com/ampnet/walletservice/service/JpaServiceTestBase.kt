@@ -12,10 +12,12 @@ import com.ampnet.walletservice.grpc.projectservice.ProjectService
 import com.ampnet.walletservice.grpc.projectservice.ProjectServiceImpl
 import com.ampnet.walletservice.persistence.model.File
 import com.ampnet.walletservice.persistence.model.Wallet
+import com.ampnet.walletservice.persistence.model.Withdraw
 import com.ampnet.walletservice.persistence.repository.DocumentRepository
 import com.ampnet.walletservice.persistence.repository.PairWalletCodeRepository
 import com.ampnet.walletservice.persistence.repository.TransactionInfoRepository
 import com.ampnet.walletservice.persistence.repository.WalletRepository
+import com.ampnet.walletservice.persistence.repository.WithdrawRepository
 import com.ampnet.walletservice.service.impl.CloudStorageServiceImpl
 import java.time.ZonedDateTime
 import java.util.UUID
@@ -45,6 +47,8 @@ abstract class JpaServiceTestBase : TestBase() {
     protected lateinit var transactionInfoRepository: TransactionInfoRepository
     @Autowired
     protected lateinit var pairWalletCodeRepository: PairWalletCodeRepository
+    @Autowired
+    protected lateinit var withdrawRepository: WithdrawRepository
 
     protected val mockedBlockchainService: BlockchainService = Mockito.mock(BlockchainService::class.java)
     protected val mockedCloudStorageService: CloudStorageServiceImpl = Mockito.mock(CloudStorageServiceImpl::class.java)
@@ -56,6 +60,7 @@ abstract class JpaServiceTestBase : TestBase() {
     protected val signedTransaction = "signed-transaction"
     protected val txHash = "tx-hash"
     protected val transactionData = TransactionData("data")
+    protected val bankAccount = "bank-account"
 
     protected fun createWalletForUser(userUuid: UUID, hash: String) = createWallet(userUuid, hash, WalletType.USER)
 
@@ -87,5 +92,25 @@ abstract class JpaServiceTestBase : TestBase() {
             return wallet.get().hash ?: fail("Wallet must be activated")
         }
         fail("Missing wallet")
+    }
+
+    protected fun createBurnedWithdraw(user: UUID, type: WalletType = WalletType.USER): Withdraw {
+        val withdraw = Withdraw(0, user, 100L, ZonedDateTime.now(), user, bankAccount,
+            "approved-tx", ZonedDateTime.now(),
+            "burned-tx", ZonedDateTime.now(), UUID.randomUUID(), null, type)
+        return withdrawRepository.save(withdraw)
+    }
+
+    protected fun createApprovedWithdraw(user: UUID, type: WalletType = WalletType.USER): Withdraw {
+        val withdraw = Withdraw(0, user, 100L, ZonedDateTime.now(), user, bankAccount,
+            "approved-tx", ZonedDateTime.now(),
+            null, null, null, null, type)
+        return withdrawRepository.save(withdraw)
+    }
+
+    protected fun createWithdraw(user: UUID, type: WalletType = WalletType.USER): Withdraw {
+        val withdraw = Withdraw(0, user, 100L, ZonedDateTime.now(), userUuid, bankAccount,
+            null, null, null, null, null, null, type)
+        return withdrawRepository.save(withdraw)
     }
 }

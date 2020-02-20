@@ -44,7 +44,7 @@ class InvestmentControllerTest : ControllerTestBase() {
                 projectService.getProject(projectUuid)
             ).thenReturn(getProjectResponse(projectUuid, userUuid, organizationUuid))
         }
-        suppose("Blockchain service will generate transaction") {
+        suppose("Blockchain service will generate invest transaction") {
             val userWalletHash = getWalletHash(userUuid)
             val projectWalletHash = getWalletHash(projectUuid)
             Mockito.`when`(blockchainService.generateProjectInvestmentTransaction(

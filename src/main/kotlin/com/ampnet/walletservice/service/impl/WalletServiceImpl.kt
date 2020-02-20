@@ -74,20 +74,15 @@ class WalletServiceImpl(
 
         logger.debug { "Generating create wallet transaction for project: $project" }
         val projectResponse = projectService.getProject(project)
-        if (projectResponse.createdByUser != user.toString()) {
-            throw InvalidRequestException(ErrorCode.PRJ_MISSING_PRIVILEGE,
-                "User: $user did not create this project: $project and cannot create a wallet")
-        }
+        ServiceUtils.validateUserIsProjectOwner(user, projectResponse)
+
         val organization = UUID.fromString(projectResponse.organizationUuid)
         val organizationWalletHash = ServiceUtils.getWalletHash(organization, walletRepository)
 
         val request = GenerateProjectWalletRequest(
             userWalletHash,
             organizationWalletHash,
-            projectResponse.maxPerUser,
-            projectResponse.minPerUser,
-            projectResponse.expectedFunding,
-            projectResponse.endDate
+            projectResponse
         )
         val data = blockchainService.generateProjectWalletTransaction(request)
         val info = transactionInfoService.createProjectTransaction(project, projectResponse.name, user)
