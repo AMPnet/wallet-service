@@ -58,12 +58,14 @@ class CooperativeWithdrawServiceImpl(
     @Transactional
     override fun generateBurnTransaction(withdrawId: Int, user: UUID): TransactionDataAndInfo {
         val withdraw = ServiceUtils.getWithdraw(withdrawId, withdrawRepository)
+        logger.info { "Generating Burn transaction for withdraw: $withdraw" }
         validateWithdrawForBurn(withdraw)
-        val userWallet = ServiceUtils.getWalletHash(withdraw.ownerUuid, walletRepository)
-        val data = blockchainService.generateBurnTransaction(userWallet)
+        val ownerWallet = ServiceUtils.getWalletHash(withdraw.ownerUuid, walletRepository)
+        val data = blockchainService.generateBurnTransaction(ownerWallet)
         val info = transactionInfoService.createBurnTransaction(withdraw.amount, user, withdraw.id)
         withdraw.burnedBy = user
         withdrawRepository.save(withdraw)
+        logger.info { "Burned withdraw: $withdraw" }
         return TransactionDataAndInfo(data, info)
     }
 
@@ -84,8 +86,10 @@ class CooperativeWithdrawServiceImpl(
     @Transactional
     override fun addDocument(withdrawId: Int, request: DocumentSaveRequest): Withdraw {
         val withdraw = ServiceUtils.getWithdraw(withdrawId, withdrawRepository)
+        logger.info { "Adding document for withdraw: $withdraw" }
         val document = storageService.saveDocument(request)
         withdraw.file = document
+        logger.info { "Document added" }
         return withdrawRepository.save(withdraw)
     }
 

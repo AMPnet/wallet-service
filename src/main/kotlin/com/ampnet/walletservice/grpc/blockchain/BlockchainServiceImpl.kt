@@ -3,6 +3,7 @@ package com.ampnet.walletservice.grpc.blockchain
 import com.ampnet.crowdfunding.proto.BalanceRequest
 import com.ampnet.crowdfunding.proto.BlockchainServiceGrpc
 import com.ampnet.crowdfunding.proto.GenerateAddWalletTxRequest
+import com.ampnet.crowdfunding.proto.GenerateApproveProjectWithdrawTxRequest
 import com.ampnet.crowdfunding.proto.GenerateApproveWithdrawTxRequest
 import com.ampnet.crowdfunding.proto.GenerateBurnFromTxRequest
 import com.ampnet.crowdfunding.proto.GenerateCancelInvestmentTxRequest
@@ -18,6 +19,7 @@ import com.ampnet.crowdfunding.proto.TransactionsRequest
 import com.ampnet.walletservice.config.ApplicationProperties
 import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.exception.GrpcException
+import com.ampnet.walletservice.grpc.blockchain.pojo.ApproveProjectBurnTransactionRequest
 import com.ampnet.walletservice.grpc.blockchain.pojo.BlockchainTransaction
 import com.ampnet.walletservice.grpc.blockchain.pojo.GenerateProjectWalletRequest
 import com.ampnet.walletservice.grpc.blockchain.pojo.Portfolio
@@ -219,6 +221,26 @@ class BlockchainServiceImpl(
             return TransactionData(response)
         } catch (ex: StatusRuntimeException) {
             throw getInternalExceptionFromStatusException(ex, "Could not Burn toHash: $burnFromTxHash")
+        }
+    }
+
+    override fun generateApproveProjectBurnTransaction(request: ApproveProjectBurnTransactionRequest): TransactionData {
+        logger.info { "Generating Approve Burn Project Transaction projectTxHash: ${request.projectTxHash} " +
+            "for amount = ${request.amount} by user walletHash: ${request.userWalletHash}" }
+        try {
+            val response = serviceWithTimeout()
+                .generateApproveProjectWithdrawTx(
+                    GenerateApproveProjectWithdrawTxRequest.newBuilder()
+                        .setProjectTxHash(request.projectTxHash)
+                        .setFromTxHash(request.userWalletHash)
+                        .setAmount(request.amount.toString())
+                        .build()
+                )
+            logger.info { "Successfully generated approve burn transaction" }
+            return TransactionData(response)
+        } catch (ex: StatusRuntimeException) {
+            throw getInternalExceptionFromStatusException(
+                ex, "Could not Burn Transaction for project: ${request.projectTxHash}")
         }
     }
 

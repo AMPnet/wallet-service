@@ -6,6 +6,8 @@ import com.ampnet.walletservice.exception.InternalException
 import com.ampnet.walletservice.exception.InvalidRequestException
 import com.ampnet.walletservice.exception.ResourceAlreadyExistsException
 import com.ampnet.walletservice.grpc.blockchain.BlockchainService
+import com.ampnet.walletservice.grpc.blockchain.pojo.ApproveProjectBurnTransactionRequest
+import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionData
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionDataAndInfo
 import com.ampnet.walletservice.grpc.mail.MailService
 import com.ampnet.walletservice.grpc.projectservice.ProjectService
@@ -84,10 +86,26 @@ class WithdrawServiceImpl(
         val withdraw = ServiceUtils.getWithdraw(withdrawId, withdrawRepository)
         validateUserCanEditWithdraw(withdraw, user)
         ServiceUtils.validateWithdrawForApproval(withdraw)
-        val ownerWallet = ServiceUtils.getWalletHash(withdraw.ownerUuid, walletRepository)
-        val data = blockchainService.generateApproveBurnTransaction(ownerWallet, withdraw.amount)
+        val data = getApprovalTransactionData(withdraw, user)
         val info = transactionInfoService.createApprovalTransaction(withdraw.amount, user, withdraw.id)
         return TransactionDataAndInfo(data, info)
+    }
+
+    private fun getApprovalTransactionData(withdraw: Withdraw, user: UUID): TransactionData {
+        val userWallet = ServiceUtils.getWalletHash(user, walletRepository)
+        return when (withdraw.type) {
+            WalletType.USER -> {
+                blockchainService.generateApproveBurnTransaction(userWallet, withdraw.amount)
+            }
+            WalletType.PROJECT -> {
+                val projectWallet = ServiceUtils.getWalletHash(withdraw.ownerUuid, walletRepository)
+                val request = ApproveProjectBurnTransactionRequest(projectWallet, withdraw.amount, userWallet)
+                blockchainService.generateApproveProjectBurnTransaction(request)
+            }
+            WalletType.ORG -> {
+                throw InternalException(ErrorCode.INT_INVALID_VALUE, "Organization withdraw approval not possible")
+            }
+        }
     }
 
     private fun validateUserCanEditWithdraw(withdraw: Withdraw, user: UUID) {

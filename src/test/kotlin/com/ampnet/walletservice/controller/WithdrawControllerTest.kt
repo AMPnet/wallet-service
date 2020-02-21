@@ -6,6 +6,7 @@ import com.ampnet.walletservice.controller.pojo.response.WithdrawResponse
 import com.ampnet.walletservice.enums.TransactionType
 import com.ampnet.walletservice.enums.WalletType
 import com.ampnet.walletservice.exception.ErrorCode
+import com.ampnet.walletservice.grpc.blockchain.pojo.ApproveProjectBurnTransactionRequest
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionData
 import com.ampnet.walletservice.persistence.model.Withdraw
 import com.ampnet.walletservice.security.WithMockCrowdfoundUser
@@ -282,9 +283,10 @@ class WithdrawControllerTest : ControllerTestBase() {
         suppose("Transaction info is clean") {
             databaseCleanerService.deleteAllTransactionInfo()
         }
-        suppose("Project has wallet") {
+        suppose("User and project have wallet") {
             databaseCleanerService.deleteAllWallets()
-            createWalletForProject(projectUuid, walletHash)
+            createWalletForUser(userUuid, walletHash)
+            createWalletForProject(projectUuid, testContext.projectWalletHash)
         }
         suppose("Project has withdraw") {
             testContext.withdraw = createWithdraw(projectUuid, type = WalletType.PROJECT, userUuid = userUuid)
@@ -295,8 +297,10 @@ class WithdrawControllerTest : ControllerTestBase() {
         }
         suppose("Blockchain service will return approve burn transaction") {
             testContext.transactionData = TransactionData("approve-burn-transaction")
+            val request = ApproveProjectBurnTransactionRequest(
+                testContext.projectWalletHash, testContext.amount, walletHash)
             Mockito.`when`(
-                blockchainService.generateApproveBurnTransaction(walletHash, testContext.amount)
+                blockchainService.generateApproveProjectBurnTransaction(request)
             ).thenReturn(testContext.transactionData)
         }
 
@@ -324,6 +328,7 @@ class WithdrawControllerTest : ControllerTestBase() {
     private class TestContext {
         val amount = 1000L
         val bankAccount = "AL35202111090000000001234567"
+        val projectWalletHash = "th_foKr5RbgAVq84nZaF6bNfPSnjmFQ39VhQeWPetgGDwv1BNAnV"
         lateinit var withdraw: Withdraw
         lateinit var transactionData: TransactionData
     }
