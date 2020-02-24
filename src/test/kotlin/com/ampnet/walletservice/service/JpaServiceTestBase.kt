@@ -11,9 +11,11 @@ import com.ampnet.walletservice.grpc.mail.MailService
 import com.ampnet.walletservice.grpc.mail.MailServiceImpl
 import com.ampnet.walletservice.grpc.projectservice.ProjectService
 import com.ampnet.walletservice.grpc.projectservice.ProjectServiceImpl
+import com.ampnet.walletservice.persistence.model.Deposit
 import com.ampnet.walletservice.persistence.model.File
 import com.ampnet.walletservice.persistence.model.Wallet
 import com.ampnet.walletservice.persistence.model.Withdraw
+import com.ampnet.walletservice.persistence.repository.DepositRepository
 import com.ampnet.walletservice.persistence.repository.DocumentRepository
 import com.ampnet.walletservice.persistence.repository.PairWalletCodeRepository
 import com.ampnet.walletservice.persistence.repository.TransactionInfoRepository
@@ -50,6 +52,8 @@ abstract class JpaServiceTestBase : TestBase() {
     protected lateinit var pairWalletCodeRepository: PairWalletCodeRepository
     @Autowired
     protected lateinit var withdrawRepository: WithdrawRepository
+    @Autowired
+    protected lateinit var depositRepository: DepositRepository
 
     protected val mockedBlockchainService: BlockchainService = Mockito.mock(BlockchainService::class.java)
     protected val mockedCloudStorageService: CloudStorageServiceImpl = Mockito.mock(CloudStorageServiceImpl::class.java)
@@ -113,5 +117,18 @@ abstract class JpaServiceTestBase : TestBase() {
         val withdraw = Withdraw(0, user, 100L, ZonedDateTime.now(), userUuid, bankAccount,
             null, null, null, null, null, null, type)
         return withdrawRepository.save(withdraw)
+    }
+
+    protected fun createApprovedDeposit(txHash: String?): Deposit {
+        val document = saveFile("doc", "doc-lni", userUuid, "type", 1)
+        val deposit = Deposit(0, userUuid, "S34SDGFT", true, 10_000,
+            userUuid, ZonedDateTime.now(), document, txHash, ZonedDateTime.now())
+        return depositRepository.save(deposit)
+    }
+
+    protected fun createUnapprovedDeposit(): Deposit {
+        val deposit = Deposit(0, userUuid, "S34SDGFT", false, 10_000,
+            null, null, null, null, ZonedDateTime.now())
+        return depositRepository.save(deposit)
     }
 }

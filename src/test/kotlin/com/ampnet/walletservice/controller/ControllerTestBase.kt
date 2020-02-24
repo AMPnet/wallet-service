@@ -194,4 +194,10 @@ abstract class ControllerTestBase : TestBase() {
             null, null, null, null, null, null, type)
         return withdrawRepository.save(withdraw)
     }
+
+    protected fun createUnapprovedDeposit(user: UUID): Deposit {
+        val deposit = Deposit(0, user, "S34SDGFT", false, 10_000,
+            null, null, null, null, ZonedDateTime.now())
+        return depositRepository.save(deposit)
+    }
 }
