@@ -4,6 +4,7 @@ import com.ampnet.userservice.proto.UserResponse
 import com.ampnet.walletservice.TestBase
 import com.ampnet.walletservice.config.DatabaseCleanerService
 import com.ampnet.walletservice.enums.Currency
+import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.enums.WalletType
 import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.exception.ErrorResponse
@@ -174,7 +175,7 @@ abstract class ControllerTestBase : TestBase() {
     protected fun createApprovedWithdraw(
         owner: UUID,
         amount: Long = 1000,
-        type: WalletType = WalletType.USER
+        type: DepositWithdrawType = DepositWithdrawType.USER
     ): Withdraw {
         val withdraw = Withdraw(0, owner, amount, ZonedDateTime.now(), owner, "bank-account",
             "approved-tx", ZonedDateTime.now(),
@@ -185,7 +186,7 @@ abstract class ControllerTestBase : TestBase() {
     protected fun createWithdraw(
         owner: UUID,
         amount: Long = 1000,
-        type: WalletType = WalletType.USER,
+        type: DepositWithdrawType = DepositWithdrawType.USER,
         userUuid: UUID? = null
     ): Withdraw {
         val user = userUuid ?: owner

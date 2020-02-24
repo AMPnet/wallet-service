@@ -6,7 +6,7 @@ import com.ampnet.walletservice.controller.pojo.response.WithdrawWithProjectList
 import com.ampnet.walletservice.controller.pojo.response.WithdrawWithProjectResponse
 import com.ampnet.walletservice.controller.pojo.response.WithdrawWithUserListResponse
 import com.ampnet.walletservice.controller.pojo.response.WithdrawWithUserResponse
-import com.ampnet.walletservice.enums.WalletType
+import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.grpc.projectservice.ProjectService
 import com.ampnet.walletservice.grpc.userservice.UserService
 import com.ampnet.walletservice.persistence.model.Withdraw
@@ -41,7 +41,7 @@ class CooperativeWithdrawController(
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to get all approved withdraws by user: ${userPrincipal.uuid}" }
         val response = generateUserResponseWithWithdraws(
-            cooperativeWithdrawService.getAllApproved(WalletType.USER, pageable)
+            cooperativeWithdrawService.getAllApproved(DepositWithdrawType.USER, pageable)
         )
         return ResponseEntity.ok(response)
     }
@@ -52,7 +52,7 @@ class CooperativeWithdrawController(
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to get all approved withdraws by user: ${userPrincipal.uuid}" }
         val response = generateProjectResponseWithWithdraws(
-            cooperativeWithdrawService.getAllApproved(WalletType.PROJECT, pageable)
+            cooperativeWithdrawService.getAllApproved(DepositWithdrawType.PROJECT, pageable)
         )
         return ResponseEntity.ok(response)
     }
@@ -63,7 +63,7 @@ class CooperativeWithdrawController(
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to get all burned withdraws by user: ${userPrincipal.uuid}" }
         val response = generateUserResponseWithWithdraws(
-            cooperativeWithdrawService.getAllBurned(WalletType.USER, pageable)
+            cooperativeWithdrawService.getAllBurned(DepositWithdrawType.USER, pageable)
         )
         return ResponseEntity.ok(response)
     }
@@ -74,7 +74,7 @@ class CooperativeWithdrawController(
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to get all burned withdraws by user: ${userPrincipal.uuid}" }
         val response = generateProjectResponseWithWithdraws(
-            cooperativeWithdrawService.getAllBurned(WalletType.PROJECT, pageable)
+            cooperativeWithdrawService.getAllBurned(DepositWithdrawType.PROJECT, pageable)
         )
         return ResponseEntity.ok(response)
     }

@@ -1,6 +1,6 @@
 package com.ampnet.walletservice.service.pojo
 
-import com.ampnet.walletservice.enums.WalletType
+import com.ampnet.walletservice.enums.DepositWithdrawType
 import java.util.UUID
 
 data class WithdrawCreateServiceRequest(
@@ -8,5 +8,5 @@ data class WithdrawCreateServiceRequest(
     val bankAccount: String,
     val amount: Long,
     val createBy: UUID,
-    val type: WalletType
+    val type: DepositWithdrawType
 )

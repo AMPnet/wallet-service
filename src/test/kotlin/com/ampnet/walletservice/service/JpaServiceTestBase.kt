@@ -3,6 +3,7 @@ package com.ampnet.walletservice.service
 import com.ampnet.walletservice.TestBase
 import com.ampnet.walletservice.config.DatabaseCleanerService
 import com.ampnet.walletservice.enums.Currency
+import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.enums.WalletType
 import com.ampnet.walletservice.grpc.blockchain.BlockchainService
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionData
@@ -94,21 +95,21 @@ abstract class JpaServiceTestBase : TestBase() {
         fail("Missing wallet")
     }
 
-    protected fun createBurnedWithdraw(user: UUID, type: WalletType = WalletType.USER): Withdraw {
+    protected fun createBurnedWithdraw(user: UUID, type: DepositWithdrawType = DepositWithdrawType.USER): Withdraw {
         val withdraw = Withdraw(0, user, 100L, ZonedDateTime.now(), user, bankAccount,
             "approved-tx", ZonedDateTime.now(),
             "burned-tx", ZonedDateTime.now(), UUID.randomUUID(), null, type)
         return withdrawRepository.save(withdraw)
     }
 
-    protected fun createApprovedWithdraw(user: UUID, type: WalletType = WalletType.USER): Withdraw {
+    protected fun createApprovedWithdraw(user: UUID, type: DepositWithdrawType = DepositWithdrawType.USER): Withdraw {
         val withdraw = Withdraw(0, user, 100L, ZonedDateTime.now(), user, bankAccount,
             "approved-tx", ZonedDateTime.now(),
             null, null, null, null, type)
         return withdrawRepository.save(withdraw)
     }
 
-    protected fun createWithdraw(user: UUID, type: WalletType = WalletType.USER): Withdraw {
+    protected fun createWithdraw(user: UUID, type: DepositWithdrawType = DepositWithdrawType.USER): Withdraw {
         val withdraw = Withdraw(0, user, 100L, ZonedDateTime.now(), userUuid, bankAccount,
             null, null, null, null, null, null, type)
         return withdrawRepository.save(withdraw)

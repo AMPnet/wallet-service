@@ -1,6 +1,6 @@
 package com.ampnet.walletservice.service.impl
 
-import com.ampnet.walletservice.enums.WalletType
+import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.exception.InvalidRequestException
 import com.ampnet.walletservice.grpc.blockchain.BlockchainService
@@ -34,12 +34,12 @@ class CooperativeWithdrawServiceImpl(
     companion object : KLogging()
 
     @Transactional(readOnly = true)
-    override fun getAllApproved(type: WalletType, pageable: Pageable): Page<Withdraw> {
+    override fun getAllApproved(type: DepositWithdrawType, pageable: Pageable): Page<Withdraw> {
         return withdrawRepository.findAllApproved(type, pageable)
     }
 
     @Transactional(readOnly = true)
-    override fun getAllBurned(type: WalletType, pageable: Pageable): Page<Withdraw> {
+    override fun getAllBurned(type: DepositWithdrawType, pageable: Pageable): Page<Withdraw> {
         return withdrawRepository.findAllBurned(type, pageable)
     }
 

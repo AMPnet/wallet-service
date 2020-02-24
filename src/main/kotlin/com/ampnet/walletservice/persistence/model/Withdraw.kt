@@ -1,6 +1,6 @@
 package com.ampnet.walletservice.persistence.model
 
-import com.ampnet.walletservice.enums.WalletType
+import com.ampnet.walletservice.enums.DepositWithdrawType
 import java.time.ZonedDateTime
 import java.util.UUID
 import javax.persistence.Column
@@ -58,5 +58,5 @@ data class Withdraw(
 
     @Column(nullable = false, length = 8)
     @Enumerated(EnumType.STRING)
-    val type: WalletType
+    val type: DepositWithdrawType
 )
