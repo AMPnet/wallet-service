@@ -1,5 +1,6 @@
 package com.ampnet.walletservice.service
 
+import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionDataAndInfo
 import com.ampnet.walletservice.persistence.model.Deposit
 import com.ampnet.walletservice.service.pojo.ApproveDepositRequest
@@ -10,7 +11,7 @@ import org.springframework.data.domain.Pageable
 interface CooperativeDepositService {
     fun delete(id: Int)
     fun approve(request: ApproveDepositRequest): Deposit
-    fun getAllWithDocuments(approved: Boolean, pageable: Pageable): Page<Deposit>
+    fun getAllWithDocuments(approved: Boolean, type: DepositWithdrawType, pageable: Pageable): Page<Deposit>
     fun findByReference(reference: String): Deposit?
     fun generateMintTransaction(request: MintServiceRequest): TransactionDataAndInfo
     fun confirmMintTransaction(signedTransaction: String, depositId: Int): Deposit

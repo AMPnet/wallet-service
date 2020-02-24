@@ -164,11 +164,12 @@ abstract class ControllerTestBase : TestBase() {
     protected fun createApprovedDeposit(
         user: UUID,
         txHash: String? = null,
-        amount: Long = 1000
+        amount: Long = 1000,
+        type: DepositWithdrawType = DepositWithdrawType.USER
     ): Deposit {
         val document = saveFile("doc", "document-link", "type", 1, user)
         val deposit = Deposit(0, user, "S34SDGFT", true, amount,
-            user, ZonedDateTime.now(), document, txHash, ZonedDateTime.now())
+            ZonedDateTime.now(), user, type, txHash, user, ZonedDateTime.now(), document)
         return depositRepository.save(deposit)
     }
 
@@ -195,9 +196,9 @@ abstract class ControllerTestBase : TestBase() {
         return withdrawRepository.save(withdraw)
     }
 
-    protected fun createUnapprovedDeposit(user: UUID): Deposit {
+    protected fun createUnapprovedDeposit(user: UUID, type: DepositWithdrawType = DepositWithdrawType.USER): Deposit {
         val deposit = Deposit(0, user, "S34SDGFT", false, 10_000,
-            null, null, null, null, ZonedDateTime.now())
+            ZonedDateTime.now(), user, type, null, null, null, null)
         return depositRepository.save(deposit)
     }
 }

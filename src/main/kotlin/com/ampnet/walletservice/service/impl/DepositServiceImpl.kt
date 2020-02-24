@@ -1,13 +1,16 @@
 package com.ampnet.walletservice.service.impl
 
+import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.exception.ResourceAlreadyExistsException
 import com.ampnet.walletservice.exception.ResourceNotFoundException
 import com.ampnet.walletservice.grpc.mail.MailService
+import com.ampnet.walletservice.grpc.projectservice.ProjectService
 import com.ampnet.walletservice.persistence.model.Deposit
 import com.ampnet.walletservice.persistence.repository.DepositRepository
 import com.ampnet.walletservice.persistence.repository.WalletRepository
 import com.ampnet.walletservice.service.DepositService
+import com.ampnet.walletservice.service.pojo.DepositCreateServiceRequest
 import java.time.ZonedDateTime
 import java.util.UUID
 import mu.KotlinLogging
@@ -18,7 +21,8 @@ import org.springframework.transaction.annotation.Transactional
 class DepositServiceImpl(
     private val walletRepository: WalletRepository,
     private val depositRepository: DepositRepository,
-    private val mailService: MailService
+    private val mailService: MailService,
+    private val projectService: ProjectService
 ) : DepositService {
 
     companion object {
@@ -28,27 +32,39 @@ class DepositServiceImpl(
     }
 
     @Transactional
-    override fun create(user: UUID, amount: Long): Deposit {
-        if (walletRepository.findByOwner(user).isPresent.not()) {
-            throw ResourceNotFoundException(ErrorCode.WALLET_MISSING, "User must have a wallet to create a Deposit")
+    override fun create(request: DepositCreateServiceRequest): Deposit {
+        validateOwnerDoesNotHavePendingDeposit(request.owner)
+        if (walletRepository.findByOwner(request.owner).isPresent.not()) {
+            throw ResourceNotFoundException(ErrorCode.WALLET_MISSING, "Wallet needed to create a deposit")
         }
-        val unapprovedDeposits = depositRepository.findByUserUuid(user).filter { it.approved.not() }
-        if (unapprovedDeposits.isEmpty().not()) {
-            throw ResourceAlreadyExistsException(ErrorCode.WALLET_DEPOSIT_EXISTS,
-                "Check your unapproved deposit: ${unapprovedDeposits.firstOrNull()?.id}")
+        if (request.type == DepositWithdrawType.PROJECT) {
+            val projectResponse = projectService.getProject(request.owner)
+            ServiceUtils.validateUserIsProjectOwner(request.createdBy, projectResponse)
         }
 
-        val deposit = Deposit(0, user, generateDepositReference(), false, amount,
-            null, null, null, null, ZonedDateTime.now())
+        val deposit = Deposit(0, request.owner, generateDepositReference(), false, request.amount,
+            ZonedDateTime.now(), request.createdBy, request.type,
+            null, null, null, null)
         depositRepository.save(deposit)
-        mailService.sendDepositRequest(user, amount)
-        logger.debug { "Created Deposit for user: $user with amount: $amount" }
+        mailService.sendDepositRequest(request.createdBy, request.amount)
+        logger.debug { "Created Deposit for owner: ${request.owner} with amount: ${request.amount} " +
+            "by user: ${request.createdBy}" }
         return deposit
     }
 
     @Transactional(readOnly = true)
     override fun getPendingForUser(user: UUID): Deposit? {
-        return depositRepository.findByUserUuid(user).find { it.approved.not() }
+        return depositRepository.findByOwnerUuid(user).find { it.approved.not() }
+    }
+
+    private fun validateOwnerDoesNotHavePendingDeposit(owner: UUID) {
+        val unapprovedDeposits = depositRepository
+            .findByOwnerUuid(owner)
+            .filter { it.approved.not() }
+        if (unapprovedDeposits.isEmpty().not()) {
+            throw ResourceAlreadyExistsException(ErrorCode.WALLET_DEPOSIT_EXISTS,
+                "Check your unapproved deposit: ${unapprovedDeposits.firstOrNull()?.id}")
+        }
     }
 
     private fun generateDepositReference(): String = (1..DEPOSIT_REFERENCE_LENGTH)

@@ -1,5 +1,6 @@
 package com.ampnet.walletservice.persistence.repository
 
+import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.persistence.model.Deposit
 import java.util.Optional
 import java.util.UUID
@@ -10,13 +11,20 @@ import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 
 interface DepositRepository : JpaRepository<Deposit, Int> {
-    @Query("SELECT deposit FROM Deposit deposit LEFT JOIN FETCH deposit.file WHERE deposit.approved = :approved",
-        countQuery = "SELECT COUNT(deposit) FROM Deposit deposit WHERE deposit.approved = :approved")
-    fun findAllWithFile(@Param("approved") approved: Boolean, pageable: Pageable): Page<Deposit>
+    @Query("SELECT deposit FROM Deposit deposit LEFT JOIN FETCH deposit.file " +
+        "WHERE deposit.approved = :approved AND deposit.type = :type",
+        countQuery = "SELECT COUNT(deposit) FROM Deposit deposit " +
+            "WHERE deposit.approved = :approved AND deposit.type = :type")
+    fun findAllWithFile(
+        @Param("approved") approved: Boolean,
+        type: DepositWithdrawType,
+        pageable: Pageable
+    ): Page<Deposit>
 
     fun findByReference(reference: String): Optional<Deposit>
-    fun findByUserUuid(userUuid: UUID): List<Deposit>
+    fun findByOwnerUuid(ownerUuid: UUID): List<Deposit>
 
-    @Query("SELECT COUNT(DISTINCT deposit.userUuid) FROM Deposit deposit WHERE deposit.approved = true")
+    @Query("SELECT COUNT(DISTINCT deposit.ownerUuid) FROM Deposit deposit " +
+        "WHERE deposit.approved = true AND deposit.type = 'USER'")
     fun countUsersWithApprovedDeposit(): Int
 }

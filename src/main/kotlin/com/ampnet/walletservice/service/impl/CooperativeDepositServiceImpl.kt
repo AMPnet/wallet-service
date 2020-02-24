@@ -1,5 +1,6 @@
 package com.ampnet.walletservice.service.impl
 
+import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.exception.InvalidRequestException
 import com.ampnet.walletservice.exception.ResourceAlreadyExistsException
@@ -42,7 +43,7 @@ class CooperativeDepositServiceImpl(
         }
         logger.info { "Deleting deposit: $deposit" }
         depositRepository.delete(deposit)
-        mailService.sendDepositInfo(deposit.userUuid, false)
+        mailService.sendDepositInfo(deposit.ownerUuid, false)
     }
 
     @Transactional
@@ -63,8 +64,8 @@ class CooperativeDepositServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun getAllWithDocuments(approved: Boolean, pageable: Pageable): Page<Deposit> {
-        return depositRepository.findAllWithFile(approved, pageable)
+    override fun getAllWithDocuments(approved: Boolean, type: DepositWithdrawType, pageable: Pageable): Page<Deposit> {
+        return depositRepository.findAllWithFile(approved, type, pageable)
     }
 
     @Transactional(readOnly = true)
@@ -77,7 +78,7 @@ class CooperativeDepositServiceImpl(
         val deposit = getDepositForId(request.depositId)
         validateDepositForMintTransaction(deposit)
         val amount = deposit.amount
-        val receivingWallet = ServiceUtils.getWalletHash(deposit.userUuid, walletRepository)
+        val receivingWallet = ServiceUtils.getWalletHash(deposit.ownerUuid, walletRepository)
         val data = blockchainService.generateMintTransaction(receivingWallet, amount)
         val info = transactionInfoService.createMintTransaction(request, receivingWallet)
         return TransactionDataAndInfo(data, info)
@@ -90,7 +91,7 @@ class CooperativeDepositServiceImpl(
         val txHash = blockchainService.postTransaction(signedTransaction)
         deposit.txHash = txHash
         depositRepository.save(deposit)
-        mailService.sendDepositInfo(deposit.userUuid, true)
+        mailService.sendDepositInfo(deposit.ownerUuid, true)
         return deposit
     }
 

@@ -2,6 +2,7 @@ package com.ampnet.walletservice.controller
 
 import com.ampnet.walletservice.controller.pojo.request.AmountRequest
 import com.ampnet.walletservice.controller.pojo.response.DepositResponse
+import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.persistence.model.Deposit
 import com.ampnet.walletservice.security.WithMockCrowdfoundUser
@@ -48,9 +49,11 @@ class DepositControllerTest : ControllerTestBase() {
                     .andReturn()
 
             val deposit: DepositResponse = objectMapper.readValue(result.response.contentAsString)
-            assertThat(deposit.user).isEqualTo(userUuid)
+            assertThat(deposit.owner).isEqualTo(userUuid)
             assertThat(deposit.amount).isEqualTo(testContext.amount)
             assertThat(deposit.approved).isFalse()
+            assertThat(deposit.createdBy).isEqualTo(userUuid)
+            assertThat(deposit.type).isEqualTo(DepositWithdrawType.USER)
             assertThat(deposit.reference).isNotNull()
             assertThat(deposit.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
         }
@@ -58,7 +61,7 @@ class DepositControllerTest : ControllerTestBase() {
             val deposits = depositRepository.findAll()
             assertThat(deposits).hasSize(2)
             val deposit = deposits.first { it.approved.not() }
-            assertThat(deposit.userUuid).isEqualTo(userUuid)
+            assertThat(deposit.ownerUuid).isEqualTo(userUuid)
             assertThat(deposit.approved).isFalse()
             assertThat(deposit.reference).isNotNull()
             assertThat(deposit.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
@@ -102,7 +105,7 @@ class DepositControllerTest : ControllerTestBase() {
                     .andReturn()
 
             val deposit: DepositResponse = objectMapper.readValue(result.response.contentAsString)
-            assertThat(deposit.user).isEqualTo(userUuid)
+            assertThat(deposit.owner).isEqualTo(userUuid)
             val savedDeposit = testContext.deposits.first()
             assertThat(deposit.id).isEqualTo(savedDeposit.id)
         }
@@ -114,6 +117,54 @@ class DepositControllerTest : ControllerTestBase() {
         verify("User gets not found for non pending deposit") {
             mockMvc.perform(get(depositPath))
                     .andExpect(MockMvcResultMatchers.status().isNotFound)
+        }
+    }
+
+    @Test
+    @WithMockCrowdfoundUser
+    fun mustBeAbleToCreateProjectDeposit() {
+        suppose("Project has a wallet") {
+            databaseCleanerService.deleteAllWallets()
+            createWalletForProject(projectUuid, walletHash)
+        }
+        suppose("Project has approved deposit") {
+            createApprovedDeposit(projectUuid, "tx_hash")
+        }
+        suppose("Project service will return project") {
+            Mockito.`when`(projectService.getProject(projectUuid))
+                .thenReturn(createProjectResponse(projectUuid, userUuid))
+        }
+
+        verify("User can create new project deposit") {
+            val request = AmountRequest(testContext.amount)
+            val result = mockMvc.perform(
+                post("$depositPath/project/$projectUuid")
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isOk)
+                .andReturn()
+
+            val deposit: DepositResponse = objectMapper.readValue(result.response.contentAsString)
+            assertThat(deposit.owner).isEqualTo(projectUuid)
+            assertThat(deposit.amount).isEqualTo(testContext.amount)
+            assertThat(deposit.approved).isFalse()
+            assertThat(deposit.createdBy).isEqualTo(userUuid)
+            assertThat(deposit.type).isEqualTo(DepositWithdrawType.PROJECT)
+            assertThat(deposit.reference).isNotNull()
+            assertThat(deposit.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
+        }
+        verify("Project deposit is stored") {
+            val deposits = depositRepository.findAll()
+            assertThat(deposits).hasSize(2)
+            val deposit = deposits.first { it.approved.not() }
+            assertThat(deposit.ownerUuid).isEqualTo(projectUuid)
+            assertThat(deposit.approved).isFalse()
+            assertThat(deposit.reference).isNotNull()
+            assertThat(deposit.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
+        }
+        verify("Mail notification is sent to user") {
+            Mockito.verify(mailService, Mockito.times(1))
+                .sendDepositRequest(userUuid, testContext.amount)
         }
     }
 

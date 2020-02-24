@@ -80,14 +80,8 @@ abstract class JpaServiceTestBase : TestBase() {
         return walletRepository.save(wallet)
     }
 
-    protected fun saveFile(
-        name: String,
-        link: String,
-        createdByUserUuid: UUID,
-        type: String = "document/type",
-        size: Int = 100
-    ): File {
-        val document = File(0, link, name, type, size, createdByUserUuid, ZonedDateTime.now())
+    protected fun saveFile(createdByUserUuid: UUID): File {
+        val document = File(0, "doc-link", "doc", "document/type", 100, createdByUserUuid, ZonedDateTime.now())
         return documentRepository.save(document)
     }
 
@@ -119,16 +113,19 @@ abstract class JpaServiceTestBase : TestBase() {
         return withdrawRepository.save(withdraw)
     }
 
-    protected fun createApprovedDeposit(txHash: String?): Deposit {
-        val document = saveFile("doc", "doc-lni", userUuid, "type", 1)
+    protected fun createApprovedDeposit(
+        txHash: String?,
+        type: DepositWithdrawType = DepositWithdrawType.USER
+    ): Deposit {
+        val document = saveFile(userUuid)
         val deposit = Deposit(0, userUuid, "S34SDGFT", true, 10_000,
-            userUuid, ZonedDateTime.now(), document, txHash, ZonedDateTime.now())
+            ZonedDateTime.now(), userUuid, type, txHash, userUuid, ZonedDateTime.now(), document)
         return depositRepository.save(deposit)
     }
 
-    protected fun createUnapprovedDeposit(): Deposit {
+    protected fun createUnapprovedDeposit(type: DepositWithdrawType = DepositWithdrawType.USER): Deposit {
         val deposit = Deposit(0, userUuid, "S34SDGFT", false, 10_000,
-            null, null, null, null, ZonedDateTime.now())
+            ZonedDateTime.now(), userUuid, type, null, null, null, null)
         return depositRepository.save(deposit)
     }
 }
