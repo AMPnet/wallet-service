@@ -27,6 +27,7 @@ class RevenueControllerTest : ControllerTestBase() {
     fun init() {
         databaseCleanerService.deleteAllRevenuePayouts()
         databaseCleanerService.deleteAllWallets()
+        databaseCleanerService.deleteAllTransactionInfo()
         testContext = TestContext()
     }
 
@@ -66,6 +67,20 @@ class RevenueControllerTest : ControllerTestBase() {
             assertThat(transactionResponse.tx).isEqualTo(testContext.transactionData.tx)
             assertThat(transactionResponse.txId).isNotNull()
             assertThat(transactionResponse.info.txType).isEqualTo(TransactionType.REVENUE_PAYOUT)
+        }
+        verify("Transaction info for revenue payout is created") {
+            val txInfo = transactionInfoRepository.findAll()[0]
+            assertThat(txInfo.companionData).isNotNull()
+            assertThat(txInfo.type).isEqualTo(TransactionType.REVENUE_PAYOUT)
+            assertThat(txInfo.userUuid).isEqualTo(userUuid)
+        }
+        verify("Revenue payout is created") {
+            val revenuePayout = revenuePayoutRepository.findAll()[0]
+            assertThat(revenuePayout.amount).isEqualTo(testContext.amount)
+            assertThat(revenuePayout.projectUuid).isEqualTo(projectUuid)
+            assertThat(revenuePayout.createdBy).isEqualTo(userUuid)
+            assertThat(revenuePayout.txHash).isNull()
+            assertThat(revenuePayout.completedAt).isNull()
         }
     }
 

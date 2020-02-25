@@ -12,6 +12,7 @@ import com.ampnet.walletservice.persistence.repository.RevenuePayoutRepository
 import com.ampnet.walletservice.persistence.repository.WalletRepository
 import com.ampnet.walletservice.service.RevenueService
 import com.ampnet.walletservice.service.TransactionInfoService
+import com.ampnet.walletservice.service.pojo.RevenuePayoutTxInfo
 import java.time.ZonedDateTime
 import java.util.UUID
 import mu.KLogging
@@ -40,12 +41,12 @@ class RevenueServiceImpl(
         val projectWallet = ServiceUtils.getWalletHash(project, walletRepository)
         validateProjectHasEnoughFunds(projectWallet, amount)
 
-        val request = RevenuePayoutTxRequest(userWallet, projectWallet, amount)
-        val data = blockchainService.generateRevenuePayout(request)
-        val info = transactionInfoService.createRevenuePayoutTransaction(projectResponse.name, amount, user)
-
         val revenuePayout = RevenuePayout(project, amount, user)
         revenuePayoutRepository.save(revenuePayout)
+        val request = RevenuePayoutTxRequest(userWallet, projectWallet, amount)
+        val data = blockchainService.generateRevenuePayout(request)
+        val txInfoRequest = RevenuePayoutTxInfo(projectResponse.name, amount, user, revenuePayout.id)
+        val info = transactionInfoService.createRevenuePayoutTransaction(txInfoRequest)
         logger.info { "Successfully generate revenue payout: $revenuePayout" }
         return TransactionDataAndInfo(data, info)
     }

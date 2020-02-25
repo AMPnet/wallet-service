@@ -3,6 +3,7 @@ package com.ampnet.walletservice.service
 import com.ampnet.walletservice.enums.WalletType
 import com.ampnet.walletservice.persistence.model.TransactionInfo
 import com.ampnet.walletservice.service.pojo.MintServiceRequest
+import com.ampnet.walletservice.service.pojo.RevenuePayoutTxInfo
 import java.util.UUID
 
 interface TransactionInfoService {
@@ -14,7 +15,7 @@ interface TransactionInfoService {
     fun createMintTransaction(request: MintServiceRequest, receivingWallet: String): TransactionInfo
     fun createApprovalTransaction(amount: Long, userUuid: UUID, withdrawId: Int): TransactionInfo
     fun createBurnTransaction(amount: Long, userUuid: UUID, withdrawId: Int): TransactionInfo
-    fun createRevenuePayoutTransaction(projectName: String, amount: Long, userUuid: UUID): TransactionInfo
+    fun createRevenuePayoutTransaction(request: RevenuePayoutTxInfo): TransactionInfo
     fun deleteTransaction(id: Int)
     fun findTransactionInfo(id: Int): TransactionInfo?
 }

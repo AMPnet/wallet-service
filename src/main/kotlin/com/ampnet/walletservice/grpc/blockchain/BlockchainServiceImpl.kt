@@ -258,7 +258,7 @@ class BlockchainServiceImpl(
                         .setRevenue(request.amount.toString())
                         .build()
                 )
-            logger.info { "Successfully generated approve burn transaction" }
+            logger.info { "Successfully generated Revenue Payout Transaction" }
             return TransactionData(response)
         } catch (ex: StatusRuntimeException) {
             throw getInternalExceptionFromStatusException(
