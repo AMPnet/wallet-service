@@ -395,3 +395,17 @@ Count all users with at least one approved deposit
 include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToCountUsersWithApprovedDeposit/http-request.adoc[]
 .Response
 include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToCountUsersWithApprovedDeposit/http-response.adoc[]
+
+== Revenue
+
+=== Generate transaction for revenue payout
+.Request
+include::{snippets}/RevenueControllerTest/mustBeAbleToGenerateRevenuePayoutTransaction/http-request.adoc[]
+.Response
+include::{snippets}/RevenueControllerTest/mustBeAbleToGenerateRevenuePayoutTransaction/http-response.adoc[]
+
+=== Get revenue payouts for project
+.Request
+include::{snippets}/RevenueControllerTest/mustBeAbleToGetRevenuePayouts/http-request.adoc[]
+.Response
+include::{snippets}/RevenueControllerTest/mustBeAbleToGetRevenuePayouts/http-response.adoc[]

@@ -20,6 +20,7 @@ enum class ErrorCode(val categoryCode: String, var specificCode: String, var mes
     WALLET_WITHDRAW_NOT_APPROVED("05", "12", "Withdraw not approved"),
     WALLET_WITHDRAW_BURNED("05", "13", "Withdraw already burned"),
     WALLET_NOT_ACTIVATED("05", "14", "Wallet is not activated by the administrator"),
+    WALLET_PAYOUT_MISSING("05", "15", "Missing revenue payout"),
 
     // Organization: 06
     ORG_MISSING("06", "01", "Non existing organization"),

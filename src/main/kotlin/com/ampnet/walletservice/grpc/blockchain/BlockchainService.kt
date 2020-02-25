@@ -6,6 +6,7 @@ import com.ampnet.walletservice.grpc.blockchain.pojo.GenerateProjectWalletReques
 import com.ampnet.walletservice.grpc.blockchain.pojo.Portfolio
 import com.ampnet.walletservice.grpc.blockchain.pojo.ProjectInfoResponse
 import com.ampnet.walletservice.grpc.blockchain.pojo.ProjectInvestmentTxRequest
+import com.ampnet.walletservice.grpc.blockchain.pojo.RevenuePayoutTxRequest
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionData
 
 interface BlockchainService {
@@ -20,6 +21,7 @@ interface BlockchainService {
     fun generateBurnTransaction(burnFromTxHash: String): TransactionData
     fun generateApproveBurnTransaction(burnFromTxHash: String, amount: Long): TransactionData
     fun generateApproveProjectBurnTransaction(request: ApproveProjectBurnTransactionRequest): TransactionData
+    fun generateRevenuePayout(request: RevenuePayoutTxRequest): TransactionData
     fun getPortfolio(hash: String): Portfolio
     fun getTransactions(hash: String): List<BlockchainTransaction>
     fun getInvestmentsInProject(userWalletHash: String, projectWalletHash: String): List<BlockchainTransaction>

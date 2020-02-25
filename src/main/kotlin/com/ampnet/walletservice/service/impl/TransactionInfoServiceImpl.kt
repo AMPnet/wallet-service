@@ -41,10 +41,9 @@ class TransactionInfoServiceImpl(
     }
 
     @Transactional
-    @Suppress("MagicNumber")
     override fun createInvestTransaction(projectName: String, amount: Long, userUuid: UUID): TransactionInfo {
         val type = TransactionType.INVEST
-        val description = type.description.format(projectName, amount.toDouble().div(100))
+        val description = type.description.format(projectName, amountInDecimal(amount))
         val request = CreateTransactionRequest(type, description, userUuid)
         return createTransaction(request)
     }
@@ -82,6 +81,14 @@ class TransactionInfoServiceImpl(
     }
 
     @Transactional
+    override fun createRevenuePayoutTransaction(projectName: String, amount: Long, userUuid: UUID): TransactionInfo {
+        val type = TransactionType.REVENUE_PAYOUT
+        val description = type.description.format(amountInDecimal(amount), projectName)
+        val request = CreateTransactionRequest(type, description, userUuid)
+        return createTransaction(request)
+    }
+
+    @Transactional
     override fun deleteTransaction(id: Int) = transactionInfoRepository.deleteById(id)
 
     @Transactional(readOnly = true)
@@ -98,4 +105,7 @@ class TransactionInfoServiceImpl(
         )
         return transactionInfoRepository.save(transaction)
     }
+
+    @Suppress("MagicNumber")
+    private fun amountInDecimal(amount: Long): Double = amount.toDouble().div(100)
 }

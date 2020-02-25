@@ -11,9 +11,11 @@ import com.ampnet.walletservice.service.CooperativeDepositService
 import com.ampnet.walletservice.service.CooperativeWalletService
 import com.ampnet.walletservice.service.CooperativeWithdrawService
 import com.ampnet.walletservice.service.ProjectInvestmentService
+import com.ampnet.walletservice.service.RevenueService
 import com.ampnet.walletservice.service.TransactionInfoService
 import com.ampnet.walletservice.service.WalletService
 import java.util.UUID
+import javax.transaction.Transactional
 import mu.KLogging
 import org.springframework.stereotype.Service
 
@@ -24,11 +26,13 @@ class BroadcastTransactionServiceImpl(
     private val cooperativeWithdrawService: CooperativeWithdrawService,
     private val cooperativeDepositService: CooperativeDepositService,
     private val projectInvestmentService: ProjectInvestmentService,
-    private val transactionInfoService: TransactionInfoService
+    private val transactionInfoService: TransactionInfoService,
+    private val revenueService: RevenueService
 ) : BroadcastTransactionService {
 
     companion object : KLogging()
 
+    @Transactional
     override fun broadcast(txId: Int, signedTransaction: String): String {
         val transactionInfo = transactionInfoService.findTransactionInfo(txId)
             ?: throw ResourceNotFoundException(ErrorCode.TX_MISSING, "Non existing transaction with id: $txId")
@@ -44,6 +48,7 @@ class BroadcastTransactionServiceImpl(
             TransactionType.BURN_APPROVAL ->
                 confirmApprovalTransaction(transactionInfo, signedTransaction)
             TransactionType.BURN -> burnTransaction(transactionInfo, signedTransaction)
+            TransactionType.REVENUE_PAYOUT -> revenuePayoutTransaction(transactionInfo, signedTransaction)
         }
         logger.info { "Successfully broadcast transaction. TxHash: $txHash" }
         transactionInfoService.deleteTransaction(transactionInfo.id)
@@ -87,6 +92,13 @@ class BroadcastTransactionServiceImpl(
         val withdraw = cooperativeWithdrawService.burn(signedTransaction, withdrawId)
         return withdraw.burnedTxHash
             ?: throw ResourceNotFoundException(ErrorCode.TX_MISSING, "Missing burnedTxHash for withdraw transaction")
+    }
+
+    private fun revenuePayoutTransaction(transactionInfo: TransactionInfo, signedTransaction: String): String {
+        val revenuePayoutId = getIdFromCompanionData(transactionInfo)
+        val revenuePayout = revenueService.confirmRevenuePayout(signedTransaction, revenuePayoutId)
+        return revenuePayout.txHash
+            ?: throw ResourceNotFoundException(ErrorCode.TX_MISSING, "Missing txHash for revenue payout transaction")
     }
 
     private fun getIdFromCompanionData(transactionInfo: TransactionInfo): Int {
