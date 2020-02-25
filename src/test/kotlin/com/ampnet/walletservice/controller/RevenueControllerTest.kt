@@ -7,14 +7,12 @@ import com.ampnet.walletservice.enums.TransactionType
 import com.ampnet.walletservice.grpc.blockchain.pojo.RevenuePayoutTxRequest
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionData
 import com.ampnet.walletservice.persistence.model.RevenuePayout
-import com.ampnet.walletservice.persistence.repository.RevenuePayoutRepository
 import com.ampnet.walletservice.security.WithMockCrowdfoundUser
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
@@ -23,9 +21,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 class RevenueControllerTest : ControllerTestBase() {
 
     private val revenuePath = "/revenue"
-
-    @Autowired
-    private lateinit var revenuePayoutRepository: RevenuePayoutRepository
     private lateinit var testContext: TestContext
 
     @BeforeEach
