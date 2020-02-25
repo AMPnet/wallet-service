@@ -3,7 +3,7 @@ package com.ampnet.walletservice.controller
 import com.ampnet.walletservice.controller.pojo.request.WithdrawCreateRequest
 import com.ampnet.walletservice.controller.pojo.response.TransactionResponse
 import com.ampnet.walletservice.controller.pojo.response.WithdrawResponse
-import com.ampnet.walletservice.enums.WalletType
+import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.service.WithdrawService
 import com.ampnet.walletservice.service.pojo.WithdrawCreateServiceRequest
 import java.util.UUID
@@ -38,7 +38,7 @@ class WithdrawController(
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to create Withdraw:$request by user: ${userPrincipal.uuid}" }
         val serviceRequest = WithdrawCreateServiceRequest(
-            userPrincipal.uuid, request.bankAccount, request.amount, userPrincipal.uuid, WalletType.USER)
+            userPrincipal.uuid, request.bankAccount, request.amount, userPrincipal.uuid, DepositWithdrawType.USER)
         val withdraw = withdrawService.createWithdraw(serviceRequest)
         return ResponseEntity.ok(WithdrawResponse(withdraw))
     }
@@ -61,7 +61,7 @@ class WithdrawController(
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.info { "Received request to create project withdraw:$request by user: ${userPrincipal.uuid}" }
         val serviceRequest = WithdrawCreateServiceRequest(
-            projectUuid, request.bankAccount, request.amount, userPrincipal.uuid, WalletType.PROJECT)
+            projectUuid, request.bankAccount, request.amount, userPrincipal.uuid, DepositWithdrawType.PROJECT)
         val withdraw = withdrawService.createWithdraw(serviceRequest)
         return ResponseEntity.ok(WithdrawResponse(withdraw))
     }

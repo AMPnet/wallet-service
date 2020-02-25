@@ -1,37 +1,27 @@
 package com.ampnet.walletservice.service
 
+import com.ampnet.walletservice.enums.DepositWithdrawType
+import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.exception.InvalidRequestException
 import com.ampnet.walletservice.exception.ResourceAlreadyExistsException
-import com.ampnet.walletservice.exception.ResourceNotFoundException
-import com.ampnet.walletservice.persistence.model.Deposit
-import com.ampnet.walletservice.persistence.repository.DepositRepository
 import com.ampnet.walletservice.service.impl.DepositServiceImpl
-import com.ampnet.walletservice.service.impl.StorageServiceImpl
-import com.ampnet.walletservice.service.impl.TransactionInfoServiceImpl
-import com.ampnet.walletservice.service.pojo.MintServiceRequest
-import java.time.ZonedDateTime
+import com.ampnet.walletservice.service.pojo.DepositCreateServiceRequest
+import java.util.UUID
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.springframework.beans.factory.annotation.Autowired
+import org.mockito.Mockito
 
 class DepositServiceTest : JpaServiceTestBase() {
 
-    @Autowired
-    private lateinit var depositRepository: DepositRepository
-
     private val depositService: DepositService by lazy {
-        val storageServiceImpl = StorageServiceImpl(documentRepository, mockedCloudStorageService)
-        val transactionInfoService = TransactionInfoServiceImpl(transactionInfoRepository)
-        DepositServiceImpl(walletRepository, depositRepository, mockedBlockchainService,
-                transactionInfoService, storageServiceImpl, mockedMailService)
+        DepositServiceImpl(walletRepository, depositRepository, mockedMailService, mockedProjectService)
     }
-    private lateinit var testContext: TestContext
 
     @BeforeEach
     fun init() {
         databaseCleanerService.deleteAllDeposits()
-        testContext = TestContext()
     }
 
     @Test
@@ -46,129 +36,32 @@ class DepositServiceTest : JpaServiceTestBase() {
         }
 
         verify("Service will throw exception for existing unapproved deposit") {
-            assertThrows<ResourceAlreadyExistsException> {
-                depositService.create(userUuid, 100L)
+            val exception = assertThrows<ResourceAlreadyExistsException> {
+                val serviceRequest = DepositCreateServiceRequest(userUuid, userUuid, 100L, DepositWithdrawType.USER)
+                depositService.create(serviceRequest)
             }
+            assertThat(exception.errorCode).isEqualTo(ErrorCode.WALLET_DEPOSIT_EXISTS)
         }
     }
 
     @Test
-    fun mustThrowExceptionIfReceivingUserDoesNotHaveWallet() {
-        suppose("User does not have a wallet") {
+    fun mustThrowExceptionIfUserIsNotProjectOwner() {
+        suppose("Project has a wallet") {
             databaseCleanerService.deleteAllWallets()
+            createWalletForProject(projectUuid, "project-wallet-hash")
         }
-        suppose("Unapproved deposit exist") {
-            testContext.deposit = createApprovedDeposit(null)
+        suppose("Project service will return project data") {
+            Mockito.`when`(mockedProjectService.getProject(projectUuid))
+                .thenReturn(createProjectResponse(projectUuid, UUID.randomUUID()))
         }
 
-        verify("Service will throw exception for existing unapproved deposit") {
-            assertThrows<ResourceNotFoundException> {
-                val request = MintServiceRequest(testContext.deposit.id, userUuid)
-                depositService.generateMintTransaction(request)
+        verify("Service will throw exception for missing project privileges by user") {
+            val exception = assertThrows<InvalidRequestException> {
+                val serviceRequest = DepositCreateServiceRequest(
+                    projectUuid, userUuid, 100L, DepositWithdrawType.PROJECT)
+                depositService.create(serviceRequest)
             }
+            assertThat(exception.errorCode).isEqualTo(ErrorCode.PRJ_MISSING_PRIVILEGE)
         }
-    }
-
-    @Test
-    fun mustThrowExceptionIfDepositIsMissingForMintTransaction() {
-        verify("Service will throw exception if the deposit is missing") {
-            assertThrows<ResourceNotFoundException> {
-                val request = MintServiceRequest(0, userUuid)
-                depositService.generateMintTransaction(request)
-            }
-        }
-    }
-
-    @Test
-    fun mustThrowExceptionIfDepositIsMintedForMintTransaction() {
-        suppose("Deposit is already minted") {
-            testContext.deposit = createApprovedDeposit(txHash)
-        }
-
-        verify("Service will throw exception if the deposit already has tx hash") {
-            assertThrows<ResourceAlreadyExistsException> {
-                val request = MintServiceRequest(testContext.deposit.id, userUuid)
-                depositService.generateMintTransaction(request)
-            }
-        }
-    }
-
-    @Test
-    fun mustThrowExceptionIfDepositIsNotApprovedForMintTransaction() {
-        suppose("Deposit is not approved") {
-            testContext.deposit = createUnapprovedDeposit()
-        }
-
-        verify("Service will throw exception if the deposit is not approved") {
-            assertThrows<InvalidRequestException> {
-                val request = MintServiceRequest(testContext.deposit.id, userUuid)
-                depositService.generateMintTransaction(request)
-            }
-        }
-    }
-
-    @Test
-    fun mustThrowExceptionIfDepositIsMissingForConfirmMintTransaction() {
-        verify("Service will throw exception if the deposit is missing") {
-            assertThrows<ResourceNotFoundException> {
-                depositService.confirmMintTransaction(signedTransaction, 0)
-            }
-        }
-    }
-
-    @Test
-    fun mustThrowExceptionIfDepositIsMintedForConfirmMintTransaction() {
-        suppose("Deposit is already minted") {
-            testContext.deposit = createApprovedDeposit(txHash)
-        }
-
-        verify("Service will throw exception if the deposit already has tx hash") {
-            assertThrows<ResourceAlreadyExistsException> {
-                depositService.confirmMintTransaction(signedTransaction, testContext.deposit.id)
-            }
-        }
-    }
-
-    @Test
-    fun mustThrowExceptionIfDepositIsNotApprovedForConfirmMintTransaction() {
-        suppose("Deposit is not approved") {
-            testContext.deposit = createUnapprovedDeposit()
-        }
-
-        verify("Service will throw exception if the deposit is not approved") {
-            assertThrows<InvalidRequestException> {
-                depositService.confirmMintTransaction(signedTransaction, testContext.deposit.id)
-            }
-        }
-    }
-
-    @Test
-    fun mustThrowExceptionForDeletingMintedDeposit() {
-        suppose("Deposit is minted") {
-            testContext.deposit = createApprovedDeposit(txHash)
-        }
-
-        verify("User cannot delete minted deposit") {
-            assertThrows<InvalidRequestException> {
-                depositService.delete(testContext.deposit.id)
-            }
-        }
-    }
-
-    private fun createApprovedDeposit(txHash: String?): Deposit {
-        val document = saveFile("doc", "doc-lni", userUuid, "type", 1)
-        val deposit = Deposit(0, userUuid, "S34SDGFT", true, 10_000,
-                userUuid, ZonedDateTime.now(), document, txHash, ZonedDateTime.now())
-        return depositRepository.save(deposit)
-    }
-
-    private fun createUnapprovedDeposit(): Deposit {
-        val deposit = Deposit(0, userUuid, "S34SDGFT", false, 10_000,
-                null, null, null, null, ZonedDateTime.now())
-        return depositRepository.save(deposit)
-    }
-
-    private class TestContext {
-        lateinit var deposit: Deposit
     }
 }

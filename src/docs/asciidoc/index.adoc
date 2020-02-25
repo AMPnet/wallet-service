@@ -186,69 +186,24 @@ include::{snippets}/WithdrawControllerTest/mustBeAbleToGenerateApprovalTransacti
 All requests need header: `Authorization: Bearer JWT`.
 
 === Create Deposit
+
+==== User
 .Request
 include::{snippets}/DepositControllerTest/mustBeAbleToCreateDeposit/http-request.adoc[]
 .Response
 include::{snippets}/DepositControllerTest/mustBeAbleToCreateDeposit/http-response.adoc[]
+
+==== Project
+.Request
+include::{snippets}/DepositControllerTest/mustBeAbleToCreateProjectDeposit/http-request.adoc[]
+.Response
+include::{snippets}/DepositControllerTest/mustBeAbleToCreateProjectDeposit/http-response.adoc[]
 
 === Get my pending Deposit
 .Request
 include::{snippets}/DepositControllerTest/mustBeAbleToGetPendingDeposit/http-request.adoc[]
 .Response
 include::{snippets}/DepositControllerTest/mustBeAbleToGetPendingDeposit/http-response.adoc[]
-
-=== Get Deposits
-Must have Admin role - privilege: PRA_DEPOSIT
-
-==== Search by reference
-.Request
-include::{snippets}/DepositControllerTest/mustBeAbleToSearchByReference/http-request.adoc[]
-.Response
-include::{snippets}/DepositControllerTest/mustBeAbleToSearchByReference/http-response.adoc[]
-
-==== Unapproved
-.Request
-include::{snippets}/DepositControllerTest/mustBeAbleToGetUnapprovedDeposits/http-request.adoc[]
-.Response
-include::{snippets}/DepositControllerTest/mustBeAbleToGetUnapprovedDeposits/http-response.adoc[]
-
-==== Approved
-.Request
-include::{snippets}/DepositControllerTest/mustBeAbleToGetApprovedDeposits/http-request.adoc[]
-.Response
-include::{snippets}/DepositControllerTest/mustBeAbleToGetApprovedDeposits/http-response.adoc[]
-
-=== Approve Deposit
-Must have Admin role - privilege: PWA_DEPOSIT
-
-.Request
-include::{snippets}/DepositControllerTest/mustBeAbleToApproveDeposit/http-request.adoc[]
-.Response
-include::{snippets}/DepositControllerTest/mustBeAbleToApproveDeposit/http-response.adoc[]
-
-=== Delete Deposit
-Must have Admin role - privilege: PWA_DEPOSIT. Cannot delete minted deposit.
-
-.Request
-include::{snippets}/DepositControllerTest/mustBeAbleToDeleteDeposit/http-request.adoc[]
-.Response
-include::{snippets}/DepositControllerTest/mustBeAbleToDeleteDeposit/http-response.adoc[]
-
-=== Generate Mint transaction
-Must have Admin role - privilege: PWA_DEPOSIT
-
-.Request
-include::{snippets}/DepositControllerTest/mustBeAbleToGenerateMintTransaction/http-request.adoc[]
-.Response
-include::{snippets}/DepositControllerTest/mustBeAbleToGenerateMintTransaction/http-response.adoc[]
-
-== Count users with approved deposit
-Count all users with at least one approved deposit
-
-.Request
-include::{snippets}/DepositControllerTest/mustBeAbleToCountUsersWithApprovedDeposit/http-request.adoc[]
-.Response
-include::{snippets}/DepositControllerTest/mustBeAbleToCountUsersWithApprovedDeposit/http-response.adoc[]
 
 == Portfolio API
 All requests need header: `Authorization: Bearer JWT`.
@@ -369,3 +324,74 @@ Must have Admin role - privilege: `PrivilegeType.PWA_WITHDRAW`
 include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToGenerateBurnTransaction/http-request.adoc[]
 .Response
 include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToGenerateBurnTransaction/http-response.adoc[]
+
+=== Deposit
+
+==== Get Deposits
+Must have Admin role - privilege: PRA_DEPOSIT
+
+===== Search by reference
+.Request
+include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToSearchByReference/http-request.adoc[]
+.Response
+include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToSearchByReference/http-response.adoc[]
+
+===== Unapproved
+
+====== Users
+.Request
+include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToGetUnapprovedDeposits/http-request.adoc[]
+.Response
+include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToGetUnapprovedDeposits/http-response.adoc[]
+
+====== Projects
+.Request
+include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToGetUnapprovedProjectDeposits/http-request.adoc[]
+.Response
+include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToGetUnapprovedProjectDeposits/http-response.adoc[]
+
+===== Approved
+
+====== Users
+.Request
+include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToGetApprovedDeposits/http-request.adoc[]
+.Response
+include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToGetApprovedDeposits/http-response.adoc[]
+
+====== Projects
+.Request
+include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToGetApprovedProjectDeposits/http-request.adoc[]
+.Response
+include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToGetApprovedProjectDeposits/http-response.adoc[]
+
+==== Approve Deposit
+Must have Admin role - privilege: PWA_DEPOSIT
+
+.Request
+include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToApproveDeposit/http-request.adoc[]
+.Response
+include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToApproveDeposit/http-response.adoc[]
+
+==== Delete Deposit
+Must have Admin role - privilege: PWA_DEPOSIT. Cannot delete minted deposit.
+
+.Request
+include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToDeleteDeposit/http-request.adoc[]
+.Response
+include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToDeleteDeposit/http-response.adoc[]
+
+==== Generate Mint transaction
+Must have Admin role - privilege: PWA_DEPOSIT
+
+.Request
+include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToGenerateMintTransaction/http-request.adoc[]
+.Response
+include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToGenerateMintTransaction/http-response.adoc[]
+
+=== Count users with approved deposit
+Count all users with at least one approved deposit
+
+.Request
+include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToCountUsersWithApprovedDeposit/http-request.adoc[]
+.Response
+include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToCountUsersWithApprovedDeposit/http-response.adoc[]

@@ -3,6 +3,7 @@ package com.ampnet.walletservice.service
 import com.ampnet.walletservice.TestBase
 import com.ampnet.walletservice.config.DatabaseCleanerService
 import com.ampnet.walletservice.enums.Currency
+import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.enums.WalletType
 import com.ampnet.walletservice.grpc.blockchain.BlockchainService
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionData
@@ -10,9 +11,11 @@ import com.ampnet.walletservice.grpc.mail.MailService
 import com.ampnet.walletservice.grpc.mail.MailServiceImpl
 import com.ampnet.walletservice.grpc.projectservice.ProjectService
 import com.ampnet.walletservice.grpc.projectservice.ProjectServiceImpl
+import com.ampnet.walletservice.persistence.model.Deposit
 import com.ampnet.walletservice.persistence.model.File
 import com.ampnet.walletservice.persistence.model.Wallet
 import com.ampnet.walletservice.persistence.model.Withdraw
+import com.ampnet.walletservice.persistence.repository.DepositRepository
 import com.ampnet.walletservice.persistence.repository.DocumentRepository
 import com.ampnet.walletservice.persistence.repository.PairWalletCodeRepository
 import com.ampnet.walletservice.persistence.repository.TransactionInfoRepository
@@ -49,6 +52,8 @@ abstract class JpaServiceTestBase : TestBase() {
     protected lateinit var pairWalletCodeRepository: PairWalletCodeRepository
     @Autowired
     protected lateinit var withdrawRepository: WithdrawRepository
+    @Autowired
+    protected lateinit var depositRepository: DepositRepository
 
     protected val mockedBlockchainService: BlockchainService = Mockito.mock(BlockchainService::class.java)
     protected val mockedCloudStorageService: CloudStorageServiceImpl = Mockito.mock(CloudStorageServiceImpl::class.java)
@@ -75,14 +80,8 @@ abstract class JpaServiceTestBase : TestBase() {
         return walletRepository.save(wallet)
     }
 
-    protected fun saveFile(
-        name: String,
-        link: String,
-        createdByUserUuid: UUID,
-        type: String = "document/type",
-        size: Int = 100
-    ): File {
-        val document = File(0, link, name, type, size, createdByUserUuid, ZonedDateTime.now())
+    protected fun saveFile(createdByUserUuid: UUID): File {
+        val document = File(0, "doc-link", "doc", "document/type", 100, createdByUserUuid, ZonedDateTime.now())
         return documentRepository.save(document)
     }
 
@@ -94,23 +93,39 @@ abstract class JpaServiceTestBase : TestBase() {
         fail("Missing wallet")
     }
 
-    protected fun createBurnedWithdraw(user: UUID, type: WalletType = WalletType.USER): Withdraw {
+    protected fun createBurnedWithdraw(user: UUID, type: DepositWithdrawType = DepositWithdrawType.USER): Withdraw {
         val withdraw = Withdraw(0, user, 100L, ZonedDateTime.now(), user, bankAccount,
             "approved-tx", ZonedDateTime.now(),
             "burned-tx", ZonedDateTime.now(), UUID.randomUUID(), null, type)
         return withdrawRepository.save(withdraw)
     }
 
-    protected fun createApprovedWithdraw(user: UUID, type: WalletType = WalletType.USER): Withdraw {
+    protected fun createApprovedWithdraw(user: UUID, type: DepositWithdrawType = DepositWithdrawType.USER): Withdraw {
         val withdraw = Withdraw(0, user, 100L, ZonedDateTime.now(), user, bankAccount,
             "approved-tx", ZonedDateTime.now(),
             null, null, null, null, type)
         return withdrawRepository.save(withdraw)
     }
 
-    protected fun createWithdraw(user: UUID, type: WalletType = WalletType.USER): Withdraw {
+    protected fun createWithdraw(user: UUID, type: DepositWithdrawType = DepositWithdrawType.USER): Withdraw {
         val withdraw = Withdraw(0, user, 100L, ZonedDateTime.now(), userUuid, bankAccount,
             null, null, null, null, null, null, type)
         return withdrawRepository.save(withdraw)
+    }
+
+    protected fun createApprovedDeposit(
+        txHash: String?,
+        type: DepositWithdrawType = DepositWithdrawType.USER
+    ): Deposit {
+        val document = saveFile(userUuid)
+        val deposit = Deposit(0, userUuid, "S34SDGFT", true, 10_000,
+            ZonedDateTime.now(), userUuid, type, txHash, userUuid, ZonedDateTime.now(), document)
+        return depositRepository.save(deposit)
+    }
+
+    protected fun createUnapprovedDeposit(type: DepositWithdrawType = DepositWithdrawType.USER): Deposit {
+        val deposit = Deposit(0, userUuid, "S34SDGFT", false, 10_000,
+            ZonedDateTime.now(), userUuid, type, null, null, null, null)
+        return depositRepository.save(deposit)
     }
 }

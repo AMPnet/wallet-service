@@ -4,9 +4,9 @@ import com.ampnet.walletservice.controller.pojo.response.TransactionResponse
 import com.ampnet.walletservice.controller.pojo.response.WithdrawResponse
 import com.ampnet.walletservice.controller.pojo.response.WithdrawWithProjectListResponse
 import com.ampnet.walletservice.controller.pojo.response.WithdrawWithUserListResponse
+import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.enums.PrivilegeType
 import com.ampnet.walletservice.enums.TransactionType
-import com.ampnet.walletservice.enums.WalletType
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionData
 import com.ampnet.walletservice.persistence.model.Withdraw
 import com.ampnet.walletservice.security.WithMockCrowdfoundUser
@@ -45,7 +45,7 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
             testContext.withdraws = listOf(approvedWithdraw, secondApprovedWithdraw, unapprovedWithdraw)
         }
         suppose("Some project has approved withdraw") {
-            createApprovedWithdraw(UUID.randomUUID(), type = WalletType.PROJECT)
+            createApprovedWithdraw(UUID.randomUUID(), type = DepositWithdrawType.PROJECT)
         }
         suppose("User has a wallet") {
             databaseCleanerService.deleteAllWallets()
@@ -86,9 +86,9 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
     @WithMockCrowdfoundUser(privileges = [PrivilegeType.PRA_WITHDRAW])
     fun mustBeAbleToGetApprovedProjectWithdraws() {
         suppose("Approved and unapproved project withdraws are created") {
-            val approvedWithdraw = createApprovedWithdraw(projectUuid, type = WalletType.PROJECT)
-            val secondApprovedWithdraw = createApprovedWithdraw(projectUuid, type = WalletType.PROJECT)
-            val unapprovedWithdraw = createWithdraw(projectUuid, type = WalletType.PROJECT)
+            val approvedWithdraw = createApprovedWithdraw(projectUuid, type = DepositWithdrawType.PROJECT)
+            val secondApprovedWithdraw = createApprovedWithdraw(projectUuid, type = DepositWithdrawType.PROJECT)
+            val unapprovedWithdraw = createWithdraw(projectUuid, type = DepositWithdrawType.PROJECT)
             testContext.withdraws = listOf(approvedWithdraw, secondApprovedWithdraw, unapprovedWithdraw)
         }
         suppose("Some user has approved withdraw") {
@@ -138,7 +138,7 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
             testContext.withdraws = listOf(approvedWithdraw, burnedWithdraw)
         }
         suppose("Some project has burned withdraw") {
-            createBurnedWithdraw(UUID.randomUUID(), type = WalletType.PROJECT)
+            createBurnedWithdraw(UUID.randomUUID(), type = DepositWithdrawType.PROJECT)
         }
         suppose("User has a wallet") {
             databaseCleanerService.deleteAllWallets()
@@ -155,7 +155,7 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
                     .param("size", "20")
                     .param("page", "0")
                     .param("sort", "burnedAt,desc"))
-                .andExpect(MockMvcResultMatchers.status().isOk)
+                .andExpect(status().isOk)
                 .andReturn()
 
             val withdrawList: WithdrawWithUserListResponse = objectMapper.readValue(result.response.contentAsString)
@@ -180,12 +180,12 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
     @WithMockCrowdfoundUser(privileges = [PrivilegeType.PRA_WITHDRAW])
     fun mustBeAbleToGetBurnedProjectWithdraws() {
         suppose("Approved and burned project withdraws are created") {
-            val approvedWithdraw = createApprovedWithdraw(projectUuid, type = WalletType.PROJECT)
-            val burnedWithdraw = createBurnedWithdraw(projectUuid, type = WalletType.PROJECT)
+            val approvedWithdraw = createApprovedWithdraw(projectUuid, type = DepositWithdrawType.PROJECT)
+            val burnedWithdraw = createBurnedWithdraw(projectUuid, type = DepositWithdrawType.PROJECT)
             testContext.withdraws = listOf(approvedWithdraw, burnedWithdraw)
         }
         suppose("Some user has burned withdraw") {
-            createBurnedWithdraw(UUID.randomUUID(), type = WalletType.USER)
+            createBurnedWithdraw(UUID.randomUUID(), type = DepositWithdrawType.USER)
         }
         suppose("Project has a wallet") {
             databaseCleanerService.deleteAllWallets()
@@ -306,7 +306,7 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
         }
     }
 
-    private fun createBurnedWithdraw(user: UUID, type: WalletType = WalletType.USER): Withdraw {
+    private fun createBurnedWithdraw(user: UUID, type: DepositWithdrawType = DepositWithdrawType.USER): Withdraw {
         val document = saveFile("withdraw-doc", "doc-link", "type", 1, user)
         val withdraw = Withdraw(0, user, testContext.amount, ZonedDateTime.now(), user, testContext.bankAccount,
             testContext.approvedTx, ZonedDateTime.now(),

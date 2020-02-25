@@ -1,8 +1,7 @@
 package com.ampnet.walletservice.service
 
-import com.ampnet.walletservice.enums.WalletType
+import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.exception.ErrorCode
-import com.ampnet.walletservice.exception.InternalException
 import com.ampnet.walletservice.exception.InvalidRequestException
 import com.ampnet.walletservice.exception.ResourceAlreadyExistsException
 import com.ampnet.walletservice.persistence.model.Withdraw
@@ -34,7 +33,7 @@ class WithdrawServiceTest : JpaServiceTestBase() {
     @Test
     fun mustThrowExceptionIfUserNotProjectOwnerGetWithdraw() {
         suppose("Project has created withdraw") {
-            createWithdraw(projectUuid, WalletType.PROJECT)
+            createWithdraw(projectUuid, DepositWithdrawType.PROJECT)
         }
         suppose("Project service will return project") {
             Mockito.`when`(mockedProjectService.getProject(projectUuid))
@@ -109,7 +108,7 @@ class WithdrawServiceTest : JpaServiceTestBase() {
         verify("Service will throw exception missing privilege for project") {
             val exception = assertThrows<InvalidRequestException> {
                 val request = WithdrawCreateServiceRequest(
-                    projectUuid, bankAccount, 100L, userUuid, WalletType.PROJECT)
+                    projectUuid, bankAccount, 100L, userUuid, DepositWithdrawType.PROJECT)
                 withdrawService.createWithdraw(request)
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.PRJ_MISSING_PRIVILEGE)
@@ -148,7 +147,7 @@ class WithdrawServiceTest : JpaServiceTestBase() {
     @Test
     fun mustThrowExceptionForDeletingOtherProjectWithdraw() {
         suppose("Project created withdraw") {
-            withdraw = createWithdraw(projectUuid, WalletType.PROJECT)
+            withdraw = createWithdraw(projectUuid, DepositWithdrawType.PROJECT)
         }
         suppose("Project service will return project") {
             Mockito.`when`(mockedProjectService.getProject(projectUuid))
@@ -160,20 +159,6 @@ class WithdrawServiceTest : JpaServiceTestBase() {
                 withdrawService.deleteWithdraw(withdraw.id, UUID.randomUUID())
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.PRJ_MISSING_PRIVILEGE)
-        }
-    }
-
-    @Test
-    fun mustThrowExceptionForDeletingOrganizationWithdraw() {
-        suppose("Organization created withdraw") {
-            withdraw = createWithdraw(organizationUuid, WalletType.ORG)
-        }
-
-        verify("Service will throw exception when user tries to delete others project withdraw") {
-            val exception = assertThrows<InternalException> {
-                withdrawService.deleteWithdraw(withdraw.id, userUuid)
-            }
-            assertThat(exception.errorCode).isEqualTo(ErrorCode.INT_INVALID_VALUE)
         }
     }
 
@@ -195,7 +180,7 @@ class WithdrawServiceTest : JpaServiceTestBase() {
     @Test
     fun mustThrowExceptionForGeneratingApprovalTxForNonAdminProject() {
         suppose("Project has withdraw") {
-            withdraw = createWithdraw(projectUuid, type = WalletType.PROJECT)
+            withdraw = createWithdraw(projectUuid, type = DepositWithdrawType.PROJECT)
         }
         suppose("Project service will return project with another user") {
             Mockito.`when`(mockedProjectService.getProject(projectUuid))
@@ -207,20 +192,6 @@ class WithdrawServiceTest : JpaServiceTestBase() {
                 withdrawService.generateApprovalTransaction(withdraw.id, userUuid)
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.PRJ_MISSING_PRIVILEGE)
-        }
-    }
-
-    @Test
-    fun mustThrowExceptionForGeneratingApprovalTxForOrganization() {
-        suppose("Organization created withdraw") {
-            withdraw = createWithdraw(organizationUuid, WalletType.ORG)
-        }
-
-        verify("Service will throw exception when another user tires to generate approval transaction") {
-            val exception = assertThrows<InternalException> {
-                withdrawService.generateApprovalTransaction(withdraw.id, userUuid)
-            }
-            assertThat(exception.errorCode).isEqualTo(ErrorCode.INT_INVALID_VALUE)
         }
     }
 
@@ -239,5 +210,5 @@ class WithdrawServiceTest : JpaServiceTestBase() {
     }
 
     private fun createUserWithdrawServiceRequest() =
-        WithdrawCreateServiceRequest(userUuid, bankAccount, 100L, userUuid, WalletType.USER)
+        WithdrawCreateServiceRequest(userUuid, bankAccount, 100L, userUuid, DepositWithdrawType.USER)
 }

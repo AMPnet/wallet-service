@@ -3,8 +3,8 @@ package com.ampnet.walletservice.controller
 import com.ampnet.walletservice.controller.pojo.request.WithdrawCreateRequest
 import com.ampnet.walletservice.controller.pojo.response.TransactionResponse
 import com.ampnet.walletservice.controller.pojo.response.WithdrawResponse
+import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.enums.TransactionType
-import com.ampnet.walletservice.enums.WalletType
 import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.grpc.blockchain.pojo.ApproveProjectBurnTransactionRequest
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionData
@@ -189,7 +189,7 @@ class WithdrawControllerTest : ControllerTestBase() {
     @WithMockCrowdfoundUser
     fun mustBeAbleToGetProjectPendingWithdraw() {
         suppose("Project has created withdraw") {
-            testContext.withdraw = createWithdraw(projectUuid, type = WalletType.PROJECT)
+            testContext.withdraw = createWithdraw(projectUuid, type = DepositWithdrawType.PROJECT)
         }
         suppose("Project service will return project") {
             Mockito.`when`(projectService.getProject(projectUuid))
@@ -289,7 +289,7 @@ class WithdrawControllerTest : ControllerTestBase() {
             createWalletForProject(projectUuid, testContext.projectWalletHash)
         }
         suppose("Project has withdraw") {
-            testContext.withdraw = createWithdraw(projectUuid, type = WalletType.PROJECT, userUuid = userUuid)
+            testContext.withdraw = createWithdraw(projectUuid, type = DepositWithdrawType.PROJECT, userUuid = userUuid)
         }
         suppose("Project service will return project") {
             Mockito.`when`(projectService.getProject(projectUuid))

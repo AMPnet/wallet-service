@@ -1,8 +1,7 @@
 package com.ampnet.walletservice.service.impl
 
-import com.ampnet.walletservice.enums.WalletType
+import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.exception.ErrorCode
-import com.ampnet.walletservice.exception.InternalException
 import com.ampnet.walletservice.exception.InvalidRequestException
 import com.ampnet.walletservice.exception.ResourceAlreadyExistsException
 import com.ampnet.walletservice.grpc.blockchain.BlockchainService
@@ -51,7 +50,7 @@ class WithdrawServiceImpl(
     override fun createWithdraw(request: WithdrawCreateServiceRequest): Withdraw {
         validateOwnerDoesNotHavePendingWithdraw(request.owner)
         checkIfOwnerHasEnoughFunds(request.owner, request.amount)
-        if (request.type == WalletType.PROJECT) {
+        if (request.type == DepositWithdrawType.PROJECT) {
             val projectResponse = projectService.getProject(request.owner)
             ServiceUtils.validateUserIsProjectOwner(request.createBy, projectResponse)
         }
@@ -94,33 +93,29 @@ class WithdrawServiceImpl(
     private fun getApprovalTransactionData(withdraw: Withdraw, user: UUID): TransactionData {
         val userWallet = ServiceUtils.getWalletHash(user, walletRepository)
         return when (withdraw.type) {
-            WalletType.USER -> {
+            DepositWithdrawType.USER -> {
                 blockchainService.generateApproveBurnTransaction(userWallet, withdraw.amount)
             }
-            WalletType.PROJECT -> {
+            DepositWithdrawType.PROJECT -> {
                 val projectWallet = ServiceUtils.getWalletHash(withdraw.ownerUuid, walletRepository)
                 val request = ApproveProjectBurnTransactionRequest(projectWallet, withdraw.amount, userWallet)
                 blockchainService.generateApproveProjectBurnTransaction(request)
-            }
-            WalletType.ORG -> {
-                throw InternalException(ErrorCode.INT_INVALID_VALUE, "Organization withdraw approval not possible")
             }
         }
     }
 
     private fun validateUserCanEditWithdraw(withdraw: Withdraw, user: UUID) {
         when (withdraw.type) {
-            WalletType.USER -> {
+            DepositWithdrawType.USER -> {
                 if (withdraw.ownerUuid != user) {
                     throw InvalidRequestException(
                         ErrorCode.USER_MISSING_PRIVILEGE, "Withdraw does not belong to this user")
                 }
             }
-            WalletType.PROJECT -> {
+            DepositWithdrawType.PROJECT -> {
                 val projectResponse = projectService.getProject(withdraw.ownerUuid)
                 ServiceUtils.validateUserIsProjectOwner(user, projectResponse)
             }
-            WalletType.ORG -> throw InternalException(ErrorCode.INT_INVALID_VALUE, "Organization withdraw not possible")
         }
     }
 

@@ -4,6 +4,7 @@ import com.ampnet.userservice.proto.UserResponse
 import com.ampnet.walletservice.TestBase
 import com.ampnet.walletservice.config.DatabaseCleanerService
 import com.ampnet.walletservice.enums.Currency
+import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.enums.WalletType
 import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.exception.ErrorResponse
@@ -163,18 +164,19 @@ abstract class ControllerTestBase : TestBase() {
     protected fun createApprovedDeposit(
         user: UUID,
         txHash: String? = null,
-        amount: Long = 1000
+        amount: Long = 1000,
+        type: DepositWithdrawType = DepositWithdrawType.USER
     ): Deposit {
         val document = saveFile("doc", "document-link", "type", 1, user)
         val deposit = Deposit(0, user, "S34SDGFT", true, amount,
-            user, ZonedDateTime.now(), document, txHash, ZonedDateTime.now())
+            ZonedDateTime.now(), user, type, txHash, user, ZonedDateTime.now(), document)
         return depositRepository.save(deposit)
     }
 
     protected fun createApprovedWithdraw(
         owner: UUID,
         amount: Long = 1000,
-        type: WalletType = WalletType.USER
+        type: DepositWithdrawType = DepositWithdrawType.USER
     ): Withdraw {
         val withdraw = Withdraw(0, owner, amount, ZonedDateTime.now(), owner, "bank-account",
             "approved-tx", ZonedDateTime.now(),
@@ -185,12 +187,18 @@ abstract class ControllerTestBase : TestBase() {
     protected fun createWithdraw(
         owner: UUID,
         amount: Long = 1000,
-        type: WalletType = WalletType.USER,
+        type: DepositWithdrawType = DepositWithdrawType.USER,
         userUuid: UUID? = null
     ): Withdraw {
         val user = userUuid ?: owner
         val withdraw = Withdraw(0, owner, amount, ZonedDateTime.now(), user, "bank-account",
             null, null, null, null, null, null, type)
         return withdrawRepository.save(withdraw)
+    }
+
+    protected fun createUnapprovedDeposit(user: UUID, type: DepositWithdrawType = DepositWithdrawType.USER): Deposit {
+        val deposit = Deposit(0, user, "S34SDGFT", false, 10_000,
+            ZonedDateTime.now(), user, type, null, null, null, null)
+        return depositRepository.save(deposit)
     }
 }

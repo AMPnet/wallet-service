@@ -7,9 +7,9 @@ import com.ampnet.walletservice.exception.InvalidRequestException
 import com.ampnet.walletservice.exception.ResourceNotFoundException
 import com.ampnet.walletservice.persistence.model.TransactionInfo
 import com.ampnet.walletservice.service.BroadcastTransactionService
+import com.ampnet.walletservice.service.CooperativeDepositService
 import com.ampnet.walletservice.service.CooperativeWalletService
 import com.ampnet.walletservice.service.CooperativeWithdrawService
-import com.ampnet.walletservice.service.DepositService
 import com.ampnet.walletservice.service.ProjectInvestmentService
 import com.ampnet.walletservice.service.TransactionInfoService
 import com.ampnet.walletservice.service.WalletService
@@ -22,7 +22,7 @@ class BroadcastTransactionServiceImpl(
     private val walletService: WalletService,
     private val cooperativeWalletService: CooperativeWalletService,
     private val cooperativeWithdrawService: CooperativeWithdrawService,
-    private val depositService: DepositService,
+    private val cooperativeDepositService: CooperativeDepositService,
     private val projectInvestmentService: ProjectInvestmentService,
     private val transactionInfoService: TransactionInfoService
 ) : BroadcastTransactionService {
@@ -70,7 +70,7 @@ class BroadcastTransactionServiceImpl(
 
     private fun confirmMintTransaction(transactionInfo: TransactionInfo, signedTransaction: String): String {
         val depositId = getIdFromCompanionData(transactionInfo)
-        val deposit = depositService.confirmMintTransaction(signedTransaction, depositId)
+        val deposit = cooperativeDepositService.confirmMintTransaction(signedTransaction, depositId)
         return deposit.txHash
             ?: throw ResourceNotFoundException(ErrorCode.TX_MISSING, "Missing txHash for mint transaction")
     }

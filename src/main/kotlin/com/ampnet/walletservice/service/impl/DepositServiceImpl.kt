@@ -1,25 +1,19 @@
 package com.ampnet.walletservice.service.impl
 
+import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.exception.ErrorCode
-import com.ampnet.walletservice.exception.InvalidRequestException
 import com.ampnet.walletservice.exception.ResourceAlreadyExistsException
 import com.ampnet.walletservice.exception.ResourceNotFoundException
-import com.ampnet.walletservice.grpc.blockchain.BlockchainService
-import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionDataAndInfo
 import com.ampnet.walletservice.grpc.mail.MailService
+import com.ampnet.walletservice.grpc.projectservice.ProjectService
 import com.ampnet.walletservice.persistence.model.Deposit
 import com.ampnet.walletservice.persistence.repository.DepositRepository
 import com.ampnet.walletservice.persistence.repository.WalletRepository
 import com.ampnet.walletservice.service.DepositService
-import com.ampnet.walletservice.service.StorageService
-import com.ampnet.walletservice.service.TransactionInfoService
-import com.ampnet.walletservice.service.pojo.ApproveDepositRequest
-import com.ampnet.walletservice.service.pojo.MintServiceRequest
+import com.ampnet.walletservice.service.pojo.DepositCreateServiceRequest
 import java.time.ZonedDateTime
 import java.util.UUID
 import mu.KotlinLogging
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -27,10 +21,8 @@ import org.springframework.transaction.annotation.Transactional
 class DepositServiceImpl(
     private val walletRepository: WalletRepository,
     private val depositRepository: DepositRepository,
-    private val blockchainService: BlockchainService,
-    private val transactionInfoService: TransactionInfoService,
-    private val storageService: StorageService,
-    private val mailService: MailService
+    private val mailService: MailService,
+    private val projectService: ProjectService
 ) : DepositService {
 
     companion object {
@@ -40,108 +32,38 @@ class DepositServiceImpl(
     }
 
     @Transactional
-    override fun create(user: UUID, amount: Long): Deposit {
-        if (walletRepository.findByOwner(user).isPresent.not()) {
-            throw ResourceNotFoundException(ErrorCode.WALLET_MISSING, "User must have a wallet to create a Deposit")
+    override fun create(request: DepositCreateServiceRequest): Deposit {
+        validateOwnerDoesNotHavePendingDeposit(request.owner)
+        if (walletRepository.findByOwner(request.owner).isPresent.not()) {
+            throw ResourceNotFoundException(ErrorCode.WALLET_MISSING, "Wallet needed to create a deposit")
         }
-        val unapprovedDeposits = depositRepository.findByUserUuid(user).filter { it.approved.not() }
-        if (unapprovedDeposits.isEmpty().not()) {
-            throw ResourceAlreadyExistsException(ErrorCode.WALLET_DEPOSIT_EXISTS,
-                "Check your unapproved deposit: ${unapprovedDeposits.firstOrNull()?.id}")
+        if (request.type == DepositWithdrawType.PROJECT) {
+            val projectResponse = projectService.getProject(request.owner)
+            ServiceUtils.validateUserIsProjectOwner(request.createdBy, projectResponse)
         }
 
-        val deposit = Deposit(0, user, generateDepositReference(), false, amount,
-            null, null, null, null, ZonedDateTime.now())
+        val deposit = Deposit(0, request.owner, generateDepositReference(), false, request.amount,
+            ZonedDateTime.now(), request.createdBy, request.type,
+            null, null, null, null)
         depositRepository.save(deposit)
-        mailService.sendDepositRequest(user, amount)
-        logger.debug { "Created Deposit for user: $user with amount: $amount" }
+        mailService.sendDepositRequest(request.createdBy, request.amount)
+        logger.debug { "Created Deposit for owner: ${request.owner} with amount: ${request.amount} " +
+            "by user: ${request.createdBy}" }
         return deposit
-    }
-
-    @Transactional
-    override fun delete(id: Int) {
-        val deposit = getDepositForId(id)
-        if (deposit.txHash != null) {
-            throw InvalidRequestException(ErrorCode.WALLET_DEPOSIT_MINTED, "Cannot delete minted deposit")
-        }
-        logger.info { "Deleting deposit: $deposit" }
-        depositRepository.delete(deposit)
-        mailService.sendDepositInfo(deposit.userUuid, false)
-    }
-
-    @Transactional
-    override fun approve(request: ApproveDepositRequest): Deposit {
-        val deposit = depositRepository.findById(request.id).orElseThrow {
-            throw ResourceNotFoundException(ErrorCode.WALLET_DEPOSIT_MISSING, "Missing deposit: ${request.id}")
-        }
-        // TODO: think about document reading restrictions
-        val document = storageService.saveDocument(request.documentSaveRequest)
-        logger.info { "Approving deposit with id: ${request.id} by user: ${request.user}" }
-
-        deposit.approved = true
-        deposit.approvedByUserUuid = request.user
-        deposit.approvedAt = ZonedDateTime.now()
-        deposit.amount = request.amount
-        deposit.file = document
-        return depositRepository.save(deposit)
-    }
-
-    @Transactional(readOnly = true)
-    override fun getAllWithDocuments(approved: Boolean, pageable: Pageable): Page<Deposit> {
-        return depositRepository.findAllWithFile(approved, pageable)
-    }
-
-    @Transactional(readOnly = true)
-    override fun findByReference(reference: String): Deposit? {
-        return ServiceUtils.wrapOptional(depositRepository.findByReference(reference))
     }
 
     @Transactional(readOnly = true)
     override fun getPendingForUser(user: UUID): Deposit? {
-        return depositRepository.findByUserUuid(user).find { it.approved.not() }
+        return depositRepository.findByOwnerUuid(user).find { it.approved.not() }
     }
 
-    @Transactional
-    override fun generateMintTransaction(request: MintServiceRequest): TransactionDataAndInfo {
-        val deposit = getDepositForId(request.depositId)
-        validateDepositForMintTransaction(deposit)
-        val amount = deposit.amount
-        val receivingWallet = ServiceUtils.getWalletHash(deposit.userUuid, walletRepository)
-        val data = blockchainService.generateMintTransaction(receivingWallet, amount)
-        val info = transactionInfoService.createMintTransaction(request, receivingWallet)
-        return TransactionDataAndInfo(data, info)
-    }
-
-    @Transactional
-    override fun confirmMintTransaction(signedTransaction: String, depositId: Int): Deposit {
-        val deposit = getDepositForId(depositId)
-        validateDepositForMintTransaction(deposit)
-        val txHash = blockchainService.postTransaction(signedTransaction)
-        deposit.txHash = txHash
-        depositRepository.save(deposit)
-        mailService.sendDepositInfo(deposit.userUuid, true)
-        return deposit
-    }
-
-    @Transactional(readOnly = true)
-    override fun countUsersWithApprovedDeposit(): Int {
-        return depositRepository.countUsersWithApprovedDeposit()
-    }
-
-    private fun validateDepositForMintTransaction(deposit: Deposit) {
-        if (deposit.approved.not()) {
-            throw InvalidRequestException(ErrorCode.WALLET_DEPOSIT_NOT_APPROVED,
-                "Deposit: ${deposit.id} is not approved")
-        }
-        if (deposit.txHash != null) {
-            throw ResourceAlreadyExistsException(ErrorCode.WALLET_DEPOSIT_MINTED, "Mint txHash: ${deposit.txHash}")
-        }
-    }
-
-    private fun getDepositForId(depositId: Int): Deposit {
-        return depositRepository.findById(depositId).orElseThrow {
-            throw ResourceNotFoundException(ErrorCode.WALLET_DEPOSIT_MISSING,
-                "For mint transaction missing deposit: $depositId")
+    private fun validateOwnerDoesNotHavePendingDeposit(owner: UUID) {
+        val unapprovedDeposits = depositRepository
+            .findByOwnerUuid(owner)
+            .filter { it.approved.not() }
+        if (unapprovedDeposits.isEmpty().not()) {
+            throw ResourceAlreadyExistsException(ErrorCode.WALLET_DEPOSIT_EXISTS,
+                "Check your unapproved deposit: ${unapprovedDeposits.firstOrNull()?.id}")
         }
     }
 
