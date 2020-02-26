@@ -1,5 +1,6 @@
 package com.ampnet.walletservice.controller
 
+import com.ampnet.walletservice.controller.pojo.request.AmountRequest
 import com.ampnet.walletservice.controller.pojo.response.TransactionResponse
 import com.ampnet.walletservice.enums.TransactionType
 import com.ampnet.walletservice.grpc.blockchain.pojo.ProjectInvestmentTxRequest
@@ -10,7 +11,8 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.http.MediaType
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 class InvestmentControllerTest : ControllerTestBase() {
@@ -53,9 +55,11 @@ class InvestmentControllerTest : ControllerTestBase() {
         }
 
         verify("User can generate invest project transaction") {
+            val request = AmountRequest(testContext.investment)
             val result = mockMvc.perform(
-                get("$projectInvestmentPath/$projectUuid")
-                    .param("amount", testContext.investment.toString()))
+                post("$projectInvestmentPath/$projectUuid")
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -91,7 +95,7 @@ class InvestmentControllerTest : ControllerTestBase() {
 
         verify("User can generate cancel invests in project transaction") {
             val result = mockMvc.perform(
-                get("$projectInvestmentPath/$projectUuid/cancel"))
+                post("$projectInvestmentPath/$projectUuid/cancel"))
                 .andExpect(status().isOk)
                 .andReturn()
 
