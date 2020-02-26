@@ -7,6 +7,7 @@ import com.ampnet.walletservice.persistence.repository.TransactionInfoRepository
 import com.ampnet.walletservice.service.TransactionInfoService
 import com.ampnet.walletservice.service.pojo.CreateTransactionRequest
 import com.ampnet.walletservice.service.pojo.MintServiceRequest
+import com.ampnet.walletservice.service.pojo.RevenuePayoutTxInfo
 import java.util.UUID
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -41,10 +42,9 @@ class TransactionInfoServiceImpl(
     }
 
     @Transactional
-    @Suppress("MagicNumber")
     override fun createInvestTransaction(projectName: String, amount: Long, userUuid: UUID): TransactionInfo {
         val type = TransactionType.INVEST
-        val description = type.description.format(projectName, amount.toDouble().div(100))
+        val description = type.description.format(projectName, amountInDecimal(amount))
         val request = CreateTransactionRequest(type, description, userUuid)
         return createTransaction(request)
     }
@@ -82,6 +82,15 @@ class TransactionInfoServiceImpl(
     }
 
     @Transactional
+    override fun createRevenuePayoutTransaction(request: RevenuePayoutTxInfo): TransactionInfo {
+        val type = TransactionType.REVENUE_PAYOUT
+        val description = type.description.format(amountInDecimal(request.amount), request.projectName)
+        val transactionRequest = CreateTransactionRequest(
+            type, description, request.userUuid, request.revenuePayoutId.toString())
+        return createTransaction(transactionRequest)
+    }
+
+    @Transactional
     override fun deleteTransaction(id: Int) = transactionInfoRepository.deleteById(id)
 
     @Transactional(readOnly = true)
@@ -98,4 +107,7 @@ class TransactionInfoServiceImpl(
         )
         return transactionInfoRepository.save(transaction)
     }
+
+    @Suppress("MagicNumber")
+    private fun amountInDecimal(amount: Long): Double = amount.toDouble().div(100)
 }

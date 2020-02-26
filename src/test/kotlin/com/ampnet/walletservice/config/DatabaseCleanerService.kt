@@ -9,26 +9,35 @@ class DatabaseCleanerService(val em: EntityManager) {
 
     @Transactional
     fun deleteAllWallets() {
-        em.createNativeQuery("DELETE FROM wallet").executeUpdate()
+        deleteAllFromTable("wallet")
     }
 
     @Transactional
     fun deleteAllTransactionInfo() {
-        em.createNativeQuery("DELETE FROM transaction_info ").executeUpdate()
+        deleteAllFromTable("transaction_info")
     }
 
     @Transactional
     fun deleteAllPairWalletCodes() {
-        em.createNativeQuery("DELETE FROM pair_wallet_code").executeUpdate()
+        deleteAllFromTable("pair_wallet_code")
     }
 
     @Transactional
     fun deleteAllWithdraws() {
-        em.createNativeQuery("DELETE FROM withdraw").executeUpdate()
+        deleteAllFromTable("withdraw")
     }
 
     @Transactional
     fun deleteAllDeposits() {
-        em.createNativeQuery("DELETE FROM deposit").executeUpdate()
+        deleteAllFromTable("deposit")
+    }
+
+    @Transactional
+    fun deleteAllRevenuePayouts() {
+        deleteAllFromTable("revenue_payout")
+    }
+
+    private fun deleteAllFromTable(name: String) {
+        em.createNativeQuery("DELETE FROM $name").executeUpdate()
     }
 }

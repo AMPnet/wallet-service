@@ -19,6 +19,7 @@ import com.ampnet.walletservice.persistence.model.Withdraw
 import com.ampnet.walletservice.persistence.repository.DepositRepository
 import com.ampnet.walletservice.persistence.repository.DocumentRepository
 import com.ampnet.walletservice.persistence.repository.PairWalletCodeRepository
+import com.ampnet.walletservice.persistence.repository.RevenuePayoutRepository
 import com.ampnet.walletservice.persistence.repository.TransactionInfoRepository
 import com.ampnet.walletservice.persistence.repository.WalletRepository
 import com.ampnet.walletservice.persistence.repository.WithdrawRepository
@@ -72,6 +73,8 @@ abstract class ControllerTestBase : TestBase() {
     protected lateinit var withdrawRepository: WithdrawRepository
     @Autowired
     private lateinit var documentRepository: DocumentRepository
+    @Autowired
+    protected lateinit var revenuePayoutRepository: RevenuePayoutRepository
     @MockBean
     protected lateinit var userService: UserService
     @MockBean

@@ -11,6 +11,7 @@ import com.ampnet.crowdfunding.proto.GenerateCreateOrganizationTxRequest
 import com.ampnet.crowdfunding.proto.GenerateCreateProjectTxRequest
 import com.ampnet.crowdfunding.proto.GenerateInvestTxRequest
 import com.ampnet.crowdfunding.proto.GenerateMintTxRequest
+import com.ampnet.crowdfunding.proto.GenerateStartRevenueSharesPayoutTxRequest
 import com.ampnet.crowdfunding.proto.GetProjectsInfoRequest
 import com.ampnet.crowdfunding.proto.InvestmentsInProjectRequest
 import com.ampnet.crowdfunding.proto.PortfolioRequest
@@ -26,6 +27,7 @@ import com.ampnet.walletservice.grpc.blockchain.pojo.Portfolio
 import com.ampnet.walletservice.grpc.blockchain.pojo.PortfolioData
 import com.ampnet.walletservice.grpc.blockchain.pojo.ProjectInfoResponse
 import com.ampnet.walletservice.grpc.blockchain.pojo.ProjectInvestmentTxRequest
+import com.ampnet.walletservice.grpc.blockchain.pojo.RevenuePayoutTxRequest
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionData
 import io.grpc.StatusRuntimeException
 import java.util.concurrent.TimeUnit
@@ -241,6 +243,26 @@ class BlockchainServiceImpl(
         } catch (ex: StatusRuntimeException) {
             throw getInternalExceptionFromStatusException(
                 ex, "Could not Burn Transaction for project: ${request.projectTxHash}")
+        }
+    }
+
+    override fun generateRevenuePayout(request: RevenuePayoutTxRequest): TransactionData {
+        logger.info { "Generating Revenue Payout Transaction projectTxHash: ${request.projectWallet} " +
+            "for amount = ${request.amount} by user walletHash: ${request.userWallet}" }
+        try {
+            val response = serviceWithTimeout()
+                .generateStartRevenueSharesPayoutTx(
+                    GenerateStartRevenueSharesPayoutTxRequest.newBuilder()
+                        .setProjectTxHash(request.projectWallet)
+                        .setFromTxHash(request.userWallet)
+                        .setRevenue(request.amount.toString())
+                        .build()
+                )
+            logger.info { "Successfully generated Revenue Payout Transaction" }
+            return TransactionData(response)
+        } catch (ex: StatusRuntimeException) {
+            throw getInternalExceptionFromStatusException(
+                ex, "Could not Revenue Payout Transaction for project: ${request.projectWallet}")
         }
     }
 
