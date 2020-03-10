@@ -17,7 +17,7 @@ class CooperativeDepositServiceTest : JpaServiceTestBase() {
     private val cooperativeDepositService: CooperativeDepositService by lazy {
         val storageServiceImpl = StorageServiceImpl(documentRepository, mockedCloudStorageService)
         val transactionInfoService = TransactionInfoServiceImpl(transactionInfoRepository)
-        CooperativeDepositServiceImpl(walletRepository, depositRepository, mockedBlockchainService,
+        CooperativeDepositServiceImpl(walletRepository, depositRepository, declinedRepository, mockedBlockchainService,
             transactionInfoService, storageServiceImpl, mockedMailService)
     }
     private lateinit var testContext: TestContext
@@ -127,6 +127,28 @@ class CooperativeDepositServiceTest : JpaServiceTestBase() {
         verify("User cannot delete minted deposit") {
             assertThrows<InvalidRequestException> {
                 cooperativeDepositService.delete(testContext.deposit.id)
+            }
+        }
+    }
+
+    @Test
+    fun mustThrowExceptionForDecliningMissingDeposit() {
+        verify("Service will throw exception for declining missing deposit") {
+            assertThrows<ResourceNotFoundException> {
+                cooperativeDepositService.decline(0, userUuid, "Missing")
+            }
+        }
+    }
+
+    @Test
+    fun mustThrowExceptionForDecliningMintedDeposit() {
+        suppose("Deposit is minted") {
+            testContext.deposit = createApprovedDeposit(txHash)
+        }
+
+        verify("User cannot decline minted deposit") {
+            assertThrows<InvalidRequestException> {
+                cooperativeDepositService.decline(testContext.deposit.id, userUuid, "Minted")
             }
         }
     }

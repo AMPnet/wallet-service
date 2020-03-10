@@ -15,6 +15,7 @@ import com.ampnet.walletservice.persistence.model.Deposit
 import com.ampnet.walletservice.persistence.model.File
 import com.ampnet.walletservice.persistence.model.Wallet
 import com.ampnet.walletservice.persistence.model.Withdraw
+import com.ampnet.walletservice.persistence.repository.DeclinedRepository
 import com.ampnet.walletservice.persistence.repository.DepositRepository
 import com.ampnet.walletservice.persistence.repository.DocumentRepository
 import com.ampnet.walletservice.persistence.repository.PairWalletCodeRepository
@@ -54,6 +55,8 @@ abstract class JpaServiceTestBase : TestBase() {
     protected lateinit var withdrawRepository: WithdrawRepository
     @Autowired
     protected lateinit var depositRepository: DepositRepository
+    @Autowired
+    protected lateinit var declinedRepository: DeclinedRepository
 
     protected val mockedBlockchainService: BlockchainService = Mockito.mock(BlockchainService::class.java)
     protected val mockedCloudStorageService: CloudStorageServiceImpl = Mockito.mock(CloudStorageServiceImpl::class.java)
@@ -119,13 +122,13 @@ abstract class JpaServiceTestBase : TestBase() {
     ): Deposit {
         val document = saveFile(userUuid)
         val deposit = Deposit(0, userUuid, "S34SDGFT", true, 10_000,
-            ZonedDateTime.now(), userUuid, type, txHash, userUuid, ZonedDateTime.now(), document)
+            ZonedDateTime.now(), userUuid, type, txHash, userUuid, ZonedDateTime.now(), document, null)
         return depositRepository.save(deposit)
     }
 
     protected fun createUnapprovedDeposit(type: DepositWithdrawType = DepositWithdrawType.USER): Deposit {
         val deposit = Deposit(0, userUuid, "S34SDGFT", false, 10_000,
-            ZonedDateTime.now(), userUuid, type, null, null, null, null)
+            ZonedDateTime.now(), userUuid, type, null, null, null, null, null)
         return depositRepository.save(deposit)
     }
 }

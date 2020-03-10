@@ -172,7 +172,7 @@ abstract class ControllerTestBase : TestBase() {
     ): Deposit {
         val document = saveFile("doc", "document-link", "type", 1, user)
         val deposit = Deposit(0, user, "S34SDGFT", true, amount,
-            ZonedDateTime.now(), user, type, txHash, user, ZonedDateTime.now(), document)
+            ZonedDateTime.now(), user, type, txHash, user, ZonedDateTime.now(), document, null)
         return depositRepository.save(deposit)
     }
 
@@ -201,7 +201,7 @@ abstract class ControllerTestBase : TestBase() {
 
     protected fun createUnapprovedDeposit(user: UUID, type: DepositWithdrawType = DepositWithdrawType.USER): Deposit {
         val deposit = Deposit(0, user, "S34SDGFT", false, 10_000,
-            ZonedDateTime.now(), user, type, null, null, null, null)
+            ZonedDateTime.now(), user, type, null, null, null, null, null)
         return depositRepository.save(deposit)
     }
 }

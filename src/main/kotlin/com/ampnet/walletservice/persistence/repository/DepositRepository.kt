@@ -11,7 +11,7 @@ import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 
 interface DepositRepository : JpaRepository<Deposit, Int> {
-    @Query("SELECT deposit FROM Deposit deposit LEFT JOIN FETCH deposit.file " +
+    @Query("SELECT deposit FROM Deposit deposit LEFT JOIN FETCH deposit.file LEFT JOIN FETCH deposit.declined " +
         "WHERE deposit.approved = :approved AND deposit.type = :type",
         countQuery = "SELECT COUNT(deposit) FROM Deposit deposit " +
             "WHERE deposit.approved = :approved AND deposit.type = :type")

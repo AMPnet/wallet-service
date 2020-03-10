@@ -1,5 +1,6 @@
 package com.ampnet.walletservice.controller
 
+import com.ampnet.walletservice.controller.pojo.request.CommentRequest
 import com.ampnet.walletservice.controller.pojo.response.DepositResponse
 import com.ampnet.walletservice.controller.pojo.response.DepositWithProjectListResponse
 import com.ampnet.walletservice.controller.pojo.response.DepositWithUserListResponse
@@ -20,6 +21,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
+import org.springframework.http.MediaType
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
@@ -93,10 +95,6 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
             val optionalDeposit = depositRepository.findById(testContext.deposits.first().id)
             assertThat(optionalDeposit).isNotPresent
         }
-        verify("Mail notification for deleting deposit is sent") {
-            Mockito.verify(mailService, Mockito.times(1))
-                .sendDepositInfo(userUuid, false)
-        }
     }
 
     @Test
@@ -110,6 +108,48 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
         verify("User without admin role cannot delete unapproved deposit") {
             mockMvc.perform(delete("$depositPath/${testContext.deposits.first().id}"))
                 .andExpect(status().isForbidden)
+        }
+    }
+
+    @Test
+    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWA_DEPOSIT])
+    fun mustBeAbleToDeclineDeposit() {
+        suppose("Unapproved user deposit exists") {
+            val deposit = createUnapprovedDeposit(userUuid)
+            testContext.deposits = listOf(deposit)
+        }
+
+        verify("Cooperative can decline user deposit") {
+            val request = CommentRequest("Decline!")
+            val depositId = testContext.deposits.first().id
+            val result = mockMvc.perform(
+                    post("$depositPath/$depositId/decline")
+                        .content(objectMapper.writeValueAsString(request))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk)
+                .andReturn()
+
+            val depositResponse: DepositResponse = objectMapper.readValue(result.response.contentAsString)
+            assertThat(depositResponse.id).isEqualTo(depositId)
+            assertThat(depositResponse.approved).isEqualTo(false)
+            assertThat(depositResponse.declinedComment).isEqualTo(request.comment)
+            assertThat(depositResponse.declinedAt).isBeforeOrEqualTo(ZonedDateTime.now())
+        }
+        verify("User deposit is declined") {
+            val optionalDeposit = depositRepository.findById(testContext.deposits.first().id)
+            assertThat(optionalDeposit).isPresent
+            val declinedDeposit = optionalDeposit.get()
+            assertThat(declinedDeposit.approved).isFalse()
+            assertThat(declinedDeposit.approvedByUserUuid).isNull()
+            assertThat(declinedDeposit.approvedAt).isNull()
+            assertThat(declinedDeposit.file?.link).isNull()
+            assertThat(declinedDeposit.declined?.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
+            assertThat(declinedDeposit.declined?.createdBy).isEqualTo(userUuid)
+            assertThat(declinedDeposit.declined?.comment).isNotNull()
+        }
+        verify("Mail notification for declining deposit is sent") {
+            Mockito.verify(mailService, Mockito.times(1))
+                .sendDepositInfo(userUuid, false)
         }
     }
 

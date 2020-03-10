@@ -11,7 +11,6 @@ import com.ampnet.walletservice.persistence.repository.DepositRepository
 import com.ampnet.walletservice.persistence.repository.WalletRepository
 import com.ampnet.walletservice.service.DepositService
 import com.ampnet.walletservice.service.pojo.DepositCreateServiceRequest
-import java.time.ZonedDateTime
 import java.util.UUID
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
@@ -42,9 +41,9 @@ class DepositServiceImpl(
             ServiceUtils.validateUserIsProjectOwner(request.createdBy, projectResponse)
         }
 
-        val deposit = Deposit(0, request.owner, generateDepositReference(), false, request.amount,
-            ZonedDateTime.now(), request.createdBy, request.type,
-            null, null, null, null)
+        val deposit = Deposit(
+            request.owner, generateDepositReference(), request.amount, request.createdBy, request.type
+        )
         depositRepository.save(deposit)
         mailService.sendDepositRequest(request.createdBy, request.amount)
         logger.debug { "Created Deposit for owner: ${request.owner} with amount: ${request.amount} " +

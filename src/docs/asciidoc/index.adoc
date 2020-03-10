@@ -372,6 +372,14 @@ include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToApproveDeposit/
 .Response
 include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToApproveDeposit/http-response.adoc[]
 
+==== Decline Deposit
+Must have Admin role - privilege: PWA_DEPOSIT. Cannot decline minted deposit.
+
+.Request
+include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToDeclineDeposit/http-request.adoc[]
+.Response
+include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToDeclineDeposit/http-response.adoc[]
+
 ==== Delete Deposit
 Must have Admin role - privilege: PWA_DEPOSIT. Cannot delete minted deposit.
 
