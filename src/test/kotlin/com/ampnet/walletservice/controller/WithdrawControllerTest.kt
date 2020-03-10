@@ -219,7 +219,7 @@ class WithdrawControllerTest : ControllerTestBase() {
     @WithMockCrowdfoundUser
     fun mustBeAbleToDeleteWithdraw() {
         suppose("Approved withdraw is created") {
-            testContext.withdraw = createApprovedWithdraw(userUuid)
+            testContext.withdraw = createWithdraw(userUuid)
         }
 
         verify("User can delete withdraw") {

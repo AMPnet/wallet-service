@@ -1,5 +1,6 @@
 package com.ampnet.walletservice.controller
 
+import com.ampnet.walletservice.controller.pojo.request.CommentRequest
 import com.ampnet.walletservice.controller.pojo.response.DepositResponse
 import com.ampnet.walletservice.controller.pojo.response.DepositWithProjectListResponse
 import com.ampnet.walletservice.controller.pojo.response.DepositWithProjectResponse
@@ -20,10 +21,10 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
-import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
@@ -51,14 +52,6 @@ class CooperativeDepositController(
         return ResponseEntity.notFound().build()
     }
 
-    @DeleteMapping("/cooperative/deposit/{id}")
-    @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PWA_DEPOSIT)")
-    fun deleteDeposit(@PathVariable("id") id: Int): ResponseEntity<Unit> {
-        logger.debug { "Received request to delete deposit: $id" }
-        cooperativeDepositService.delete(id)
-        return ResponseEntity.ok().build()
-    }
-
     @PostMapping("/cooperative/deposit/{id}/approve")
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PWA_DEPOSIT)")
     fun approveDeposit(
@@ -72,6 +65,18 @@ class CooperativeDepositController(
         val documentRequest = DocumentSaveRequest(file, userPrincipal.uuid)
         val serviceRequest = ApproveDepositRequest(id, userPrincipal.uuid, amount, documentRequest)
         val deposit = cooperativeDepositService.approve(serviceRequest)
+        return ResponseEntity.ok(DepositResponse(deposit))
+    }
+
+    @PostMapping("/cooperative/deposit/{id}/decline")
+    @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PWA_DEPOSIT)")
+    fun declineDeposit(
+        @PathVariable("id") id: Int,
+        @RequestBody request: CommentRequest
+    ): ResponseEntity<DepositResponse> {
+        val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
+        logger.info { "Received request to delcine deposit: $id by user: ${userPrincipal.uuid}" }
+        val deposit = cooperativeDepositService.decline(id, userPrincipal.uuid, request.comment)
         return ResponseEntity.ok(DepositResponse(deposit))
     }
 

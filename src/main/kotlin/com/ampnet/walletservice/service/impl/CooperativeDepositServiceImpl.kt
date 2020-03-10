@@ -8,7 +8,9 @@ import com.ampnet.walletservice.exception.ResourceNotFoundException
 import com.ampnet.walletservice.grpc.blockchain.BlockchainService
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionDataAndInfo
 import com.ampnet.walletservice.grpc.mail.MailService
+import com.ampnet.walletservice.persistence.model.Declined
 import com.ampnet.walletservice.persistence.model.Deposit
+import com.ampnet.walletservice.persistence.repository.DeclinedRepository
 import com.ampnet.walletservice.persistence.repository.DepositRepository
 import com.ampnet.walletservice.persistence.repository.WalletRepository
 import com.ampnet.walletservice.service.CooperativeDepositService
@@ -17,6 +19,7 @@ import com.ampnet.walletservice.service.TransactionInfoService
 import com.ampnet.walletservice.service.pojo.ApproveDepositRequest
 import com.ampnet.walletservice.service.pojo.MintServiceRequest
 import java.time.ZonedDateTime
+import java.util.UUID
 import mu.KLogging
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -27,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional
 class CooperativeDepositServiceImpl(
     private val walletRepository: WalletRepository,
     private val depositRepository: DepositRepository,
+    private val declinedRepository: DeclinedRepository,
     private val blockchainService: BlockchainService,
     private val transactionInfoService: TransactionInfoService,
     private val storageService: StorageService,
@@ -36,30 +40,31 @@ class CooperativeDepositServiceImpl(
     companion object : KLogging()
 
     @Transactional
-    override fun delete(id: Int) {
-        val deposit = getDepositForId(id)
-        if (deposit.txHash != null) {
-            throw InvalidRequestException(ErrorCode.WALLET_DEPOSIT_MINTED, "Cannot delete minted deposit")
-        }
-        logger.info { "Deleting deposit: $deposit" }
-        depositRepository.delete(deposit)
-        mailService.sendDepositInfo(deposit.ownerUuid, false)
-    }
-
-    @Transactional
     override fun approve(request: ApproveDepositRequest): Deposit {
-        val deposit = depositRepository.findById(request.id).orElseThrow {
-            throw ResourceNotFoundException(ErrorCode.WALLET_DEPOSIT_MISSING, "Missing deposit: ${request.id}")
-        }
+        val deposit = getDepositForId(request.id)
         // TODO: think about document reading restrictions
         val document = storageService.saveDocument(request.documentSaveRequest)
-        logger.info { "Approving deposit with id: ${request.id} by user: ${request.user}" }
+        logger.info { "Approving deposit: ${request.id} by user: ${request.user}" }
 
         deposit.approved = true
         deposit.approvedByUserUuid = request.user
         deposit.approvedAt = ZonedDateTime.now()
         deposit.amount = request.amount
         deposit.file = document
+        return depositRepository.save(deposit)
+    }
+
+    @Transactional
+    override fun decline(id: Int, user: UUID, comment: String): Deposit {
+        val deposit = getDepositForId(id)
+        if (deposit.txHash != null) {
+            throw InvalidRequestException(ErrorCode.WALLET_DEPOSIT_MINTED, "Cannot decline minted deposit")
+        }
+        logger.info { "Declining deposit: $id by user: $user" }
+        val declined = Declined(comment, user)
+        deposit.declined = declinedRepository.save(declined)
+        deposit.approved = false
+        mailService.sendDepositInfo(deposit.ownerUuid, false)
         return depositRepository.save(deposit)
     }
 
@@ -75,6 +80,7 @@ class CooperativeDepositServiceImpl(
 
     @Transactional
     override fun generateMintTransaction(request: MintServiceRequest): TransactionDataAndInfo {
+        logger.info { "Generating mint transaction for deposit: ${request.depositId} by user: ${request.byUser}" }
         val deposit = getDepositForId(request.depositId)
         validateDepositForMintTransaction(deposit)
         val amount = deposit.amount
@@ -86,13 +92,13 @@ class CooperativeDepositServiceImpl(
 
     @Transactional
     override fun confirmMintTransaction(signedTransaction: String, depositId: Int): Deposit {
+        logger.info { "Confirming mint transaction for deposit: $depositId" }
         val deposit = getDepositForId(depositId)
         validateDepositForMintTransaction(deposit)
         val txHash = blockchainService.postTransaction(signedTransaction)
         deposit.txHash = txHash
-        depositRepository.save(deposit)
         mailService.sendDepositInfo(deposit.ownerUuid, true)
-        return deposit
+        return depositRepository.save(deposit)
     }
 
     @Transactional(readOnly = true)
@@ -112,8 +118,7 @@ class CooperativeDepositServiceImpl(
 
     private fun getDepositForId(depositId: Int): Deposit {
         return depositRepository.findById(depositId).orElseThrow {
-            throw ResourceNotFoundException(ErrorCode.WALLET_DEPOSIT_MISSING,
-                "For mint transaction missing deposit: $depositId")
+            throw ResourceNotFoundException(ErrorCode.WALLET_DEPOSIT_MISSING, "Missing deposit: $depositId")
         }
     }
 }

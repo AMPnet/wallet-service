@@ -38,12 +38,4 @@ internal object ServiceUtils {
                     "and cannot create a Withdraw for project")
         }
     }
-
-    @Throws(InvalidRequestException::class)
-    fun validateWithdrawForApproval(withdraw: Withdraw) {
-        if (withdraw.approvedTxHash != null) {
-            throw InvalidRequestException(
-                ErrorCode.WALLET_WITHDRAW_APPROVED, "Approved txHash: ${withdraw.approvedTxHash}")
-        }
-    }
 }

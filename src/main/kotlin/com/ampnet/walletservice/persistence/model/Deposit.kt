@@ -55,5 +55,14 @@ data class Deposit(
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "file_id")
-    var file: File?
-)
+    var file: File?,
+
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "declined_id")
+    var declined: Declined?
+) {
+    constructor(ownerUuid: UUID, reference: String, amount: Long, createdBy: UUID, type: DepositWithdrawType) : this(
+        0, ownerUuid, reference, false, amount, ZonedDateTime.now(), createdBy, type,
+        null, null, null, null, null
+    )
+}

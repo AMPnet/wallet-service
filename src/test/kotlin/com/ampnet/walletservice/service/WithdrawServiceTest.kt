@@ -117,16 +117,16 @@ class WithdrawServiceTest : JpaServiceTestBase() {
 
     /* Delete */
     @Test
-    fun mustThrowExceptionForDeletingBurnedWithdraw() {
+    fun mustThrowExceptionForDeletingApprovedWithdraw() {
         suppose("Burned withdraw is created") {
-            withdraw = createBurnedWithdraw(userUuid)
+            withdraw = createApprovedWithdraw(userUuid)
         }
 
         verify("Service will throw exception when user tries to delete burned withdraw") {
             val exception = assertThrows<InvalidRequestException> {
                 withdrawService.deleteWithdraw(withdraw.id, userUuid)
             }
-            assertThat(exception.errorCode).isEqualTo(ErrorCode.WALLET_WITHDRAW_BURNED)
+            assertThat(exception.errorCode).isEqualTo(ErrorCode.WALLET_WITHDRAW_APPROVED)
         }
     }
 
@@ -204,6 +204,20 @@ class WithdrawServiceTest : JpaServiceTestBase() {
         verify("Service will throw exception when user tries to generate approval transaction for approved withdraw") {
             val exception = assertThrows<InvalidRequestException> {
                 withdrawService.generateApprovalTransaction(withdraw.id, userUuid)
+            }
+            assertThat(exception.errorCode).isEqualTo(ErrorCode.WALLET_WITHDRAW_APPROVED)
+        }
+    }
+
+    @Test
+    fun mustThrowExceptionForConfirmingApprovedTx() {
+        suppose("User has approved withdraw") {
+            withdraw = createApprovedWithdraw(userUuid)
+        }
+
+        verify("Service will throw exception when user tries to confirm already approved tx") {
+            val exception = assertThrows<InvalidRequestException> {
+                withdrawService.confirmApproval("signed-transaction", withdraw.id)
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.WALLET_WITHDRAW_APPROVED)
         }

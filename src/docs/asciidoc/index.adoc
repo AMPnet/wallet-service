@@ -205,6 +205,13 @@ include::{snippets}/DepositControllerTest/mustBeAbleToGetPendingDeposit/http-req
 .Response
 include::{snippets}/DepositControllerTest/mustBeAbleToGetPendingDeposit/http-response.adoc[]
 
+=== Delete
+.Request
+include::{snippets}/DepositControllerTest/mustBeAbleToDeleteDeposit/http-request.adoc[]
+.Response
+include::{snippets}/DepositControllerTest/mustBeAbleToDeleteDeposit/http-response.adoc[]
+
+
 == Portfolio API
 All requests need header: `Authorization: Bearer JWT`.
 
@@ -372,13 +379,13 @@ include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToApproveDeposit/
 .Response
 include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToApproveDeposit/http-response.adoc[]
 
-==== Delete Deposit
-Must have Admin role - privilege: PWA_DEPOSIT. Cannot delete minted deposit.
+==== Decline Deposit
+Must have Admin role - privilege: PWA_DEPOSIT. Cannot decline minted deposit.
 
 .Request
-include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToDeleteDeposit/http-request.adoc[]
+include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToDeclineDeposit/http-request.adoc[]
 .Response
-include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToDeleteDeposit/http-response.adoc[]
+include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToDeclineDeposit/http-response.adoc[]
 
 ==== Generate Mint transaction
 Must have Admin role - privilege: PWA_DEPOSIT

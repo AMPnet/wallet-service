@@ -71,10 +71,8 @@ class WithdrawServiceImpl(
     @Transactional
     override fun deleteWithdraw(withdrawId: Int, user: UUID) {
         val withdraw = ServiceUtils.getWithdraw(withdrawId, withdrawRepository)
+        validateWithdrawIsNotApproved(withdraw)
         validateUserCanEditWithdraw(withdraw, user)
-        if (withdraw.burnedTxHash != null) {
-            throw InvalidRequestException(ErrorCode.WALLET_WITHDRAW_BURNED, "Cannot delete burned Withdraw")
-        }
         logger.info { "Deleting Withdraw with id: $withdraw" }
         withdrawRepository.delete(withdraw)
         mailService.sendWithdrawInfo(withdraw.ownerUuid, false)
@@ -83,11 +81,23 @@ class WithdrawServiceImpl(
     @Transactional
     override fun generateApprovalTransaction(withdrawId: Int, user: UUID): TransactionDataAndInfo {
         val withdraw = ServiceUtils.getWithdraw(withdrawId, withdrawRepository)
+        validateWithdrawIsNotApproved(withdraw)
         validateUserCanEditWithdraw(withdraw, user)
-        ServiceUtils.validateWithdrawForApproval(withdraw)
         val data = getApprovalTransactionData(withdraw, user)
         val info = transactionInfoService.createApprovalTransaction(withdraw.amount, user, withdraw.id)
         return TransactionDataAndInfo(data, info)
+    }
+
+    @Transactional
+    override fun confirmApproval(signedTransaction: String, withdrawId: Int): Withdraw {
+        val withdraw = ServiceUtils.getWithdraw(withdrawId, withdrawRepository)
+        validateWithdrawIsNotApproved(withdraw)
+        logger.info { "Approving Withdraw: $withdraw" }
+        val approvalTxHash = blockchainService.postTransaction(signedTransaction)
+        withdraw.approvedTxHash = approvalTxHash
+        withdraw.approvedAt = ZonedDateTime.now()
+        logger.info { "Approved Withdraw: $withdraw" }
+        return withdrawRepository.save(withdraw)
     }
 
     private fun getApprovalTransactionData(withdraw: Withdraw, user: UUID): TransactionData {
@@ -135,6 +145,13 @@ class WithdrawServiceImpl(
             if (it.approvedTxHash != null && it.burnedTxHash == null) {
                 throw ResourceAlreadyExistsException(ErrorCode.WALLET_WITHDRAW_EXISTS, "Unburned Withdraw: ${it.id}")
             }
+        }
+    }
+
+    fun validateWithdrawIsNotApproved(withdraw: Withdraw) {
+        if (withdraw.approvedTxHash != null) {
+            throw InvalidRequestException(
+                ErrorCode.WALLET_WITHDRAW_APPROVED, "Approved txHash: ${withdraw.approvedTxHash}")
         }
     }
 }
