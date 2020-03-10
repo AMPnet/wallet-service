@@ -8,6 +8,7 @@ import com.ampnet.walletservice.service.pojo.DepositCreateServiceRequest
 import java.util.UUID
 import mu.KLogging
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -29,6 +30,14 @@ class DepositController(
             userPrincipal.uuid, userPrincipal.uuid, request.amount, DepositWithdrawType.USER)
         val deposit = depositService.create(serviceRequest)
         return ResponseEntity.ok(DepositResponse(deposit))
+    }
+
+    @DeleteMapping("/deposit/{id}")
+    fun deleteDeposit(@PathVariable("id") id: Int): ResponseEntity<Unit> {
+        val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
+        logger.debug { "Received request to delete deposit: $id by user: ${userPrincipal.uuid}" }
+        depositService.delete(id, userPrincipal.uuid)
+        return ResponseEntity.ok().build()
     }
 
     @GetMapping("/deposit")

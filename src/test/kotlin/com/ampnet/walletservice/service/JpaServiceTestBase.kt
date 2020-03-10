@@ -126,8 +126,8 @@ abstract class JpaServiceTestBase : TestBase() {
         return depositRepository.save(deposit)
     }
 
-    protected fun createUnapprovedDeposit(type: DepositWithdrawType = DepositWithdrawType.USER): Deposit {
-        val deposit = Deposit(0, userUuid, "S34SDGFT", false, 10_000,
+    protected fun createUnapprovedDeposit(owner: UUID, type: DepositWithdrawType = DepositWithdrawType.USER): Deposit {
+        val deposit = Deposit(0, owner, "S34SDGFT", false, 10_000,
             ZonedDateTime.now(), userUuid, type, null, null, null, null, null)
         return depositRepository.save(deposit)
     }

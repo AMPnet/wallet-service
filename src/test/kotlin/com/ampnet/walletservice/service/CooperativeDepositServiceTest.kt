@@ -20,12 +20,11 @@ class CooperativeDepositServiceTest : JpaServiceTestBase() {
         CooperativeDepositServiceImpl(walletRepository, depositRepository, declinedRepository, mockedBlockchainService,
             transactionInfoService, storageServiceImpl, mockedMailService)
     }
-    private lateinit var testContext: TestContext
+    private lateinit var deposit: Deposit
 
     @BeforeEach
     fun init() {
         databaseCleanerService.deleteAllDeposits()
-        testContext = TestContext()
     }
 
     @Test
@@ -34,12 +33,12 @@ class CooperativeDepositServiceTest : JpaServiceTestBase() {
             databaseCleanerService.deleteAllWallets()
         }
         suppose("Unapproved deposit exist") {
-            testContext.deposit = createApprovedDeposit(null)
+            deposit = createApprovedDeposit(null)
         }
 
         verify("Service will throw exception for existing unapproved deposit") {
             assertThrows<ResourceNotFoundException> {
-                val request = MintServiceRequest(testContext.deposit.id, userUuid)
+                val request = MintServiceRequest(deposit.id, userUuid)
                 cooperativeDepositService.generateMintTransaction(request)
             }
         }
@@ -58,12 +57,12 @@ class CooperativeDepositServiceTest : JpaServiceTestBase() {
     @Test
     fun mustThrowExceptionIfDepositIsMintedForMintTransaction() {
         suppose("Deposit is already minted") {
-            testContext.deposit = createApprovedDeposit(txHash)
+            deposit = createApprovedDeposit(txHash)
         }
 
         verify("Service will throw exception if the deposit already has tx hash") {
             assertThrows<ResourceAlreadyExistsException> {
-                val request = MintServiceRequest(testContext.deposit.id, userUuid)
+                val request = MintServiceRequest(deposit.id, userUuid)
                 cooperativeDepositService.generateMintTransaction(request)
             }
         }
@@ -72,12 +71,12 @@ class CooperativeDepositServiceTest : JpaServiceTestBase() {
     @Test
     fun mustThrowExceptionIfDepositIsNotApprovedForMintTransaction() {
         suppose("Deposit is not approved") {
-            testContext.deposit = createUnapprovedDeposit()
+            deposit = createUnapprovedDeposit(userUuid)
         }
 
         verify("Service will throw exception if the deposit is not approved") {
             assertThrows<InvalidRequestException> {
-                val request = MintServiceRequest(testContext.deposit.id, userUuid)
+                val request = MintServiceRequest(deposit.id, userUuid)
                 cooperativeDepositService.generateMintTransaction(request)
             }
         }
@@ -95,12 +94,12 @@ class CooperativeDepositServiceTest : JpaServiceTestBase() {
     @Test
     fun mustThrowExceptionIfDepositIsMintedForConfirmMintTransaction() {
         suppose("Deposit is already minted") {
-            testContext.deposit = createApprovedDeposit(txHash)
+            deposit = createApprovedDeposit(txHash)
         }
 
         verify("Service will throw exception if the deposit already has tx hash") {
             assertThrows<ResourceAlreadyExistsException> {
-                cooperativeDepositService.confirmMintTransaction(signedTransaction, testContext.deposit.id)
+                cooperativeDepositService.confirmMintTransaction(signedTransaction, deposit.id)
             }
         }
     }
@@ -108,25 +107,12 @@ class CooperativeDepositServiceTest : JpaServiceTestBase() {
     @Test
     fun mustThrowExceptionIfDepositIsNotApprovedForConfirmMintTransaction() {
         suppose("Deposit is not approved") {
-            testContext.deposit = createUnapprovedDeposit()
+            deposit = createUnapprovedDeposit(userUuid)
         }
 
         verify("Service will throw exception if the deposit is not approved") {
             assertThrows<InvalidRequestException> {
-                cooperativeDepositService.confirmMintTransaction(signedTransaction, testContext.deposit.id)
-            }
-        }
-    }
-
-    @Test
-    fun mustThrowExceptionForDeletingMintedDeposit() {
-        suppose("Deposit is minted") {
-            testContext.deposit = createApprovedDeposit(txHash)
-        }
-
-        verify("User cannot delete minted deposit") {
-            assertThrows<InvalidRequestException> {
-                cooperativeDepositService.delete(testContext.deposit.id)
+                cooperativeDepositService.confirmMintTransaction(signedTransaction, deposit.id)
             }
         }
     }
@@ -143,17 +129,13 @@ class CooperativeDepositServiceTest : JpaServiceTestBase() {
     @Test
     fun mustThrowExceptionForDecliningMintedDeposit() {
         suppose("Deposit is minted") {
-            testContext.deposit = createApprovedDeposit(txHash)
+            deposit = createApprovedDeposit(txHash)
         }
 
         verify("User cannot decline minted deposit") {
             assertThrows<InvalidRequestException> {
-                cooperativeDepositService.decline(testContext.deposit.id, userUuid, "Minted")
+                cooperativeDepositService.decline(deposit.id, userUuid, "Minted")
             }
         }
-    }
-
-    private class TestContext {
-        lateinit var deposit: Deposit
     }
 }

@@ -10,7 +10,6 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 
 interface CooperativeDepositService {
-    fun delete(id: Int)
     fun approve(request: ApproveDepositRequest): Deposit
     fun decline(id: Int, user: UUID, comment: String): Deposit
     fun getAllWithDocuments(approved: Boolean, type: DepositWithdrawType, pageable: Pageable): Page<Deposit>

@@ -2,6 +2,7 @@ package com.ampnet.walletservice.service.impl
 
 import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.exception.ErrorCode
+import com.ampnet.walletservice.exception.InvalidRequestException
 import com.ampnet.walletservice.exception.ResourceAlreadyExistsException
 import com.ampnet.walletservice.exception.ResourceNotFoundException
 import com.ampnet.walletservice.grpc.mail.MailService
@@ -46,14 +47,43 @@ class DepositServiceImpl(
         )
         depositRepository.save(deposit)
         mailService.sendDepositRequest(request.createdBy, request.amount)
-        logger.debug { "Created Deposit for owner: ${request.owner} with amount: ${request.amount} " +
-            "by user: ${request.createdBy}" }
+        logger.debug {
+            "Created Deposit for owner: ${request.owner} with amount: ${request.amount} by user: ${request.createdBy}"
+        }
         return deposit
+    }
+
+    @Transactional
+    override fun delete(id: Int, user: UUID) {
+        val deposit = depositRepository.findById(id).orElseThrow {
+            throw ResourceNotFoundException(ErrorCode.WALLET_DEPOSIT_MISSING, "Missing deposit: $id")
+        }
+        validateUserCanEditDeposit(deposit, user)
+        if (deposit.txHash != null) {
+            throw InvalidRequestException(ErrorCode.WALLET_DEPOSIT_MINTED, "Cannot delete minted deposit")
+        }
+        logger.debug { "Deleting deposit: $deposit" }
+        depositRepository.delete(deposit)
     }
 
     @Transactional(readOnly = true)
     override fun getPendingForUser(user: UUID): Deposit? {
         return depositRepository.findByOwnerUuid(user).find { it.approved.not() }
+    }
+
+    private fun validateUserCanEditDeposit(deposit: Deposit, user: UUID) {
+        when (deposit.type) {
+            DepositWithdrawType.USER -> {
+                if (deposit.ownerUuid != user) {
+                    throw InvalidRequestException(
+                        ErrorCode.USER_MISSING_PRIVILEGE, "Deposit does not belong to this user")
+                }
+            }
+            DepositWithdrawType.PROJECT -> {
+                val projectResponse = projectService.getProject(deposit.ownerUuid)
+                ServiceUtils.validateUserIsProjectOwner(user, projectResponse)
+            }
+        }
     }
 
     private fun validateOwnerDoesNotHavePendingDeposit(owner: UUID) {

@@ -24,7 +24,6 @@ import org.mockito.Mockito
 import org.springframework.http.MediaType
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
@@ -76,38 +75,6 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
             mockMvc.perform(
                 get("$depositPath/search").param("reference", "non-existing"))
                 .andExpect(status().isNotFound)
-        }
-    }
-
-    @Test
-    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWA_DEPOSIT])
-    fun mustBeAbleToDeleteDeposit() {
-        suppose("Unapproved user deposit exists") {
-            val deposit = createUnapprovedDeposit(userUuid)
-            testContext.deposits = listOf(deposit)
-        }
-
-        verify("Cooperative can delete unapproved user deposit") {
-            mockMvc.perform(delete("$depositPath/${testContext.deposits.first().id}"))
-                .andExpect(status().isOk)
-        }
-        verify("Unapproved deposit is deleted") {
-            val optionalDeposit = depositRepository.findById(testContext.deposits.first().id)
-            assertThat(optionalDeposit).isNotPresent
-        }
-    }
-
-    @Test
-    @WithMockCrowdfoundUser
-    fun mustNotBeAbleToDeleteWithoutAdminPrivileges() {
-        suppose("Unapproved user deposit exists") {
-            val deposit = createUnapprovedDeposit(userUuid)
-            testContext.deposits = listOf(deposit)
-        }
-
-        verify("User without admin role cannot delete unapproved deposit") {
-            mockMvc.perform(delete("$depositPath/${testContext.deposits.first().id}"))
-                .andExpect(status().isForbidden)
         }
     }
 
@@ -181,6 +148,8 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
             assertThat(depositResponse.id).isEqualTo(depositId)
             assertThat(depositResponse.approved).isEqualTo(true)
             assertThat(depositResponse.documentResponse?.link).isEqualTo(testContext.documentLink)
+            assertThat(depositResponse.declinedComment).isNull()
+            assertThat(depositResponse.declinedAt).isNull()
         }
         verify("User deposit is approved") {
             val optionalDeposit = depositRepository.findById(testContext.deposits.first().id)
