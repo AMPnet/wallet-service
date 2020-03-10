@@ -44,18 +44,6 @@ class CooperativeWithdrawServiceImpl(
     }
 
     @Transactional
-    override fun confirmApproval(signedTransaction: String, withdrawId: Int): Withdraw {
-        val withdraw = ServiceUtils.getWithdraw(withdrawId, withdrawRepository)
-        ServiceUtils.validateWithdrawForApproval(withdraw)
-        logger.info { "Approving Withdraw: $withdraw" }
-        val approvalTxHash = blockchainService.postTransaction(signedTransaction)
-        withdraw.approvedTxHash = approvalTxHash
-        withdraw.approvedAt = ZonedDateTime.now()
-        logger.info { "Approved Withdraw: $withdraw" }
-        return withdrawRepository.save(withdraw)
-    }
-
-    @Transactional
     override fun generateBurnTransaction(withdrawId: Int, user: UUID): TransactionDataAndInfo {
         val withdraw = ServiceUtils.getWithdraw(withdrawId, withdrawRepository)
         logger.info { "Generating Burn transaction for withdraw: $withdraw" }

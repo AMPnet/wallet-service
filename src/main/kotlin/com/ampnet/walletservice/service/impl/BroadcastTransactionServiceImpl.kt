@@ -14,6 +14,7 @@ import com.ampnet.walletservice.service.ProjectInvestmentService
 import com.ampnet.walletservice.service.RevenueService
 import com.ampnet.walletservice.service.TransactionInfoService
 import com.ampnet.walletservice.service.WalletService
+import com.ampnet.walletservice.service.WithdrawService
 import java.util.UUID
 import javax.transaction.Transactional
 import mu.KLogging
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Service
 @Service
 class BroadcastTransactionServiceImpl(
     private val walletService: WalletService,
+    private val withdrawService: WithdrawService,
     private val cooperativeWalletService: CooperativeWalletService,
     private val cooperativeWithdrawService: CooperativeWithdrawService,
     private val cooperativeDepositService: CooperativeDepositService,
@@ -82,7 +84,7 @@ class BroadcastTransactionServiceImpl(
 
     private fun confirmApprovalTransaction(transactionInfo: TransactionInfo, signedTransaction: String): String {
         val withdrawId = getIdFromCompanionData(transactionInfo)
-        val withdraw = cooperativeWithdrawService.confirmApproval(signedTransaction, withdrawId)
+        val withdraw = withdrawService.confirmApproval(signedTransaction, withdrawId)
         return withdraw.approvedTxHash
             ?: throw ResourceNotFoundException(ErrorCode.TX_MISSING, "Missing approvedTxHash for withdraw transaction")
     }

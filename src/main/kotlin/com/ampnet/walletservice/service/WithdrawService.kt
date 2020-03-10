@@ -11,4 +11,5 @@ interface WithdrawService {
     fun createWithdraw(request: WithdrawCreateServiceRequest): Withdraw
     fun deleteWithdraw(withdrawId: Int, user: UUID)
     fun generateApprovalTransaction(withdrawId: Int, user: UUID): TransactionDataAndInfo
+    fun confirmApproval(signedTransaction: String, withdrawId: Int): Withdraw
 }

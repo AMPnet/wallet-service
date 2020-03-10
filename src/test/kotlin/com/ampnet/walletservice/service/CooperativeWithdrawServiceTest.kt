@@ -26,21 +26,6 @@ class CooperativeWithdrawServiceTest : JpaServiceTestBase() {
         databaseCleanerService.deleteAllWithdraws()
     }
 
-    /* Approve */
-    @Test
-    fun mustThrowExceptionForConfirmingApprovedTx() {
-        suppose("User has approved withdraw") {
-            withdraw = createApprovedWithdraw(userUuid)
-        }
-
-        verify("Service will throw exception when user tries to confirm already approved tx") {
-            val exception = assertThrows<InvalidRequestException> {
-                cooperativeWithdrawService.confirmApproval("signed-transaction", withdraw.id)
-            }
-            assertThat(exception.errorCode).isEqualTo(ErrorCode.WALLET_WITHDRAW_APPROVED)
-        }
-    }
-
     /* Burn */
     @Test
     fun mustThrowExceptionForGeneratingBurnTxBeforeApproval() {
