@@ -79,7 +79,7 @@ abstract class JpaServiceTestBase : TestBase() {
 
     protected fun createWallet(owner: UUID, hash: String, type: WalletType): Wallet {
         val wallet = Wallet(UUID.randomUUID(), owner, hash, type, Currency.EUR,
-            ZonedDateTime.now(), hash, ZonedDateTime.now())
+            ZonedDateTime.now(), hash, ZonedDateTime.now(), null)
         return walletRepository.save(wallet)
     }
 

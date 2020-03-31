@@ -1,5 +1,6 @@
 package com.ampnet.walletservice.service
 
+import com.ampnet.walletservice.controller.pojo.request.WalletCreateRequest
 import com.ampnet.walletservice.enums.Currency
 import com.ampnet.walletservice.enums.WalletType
 import com.ampnet.walletservice.exception.ErrorCode
@@ -58,8 +59,10 @@ class WalletServiceTest : JpaServiceTestBase() {
         }
 
         verify("Service can create wallet for a user") {
-            val wallet = walletService.createUserWallet(userUuid, defaultPublicKey)
-            assertThat(wallet.activationData).isEqualTo(defaultPublicKey)
+            val request = WalletCreateRequest(defaultPublicKey, "alias")
+            val wallet = walletService.createUserWallet(userUuid, request)
+            assertThat(wallet.activationData).isEqualTo(request.publicKey)
+            assertThat(wallet.alias).isEqualTo(request.alias)
             assertThat(wallet.currency).isEqualTo(Currency.EUR)
             assertThat(wallet.type).isEqualTo(WalletType.USER)
             assertThat(wallet.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
@@ -108,7 +111,7 @@ class WalletServiceTest : JpaServiceTestBase() {
 
         verify("Service cannot create additional account") {
             val exception = assertThrows<ResourceAlreadyExistsException> {
-                walletService.createUserWallet(userUuid, defaultPublicKey)
+                walletService.createUserWallet(userUuid, WalletCreateRequest(defaultPublicKey, "alias"))
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.WALLET_EXISTS)
         }

@@ -1,5 +1,6 @@
 package com.ampnet.walletservice.service.impl
 
+import com.ampnet.walletservice.controller.pojo.request.WalletCreateRequest
 import com.ampnet.walletservice.enums.Currency
 import com.ampnet.walletservice.enums.WalletType
 import com.ampnet.walletservice.exception.ErrorCode
@@ -55,16 +56,16 @@ class WalletServiceImpl(
 
     @Transactional
     @Throws(ResourceAlreadyExistsException::class)
-    override fun createUserWallet(user: UUID, publicKey: String): Wallet {
+    override fun createUserWallet(user: UUID, request: WalletCreateRequest): Wallet {
         walletRepository.findByOwner(user).ifPresent {
             throw ResourceAlreadyExistsException(ErrorCode.WALLET_EXISTS, "User: $user already has a wallet.")
         }
-        pairWalletCodeRepository.findByPublicKey(publicKey).ifPresent {
+        pairWalletCodeRepository.findByPublicKey(request.publicKey).ifPresent {
             pairWalletCodeRepository.delete(it)
         }
 
-        logger.debug { "Creating wallet: $publicKey for user: $user" }
-        return createWallet(user, publicKey, WalletType.USER)
+        logger.debug { "Creating wallet: $request for user: $user" }
+        return createWallet(user, request.publicKey, WalletType.USER, request.alias)
     }
 
     @Transactional
@@ -149,7 +150,7 @@ class WalletServiceImpl(
             .filter { it.hash != null }
             .associateBy { it.owner }
         if (projectWallets.isEmpty()) {
-            return PageImpl<ProjectWithWallet>(emptyList(), pageable, walletsPage.totalElements)
+            return PageImpl(emptyList(), pageable, walletsPage.totalElements)
         }
 
         val projectWalletHashes = projectWallets.values.mapNotNull { it.hash }
@@ -167,16 +168,15 @@ class WalletServiceImpl(
                     ProjectWithWallet(project, wallet, balance, payoutInProcess)
                 }
             }
-        return PageImpl<ProjectWithWallet>(projectsWithWallet, pageable, walletsPage.totalElements)
+        return PageImpl(projectsWithWallet, pageable, walletsPage.totalElements)
     }
 
-    private fun createWallet(owner: UUID, activationData: String, type: WalletType): Wallet {
+    private fun createWallet(owner: UUID, activationData: String, type: WalletType, alias: String? = null): Wallet {
         if (walletRepository.findByActivationData(activationData).isPresent) {
             throw ResourceAlreadyExistsException(ErrorCode.WALLET_HASH_EXISTS,
                 "Trying to create wallet: $type with existing activationData: $activationData")
         }
-        val wallet = Wallet(UUID.randomUUID(), owner, activationData, type, Currency.EUR, ZonedDateTime.now(),
-            null, null)
+        val wallet = Wallet(owner, activationData, type, Currency.EUR, alias)
         return walletRepository.save(wallet)
     }
 

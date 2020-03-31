@@ -399,7 +399,7 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
     }
 
     private fun createUnactivatedWallet(owner: UUID): Wallet {
-        val wallet = Wallet(UUID.randomUUID(), owner, "activation-data", WalletType.USER, Currency.EUR, ZonedDateTime.now(), null, null)
+        val wallet = Wallet(owner, "activation-data", WalletType.USER, Currency.EUR)
         return walletRepository.save(wallet)
     }
 

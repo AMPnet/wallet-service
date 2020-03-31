@@ -1,6 +1,7 @@
 package com.ampnet.walletservice.controller
 
 import com.ampnet.walletservice.controller.pojo.request.WalletCreateRequest
+import com.ampnet.walletservice.controller.pojo.request.WalletPairRequest
 import com.ampnet.walletservice.controller.pojo.response.PairWalletResponse
 import com.ampnet.walletservice.controller.pojo.response.TransactionResponse
 import com.ampnet.walletservice.controller.pojo.response.WalletResponse
@@ -47,7 +48,7 @@ class WalletControllerTest : ControllerTestBase() {
         }
 
         verify("User can generate pair wallet code") {
-            val request = WalletCreateRequest(testContext.publicKey)
+            val request = WalletPairRequest(testContext.publicKey)
             val result = mockMvc.perform(
                 post("$walletPath/pair")
                     .content(objectMapper.writeValueAsString(request))
@@ -144,7 +145,7 @@ class WalletControllerTest : ControllerTestBase() {
     @WithMockCrowdfoundUser
     fun mustBeAbleToCreateWallet() {
         verify("User can create a wallet") {
-            val request = WalletCreateRequest(testContext.publicKey)
+            val request = WalletCreateRequest(testContext.publicKey, testContext.alias)
             val result = mockMvc.perform(
                 post(walletPath)
                     .content(objectMapper.writeValueAsString(request))
@@ -155,6 +156,7 @@ class WalletControllerTest : ControllerTestBase() {
             val walletResponse: WalletResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(walletResponse.uuid).isNotNull()
             assertThat(walletResponse.activationData).isEqualTo(testContext.publicKey)
+            assertThat(walletResponse.alias).isEqualTo(testContext.alias)
             assertThat(walletResponse.currency).isEqualTo(Currency.EUR)
             assertThat(walletResponse.type).isEqualTo(WalletType.USER)
             assertThat(walletResponse.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
@@ -168,6 +170,7 @@ class WalletControllerTest : ControllerTestBase() {
             assertThat(userWallet).isPresent
             val wallet = userWallet.get()
             assertThat(wallet.activationData).isEqualTo(testContext.publicKey)
+            assertThat(wallet.alias).isEqualTo(testContext.alias)
             assertThat(wallet.hash).isNull()
         }
     }
@@ -180,7 +183,7 @@ class WalletControllerTest : ControllerTestBase() {
         }
 
         verify("User cannot create additional wallet") {
-            val request = WalletCreateRequest(testContext.publicKey)
+            val request = WalletCreateRequest(testContext.publicKey, testContext.alias)
             mockMvc.perform(
                 post(walletPath)
                     .content(objectMapper.writeValueAsString(request))
@@ -193,7 +196,7 @@ class WalletControllerTest : ControllerTestBase() {
     @WithMockCrowdfoundUser(verified = false)
     fun mustNotBeAbleToCreateWalletWithUnVerifiedAccount() {
         verify("Unverified user cannot create a wallet") {
-            val request = WalletCreateRequest(testContext.publicKey)
+            val request = WalletCreateRequest(testContext.publicKey, testContext.alias)
             val result = mockMvc.perform(
                 post(walletPath)
                     .content(objectMapper.writeValueAsString(request))
@@ -332,6 +335,7 @@ class WalletControllerTest : ControllerTestBase() {
         var hash = "th_foKr5RbgAVq84nZaF6bNfPSnjmFQ39VhQeWPetgGDwv1BNAnV"
         var hash2 = "th_2YjFd1mPzriyKfzojwuZxKJZaqNJGmTnUvqnNfwoZTV6n7NYxB"
         val publicKey = "ak_RYkcTuYcyxQ6fWZsL2G3Kj3K5WCRUEXsi76bPUNkEsoHc52Wp"
+        val alias = "wallet_alias"
         var balance: Long = -1
         lateinit var pairWalletCode: String
         lateinit var time: ZonedDateTime

@@ -13,7 +13,6 @@ import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionData
 import com.ampnet.walletservice.persistence.model.Wallet
 import com.ampnet.walletservice.security.WithMockCrowdfoundUser
 import com.fasterxml.jackson.module.kotlin.readValue
-import java.time.ZonedDateTime
 import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -211,8 +210,7 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
     }
 
     private fun createUnactivatedWallet(owner: UUID, activationData: String, type: WalletType): Wallet {
-        val wallet = Wallet(UUID.randomUUID(), owner, activationData, type, Currency.EUR, ZonedDateTime.now(),
-            null, null)
+        val wallet = Wallet(owner, activationData, type, Currency.EUR)
         return walletRepository.save(wallet)
     }
 

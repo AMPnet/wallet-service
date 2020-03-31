@@ -1,6 +1,7 @@
 package com.ampnet.walletservice.controller
 
 import com.ampnet.walletservice.controller.pojo.request.WalletCreateRequest
+import com.ampnet.walletservice.controller.pojo.request.WalletPairRequest
 import com.ampnet.walletservice.controller.pojo.response.PairWalletResponse
 import com.ampnet.walletservice.controller.pojo.response.TransactionResponse
 import com.ampnet.walletservice.controller.pojo.response.WalletResponse
@@ -32,7 +33,7 @@ class WalletController(
     }
 
     @PostMapping("/wallet/pair")
-    fun generatePairWalletCode(@RequestBody request: WalletCreateRequest): ResponseEntity<PairWalletResponse> {
+    fun generatePairWalletCode(@RequestBody request: WalletPairRequest): ResponseEntity<PairWalletResponse> {
         logger.debug { "Received request to pair wallet: $request" }
         val pairWalletCode = walletService.generatePairWalletCode(request.publicKey)
         return ResponseEntity.ok(PairWalletResponse(pairWalletCode))
@@ -54,7 +55,7 @@ class WalletController(
     fun createWallet(@RequestBody request: WalletCreateRequest): ResponseEntity<WalletResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request from user: ${userPrincipal.uuid} to create wallet: $request" }
-        val wallet = walletService.createUserWallet(userPrincipal.uuid, request.publicKey)
+        val wallet = walletService.createUserWallet(userPrincipal.uuid, request)
         val response = WalletResponse(wallet)
         return ResponseEntity.ok(response)
     }

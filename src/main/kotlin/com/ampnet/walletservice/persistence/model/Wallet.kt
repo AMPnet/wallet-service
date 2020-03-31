@@ -38,5 +38,11 @@ data class Wallet(
     var hash: String?,
 
     @Column
-    var activatedAt: ZonedDateTime?
-)
+    var activatedAt: ZonedDateTime?,
+
+    @Column(length = 128)
+    var alias: String?
+) {
+    constructor(owner: UUID, activationData: String, type: WalletType, currency: Currency, alias: String? = null) :
+        this(UUID.randomUUID(), owner, activationData, type, currency, ZonedDateTime.now(), null, null, alias)
+}
