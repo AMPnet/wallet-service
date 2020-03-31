@@ -14,6 +14,7 @@ data class WalletResponse(
     val createdAt: ZonedDateTime,
     val hash: String?,
     val activatedAt: ZonedDateTime?,
+    val alias: String?,
     val balance: Long?
 ) {
     constructor(wallet: Wallet, balance: Long? = null) : this(
@@ -24,6 +25,7 @@ data class WalletResponse(
         wallet.createdAt,
         wallet.hash,
         wallet.activatedAt,
+        wallet.alias,
         balance
     )
 }

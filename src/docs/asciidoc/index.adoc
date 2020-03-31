@@ -84,6 +84,8 @@ include::{snippets}/WalletControllerTest/mustReturnNotFoundForMissingWallet/http
 ==== Create Wallet
 
 ===== Create wallet for active user
+TIP: `alias` data is optional.
+
 .Request
 include::{snippets}/WalletControllerTest/mustBeAbleToCreateWallet/http-request.adoc[]
 .Response

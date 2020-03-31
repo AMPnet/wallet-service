@@ -119,8 +119,13 @@ abstract class ControllerTestBase : TestBase() {
         createWallet(organization, hash, WalletType.ORG)
 
     private fun createWallet(owner: UUID, hash: String, type: WalletType): Wallet {
+        val alias = if (type == WalletType.USER) {
+            "wallet_alias"
+        } else {
+            null
+        }
         val wallet = Wallet(UUID.randomUUID(), owner, hash, type, Currency.EUR,
-            ZonedDateTime.now(), hash, ZonedDateTime.now())
+            ZonedDateTime.now(), hash, ZonedDateTime.now(), alias)
         return walletRepository.save(wallet)
     }
 
