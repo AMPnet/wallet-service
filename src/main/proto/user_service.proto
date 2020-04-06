@@ -18,6 +18,18 @@ message UsersResponse {
     repeated UserResponse users = 1;
 }
 
+message SetRoleRequest {
+    enum Role {
+        ADMIN = 0;
+        TOKEN_ISSUER = 1;
+        PLATFORM_MANAGER = 2;
+        USER = 3;
+    }
+    string uuid = 1;
+    Role role = 2;
+}
+
 service UserService {
     rpc GetUsers(GetUsersRequest) returns (UsersResponse);
+    rpc SetUserRole(SetRoleRequest) returns(UserResponse);
 }
