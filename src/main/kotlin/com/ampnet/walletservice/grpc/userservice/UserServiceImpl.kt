@@ -1,6 +1,7 @@
 package com.ampnet.walletservice.grpc.userservice
 
 import com.ampnet.userservice.proto.GetUsersRequest
+import com.ampnet.userservice.proto.SetRoleRequest
 import com.ampnet.userservice.proto.UserResponse
 import com.ampnet.userservice.proto.UserServiceGrpc
 import com.ampnet.walletservice.config.ApplicationProperties
@@ -32,13 +33,30 @@ class UserServiceImpl(
             val request = GetUsersRequest.newBuilder()
                 .addAllUuids(uuids.map { it.toString() })
                 .build()
-            val response = serviceBlockingStub
-                .withDeadlineAfter(applicationProperties.grpc.userServiceTimeout, TimeUnit.MILLISECONDS)
-                .getUsers(request).usersList
+            val response = serviceWithTimeout().getUsers(request).usersList
             logger.debug { "Fetched users: $response" }
             return response
         } catch (ex: StatusRuntimeException) {
             throw GrpcException(ErrorCode.INT_GRPC_USER, "Failed to fetch users. ${ex.localizedMessage}")
         }
     }
+
+    override fun setUserRole(uuid: UUID, role: SetRoleRequest.Role): UserResponse {
+        logger.info { "Received request to change user: $uuid role to: ${role.name}" }
+        try {
+            val request = SetRoleRequest.newBuilder()
+                .setUuid(uuid.toString())
+                .setRole(role)
+                .build()
+            val response = serviceWithTimeout().setUserRole(request)
+
+            logger.info { "Successfully change role for user: ${response.uuid}" }
+            return response
+        } catch (ex: StatusRuntimeException) {
+            throw GrpcException(ErrorCode.INT_GRPC_USER, "Failed to change role for user: $uuid")
+        }
+    }
+
+    private fun serviceWithTimeout() = serviceBlockingStub
+        .withDeadlineAfter(applicationProperties.grpc.userServiceTimeout, TimeUnit.MILLISECONDS)
 }

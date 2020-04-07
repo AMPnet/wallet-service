@@ -24,6 +24,7 @@ class FileStorageProperties {
 @Suppress("MagicNumber")
 class GrpcProperties {
     var blockchainServiceTimeout: Long = 3000
+    var blockchainPollingDelay: Long = 6000
     var mailServiceTimeout: Long = 1000
     var projectServiceTimeout: Long = 1000
     var userServiceTimeout: Long = 1000

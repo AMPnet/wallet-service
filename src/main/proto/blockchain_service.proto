@@ -21,6 +21,14 @@ message WalletActiveResponse {
     bool active = 1;
 }
 
+message PlatformManagerResponse {
+    string wallet = 1;
+}
+
+message GenerateTransferPlatformManagerOwnershipTxRequest {
+    string new_owner_wallet = 1;
+}
+
 
 ///////// EUR contract messages //////////
 
@@ -50,6 +58,14 @@ message GenerateInvestTxRequest {
     string from_tx_hash = 1;
     string project_tx_hash = 2;
     string amount = 3;
+}
+
+message TokenIssuerResponse {
+    string wallet = 1;
+}
+
+message GenerateTransferTokenIssuerOwnershipTxRequest {
+    string new_owner_wallet = 1;
 }
 
 ///////// Organization contract //////////
@@ -140,12 +156,14 @@ message TransactionsResponse {
             WITHDRAW = 1;
             INVEST = 2;
             SHARE_PAYOUT = 3;
+            CANCEL_INVESTMENT = 4;
         }
         string from_tx_hash = 1;
         string to_tx_hash = 2;
         string amount = 3;
         string date = 4;
         Type type = 5;
+        string state = 6;
     }
     repeated Transaction transactions = 1;
 }
@@ -198,7 +216,8 @@ service BlockchainService {
 
     rpc GenerateAddWalletTx(GenerateAddWalletTxRequest) returns (RawTxResponse);
     rpc IsWalletActive(WalletActiveRequest) returns (WalletActiveResponse);
-
+    rpc GetPlatformManager(Empty) returns (PlatformManagerResponse);
+    rpc GenerateTransferPlatformManagerOwnershipTx(GenerateTransferPlatformManagerOwnershipTxRequest) returns (RawTxResponse);
 
     // EUR
 
@@ -207,7 +226,8 @@ service BlockchainService {
     rpc GenerateApproveWithdrawTx(GenerateApproveWithdrawTxRequest) returns (RawTxResponse);
     rpc GenerateInvestTx(GenerateInvestTxRequest) returns (RawTxResponse);
     rpc GetBalance(BalanceRequest) returns (BalanceResponse);
-
+    rpc GetTokenIssuer(Empty) returns (TokenIssuerResponse);
+    rpc GenerateTransferTokenIssuerOwnershipTx(GenerateTransferTokenIssuerOwnershipTxRequest) returns (RawTxResponse);
 
     // Organization
 

@@ -27,6 +27,7 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
     private val broadcastPath = "/tx_broadcast"
     private val txHash = "th_2cNtX3hdmGPHq8sgHb6Lcu87iEc3E6feHTWczQAViQjmP7evbP"
     private val activationData = "activation_data"
+    private val walletAddress = "ak_2rTBMSCJgbeQoSt3MzSk93kAaYKjuTFyyfcMbhp62e2JJCTiSS"
 
     private lateinit var testContext: TestContext
 
@@ -384,6 +385,62 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
             assertThat(txHashResponse.txHash).isEqualTo(txHash)
         }
         verify("TransactionInfo for revenue payout is deleted") {
+            val transactionInfo = transactionInfoRepository.findById(testContext.transactionInfo.id)
+            assertThat(transactionInfo).isNotPresent
+        }
+    }
+
+    @Test
+    fun mustBeAbleToPostTransferTokenOwnership() {
+        suppose("TransactionInfo exists for transfer token issuer transaction") {
+            testContext.transactionInfo =
+                createTransactionInfo(TransactionType.TRNSF_TOKEN_OWN, userUuid, walletAddress)
+        }
+        suppose("Blockchain service will accept signed transaction for transfer token issuer") {
+            Mockito.`when`(blockchainService.postTransaction(signedTransaction)).thenReturn(txHash)
+        }
+
+        verify("User can post signed transaction to confirm transfer token issuer") {
+            val request = TxBroadcastRequest(testContext.transactionInfo.id, signedTransaction)
+            val result = mockMvc.perform(
+                post(broadcastPath)
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk)
+                .andReturn()
+
+            val txHashResponse: TxHashResponse = objectMapper.readValue(result.response.contentAsString)
+            assertThat(txHashResponse.txHash).isEqualTo(txHash)
+        }
+        verify("TransactionInfo for transfer token issuer is deleted") {
+            val transactionInfo = transactionInfoRepository.findById(testContext.transactionInfo.id)
+            assertThat(transactionInfo).isNotPresent
+        }
+    }
+
+    @Test
+    fun mustBeAbleToPostTransferPlatformOwnership() {
+        suppose("TransactionInfo exists for transfer platform manager transaction") {
+            testContext.transactionInfo =
+                createTransactionInfo(TransactionType.TRNSF_PLTFRM_OWN, userUuid, walletAddress)
+        }
+        suppose("Blockchain service will accept signed transaction for transfer platform manager") {
+            Mockito.`when`(blockchainService.postTransaction(signedTransaction)).thenReturn(txHash)
+        }
+
+        verify("User can post signed transaction to confirm transfer platform manager") {
+            val request = TxBroadcastRequest(testContext.transactionInfo.id, signedTransaction)
+            val result = mockMvc.perform(
+                post(broadcastPath)
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk)
+                .andReturn()
+
+            val txHashResponse: TxHashResponse = objectMapper.readValue(result.response.contentAsString)
+            assertThat(txHashResponse.txHash).isEqualTo(txHash)
+        }
+        verify("TransactionInfo for transfer platform manager is deleted") {
             val transactionInfo = transactionInfoRepository.findById(testContext.transactionInfo.id)
             assertThat(transactionInfo).isNotPresent
         }

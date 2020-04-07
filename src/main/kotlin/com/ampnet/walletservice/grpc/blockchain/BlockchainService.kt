@@ -1,5 +1,6 @@
 package com.ampnet.walletservice.grpc.blockchain
 
+import com.ampnet.walletservice.enums.TransactionState
 import com.ampnet.walletservice.grpc.blockchain.pojo.ApproveProjectBurnTransactionRequest
 import com.ampnet.walletservice.grpc.blockchain.pojo.BlockchainTransaction
 import com.ampnet.walletservice.grpc.blockchain.pojo.GenerateProjectWalletRequest
@@ -26,4 +27,9 @@ interface BlockchainService {
     fun getTransactions(hash: String): List<BlockchainTransaction>
     fun getInvestmentsInProject(userWalletHash: String, projectWalletHash: String): List<BlockchainTransaction>
     fun getProjectsInfo(hashes: List<String>): List<ProjectInfoResponse>
+    fun getTokenIssuer(): String
+    fun generateTransferTokenIssuer(address: String): TransactionData
+    fun getPlatformManager(): String
+    fun generateTransferPlatformManager(address: String): TransactionData
+    fun getTransactionState(txHash: String): TransactionState?
 }

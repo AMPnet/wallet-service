@@ -1,6 +1,8 @@
 package com.ampnet.walletservice.service.impl
 
+import com.ampnet.walletservice.controller.pojo.request.WalletTransferRequest
 import com.ampnet.walletservice.enums.TransactionType
+import com.ampnet.walletservice.enums.TransferWalletType
 import com.ampnet.walletservice.enums.WalletType
 import com.ampnet.walletservice.persistence.model.TransactionInfo
 import com.ampnet.walletservice.persistence.repository.TransactionInfoRepository
@@ -87,6 +89,17 @@ class TransactionInfoServiceImpl(
         val description = type.description.format(amountInDecimal(request.amount), request.projectName)
         val transactionRequest = CreateTransactionRequest(
             type, description, request.userUuid, request.revenuePayoutId.toString())
+        return createTransaction(transactionRequest)
+    }
+
+    @Transactional
+    override fun createTransferOwnership(userUuid: UUID, request: WalletTransferRequest): TransactionInfo {
+        val type = when (request.type) {
+            TransferWalletType.TOKEN_ISSUER -> TransactionType.TRNSF_TOKEN_OWN
+            TransferWalletType.PLATFORM_MANAGER -> TransactionType.TRNSF_PLTFRM_OWN
+        }
+        val description = type.description.format(request.walletAddress)
+        val transactionRequest = CreateTransactionRequest(type, description, userUuid, request.walletAddress)
         return createTransaction(transactionRequest)
     }
 

@@ -2,6 +2,7 @@ package com.ampnet.walletservice.grpc.blockchain
 
 import com.ampnet.crowdfunding.proto.BalanceRequest
 import com.ampnet.crowdfunding.proto.BlockchainServiceGrpc
+import com.ampnet.crowdfunding.proto.Empty
 import com.ampnet.crowdfunding.proto.GenerateAddWalletTxRequest
 import com.ampnet.crowdfunding.proto.GenerateApproveProjectWithdrawTxRequest
 import com.ampnet.crowdfunding.proto.GenerateApproveWithdrawTxRequest
@@ -12,12 +13,16 @@ import com.ampnet.crowdfunding.proto.GenerateCreateProjectTxRequest
 import com.ampnet.crowdfunding.proto.GenerateInvestTxRequest
 import com.ampnet.crowdfunding.proto.GenerateMintTxRequest
 import com.ampnet.crowdfunding.proto.GenerateStartRevenueSharesPayoutTxRequest
+import com.ampnet.crowdfunding.proto.GenerateTransferPlatformManagerOwnershipTxRequest
+import com.ampnet.crowdfunding.proto.GenerateTransferTokenIssuerOwnershipTxRequest
 import com.ampnet.crowdfunding.proto.GetProjectsInfoRequest
 import com.ampnet.crowdfunding.proto.InvestmentsInProjectRequest
 import com.ampnet.crowdfunding.proto.PortfolioRequest
 import com.ampnet.crowdfunding.proto.PostTxRequest
+import com.ampnet.crowdfunding.proto.TransactionInfoRequest
 import com.ampnet.crowdfunding.proto.TransactionsRequest
 import com.ampnet.walletservice.config.ApplicationProperties
+import com.ampnet.walletservice.enums.TransactionState
 import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.exception.GrpcException
 import com.ampnet.walletservice.grpc.blockchain.pojo.ApproveProjectBurnTransactionRequest
@@ -334,6 +339,73 @@ class BlockchainServiceImpl(
         } catch (ex: StatusRuntimeException) {
             throw getInternalExceptionFromStatusException(ex,
                 "Could not get projects info for hashes: $hashes")
+        }
+    }
+
+    override fun getTokenIssuer(): String {
+        logger.debug { "Get token issuer" }
+        try {
+            val response = serviceWithTimeout()
+                .getTokenIssuer(Empty.newBuilder().build())
+            logger.debug { "Token issuer address: ${response.wallet}" }
+            return response.wallet
+        } catch (ex: StatusRuntimeException) {
+            throw getInternalExceptionFromStatusException(ex, "Could not get token issuer")
+        }
+    }
+
+    override fun generateTransferTokenIssuer(address: String): TransactionData {
+        logger.info { "Generating transfer token issuer for address: $address" }
+        try {
+            val request = GenerateTransferTokenIssuerOwnershipTxRequest.newBuilder()
+                .setNewOwnerWallet(address)
+                .build()
+            val response = serviceWithTimeout().generateTransferTokenIssuerOwnershipTx(request)
+            logger.info { "Successfully generated transfer token issuer for address: $address" }
+            return TransactionData(response)
+        } catch (ex: StatusRuntimeException) {
+            throw getInternalExceptionFromStatusException(ex, "Could not generate transfer token issuer")
+        }
+    }
+
+    override fun getPlatformManager(): String {
+        logger.debug { "Get platform manager" }
+        try {
+            val response = serviceWithTimeout()
+                .getPlatformManager(Empty.newBuilder().build())
+            logger.debug { "Platform address: ${response.wallet}" }
+            return response.wallet
+        } catch (ex: StatusRuntimeException) {
+            throw getInternalExceptionFromStatusException(ex, "Could not get platform manager")
+        }
+    }
+
+    override fun generateTransferPlatformManager(address: String): TransactionData {
+        logger.info { "Generating transfer platform manager for address: $address" }
+        try {
+            val request = GenerateTransferPlatformManagerOwnershipTxRequest.newBuilder()
+                .setNewOwnerWallet(address)
+                .build()
+            val response = serviceWithTimeout().generateTransferPlatformManagerOwnershipTx(request)
+            logger.info { "Successfully generated transfer platform manager for address: $address" }
+            return TransactionData(response)
+        } catch (ex: StatusRuntimeException) {
+            throw getInternalExceptionFromStatusException(ex, "Could not generate transfer platform manager")
+        }
+    }
+
+    override fun getTransactionState(txHash: String): TransactionState? {
+        try {
+            val request = TransactionInfoRequest.newBuilder().setTxHash(txHash).build()
+            val response = serviceWithTimeout().getTransactionInfo(request)
+            return when (response.state) {
+                "MINED" -> TransactionState.MINED
+                "FAILED" -> TransactionState.FAILED
+                "PENDING" -> TransactionState.PENDING
+                else -> null
+            }
+        } catch (ex: StatusRuntimeException) {
+            throw getInternalExceptionFromStatusException(ex, "Could not get transaction info for hash: $txHash")
         }
     }
 
