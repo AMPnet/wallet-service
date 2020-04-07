@@ -20,6 +20,7 @@ enum class PrivilegeType {
     // Wallet
     PRA_WALLET,
     PWA_WALLET,
+    PWA_WALLET_TRANSFER,
 
     // Withdraw
     PRA_WITHDRAW,

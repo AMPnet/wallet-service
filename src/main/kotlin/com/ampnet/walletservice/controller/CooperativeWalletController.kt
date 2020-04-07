@@ -58,7 +58,7 @@ class CooperativeWalletController(
     }
 
     @PostMapping("/cooperative/wallet/transfer/transaction")
-    @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PWA_WALLET)")
+    @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PWA_WALLET_TRANSFER)")
     fun generateTransferWalletTransaction(
         @RequestBody request: WalletTransferRequest
     ): ResponseEntity<TransactionResponse> {

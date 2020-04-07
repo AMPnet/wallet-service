@@ -287,7 +287,7 @@ include::{snippets}/CooperativeWalletControllerTest/mustBeAbleToGetActivateWalle
 include::{snippets}/CooperativeWalletControllerTest/mustBeAbleToGetActivateWalletTransaction/http-response.adoc[]
 
 ==== Generate transfer wallet ownership
-Must have privilege: `PrivilegeType.PWA_WALLET`
+Must have privilege: `PrivilegeType.PWA_WALLET_TRANSFER`
 
 ===== Token issuer
 .Request

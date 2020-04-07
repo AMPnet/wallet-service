@@ -214,7 +214,7 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWA_WALLET])
+    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWA_WALLET_TRANSFER])
     fun mustBeAbleToTransferTokenIssuer() {
         suppose("Blockchain service will return transaction data for transferring token issuer") {
             testContext.transactionData = TransactionData(testContext.walletHash)
@@ -246,7 +246,7 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWA_WALLET])
+    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWA_WALLET_TRANSFER])
     fun mustBeAbleToTransferPlatformOwner() {
         suppose("Blockchain service will return transaction data for transferring platform owner") {
             testContext.transactionData = TransactionData(testContext.walletHash)
