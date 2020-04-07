@@ -53,7 +53,7 @@ class BroadcastTransactionServiceImpl(
                 confirmApprovalTransaction(transactionInfo, signedTransaction)
             TransactionType.BURN -> burnTransaction(transactionInfo, signedTransaction)
             TransactionType.REVENUE_PAYOUT -> revenuePayoutTransaction(transactionInfo, signedTransaction)
-            TransactionType.TRANSFER_OWNERSHIP_TOKEN, TransactionType.TRANSFER_OWNERSHIP_PLATFORM ->
+            TransactionType.TRNSF_TOKEN_OWN, TransactionType.TRNSF_PLTFRM_OWN ->
                 transferOwnershipTransaction(transactionInfo, signedTransaction)
         }
         logger.info { "Successfully broadcast transaction. TxHash: $txHash" }
@@ -111,8 +111,8 @@ class BroadcastTransactionServiceImpl(
         val walletAddress = info.companionData
             ?: throw InvalidRequestException(ErrorCode.TX_COMPANION_DATA_MISSING, "Missing wallet address data")
         val transferType = when (info.type) {
-            TransactionType.TRANSFER_OWNERSHIP_PLATFORM -> TransferWalletType.PLATFORM_MANAGER
-            TransactionType.TRANSFER_OWNERSHIP_TOKEN -> TransferWalletType.TOKEN_ISSUER
+            TransactionType.TRNSF_PLTFRM_OWN -> TransferWalletType.PLATFORM_MANAGER
+            TransactionType.TRNSF_TOKEN_OWN -> TransferWalletType.TOKEN_ISSUER
             else -> throw InternalException(ErrorCode.INT_INVALID_VALUE, "Invalid type of wallet transfer ownership")
         }
         val request = TransferOwnershipRequest(info.userUuid, walletAddress, transferType, signed)

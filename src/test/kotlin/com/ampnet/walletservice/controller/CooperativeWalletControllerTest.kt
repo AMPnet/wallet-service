@@ -1,5 +1,6 @@
 package com.ampnet.walletservice.controller
 
+import com.ampnet.walletservice.controller.pojo.request.WalletTransferRequest
 import com.ampnet.walletservice.controller.pojo.response.OrganizationWithWalletListResponse
 import com.ampnet.walletservice.controller.pojo.response.ProjectWithWalletListResponse
 import com.ampnet.walletservice.controller.pojo.response.TransactionResponse
@@ -8,6 +9,7 @@ import com.ampnet.walletservice.controller.pojo.response.WalletResponse
 import com.ampnet.walletservice.enums.Currency
 import com.ampnet.walletservice.enums.PrivilegeType
 import com.ampnet.walletservice.enums.TransactionType
+import com.ampnet.walletservice.enums.TransferWalletType
 import com.ampnet.walletservice.enums.WalletType
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionData
 import com.ampnet.walletservice.persistence.model.Wallet
@@ -18,6 +20,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
+import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
@@ -32,6 +35,7 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
     @BeforeEach
     fun init() {
         databaseCleanerService.deleteAllWallets()
+        databaseCleanerService.deleteAllTransactionInfo()
         testContext = TestContext()
     }
 
@@ -209,6 +213,70 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
         }
     }
 
+    @Test
+    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWA_WALLET])
+    fun mustBeAbleToTransferTokenIssuer() {
+        suppose("Blockchain service will return transaction data for transferring token issuer") {
+            testContext.transactionData = TransactionData(testContext.walletHash)
+            Mockito.`when`(
+                blockchainService.generateTransferTokenIssuer(testContext.walletAddress)
+            ).thenReturn(testContext.transactionData)
+        }
+
+        verify("Admin can transfer wallet ownership to user") {
+            val request = WalletTransferRequest(testContext.walletAddress, TransferWalletType.TOKEN_ISSUER)
+            val result = mockMvc.perform(
+                post("$cooperativeWalletPath/transfer/transaction")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk)
+                .andReturn()
+
+            val transactionResponse: TransactionResponse = objectMapper.readValue(result.response.contentAsString)
+            assertThat(transactionResponse.tx).isEqualTo(testContext.transactionData.tx)
+            assertThat(transactionResponse.txId).isNotNull()
+            assertThat(transactionResponse.info.txType).isEqualTo(TransactionType.TRNSF_TOKEN_OWN)
+        }
+        verify("Transaction info for transfer token issuer is created") {
+            val transactionInfo = transactionInfoRepository.findAll().first()
+            assertThat(transactionInfo.type).isEqualTo(TransactionType.TRNSF_TOKEN_OWN)
+            assertThat(transactionInfo.userUuid).isEqualTo(userUuid)
+            assertThat(transactionInfo.companionData).isEqualTo(testContext.walletAddress)
+        }
+    }
+
+    @Test
+    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWA_WALLET])
+    fun mustBeAbleToTransferPlatformOwner() {
+        suppose("Blockchain service will return transaction data for transferring platform owner") {
+            testContext.transactionData = TransactionData(testContext.walletHash)
+            Mockito.`when`(
+                blockchainService.generateTransferPlatformManager(testContext.walletAddress)
+            ).thenReturn(testContext.transactionData)
+        }
+
+        verify("Admin can transfer wallet ownership to user") {
+            val request = WalletTransferRequest(testContext.walletAddress, TransferWalletType.PLATFORM_MANAGER)
+            val result = mockMvc.perform(
+                post("$cooperativeWalletPath/transfer/transaction")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk)
+                .andReturn()
+
+            val transactionResponse: TransactionResponse = objectMapper.readValue(result.response.contentAsString)
+            assertThat(transactionResponse.tx).isEqualTo(testContext.transactionData.tx)
+            assertThat(transactionResponse.txId).isNotNull()
+            assertThat(transactionResponse.info.txType).isEqualTo(TransactionType.TRNSF_PLTFRM_OWN)
+        }
+        verify("Transaction info for transfer platform owner is created") {
+            val transactionInfo = transactionInfoRepository.findAll().first()
+            assertThat(transactionInfo.type).isEqualTo(TransactionType.TRNSF_PLTFRM_OWN)
+            assertThat(transactionInfo.userUuid).isEqualTo(userUuid)
+            assertThat(transactionInfo.companionData).isEqualTo(testContext.walletAddress)
+        }
+    }
+
     private fun createUnactivatedWallet(owner: UUID, activationData: String, type: WalletType): Wallet {
         val wallet = Wallet(owner, activationData, type, Currency.EUR)
         return walletRepository.save(wallet)
@@ -217,6 +285,7 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
     private class TestContext {
         val activationData = "th_HKYbpdgc8yhGvMaEmpk2KK9AXE3yz8kf5imyv52XVwcnqZKei"
         val walletHash = "th_R26wx2hTnhmgDKJhXC9GAH3evCRnTyyXg4fivLLEAyiAcVW2K"
+        val walletAddress = "ak_2kHmiJN1RzQL6zXZVuoTuFaVLTCeH3BKyDMZKmixCV3QSWs3dd"
         val users = mutableListOf<UUID>()
         val organizations = mutableListOf<UUID>()
         val projects = mutableListOf<UUID>()

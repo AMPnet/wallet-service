@@ -95,8 +95,8 @@ class TransactionInfoServiceImpl(
     @Transactional
     override fun createTransferOwnership(userUuid: UUID, request: WalletTransferRequest): TransactionInfo {
         val type = when (request.type) {
-            TransferWalletType.TOKEN_ISSUER -> TransactionType.TRANSFER_OWNERSHIP_TOKEN
-            TransferWalletType.PLATFORM_MANAGER -> TransactionType.TRANSFER_OWNERSHIP_PLATFORM
+            TransferWalletType.TOKEN_ISSUER -> TransactionType.TRNSF_TOKEN_OWN
+            TransferWalletType.PLATFORM_MANAGER -> TransactionType.TRNSF_PLTFRM_OWN
         }
         val description = type.description.format(request.walletAddress)
         val transactionRequest = CreateTransactionRequest(type, description, userUuid, request.walletAddress)

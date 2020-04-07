@@ -57,12 +57,14 @@ class CooperativeWalletController(
         return ResponseEntity.ok(ProjectWithWalletListResponse(projects))
     }
 
-    @PostMapping("/cooperative/wallet/transfer")
+    @PostMapping("/cooperative/wallet/transfer/transaction")
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PWA_WALLET)")
-    fun transferTokenIssuer(@RequestBody request: WalletTransferRequest): ResponseEntity<Unit> {
+    fun generateTransferWalletTransaction(
+        @RequestBody request: WalletTransferRequest
+    ): ResponseEntity<TransactionResponse> {
         val user = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.info { "Received request to transfer wallet ownership for ${request.type} by: ${user.uuid}" }
-        cooperativeWalletService.generateSetTransferOwnership(user.uuid, request)
-        return ResponseEntity.ok().build()
+        val transaction = cooperativeWalletService.generateSetTransferOwnership(user.uuid, request)
+        return ResponseEntity.ok(TransactionResponse(transaction))
     }
 }

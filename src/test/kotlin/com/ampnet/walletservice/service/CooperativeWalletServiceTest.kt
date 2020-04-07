@@ -21,8 +21,8 @@ import org.springframework.context.annotation.Import
 @Import(ApplicationProperties::class)
 class CooperativeWalletServiceTest : JpaServiceTestBase() {
 
-    private val walletAddress = "ak_newki_kurwac"
-    private val secondWalletAddress = "ak_other"
+    private val walletAddress = "ak_RYkcTuYcyxQ6fWZsL2G3Kj3K5WCRUEXsi76bPUNkEsoHc52Wp"
+    private val secondWalletAddress = "ak_2rTBMSCJgbeQoSt3MzSk93kAaYKjuTFyyfcMbhp62e2JJCTiSS"
     private val secondUser: UUID = UUID.randomUUID()
 
     @Autowired
