@@ -9,5 +9,9 @@ enum class TransactionType(val title: String, val description: String) {
     BURN_APPROVAL("Approval", "You are singing approval transaction to burn amount: %d"),
     BURN("Burn", "You are singing burn transaction for amount: %d"),
     CANCEL_INVEST("Cancel Investments", "You are signing transaction to cancel all investments in project: %s"),
-    REVENUE_PAYOUT("Revenue Payout", "You are signing transaction to start revenue payout %.2f for project: %s")
+    REVENUE_PAYOUT("Revenue Payout", "You are signing transaction to start revenue payout %.2f for project: %s"),
+    TRANSFER_OWNERSHIP_TOKEN("Transfer wallet ownership",
+        "You are signing transaction to transfer platform manager ownership to wallet: %s"),
+    TRANSFER_OWNERSHIP_PLATFORM("Transfer wallet ownership",
+        "You are signing transaction to transfer token issuer ownership to wallet: %s")
 }

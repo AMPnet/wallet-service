@@ -1,5 +1,6 @@
 package com.ampnet.walletservice.controller
 
+import com.ampnet.walletservice.controller.pojo.request.WalletTransferRequest
 import com.ampnet.walletservice.controller.pojo.response.OrganizationWithWalletListResponse
 import com.ampnet.walletservice.controller.pojo.response.ProjectWithWalletListResponse
 import com.ampnet.walletservice.controller.pojo.response.TransactionResponse
@@ -13,6 +14,7 @@ import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -53,5 +55,14 @@ class CooperativeWalletController(
         logger.debug { "Received request to get list of projects with unactivated wallet" }
         val projects = cooperativeWalletService.getProjectsWithUnactivatedWallet(pageable)
         return ResponseEntity.ok(ProjectWithWalletListResponse(projects))
+    }
+
+    @PostMapping("/cooperative/wallet/transfer")
+    @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PWA_WALLET)")
+    fun transferTokenIssuer(@RequestBody request: WalletTransferRequest): ResponseEntity<Unit> {
+        val user = ControllerUtils.getUserPrincipalFromSecurityContext()
+        logger.info { "Received request to transfer wallet ownership for ${request.type} by: ${user.uuid}" }
+        cooperativeWalletService.generateSetTransferOwnership(user.uuid, request)
+        return ResponseEntity.ok().build()
     }
 }

@@ -1,6 +1,7 @@
 package com.ampnet.walletservice.service.impl
 
 import com.ampnet.walletservice.enums.TransactionType
+import com.ampnet.walletservice.enums.TransferWalletType
 import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.exception.InternalException
 import com.ampnet.walletservice.exception.InvalidRequestException
@@ -15,6 +16,7 @@ import com.ampnet.walletservice.service.RevenueService
 import com.ampnet.walletservice.service.TransactionInfoService
 import com.ampnet.walletservice.service.WalletService
 import com.ampnet.walletservice.service.WithdrawService
+import com.ampnet.walletservice.service.pojo.TransferOwnershipRequest
 import java.util.UUID
 import javax.transaction.Transactional
 import mu.KLogging
@@ -51,6 +53,8 @@ class BroadcastTransactionServiceImpl(
                 confirmApprovalTransaction(transactionInfo, signedTransaction)
             TransactionType.BURN -> burnTransaction(transactionInfo, signedTransaction)
             TransactionType.REVENUE_PAYOUT -> revenuePayoutTransaction(transactionInfo, signedTransaction)
+            TransactionType.TRANSFER_OWNERSHIP_TOKEN, TransactionType.TRANSFER_OWNERSHIP_PLATFORM ->
+                transferOwnershipTransaction(transactionInfo, signedTransaction)
         }
         logger.info { "Successfully broadcast transaction. TxHash: $txHash" }
         transactionInfoService.deleteTransaction(transactionInfo.id)
@@ -101,6 +105,18 @@ class BroadcastTransactionServiceImpl(
         val revenuePayout = revenueService.confirmRevenuePayout(signedTransaction, revenuePayoutId)
         return revenuePayout.txHash
             ?: throw ResourceNotFoundException(ErrorCode.TX_MISSING, "Missing txHash for revenue payout transaction")
+    }
+
+    private fun transferOwnershipTransaction(info: TransactionInfo, signed: String): String {
+        val walletAddress = info.companionData
+            ?: throw InvalidRequestException(ErrorCode.TX_COMPANION_DATA_MISSING, "Missing wallet address data")
+        val transferType = when (info.type) {
+            TransactionType.TRANSFER_OWNERSHIP_PLATFORM -> TransferWalletType.PLATFORM_MANAGER
+            TransactionType.TRANSFER_OWNERSHIP_TOKEN -> TransferWalletType.TOKEN_ISSUER
+            else -> throw InternalException(ErrorCode.INT_INVALID_VALUE, "Invalid type of wallet transfer ownership")
+        }
+        val request = TransferOwnershipRequest(info.userUuid, walletAddress, transferType, signed)
+        return cooperativeWalletService.transferOwnership(request)
     }
 
     private fun getIdFromCompanionData(transactionInfo: TransactionInfo): Int {

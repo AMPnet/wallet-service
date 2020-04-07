@@ -1,7 +1,13 @@
 package com.ampnet.walletservice.service.impl
 
+import com.ampnet.userservice.proto.SetRoleRequest
+import com.ampnet.walletservice.config.ApplicationProperties
+import com.ampnet.walletservice.controller.pojo.request.WalletTransferRequest
+import com.ampnet.walletservice.enums.TransactionState
+import com.ampnet.walletservice.enums.TransferWalletType
 import com.ampnet.walletservice.enums.WalletType
 import com.ampnet.walletservice.exception.ErrorCode
+import com.ampnet.walletservice.exception.InvalidRequestException
 import com.ampnet.walletservice.exception.ResourceNotFoundException
 import com.ampnet.walletservice.grpc.blockchain.BlockchainService
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionDataAndInfo
@@ -13,9 +19,13 @@ import com.ampnet.walletservice.service.CooperativeWalletService
 import com.ampnet.walletservice.service.TransactionInfoService
 import com.ampnet.walletservice.service.pojo.OrganizationWithWallet
 import com.ampnet.walletservice.service.pojo.ProjectWithWallet
+import com.ampnet.walletservice.service.pojo.TransferOwnershipRequest
 import com.ampnet.walletservice.service.pojo.UserWithWallet
+import java.lang.Thread.sleep
 import java.time.ZonedDateTime
 import java.util.UUID
+import kotlin.concurrent.thread
+import mu.KLogging
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
@@ -28,8 +38,11 @@ class CooperativeWalletServiceImpl(
     private val userService: UserService,
     private val blockchainService: BlockchainService,
     private val transactionInfoService: TransactionInfoService,
-    private val projectService: ProjectService
+    private val projectService: ProjectService,
+    private val applicationProperties: ApplicationProperties
 ) : CooperativeWalletService {
+
+    companion object : KLogging()
 
     @Transactional
     override fun generateWalletActivationTransaction(walletUuid: UUID, userUuid: UUID): TransactionDataAndInfo {
@@ -57,7 +70,7 @@ class CooperativeWalletServiceImpl(
                 UserWithWallet(user, wallet)
             }
         }
-        return PageImpl<UserWithWallet>(usersWithWallet, pageable, walletsPage.totalElements)
+        return PageImpl(usersWithWallet, pageable, walletsPage.totalElements)
     }
 
     @Transactional(readOnly = true)
@@ -70,7 +83,7 @@ class CooperativeWalletServiceImpl(
                 OrganizationWithWallet(organization, wallet)
             }
         }
-        return PageImpl<OrganizationWithWallet>(organizationsWithWallet, pageable, walletsPage.totalElements)
+        return PageImpl(organizationsWithWallet, pageable, walletsPage.totalElements)
     }
 
     @Transactional(readOnly = true)
@@ -83,10 +96,67 @@ class CooperativeWalletServiceImpl(
                 ProjectWithWallet(project, wallet)
             }
         }
-        return PageImpl<ProjectWithWallet>(projectsWithWallet, pageable, walletsPage.totalElements)
+        return PageImpl(projectsWithWallet, pageable, walletsPage.totalElements)
+    }
+
+    @Transactional
+    override fun generateSetTransferOwnership(
+        owner: UUID,
+        request: WalletTransferRequest
+    ): TransactionDataAndInfo {
+        val data = when (request.type) {
+            TransferWalletType.TOKEN_ISSUER -> blockchainService.generateTransferTokenIssuer(request.walletAddress)
+            TransferWalletType.PLATFORM_MANAGER ->
+                blockchainService.generateTransferPlatformManager(request.walletAddress)
+        }
+        val info = transactionInfoService.createTransferOwnership(owner, request)
+        return TransactionDataAndInfo(data, info)
+    }
+
+    @Transactional
+    override fun transferOwnership(request: TransferOwnershipRequest): String {
+        val txHash = blockchainService.postTransaction(request.signedTransaction)
+        thread(start = true, isDaemon = true, name = "waitForTransaction:$txHash") {
+            handleTransaction(txHash)
+        }
+        return txHash
+    }
+
+    @Suppress("MagicNumber")
+    private fun handleTransaction(txHash: String) {
+        logger.info { "Wait for transaction: $txHash" }
+        sleep(applicationProperties.grpc.blockchainPollingDelay)
+        when (blockchainService.getTransactionState(txHash)) {
+            TransactionState.MINED -> setNewUserRoles()
+            TransactionState.PENDING -> handleTransaction(txHash)
+            TransactionState.FAILED -> logger.warn { "Failed to change wallet ownership" }
+            else -> logger.warn { "Unknown status for transaction: $txHash" }
+        }
+    }
+
+    fun setNewUserRoles() {
+        val platformManagerAddress = blockchainService.getPlatformManager()
+        val tokenIssuerAddress = blockchainService.getTokenIssuer()
+        if (platformManagerAddress == tokenIssuerAddress) {
+            setUserRole(platformManagerAddress, SetRoleRequest.Role.ADMIN)
+            return
+        }
+        setUserRole(tokenIssuerAddress, SetRoleRequest.Role.TOKEN_ISSUER)
+        setUserRole(platformManagerAddress, SetRoleRequest.Role.PLATFORM_MANAGER)
+    }
+
+    private fun setUserRole(walletAddress: String, role: SetRoleRequest.Role) {
+        val userWallet = getWalletByAddress(walletAddress)
+        userService.setUserRole(userWallet.owner, role)
+        logger.info { "Set new user role: $role to user: ${userWallet.owner}" }
     }
 
     private fun getWalletByUuid(walletUuid: UUID): Wallet = walletRepository.findById(walletUuid).orElseThrow {
         throw ResourceNotFoundException(ErrorCode.WALLET_MISSING, "Missing wallet uuid: $walletUuid")
     }
+
+    private fun getWalletByAddress(address: String): Wallet =
+        walletRepository.findByActivationData(address).orElseThrow {
+            throw InvalidRequestException(ErrorCode.WALLET_MISSING, "Wallet: $address is unknown")
+        }
 }

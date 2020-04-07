@@ -58,5 +58,5 @@ class UserServiceImpl(
     }
 
     private fun serviceWithTimeout() = serviceBlockingStub
-        .withDeadlineAfter(applicationProperties.grpc.projectServiceTimeout, TimeUnit.MILLISECONDS)
+        .withDeadlineAfter(applicationProperties.grpc.userServiceTimeout, TimeUnit.MILLISECONDS)
 }
