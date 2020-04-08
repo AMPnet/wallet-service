@@ -37,6 +37,11 @@ class DatabaseCleanerService(val em: EntityManager) {
         deleteAllFromTable("revenue_payout")
     }
 
+    @Transactional
+    fun deleteAllBankAccounts() {
+        deleteAllFromTable("bank_account")
+    }
+
     private fun deleteAllFromTable(name: String) {
         em.createNativeQuery("DELETE FROM $name").executeUpdate()
     }

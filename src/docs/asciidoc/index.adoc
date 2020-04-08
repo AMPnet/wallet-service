@@ -433,3 +433,27 @@ include::{snippets}/RevenueControllerTest/mustBeAbleToGenerateRevenuePayoutTrans
 include::{snippets}/RevenueControllerTest/mustBeAbleToGetRevenuePayouts/http-request.adoc[]
 .Response
 include::{snippets}/RevenueControllerTest/mustBeAbleToGetRevenuePayouts/http-response.adoc[]
+
+== Bank Account
+
+=== Get all
+.Request
+include::{snippets}/BankAccountControllerTest/mustBeAbleToGetAllBankAccounts/http-request.adoc[]
+.Response
+include::{snippets}/BankAccountControllerTest/mustBeAbleToGetAllBankAccounts/http-response.adoc[]
+
+=== Create
+Must have privilege - `PWA_DEPOSIT`
+
+.Request
+include::{snippets}/BankAccountControllerTest/mustBeAbleToCreateBankAccount/http-request.adoc[]
+.Response
+include::{snippets}/BankAccountControllerTest/mustBeAbleToCreateBankAccount/http-response.adoc[]
+
+=== Delete
+Must have privilege - `PWA_DEPOSIT`
+
+.Request
+include::{snippets}/BankAccountControllerTest/mustBeAbleToDeleteBankAccount/http-request.adoc[]
+.Response
+include::{snippets}/BankAccountControllerTest/mustBeAbleToDeleteBankAccount/http-response.adoc[]
