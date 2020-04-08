@@ -26,7 +26,7 @@ class BankAccountController(private val bankAccountService: BankAccountService) 
     }
 
     @PostMapping("/bank-account")
-    @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_DEPOSIT)")
+    @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PWA_DEPOSIT)")
     fun createBankAccount(@RequestBody request: BankAccountCreateRequest): ResponseEntity<BankAccountResponse> {
         val user = ControllerUtils.getUserPrincipalFromSecurityContext().uuid
         logger.debug { "Received request to create bank account: $request by user $user" }
@@ -35,7 +35,7 @@ class BankAccountController(private val bankAccountService: BankAccountService) 
     }
 
     @DeleteMapping("/bank-account/{id}")
-    @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_DEPOSIT)")
+    @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PWA_DEPOSIT)")
     fun deleteBankAccount(@PathVariable id: Int): ResponseEntity<Unit> {
         val user = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to delete bank account by id: $id by user: ${user.uuid}" }
