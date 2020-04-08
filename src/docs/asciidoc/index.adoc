@@ -286,16 +286,16 @@ include::{snippets}/CooperativeWalletControllerTest/mustBeAbleToGetActivateWalle
 .Response
 include::{snippets}/CooperativeWalletControllerTest/mustBeAbleToGetActivateWalletTransaction/http-response.adoc[]
 
-==== Generate transfer wallet ownership
+=== Generate transfer wallet ownership
 Must have privilege: `PrivilegeType.PWA_WALLET_TRANSFER`
 
-===== Token issuer
+==== Token issuer
 .Request
 include::{snippets}/CooperativeWalletControllerTest/mustBeAbleToTransferTokenIssuer/http-request.adoc[]
 .Response
 include::{snippets}/CooperativeWalletControllerTest/mustBeAbleToTransferTokenIssuer/http-response.adoc[]
 
-===== Platform manager
+==== Platform manager
 .Request
 include::{snippets}/CooperativeWalletControllerTest/mustBeAbleToTransferPlatformOwner/http-request.adoc[]
 .Response

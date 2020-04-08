@@ -113,7 +113,7 @@ class CooperativeWalletServiceImpl(
         return TransactionDataAndInfo(data, info)
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     override fun transferOwnership(request: TransferOwnershipRequest): String {
         val txHash = blockchainService.postTransaction(request.signedTransaction)
         thread(start = true, isDaemon = true, name = "waitForTransaction:$txHash") {
@@ -122,7 +122,6 @@ class CooperativeWalletServiceImpl(
         return txHash
     }
 
-    @Suppress("MagicNumber")
     private fun handleTransaction(txHash: String) {
         logger.info { "Wait for transaction: $txHash" }
         sleep(applicationProperties.grpc.blockchainPollingDelay)
@@ -134,7 +133,7 @@ class CooperativeWalletServiceImpl(
         }
     }
 
-    fun setNewUserRoles() {
+    private fun setNewUserRoles() {
         val platformManagerAddress = blockchainService.getPlatformManager()
         val tokenIssuerAddress = blockchainService.getTokenIssuer()
         if (platformManagerAddress == tokenIssuerAddress) {
