@@ -4,6 +4,7 @@ import com.ampnet.walletservice.controller.pojo.request.BankAccountCreateRequest
 import com.ampnet.walletservice.controller.pojo.response.BankAccountResponse
 import com.ampnet.walletservice.controller.pojo.response.BankAccountsResponse
 import com.ampnet.walletservice.enums.PrivilegeType
+import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.persistence.model.BankAccount
 import com.ampnet.walletservice.persistence.repository.BankAccountRepository
 import com.ampnet.walletservice.security.WithMockCrowdfoundUser
@@ -99,5 +100,35 @@ class BankAccountControllerTest : ControllerTestBase() {
             val bankAccounts = bankAccountRepository.findAll()
             assertThat(bankAccounts).isEmpty()
         }
+    }
+
+    @Test
+    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWA_DEPOSIT])
+    fun mustNotBeAbleToCreateBankAccountWithInvalidBankCode() {
+        verify("Admin cannot create bank account with invalid bank code") {
+            val request = BankAccountCreateRequest(iban, "invalid", alias)
+            val result = mockMvc.perform(
+                post(bankAccountPath)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest)
+                .andReturn()
+
+            verifyResponseErrorCode(result, ErrorCode.USER_BANK_INVALID)
+        }
+    }
+
+    @Test
+    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWA_DEPOSIT])
+    fun mustNotBeAbleToCreateBankAccountWithInvalidIban() {
+        val request = BankAccountCreateRequest("invalid-iban", bankCode, alias)
+        val result = mockMvc.perform(
+            post(bankAccountPath)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isBadRequest)
+            .andReturn()
+
+        verifyResponseErrorCode(result, ErrorCode.USER_BANK_INVALID)
     }
 }
