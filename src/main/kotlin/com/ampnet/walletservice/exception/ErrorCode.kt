@@ -4,7 +4,7 @@ enum class ErrorCode(val categoryCode: String, var specificCode: String, var mes
 
     // User: 03
     USER_MISSING_PRIVILEGE("03", "04", "User does not have a privilege"),
-    USER_BANK_INVALID("03", "02", "Invalid bank code"),
+    USER_BANK_INVALID("03", "02", "Invalid bank account data"),
 
     // Wallet: 05
     WALLET_MISSING("05", "01", "Missing wallet"),

@@ -14,8 +14,7 @@ data class ProjectControllerResponse(
     val minPerUser: Long,
     val maxPerUser: Long,
     val active: Boolean,
-    val imageUrl: String,
-    val returnOnInvestment: String
+    val imageUrl: String
 ) {
     constructor(project: ProjectResponse) : this(
         project.uuid,
@@ -27,7 +26,6 @@ data class ProjectControllerResponse(
         project.minPerUser,
         project.maxPerUser,
         project.active,
-        project.imageUrl,
-        project.returnOnInvestment
+        project.imageUrl
     )
 }
