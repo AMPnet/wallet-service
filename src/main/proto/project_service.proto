@@ -17,7 +17,7 @@ message OrganizationResponse {
 message ProjectResponse {
     string uuid = 1;
     string name = 2;
-    string created_by_user =3;
+    string created_by_user = 3;
     uint64 start_date = 4;
     uint64 end_date = 5;
     uint64 min_per_user = 6;
@@ -28,7 +28,6 @@ message ProjectResponse {
     string organization_uuid = 11;
     string image_url = 12;
     string description = 13;
-    string returnOnInvestment = 14;
 }
 
 message OrganizationsResponse {

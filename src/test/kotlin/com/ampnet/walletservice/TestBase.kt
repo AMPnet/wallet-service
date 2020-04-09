@@ -50,7 +50,6 @@ abstract class TestBase {
             .setOrganizationUuid(organization.toString())
             .setDescription("description")
             .setImageUrl("image-url")
-            .setReturnOnInvestment("return-on-investment")
             .build()
 
     protected fun getProjectInfoResponse(
@@ -78,6 +77,5 @@ abstract class TestBase {
             .setMaxPerUser(10_000_00)
             .setMinPerUser(1_00)
             .setOrganizationUuid(UUID.randomUUID().toString())
-            .setReturnOnInvestment("5%")
             .build()
 }
