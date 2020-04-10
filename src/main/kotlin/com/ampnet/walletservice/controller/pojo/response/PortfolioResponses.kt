@@ -20,3 +20,4 @@ data class ProjectWithInvestments(
         transactions
     )
 }
+data class BlockchainTransactionsResponse(val transactions: List<BlockchainTransaction>)

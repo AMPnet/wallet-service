@@ -1,6 +1,7 @@
 package com.ampnet.walletservice.controller
 
 import com.ampnet.crowdfunding.proto.TransactionsResponse
+import com.ampnet.walletservice.controller.pojo.response.BlockchainTransactionsResponse
 import com.ampnet.walletservice.controller.pojo.response.PortfolioResponse
 import com.ampnet.walletservice.controller.pojo.response.ProjectWithInvestments
 import com.ampnet.walletservice.exception.ErrorCode
@@ -182,6 +183,40 @@ class PortfolioControllerTest : ControllerTestBase() {
                 .andExpect(status().isBadRequest)
                 .andReturn()
             verifyResponseErrorCode(response, ErrorCode.WALLET_MISSING)
+        }
+    }
+
+    @Test
+    @WithMockCrowdfoundUser
+    fun mustBeAbleToGetBlockchainTransactions() {
+        suppose("User has wallet") {
+            createWalletForUser(userUuid, "user-wallet-hash")
+        }
+        suppose("Blockchain service will return portfolio stats") {
+            val walletHash = getWalletHash(userUuid)
+            val now = ZonedDateTime.now()
+            testContext.transactions = listOf(
+                BlockchainTransaction(walletHash, "to", 1000,
+                    TransactionsResponse.Transaction.Type.DEPOSIT, now.minusYears(1)),
+                BlockchainTransaction(walletHash, "to_2", 1000,
+                    TransactionsResponse.Transaction.Type.INVEST, now.minusMonths(1)),
+                BlockchainTransaction("from", walletHash, 10,
+                    TransactionsResponse.Transaction.Type.SHARE_PAYOUT, now.minusDays(1)),
+                BlockchainTransaction("from_2", walletHash, 10,
+                    TransactionsResponse.Transaction.Type.WITHDRAW, now)
+            )
+            Mockito.`when`(
+                blockchainService.getTransactions(getWalletHash(userUuid))
+            ).thenReturn(testContext.transactions)
+        }
+
+        verify("User can get portfolio stats") {
+            val result = mockMvc.perform(get("$portfolioPath/transactions"))
+                .andExpect(status().isOk)
+                .andReturn()
+
+            val response: BlockchainTransactionsResponse = objectMapper.readValue(result.response.contentAsString)
+            assertThat(response.transactions).hasSize(4)
         }
     }
 

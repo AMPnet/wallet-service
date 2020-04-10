@@ -1,5 +1,6 @@
 package com.ampnet.walletservice.controller
 
+import com.ampnet.walletservice.controller.pojo.response.BlockchainTransactionsResponse
 import com.ampnet.walletservice.controller.pojo.response.PortfolioResponse
 import com.ampnet.walletservice.controller.pojo.response.ProjectWithInvestmentResponse
 import com.ampnet.walletservice.controller.pojo.response.ProjectWithInvestments
@@ -45,5 +46,13 @@ class PortfolioController(
         val project = projectService.getProject(uuid)
         val transactions = portfolioService.getInvestmentsInProject(userPrincipal.uuid, uuid)
         return ResponseEntity.ok(ProjectWithInvestments(project, transactions))
+    }
+
+    @GetMapping("/portfolio/transactions")
+    fun getMyTransactions(): ResponseEntity<BlockchainTransactionsResponse> {
+        val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
+        logger.debug { "Received request to get my transactions by user: ${userPrincipal.uuid}" }
+        val blockchainTransactions = portfolioService.getTransactions(userPrincipal.uuid)
+        return ResponseEntity.ok(BlockchainTransactionsResponse(blockchainTransactions))
     }
 }
