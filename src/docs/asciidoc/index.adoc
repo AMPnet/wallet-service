@@ -235,6 +235,12 @@ include::{snippets}/PortfolioControllerTest/mustBeAbleToGetInvestmentsInProject/
 .Response
 include::{snippets}/PortfolioControllerTest/mustBeAbleToGetInvestmentsInProject/http-response.adoc[]
 
+=== Get all transactions by user
+.Request
+include::{snippets}/PortfolioControllerTest/mustBeAbleToGetBlockchainTransactions/http-request.adoc[]
+.Response
+include::{snippets}/PortfolioControllerTest/mustBeAbleToGetBlockchainTransactions/http-response.adoc[]
+
 == Investment API
 All requests need header: `Authorization: Bearer JWT`.
 

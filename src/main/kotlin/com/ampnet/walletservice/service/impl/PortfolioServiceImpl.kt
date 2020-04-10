@@ -46,6 +46,12 @@ class PortfolioServiceImpl(
         return blockchainService.getInvestmentsInProject(userWalletHash, projectWalletHash)
     }
 
+    @Transactional(readOnly = true)
+    override fun getTransactions(user: UUID): List<BlockchainTransaction> {
+        val userWalletHash = ServiceUtils.getWalletHash(user, walletRepository)
+        return blockchainService.getTransactions(userWalletHash)
+    }
+
     private fun sumTransactionForType(
         transactions: List<BlockchainTransaction>,
         type: TransactionsResponse.Transaction.Type
@@ -59,7 +65,10 @@ class PortfolioServiceImpl(
     private fun getProjectsWithInvestments(portfolio: Map<String, PortfolioData>): List<ProjectWithInvestment> =
         if (portfolio.isNotEmpty()) {
             val wallets = walletRepository.findByHashes(portfolio.keys)
-            val projects = projectService.getProjects(wallets.map { it.owner }).associateBy { it.uuid }
+            val projects = projectService
+                .getProjects(wallets.map { it.owner })
+                .associateBy { it.uuid }
+
             wallets.mapNotNull { wallet ->
                 portfolio[wallet.hash]?.let { portfolio ->
                     projects[wallet.owner.toString()]?.let { project ->
