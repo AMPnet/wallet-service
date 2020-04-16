@@ -5,6 +5,7 @@ import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.exception.InvalidRequestException
 import com.ampnet.walletservice.exception.ResourceAlreadyExistsException
 import com.ampnet.walletservice.persistence.model.Withdraw
+import com.ampnet.walletservice.service.impl.BankAccountServiceImpl
 import com.ampnet.walletservice.service.impl.TransactionInfoServiceImpl
 import com.ampnet.walletservice.service.impl.WithdrawServiceImpl
 import com.ampnet.walletservice.service.pojo.WithdrawCreateServiceRequest
@@ -19,8 +20,9 @@ class WithdrawServiceTest : JpaServiceTestBase() {
 
     private val withdrawService: WithdrawService by lazy {
         val transactionInfoService = TransactionInfoServiceImpl(transactionInfoRepository)
+        val bankAccountService = BankAccountServiceImpl(bankAccountRepository)
         WithdrawServiceImpl(walletRepository, withdrawRepository, mockedBlockchainService, transactionInfoService,
-            mockedMailService, mockedProjectService)
+            mockedMailService, mockedProjectService, bankAccountService)
     }
     private lateinit var withdraw: Withdraw
 
@@ -49,6 +51,18 @@ class WithdrawServiceTest : JpaServiceTestBase() {
     }
 
     /* Create */
+    @Test
+    fun mustThrowExceptionForInvalidIban() {
+        verify("Service will throw exception for invalid IBAN") {
+            val requet = WithdrawCreateServiceRequest(
+                userUuid, "ivalid-iban", 100L, userUuid, DepositWithdrawType.USER)
+            val exception = assertThrows<InvalidRequestException> {
+                withdrawService.createWithdraw(requet)
+            }
+            assertThat(exception.errorCode).isEqualTo(ErrorCode.USER_BANK_INVALID)
+        }
+    }
+
     @Test
     fun mustThrowExceptionIfUserHasUnapprovedWithdraw() {
         suppose("User has created withdraw") {
