@@ -15,6 +15,7 @@ import com.ampnet.walletservice.persistence.model.Deposit
 import com.ampnet.walletservice.persistence.model.File
 import com.ampnet.walletservice.persistence.model.Wallet
 import com.ampnet.walletservice.persistence.model.Withdraw
+import com.ampnet.walletservice.persistence.repository.BankAccountRepository
 import com.ampnet.walletservice.persistence.repository.DeclinedRepository
 import com.ampnet.walletservice.persistence.repository.DepositRepository
 import com.ampnet.walletservice.persistence.repository.DocumentRepository
@@ -57,6 +58,8 @@ abstract class JpaServiceTestBase : TestBase() {
     protected lateinit var depositRepository: DepositRepository
     @Autowired
     protected lateinit var declinedRepository: DeclinedRepository
+    @Autowired
+    protected lateinit var bankAccountRepository: BankAccountRepository
 
     protected val mockedBlockchainService: BlockchainService = Mockito.mock(BlockchainService::class.java)
     protected val mockedCloudStorageService: CloudStorageServiceImpl = Mockito.mock(CloudStorageServiceImpl::class.java)
@@ -68,7 +71,7 @@ abstract class JpaServiceTestBase : TestBase() {
     protected val signedTransaction = "signed-transaction"
     protected val txHash = "tx-hash"
     protected val transactionData = TransactionData("data")
-    protected val bankAccount = "bank-account"
+    protected val bankAccount = "AL35202111090000000001234567"
 
     protected fun createWalletForUser(userUuid: UUID, hash: String) = createWallet(userUuid, hash, WalletType.USER)
 

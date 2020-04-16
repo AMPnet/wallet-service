@@ -8,4 +8,5 @@ interface BankAccountService {
     fun getAllBankAccounts(): List<BankAccount>
     fun createBankAccount(user: UUID, request: BankAccountCreateRequest): BankAccount
     fun deleteBankAccount(id: Int)
+    fun validateIban(iban: String)
 }

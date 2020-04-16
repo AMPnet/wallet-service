@@ -13,6 +13,7 @@ import com.ampnet.walletservice.grpc.projectservice.ProjectService
 import com.ampnet.walletservice.persistence.model.Withdraw
 import com.ampnet.walletservice.persistence.repository.WalletRepository
 import com.ampnet.walletservice.persistence.repository.WithdrawRepository
+import com.ampnet.walletservice.service.BankAccountService
 import com.ampnet.walletservice.service.TransactionInfoService
 import com.ampnet.walletservice.service.WithdrawService
 import com.ampnet.walletservice.service.pojo.WithdrawCreateServiceRequest
@@ -29,7 +30,8 @@ class WithdrawServiceImpl(
     private val blockchainService: BlockchainService,
     private val transactionInfoService: TransactionInfoService,
     private val mailService: MailService,
-    private val projectService: ProjectService
+    private val projectService: ProjectService,
+    private val bankAccountService: BankAccountService
 ) : WithdrawService {
 
     companion object : KLogging()
@@ -48,6 +50,7 @@ class WithdrawServiceImpl(
 
     @Transactional
     override fun createWithdraw(request: WithdrawCreateServiceRequest): Withdraw {
+        bankAccountService.validateIban(request.bankAccount)
         validateOwnerDoesNotHavePendingWithdraw(request.owner)
         checkIfOwnerHasEnoughFunds(request.owner, request.amount)
         if (request.type == DepositWithdrawType.PROJECT) {

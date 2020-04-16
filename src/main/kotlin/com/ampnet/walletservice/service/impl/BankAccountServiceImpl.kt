@@ -38,20 +38,20 @@ class BankAccountServiceImpl(private val bankAccountRepository: BankAccountRepos
         bankAccountRepository.deleteById(id)
     }
 
+    override fun validateIban(iban: String) {
+        try {
+            IbanUtil.validate(iban)
+        } catch (ex: Iban4jException) {
+            logger.info { "Invalid IBAN: $iban. ${ex.message}" }
+            throw InvalidRequestException(ErrorCode.USER_BANK_INVALID, ex.message.orEmpty())
+        }
+    }
+
     private fun validateBankCode(bankCode: String) {
         try {
             BicUtil.validate(bankCode)
         } catch (ex: BicFormatException) {
             logger.info { "Invalid bank code: $bankCode. ${ex.message}" }
-            throw InvalidRequestException(ErrorCode.USER_BANK_INVALID, ex.message.orEmpty())
-        }
-    }
-
-    private fun validateIban(iban: String) {
-        try {
-            IbanUtil.validate(iban)
-        } catch (ex: Iban4jException) {
-            logger.info { "Invalid IBAN: $iban. ${ex.message}" }
             throw InvalidRequestException(ErrorCode.USER_BANK_INVALID, ex.message.orEmpty())
         }
     }
