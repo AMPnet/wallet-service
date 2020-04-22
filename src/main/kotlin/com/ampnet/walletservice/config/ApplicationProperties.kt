@@ -9,6 +9,7 @@ class ApplicationProperties {
     val jwt: JwtProperties = JwtProperties()
     val fileStorage: FileStorageProperties = FileStorageProperties()
     val grpc: GrpcProperties = GrpcProperties()
+    val mail: MailProperties = MailProperties()
 }
 
 class JwtProperties {
@@ -28,4 +29,8 @@ class GrpcProperties {
     var mailServiceTimeout: Long = 1000
     var projectServiceTimeout: Long = 1000
     var userServiceTimeout: Long = 1000
+}
+
+class MailProperties {
+    var sendNotification = true
 }

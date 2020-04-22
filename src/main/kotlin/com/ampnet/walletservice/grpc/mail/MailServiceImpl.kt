@@ -35,7 +35,7 @@ class MailServiceImpl(
                 .setUser(user.toString())
                 .setAmount(amount)
                 .build()
-            serviceWithTimeout().sendDepositRequest(request, createSteamObserver("deposit request mail to: $user"))
+            serviceWithTimeout()?.sendDepositRequest(request, createSteamObserver("deposit request mail to: $user"))
         } catch (ex: StatusRuntimeException) {
             logger.warn("Failed to send deposit request mail.", ex)
         }
@@ -48,7 +48,7 @@ class MailServiceImpl(
                 .setUser(user.toString())
                 .setMinted(minted)
                 .build()
-            serviceWithTimeout().sendDepositInfo(request, createSteamObserver("deposit info mail to: $user"))
+            serviceWithTimeout()?.sendDepositInfo(request, createSteamObserver("deposit info mail to: $user"))
         } catch (ex: StatusRuntimeException) {
             logger.warn("Failed to send deposit info mail.", ex)
         }
@@ -61,7 +61,7 @@ class MailServiceImpl(
                 .setUser(user.toString())
                 .setAmount(amount)
                 .build()
-            serviceWithTimeout().sendWithdrawRequest(request, createSteamObserver("withdraw request mail to: $user"))
+            serviceWithTimeout()?.sendWithdrawRequest(request, createSteamObserver("withdraw request mail to: $user"))
         } catch (ex: StatusRuntimeException) {
             logger.warn("Failed to send withdraw request mail.", ex)
         }
@@ -74,14 +74,20 @@ class MailServiceImpl(
                 .setUser(user.toString())
                 .setBurned(burned)
                 .build()
-            serviceWithTimeout().sendWithdrawInfo(request, createSteamObserver("withdraw info mail to: $user"))
+            serviceWithTimeout()?.sendWithdrawInfo(request, createSteamObserver("withdraw info mail to: $user"))
         } catch (ex: StatusRuntimeException) {
             logger.warn("Failed to send withdraw info mail.", ex)
         }
     }
 
-    private fun serviceWithTimeout() = mailServiceStub
-        .withDeadlineAfter(applicationProperties.grpc.mailServiceTimeout, TimeUnit.MILLISECONDS)
+    private fun serviceWithTimeout(): MailServiceGrpc.MailServiceStub? {
+        return if (applicationProperties.mail.sendNotification) {
+            mailServiceStub.withDeadlineAfter(applicationProperties.grpc.mailServiceTimeout, TimeUnit.MILLISECONDS)
+        } else {
+            logger.info { "Sending email disabled" }
+            null
+        }
+    }
 
     private fun createSteamObserver(message: String) =
         object : StreamObserver<Empty> {
