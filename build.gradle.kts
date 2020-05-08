@@ -9,24 +9,24 @@ import java.util.Date
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    val kotlinVersion = "1.3.71"
+    val kotlinVersion = "1.3.72"
     kotlin("plugin.jpa") version kotlinVersion
     kotlin("jvm") version kotlinVersion
     kotlin("plugin.spring") version kotlinVersion
 
-    id("org.springframework.boot") version "2.2.6.RELEASE"
+    id("org.springframework.boot") version "2.2.7.RELEASE"
     id("io.spring.dependency-management") version "1.0.9.RELEASE"
     id("org.asciidoctor.convert") version "1.5.8"
     id("com.google.cloud.tools.jib") version "2.1.0"
     id("org.jlleitschuh.gradle.ktlint") version "9.2.1"
-    id("io.gitlab.arturbosch.detekt").version("1.7.2")
+    id("io.gitlab.arturbosch.detekt").version("1.8.0")
     id("com.google.protobuf") version "0.8.11"
     idea
     jacoco
 }
 
 group = "com.ampnet"
-version = "0.3.3"
+version = "0.3.4"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
