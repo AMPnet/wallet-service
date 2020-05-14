@@ -43,6 +43,7 @@ enum class ErrorCode(val categoryCode: String, var specificCode: String, var mes
     INT_GRPC_USER("08", "04", "Failed gRPC call to user service"),
     INT_GRPC_PROJECT("08", "05", "Failed gRPC call to project service"),
     INT_GRPC_MAIL("08", "06", "Failed gRPC call to mail service"),
+    INT_DB("08", "07", "Database exception"),
 
     // Transaction: 09
     TX_MISSING("09", "01", "Non existing transaction"),
