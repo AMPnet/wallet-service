@@ -53,7 +53,7 @@ class GlobalExceptionHandler {
     fun handleDbException(exception: DataIntegrityViolationException): ErrorResponse {
         logger.error("DataIntegrityViolationException", exception)
         val message = NestedExceptionUtils.getMostSpecificCause(exception).message
-        return generateErrorResponse(ErrorCode.UNDEFINED_DB, message)
+        return generateErrorResponse(ErrorCode.INT_DB, message)
     }
 
     private fun generateErrorResponse(errorCode: ErrorCode, systemMessage: String?): ErrorResponse {

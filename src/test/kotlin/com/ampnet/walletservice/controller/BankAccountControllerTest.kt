@@ -86,6 +86,22 @@ class BankAccountControllerTest : ControllerTestBase() {
 
     @Test
     @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWA_DEPOSIT])
+    fun mustThrowExceptionForTooLongBankAccountAlias() {
+        verify("Admin can create bank account") {
+            val request = BankAccountCreateRequest(iban, bankCode, "aaa".repeat(55))
+            val result = mockMvc.perform(
+                post(bankAccountPath)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest)
+                .andReturn()
+
+            verifyResponseErrorCode(result, ErrorCode.INT_DB)
+        }
+    }
+
+    @Test
+    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWA_DEPOSIT])
     fun mustBeAbleToDeleteBankAccount() {
         suppose("There is bank account") {
             bankAccount = BankAccount(iban, bankCode, userUuid, alias)
