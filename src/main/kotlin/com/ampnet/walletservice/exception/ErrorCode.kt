@@ -2,6 +2,9 @@ package com.ampnet.walletservice.exception
 
 enum class ErrorCode(val categoryCode: String, var specificCode: String, var message: String) {
 
+    // Undefined: 00
+    UNDEFINED_DB("00", "01", "Database exception"),
+
     // User: 03
     USER_MISSING_PRIVILEGE("03", "04", "User does not have a privilege"),
     USER_BANK_INVALID("03", "02", "Invalid bank account data"),

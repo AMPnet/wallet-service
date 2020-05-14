@@ -1,6 +1,8 @@
 package com.ampnet.walletservice.exception
 
 import mu.KLogging
+import org.springframework.core.NestedExceptionUtils
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.ResponseStatus
@@ -44,6 +46,14 @@ class GlobalExceptionHandler {
     fun handleGrpcException(exception: GrpcException): ErrorResponse {
         logger.error("GrpcException", exception)
         return generateErrorResponse(exception.errorCode, exception.message)
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(DataIntegrityViolationException::class)
+    fun handleDbException(exception: DataIntegrityViolationException): ErrorResponse {
+        logger.error("DataIntegrityViolationException", exception)
+        val message = NestedExceptionUtils.getMostSpecificCause(exception).message
+        return generateErrorResponse(ErrorCode.UNDEFINED_DB, message)
     }
 
     private fun generateErrorResponse(errorCode: ErrorCode, systemMessage: String?): ErrorResponse {
