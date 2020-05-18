@@ -74,6 +74,11 @@ class CooperativeDepositServiceImpl(
     }
 
     @Transactional(readOnly = true)
+    override fun getUnsigned(type: DepositWithdrawType, pageable: Pageable): Page<Deposit> {
+        return depositRepository.findApprovedUnsignedWithFile(type, pageable)
+    }
+
+    @Transactional(readOnly = true)
     override fun findByReference(reference: String): Deposit? {
         return ServiceUtils.wrapOptional(depositRepository.findByReference(reference))
     }

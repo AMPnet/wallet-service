@@ -394,6 +394,20 @@ include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToGetApprovedProj
 .Response
 include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToGetApprovedProjectDeposits/http-response.adoc[]
 
+===== Unsigned
+
+====== Users
+.Request
+include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToGetUnsignedDeposits/http-request.adoc[]
+.Response
+include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToGetUnsignedDeposits/http-response.adoc[]
+
+====== Projects
+.Request
+include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToGetUnsignedProjectDeposits/http-request.adoc[]
+.Response
+include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToGetUnsignedProjectDeposits/http-response.adoc[]
+
 ==== Approve Deposit
 Must have Admin role - privilege: PWA_DEPOSIT
 
