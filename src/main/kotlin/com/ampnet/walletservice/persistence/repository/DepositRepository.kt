@@ -21,6 +21,12 @@ interface DepositRepository : JpaRepository<Deposit, Int> {
         pageable: Pageable
     ): Page<Deposit>
 
+    @Query("SELECT deposit FROM Deposit deposit LEFT JOIN FETCH deposit.file LEFT JOIN FETCH deposit.declined " +
+        "WHERE deposit.approved = true AND deposit.type = :type AND deposit.txHash IS NOT NULL",
+        countQuery = "SELECT COUNT(deposit) FROM Deposit deposit " +
+            "WHERE deposit.approved = true AND deposit.type = :type AND deposit.txHash IS NOT NULL")
+    fun findApprovedUnsignedWithFile(type: DepositWithdrawType, pageable: Pageable): Page<Deposit>
+
     fun findByReference(reference: String): Optional<Deposit>
     fun findByOwnerUuid(ownerUuid: UUID): List<Deposit>
 
