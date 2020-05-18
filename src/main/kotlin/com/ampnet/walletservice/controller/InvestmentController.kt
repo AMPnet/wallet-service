@@ -5,6 +5,7 @@ import com.ampnet.walletservice.controller.pojo.response.TransactionResponse
 import com.ampnet.walletservice.service.ProjectInvestmentService
 import com.ampnet.walletservice.service.pojo.ProjectInvestmentRequest
 import java.util.UUID
+import javax.validation.Valid
 import mu.KLogging
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PathVariable
@@ -20,7 +21,7 @@ class InvestmentController(private val projectInvestmentService: ProjectInvestme
     @PostMapping("/invest/project/{projectUuid}")
     fun generateProjectInvestmentTransaction(
         @PathVariable("projectUuid") projectUuid: UUID,
-        @RequestBody request: AmountRequest
+        @RequestBody @Valid request: AmountRequest
     ): ResponseEntity<TransactionResponse> {
         logger.debug { "Received request to generate invest transaction for project: $projectUuid" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()

@@ -4,6 +4,7 @@ import mu.KLogging
 import org.springframework.core.NestedExceptionUtils
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.http.HttpStatus
+import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestControllerAdvice
@@ -54,6 +55,18 @@ class GlobalExceptionHandler {
         logger.error("DataIntegrityViolationException", exception)
         val message = NestedExceptionUtils.getMostSpecificCause(exception).message
         return generateErrorResponse(ErrorCode.INT_DB, message)
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(MethodArgumentNotValidException::class)
+    fun handleValidationExceptions(exception: MethodArgumentNotValidException): ErrorResponse {
+        val errors = StringBuilder()
+        exception.bindingResult.allErrors.forEach {
+            it.defaultMessage?.let { message ->
+                errors.append(message).append(". ")
+            }
+        }
+        return generateErrorResponse(ErrorCode.INT_REQUEST_VALIDATION, errors.toString())
     }
 
     private fun generateErrorResponse(errorCode: ErrorCode, systemMessage: String?): ErrorResponse {

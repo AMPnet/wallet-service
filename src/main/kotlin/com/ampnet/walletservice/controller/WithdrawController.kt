@@ -7,6 +7,7 @@ import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.service.WithdrawService
 import com.ampnet.walletservice.service.pojo.WithdrawCreateServiceRequest
 import java.util.UUID
+import javax.validation.Valid
 import mu.KLogging
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -34,7 +35,7 @@ class WithdrawController(
     }
 
     @PostMapping("/withdraw")
-    fun createWithdraw(@RequestBody request: WithdrawCreateRequest): ResponseEntity<WithdrawResponse> {
+    fun createWithdraw(@RequestBody @Valid request: WithdrawCreateRequest): ResponseEntity<WithdrawResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to create Withdraw:$request by user: ${userPrincipal.uuid}" }
         val serviceRequest = WithdrawCreateServiceRequest(
@@ -56,7 +57,7 @@ class WithdrawController(
     @PostMapping("/withdraw/project/{projectUuid}")
     fun createProjectWithdraw(
         @PathVariable projectUuid: UUID,
-        @RequestBody request: WithdrawCreateRequest
+        @RequestBody @Valid request: WithdrawCreateRequest
     ): ResponseEntity<WithdrawResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.info { "Received request to create project withdraw:$request by user: ${userPrincipal.uuid}" }
