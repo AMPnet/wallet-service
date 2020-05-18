@@ -5,6 +5,7 @@ import com.ampnet.walletservice.controller.pojo.response.RevenuePayoutsResponse
 import com.ampnet.walletservice.controller.pojo.response.TransactionResponse
 import com.ampnet.walletservice.service.RevenueService
 import java.util.UUID
+import javax.validation.Valid
 import mu.KLogging
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
@@ -22,7 +23,7 @@ class RevenueController(private val revenueService: RevenueService) {
     @PostMapping("/revenue/payout/project/{project}")
     fun revenuePayout(
         @PathVariable project: UUID,
-        @RequestBody request: AmountRequest
+        @RequestBody @Valid request: AmountRequest
     ): ResponseEntity<TransactionResponse> {
         val user = ControllerUtils.getUserPrincipalFromSecurityContext().uuid
         logger.info { "Received request to generate revenue payout transaction for project: $project by user: $user" }
