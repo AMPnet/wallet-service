@@ -44,8 +44,7 @@ class WalletController(
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request for Wallet from user: ${userPrincipal.uuid}" }
         walletService.getWallet(userPrincipal.uuid)?.let {
-            val balance = walletService.getWalletBalance(it)
-            val response = WalletResponse(it, balance)
+            val response = WalletResponse(it)
             return ResponseEntity.ok(response)
         }
         return ResponseEntity.notFound().build()
@@ -79,8 +78,7 @@ class WalletController(
             "Received request to get Wallet for organization $organizationUuid by user: ${userPrincipal.email}"
         }
         walletService.getWallet(organizationUuid)?.let {
-            val balance = walletService.getWalletBalance(it)
-            return ResponseEntity.ok(WalletResponse(it, balance))
+            return ResponseEntity.ok(WalletResponse(it))
         }
         return ResponseEntity.notFound().build()
     }

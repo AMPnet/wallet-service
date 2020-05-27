@@ -127,8 +127,6 @@ class WalletControllerTest : ControllerTestBase() {
             assertThat(walletResponse.currency).isEqualTo(testContext.wallet.currency)
             assertThat(walletResponse.type).isEqualTo(testContext.wallet.type)
             assertThat(walletResponse.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
-
-            assertThat(walletResponse.balance).isEqualTo(testContext.balance)
         }
     }
 

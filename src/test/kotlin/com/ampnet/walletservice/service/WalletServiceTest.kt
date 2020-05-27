@@ -132,23 +132,6 @@ class WalletServiceTest : JpaServiceTestBase() {
     }
 
     @Test
-    fun mustBeAbleToGetWalletBalance() {
-        suppose("User has a wallet") {
-            createWalletForUser(userUuid, defaultAddressHash)
-        }
-        suppose("User has some funds on a wallet") {
-            testContext.balance = 100
-            Mockito.`when`(mockedBlockchainService.getBalance(defaultAddressHash)).thenReturn(testContext.balance)
-        }
-
-        verify("Service can return wallet balance") {
-            val wallet = walletService.getWallet(userUuid) ?: fail("User must have a wallet")
-            val balance = walletService.getWalletBalance(wallet)
-            assertThat(balance).isEqualTo(testContext.balance)
-        }
-    }
-
-    @Test
     fun mustThrowExceptionIfUserWithoutWalletTriesToGenerateCreateProjectWallet() {
         verify("Service will throw InternalException") {
             val exception = assertThrows<ResourceNotFoundException> {
@@ -301,7 +284,6 @@ class WalletServiceTest : JpaServiceTestBase() {
 
     private class TestContext {
         lateinit var wallet: Wallet
-        var balance: Long = -1
         lateinit var pairWalletCode: PairWalletCode
     }
 }

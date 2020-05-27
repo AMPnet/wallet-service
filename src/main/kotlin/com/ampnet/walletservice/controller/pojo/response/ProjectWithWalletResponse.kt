@@ -10,7 +10,7 @@ data class ProjectWithWalletResponse(
 ) {
     constructor(projectWithWallet: ProjectWithWallet) : this(
         ProjectControllerResponse(projectWithWallet.project),
-        WalletResponse(projectWithWallet.wallet, projectWithWallet.balance),
+        WalletResponse(projectWithWallet.wallet),
         projectWithWallet.payoutInProcess
     )
 }

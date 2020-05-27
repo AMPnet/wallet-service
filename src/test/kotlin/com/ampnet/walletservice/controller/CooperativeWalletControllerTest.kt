@@ -103,7 +103,7 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
                 .containsAll(testContext.users)
                 .doesNotContain(userUuid)
             assertThat(userListResponse.users.map { it.wallet })
-                .doesNotContain(WalletResponse(testContext.wallet, 0))
+                .doesNotContain(WalletResponse(testContext.wallet))
             assertThat(userListResponse.page).isEqualTo(0)
             assertThat(userListResponse.totalPages).isEqualTo(1)
         }

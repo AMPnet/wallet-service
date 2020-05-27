@@ -47,7 +47,6 @@ class PublicControllerTest : ControllerTestBase() {
             assertThat(walletResponse.currency).isEqualTo(testContext.wallet.currency)
             assertThat(walletResponse.type).isEqualTo(testContext.wallet.type)
             assertThat(walletResponse.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
-            assertThat(walletResponse.balance).isEqualTo(testContext.walletBalance)
         }
     }
 
@@ -109,7 +108,6 @@ class PublicControllerTest : ControllerTestBase() {
             val projectWithWallet = projectsResponse.projects.first()
             assertThat(projectWithWallet.project.uuid).isEqualTo(projectUuid.toString())
             assertThat(projectWithWallet.wallet.uuid).isEqualTo(testContext.wallet.uuid)
-            assertThat(projectWithWallet.wallet.balance).isEqualTo(testContext.projectBalance)
             assertThat(projectsResponse.page).isEqualTo(0)
             assertThat(projectsResponse.totalPages).isEqualTo(1)
         }

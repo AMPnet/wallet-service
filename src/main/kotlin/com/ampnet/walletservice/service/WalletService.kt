@@ -10,7 +10,6 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 
 interface WalletService {
-    fun getWalletBalance(wallet: Wallet): Long?
     fun getWallet(owner: UUID): Wallet?
     fun createUserWallet(user: UUID, request: WalletCreateRequest): Wallet
     fun generateTransactionToCreateProjectWallet(project: UUID, user: UUID): TransactionDataAndInfo

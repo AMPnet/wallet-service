@@ -4,7 +4,6 @@ import com.ampnet.walletservice.controller.pojo.request.WalletCreateRequest
 import com.ampnet.walletservice.enums.Currency
 import com.ampnet.walletservice.enums.WalletType
 import com.ampnet.walletservice.exception.ErrorCode
-import com.ampnet.walletservice.exception.GrpcException
 import com.ampnet.walletservice.exception.InvalidRequestException
 import com.ampnet.walletservice.exception.ResourceAlreadyExistsException
 import com.ampnet.walletservice.grpc.blockchain.BlockchainService
@@ -40,13 +39,6 @@ class WalletServiceImpl(
         private val logger = KotlinLogging.logger {}
         private val charPool: List<Char> = ('A'..'Z') + ('0'..'9')
         private const val PAIR_WALLET_CODE_LENGTH = 6
-    }
-
-    @Transactional(readOnly = true)
-    @Throws(GrpcException::class)
-    override fun getWalletBalance(wallet: Wallet): Long? {
-        val walletHash = wallet.hash ?: return null
-        return blockchainService.getBalance(walletHash)
     }
 
     @Transactional(readOnly = true)
@@ -163,9 +155,8 @@ class WalletServiceImpl(
                 val uuid = UUID.fromString(project.uuid)
                 projectWallets[uuid]?.let { wallet ->
                     val projectInfo = projectsInfo[wallet.hash]
-                    val balance = projectInfo?.balance
                     val payoutInProcess = projectInfo?.payoutInProcess
-                    ProjectWithWallet(project, wallet, balance, payoutInProcess)
+                    ProjectWithWallet(project, wallet, payoutInProcess)
                 }
             }
         return PageImpl(projectsWithWallet, pageable, walletsPage.totalElements)

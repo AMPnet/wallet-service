@@ -20,8 +20,7 @@ class PublicController(private val walletService: WalletService) {
     fun getProjectWallet(@PathVariable projectUuid: UUID): ResponseEntity<WalletResponse> {
         logger.debug { "Received request to get wallet for project: $projectUuid" }
         walletService.getWallet(projectUuid)?.let {
-            val balance = walletService.getWalletBalance(it)
-            return ResponseEntity.ok(WalletResponse(it, balance))
+            return ResponseEntity.ok(WalletResponse(it))
         }
         return ResponseEntity.notFound().build()
     }
