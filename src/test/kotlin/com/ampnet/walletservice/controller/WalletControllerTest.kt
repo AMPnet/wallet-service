@@ -110,10 +110,6 @@ class WalletControllerTest : ControllerTestBase() {
         suppose("User wallet exists") {
             testContext.wallet = createWalletForUser(userUuid, testContext.hash)
         }
-        suppose("User has some funds on wallet") {
-            testContext.balance = 100_00
-            Mockito.`when`(blockchainService.getBalance(testContext.hash)).thenReturn(testContext.balance)
-        }
 
         verify("User can get his wallet") {
             val result = mockMvc.perform(
@@ -334,7 +330,6 @@ class WalletControllerTest : ControllerTestBase() {
         var hash2 = "th_2YjFd1mPzriyKfzojwuZxKJZaqNJGmTnUvqnNfwoZTV6n7NYxB"
         val publicKey = "ak_RYkcTuYcyxQ6fWZsL2G3Kj3K5WCRUEXsi76bPUNkEsoHc52Wp"
         val alias = "wallet_alias_is_optional"
-        var balance: Long = -1
         lateinit var pairWalletCode: String
         lateinit var time: ZonedDateTime
     }

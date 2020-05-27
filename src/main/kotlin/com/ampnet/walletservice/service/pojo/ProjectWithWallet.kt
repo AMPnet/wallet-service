@@ -5,6 +5,5 @@ import com.ampnet.walletservice.persistence.model.Wallet
 
 data class ProjectWithWallet(
     val project: ProjectResponse,
-    val wallet: Wallet,
-    val payoutInProcess: Boolean? = null
+    val wallet: Wallet
 )

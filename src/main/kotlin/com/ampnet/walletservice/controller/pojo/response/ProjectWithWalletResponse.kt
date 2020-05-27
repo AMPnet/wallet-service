@@ -5,13 +5,11 @@ import org.springframework.data.domain.Page
 
 data class ProjectWithWalletResponse(
     val project: ProjectControllerResponse,
-    val wallet: WalletResponse,
-    val payoutInProcess: Boolean?
+    val wallet: WalletResponse
 ) {
     constructor(projectWithWallet: ProjectWithWallet) : this(
         ProjectControllerResponse(projectWithWallet.project),
-        WalletResponse(projectWithWallet.wallet),
-        projectWithWallet.payoutInProcess
+        WalletResponse(projectWithWallet.wallet)
     )
 }
 data class ProjectWithWalletListResponse(

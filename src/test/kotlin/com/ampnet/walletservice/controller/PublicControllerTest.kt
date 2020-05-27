@@ -32,9 +32,6 @@ class PublicControllerTest : ControllerTestBase() {
         suppose("Project wallet exists") {
             testContext.wallet = createWalletForProject(projectUuid, walletHash)
         }
-        suppose("Project wallet has some balance") {
-            Mockito.`when`(blockchainService.getBalance(walletHash)).thenReturn(testContext.walletBalance)
-        }
 
         verify("User can get project wallet") {
             val result = mockMvc.perform(get("$projectWalletPublicPath/$projectUuid"))
@@ -66,21 +63,6 @@ class PublicControllerTest : ControllerTestBase() {
         suppose("Second inactive project wallet exists") {
             testContext.inactiveProjectWallet =
                 createWalletForProject(UUID.randomUUID(), "th_49bC6a8219c798394726f8e86E040A878da1d00A")
-        }
-        suppose("Blockchain service will return projects info") {
-            val inactiveWalletHash = getWalletHash(testContext.inactiveProjectWallet)
-            Mockito.`when`(
-                blockchainService.getProjectsInfo(listOf(walletHash, inactiveWalletHash))
-            ).thenReturn(
-                listOf(getProjectInfoResponse(walletHash, testContext.projectBalance),
-                    getProjectInfoResponse(inactiveWalletHash, testContext.projectBalance - 100))
-            )
-            Mockito.`when`(
-                blockchainService.getProjectsInfo(listOf(inactiveWalletHash, walletHash))
-            ).thenReturn(
-                listOf(getProjectInfoResponse(inactiveWalletHash, testContext.projectBalance - 100),
-                    getProjectInfoResponse(walletHash, testContext.projectBalance))
-            )
         }
         suppose("Project service will return projects") {
             val projects = listOf(projectUuid, testContext.inactiveProjectWallet.owner)
@@ -143,7 +125,5 @@ class PublicControllerTest : ControllerTestBase() {
     private class TestContext {
         lateinit var wallet: Wallet
         lateinit var inactiveProjectWallet: Wallet
-        val walletBalance = 100L
-        val projectBalance = 10_000_000_00L
     }
 }

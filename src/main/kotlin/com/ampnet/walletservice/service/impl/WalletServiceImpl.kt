@@ -144,19 +144,12 @@ class WalletServiceImpl(
         if (projectWallets.isEmpty()) {
             return PageImpl(emptyList(), pageable, walletsPage.totalElements)
         }
-
-        val projectWalletHashes = projectWallets.values.mapNotNull { it.hash }
-        val projectsInfo = blockchainService.getProjectsInfo(projectWalletHashes)
-            .toList()
-            .associateBy { it.txHash }
         val projectsWithWallet = projectService.getProjects(projectWallets.keys)
             .filter { it.active }
             .mapNotNull { project ->
                 val uuid = UUID.fromString(project.uuid)
                 projectWallets[uuid]?.let { wallet ->
-                    val projectInfo = projectsInfo[wallet.hash]
-                    val payoutInProcess = projectInfo?.payoutInProcess
-                    ProjectWithWallet(project, wallet, payoutInProcess)
+                    ProjectWithWallet(project, wallet)
                 }
             }
         return PageImpl(projectsWithWallet, pageable, walletsPage.totalElements)
