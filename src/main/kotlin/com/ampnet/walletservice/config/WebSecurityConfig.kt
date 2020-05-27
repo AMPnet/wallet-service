@@ -70,7 +70,6 @@ class WebSecurityConfig : WebSecurityConfigurerAdapter() {
 
         http.cors().and().csrf().disable()
             .authorizeRequests()
-            .antMatchers("/websocket/**").permitAll()
             .antMatchers("/actuator/**").permitAll()
             .antMatchers("/public/**").permitAll()
             .antMatchers("/docs/index.html").permitAll()
