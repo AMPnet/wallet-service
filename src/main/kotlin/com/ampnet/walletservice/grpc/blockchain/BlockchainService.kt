@@ -8,6 +8,7 @@ import com.ampnet.walletservice.grpc.blockchain.pojo.Portfolio
 import com.ampnet.walletservice.grpc.blockchain.pojo.ProjectInfoResponse
 import com.ampnet.walletservice.grpc.blockchain.pojo.ProjectInvestmentTxRequest
 import com.ampnet.walletservice.grpc.blockchain.pojo.RevenuePayoutTxRequest
+import com.ampnet.walletservice.grpc.blockchain.pojo.SellOfferData
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionData
 
 interface BlockchainService {
@@ -32,4 +33,5 @@ interface BlockchainService {
     fun getPlatformManager(): String
     fun generateTransferPlatformManager(address: String): TransactionData
     fun getTransactionState(txHash: String): TransactionState?
+    fun getSellOffers(): List<SellOfferData>
 }
