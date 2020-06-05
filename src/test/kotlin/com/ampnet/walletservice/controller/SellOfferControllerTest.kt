@@ -85,7 +85,7 @@ class SellOfferControllerTest : ControllerTestBase() {
     }
 
     private fun createSellOffer(projectWalletHash: String, shares: Long, price: Long) =
-        SellOfferData(walletHash, projectWalletHash, shares, price)
+        SellOfferData(projectWalletHash, walletHash, shares, price)
 
     private class TestContext {
         lateinit var projectWallet: Wallet

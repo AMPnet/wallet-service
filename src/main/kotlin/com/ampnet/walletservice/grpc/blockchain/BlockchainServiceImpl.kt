@@ -413,11 +413,10 @@ class BlockchainServiceImpl(
     override fun getSellOffers(): List<SellOfferData> {
         logger.debug { "Get active sell offers" }
         try {
-            // TODO("Return sales offers")
-            // val response = serviceWithTimeout()
-            //     .getActiveSellOffers(Empty.newBuilder().build())
-            // logger.debug { "Active sales offers: $response" }
-            return emptyList()
+            val response = serviceWithTimeout()
+                .getActiveSellOffers(Empty.newBuilder().build())
+            logger.debug { "Active sell offers: $response" }
+            return response.sellOffersList.map { SellOfferData(it) }
         } catch (ex: StatusRuntimeException) {
             throw getInternalExceptionFromStatusException(ex, "Could not get active sell offers")
         }

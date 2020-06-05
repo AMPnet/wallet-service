@@ -197,6 +197,19 @@ message GenerateCreateProjectTxRequest {
     string end_investment_time = 6;
 }
 
+////////// Sell Offer messages /////////////
+
+message SellOffer {
+    string project_tx_hash = 1;
+    string seller_tx_hash = 2;
+    string shares = 3;
+    string price = 4;
+}
+
+message SellOffersResponse {
+     repeated SellOffer sellOffers = 1;
+}
+
 ////////// Generic messages ////////////////
 
 message RawTxResponse {
@@ -253,4 +266,8 @@ service BlockchainService {
     rpc GetTransactions(TransactionsRequest) returns (TransactionsResponse);
     rpc GetInvestmentsInProject(InvestmentsInProjectRequest) returns (TransactionsResponse);
     rpc GetTransactionInfo(TransactionInfoRequest) returns (TransactionInfoResponse);
+
+    // Sell Offer
+
+    rpc GetActiveSellOffers(Empty) returns (SellOffersResponse);
 }
