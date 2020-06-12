@@ -168,6 +168,21 @@ message TransactionsResponse {
     repeated Transaction transactions = 1;
 }
 
+message ActiveSellOffersResponse {
+    message CounterOffer {
+        string buyer_tx_hash = 1;
+        string price = 2;
+    }
+    message SellOffer {
+        string seller_tx_hash = 1;
+        string project_tx_hash = 2;
+        string shares = 3;
+        string price = 4;
+        repeated CounterOffer counter_offers = 5;
+    }
+    repeated SellOffer offers = 1;
+}
+
 message TransactionInfoRequest {
     string tx_hash = 1;
 }
@@ -195,19 +210,6 @@ message GenerateCreateProjectTxRequest {
     string min_investment_per_user = 4;
     string investment_cap = 5;
     string end_investment_time = 6;
-}
-
-////////// Sell Offer messages /////////////
-
-message SellOffer {
-    string project_tx_hash = 1;
-    string seller_tx_hash = 2;
-    string shares = 3;
-    string price = 4;
-}
-
-message SellOffersResponse {
-     repeated SellOffer sellOffers = 1;
 }
 
 ////////// Generic messages ////////////////
@@ -258,7 +260,6 @@ service BlockchainService {
     rpc GenerateCreateOrganizationTx(GenerateCreateOrganizationTxRequest) returns (RawTxResponse);
     rpc GenerateCreateProjectTx(GenerateCreateProjectTxRequest) returns (RawTxResponse);
 
-
     // Transactions
 
     rpc PostTransaction(PostTxRequest) returns (PostTxResponse);
@@ -266,8 +267,5 @@ service BlockchainService {
     rpc GetTransactions(TransactionsRequest) returns (TransactionsResponse);
     rpc GetInvestmentsInProject(InvestmentsInProjectRequest) returns (TransactionsResponse);
     rpc GetTransactionInfo(TransactionInfoRequest) returns (TransactionInfoResponse);
-
-    // Sell Offer
-
-    rpc GetActiveSellOffers(Empty) returns (SellOffersResponse);
+    rpc GetActiveSellOffers(Empty) returns (ActiveSellOffersResponse);
 }

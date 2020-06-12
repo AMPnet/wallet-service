@@ -416,7 +416,7 @@ class BlockchainServiceImpl(
             val response = serviceWithTimeout()
                 .getActiveSellOffers(Empty.newBuilder().build())
             logger.debug { "Active sell offers: $response" }
-            return response.sellOffersList.map { SellOfferData(it) }
+            return response.offersList.map { SellOfferData(it) }
         } catch (ex: StatusRuntimeException) {
             throw getInternalExceptionFromStatusException(ex, "Could not get active sell offers")
         }

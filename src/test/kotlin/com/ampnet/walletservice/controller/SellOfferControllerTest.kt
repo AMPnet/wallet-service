@@ -1,6 +1,7 @@
 package com.ampnet.walletservice.controller
 
 import com.ampnet.walletservice.controller.pojo.response.ProjectsWithSellOffersResponse
+import com.ampnet.walletservice.grpc.blockchain.pojo.CounterOfferData
 import com.ampnet.walletservice.grpc.blockchain.pojo.SellOfferData
 import com.ampnet.walletservice.persistence.model.Wallet
 import com.ampnet.walletservice.security.WithMockCrowdfoundUser
@@ -76,6 +77,7 @@ class SellOfferControllerTest : ControllerTestBase() {
                 .first { it.project.uuid == testContext.projectWallet.owner.toString() }
             assertThat(projectWithSellOffer.sellOffers).hasSize(2)
             assertThat(projectWithSellOffer.sellOffers.map { it.price }).contains(1, 11)
+            assertThat(projectWithSellOffer.sellOffers[0].counterOffers).hasSize(1)
 
             val secondProjectWithWallet = response.projects
                 .first { it.project.uuid == testContext.secondProjectWallet.owner.toString() }
@@ -85,7 +87,7 @@ class SellOfferControllerTest : ControllerTestBase() {
     }
 
     private fun createSellOffer(projectWalletHash: String, shares: Long, price: Long) =
-        SellOfferData(projectWalletHash, walletHash, shares, price)
+        SellOfferData(projectWalletHash, walletHash, shares, price, listOf(CounterOfferData(walletHash, 1)))
 
     private class TestContext {
         lateinit var projectWallet: Wallet
