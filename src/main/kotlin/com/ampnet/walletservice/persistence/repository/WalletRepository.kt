@@ -22,8 +22,4 @@ interface WalletRepository : JpaRepository<Wallet, UUID> {
     @Query("SELECT wallet FROM Wallet wallet " +
         "WHERE wallet.hash IN (:hashes)")
     fun findByHashes(hashes: Iterable<String>): List<Wallet>
-
-    @Query("SELECT wallet FROM Wallet wallet " +
-        "WHERE wallet.activationData IN (:activationData)")
-    fun findAllByActivationData(activationData: Iterable<String>): List<Wallet>
 }

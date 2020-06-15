@@ -19,10 +19,13 @@ class SellOfferServiceImpl(
     companion object : KLogging()
 
     override fun getProjectsWithSalesOffers(): List<ProjectWithSellOffers> {
+        logger.debug { "Get all projects with sales offers" }
         val activeOffers = blockchainService.getSellOffers()
         val distinctProjectWalletHashes = activeOffers.map { it.projectWalletHash }.toSet()
-        val projectWallets = walletRepository.findAllByActivationData(distinctProjectWalletHashes)
+        logger.debug { "Distinct project wallet hashes: $distinctProjectWalletHashes" }
+        val projectWallets = walletRepository.findByHashes(distinctProjectWalletHashes)
             .toList().associateBy { it.owner }
+        logger.debug { "Distinct project wallet owners: ${projectWallets.keys}" }
         val projects = projectService.getProjects(projectWallets.keys)
 
         return projects.mapNotNull { project ->

@@ -42,6 +42,9 @@ class ProjectServiceImpl(
 
     override fun getOrganizations(uuids: Iterable<UUID>): List<OrganizationResponse> {
         logger.debug { "Fetching organizations: $uuids" }
+        if (uuids.none()) {
+            return emptyList()
+        }
         try {
             val request = GetByUuids.newBuilder()
                 .addAllUuids(uuids.map { it.toString() })
@@ -56,6 +59,9 @@ class ProjectServiceImpl(
 
     override fun getProjects(uuids: Iterable<UUID>): List<ProjectResponse> {
         logger.debug { "Fetching projects: $uuids" }
+        if (uuids.none()) {
+            return emptyList()
+        }
         try {
             val request = GetByUuids.newBuilder()
                 .addAllUuids(uuids.map { it.toString() })
