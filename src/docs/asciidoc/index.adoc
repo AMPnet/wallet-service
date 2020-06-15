@@ -477,3 +477,9 @@ Must have privilege - `PWA_DEPOSIT`
 include::{snippets}/BankAccountControllerTest/mustBeAbleToDeleteBankAccount/http-request.adoc[]
 .Response
 include::{snippets}/BankAccountControllerTest/mustBeAbleToDeleteBankAccount/http-response.adoc[]
+
+== Sell Offer
+.Request
+include::{snippets}/SellOfferControllerTest/mustBeAbleToGetSellOffers/http-request.adoc[]
+.Response
+include::{snippets}/SellOfferControllerTest/mustBeAbleToGetSellOffers/http-response.adoc[]

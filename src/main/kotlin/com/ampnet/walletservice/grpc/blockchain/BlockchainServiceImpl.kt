@@ -33,6 +33,7 @@ import com.ampnet.walletservice.grpc.blockchain.pojo.PortfolioData
 import com.ampnet.walletservice.grpc.blockchain.pojo.ProjectInfoResponse
 import com.ampnet.walletservice.grpc.blockchain.pojo.ProjectInvestmentTxRequest
 import com.ampnet.walletservice.grpc.blockchain.pojo.RevenuePayoutTxRequest
+import com.ampnet.walletservice.grpc.blockchain.pojo.SellOfferData
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionData
 import io.grpc.StatusRuntimeException
 import java.util.concurrent.TimeUnit
@@ -406,6 +407,18 @@ class BlockchainServiceImpl(
             }
         } catch (ex: StatusRuntimeException) {
             throw getInternalExceptionFromStatusException(ex, "Could not get transaction info for hash: $txHash")
+        }
+    }
+
+    override fun getSellOffers(): List<SellOfferData> {
+        logger.debug { "Get active sell offers" }
+        try {
+            val response = serviceWithTimeout()
+                .getActiveSellOffers(Empty.newBuilder().build())
+            logger.debug { "Active sell offers: $response" }
+            return response.offersList.map { SellOfferData(it) }
+        } catch (ex: StatusRuntimeException) {
+            throw getInternalExceptionFromStatusException(ex, "Could not get active sell offers")
         }
     }
 
