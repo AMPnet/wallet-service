@@ -9,7 +9,6 @@ import com.ampnet.walletservice.grpc.blockchain.pojo.BlockchainTransaction
 import com.ampnet.walletservice.grpc.blockchain.pojo.Portfolio
 import com.ampnet.walletservice.grpc.blockchain.pojo.PortfolioData
 import com.ampnet.walletservice.security.WithMockCrowdfoundUser
-import com.ampnet.walletservice.service.pojo.PortfolioStats
 import com.fasterxml.jackson.module.kotlin.readValue
 import java.time.ZonedDateTime
 import java.util.UUID
@@ -75,66 +74,6 @@ class PortfolioControllerTest : ControllerTestBase() {
             val secondProject = portfolioResponse.portfolio[1]
             assertThat(secondProject.project.uuid).isEqualTo(testContext.secondProject.toString())
             assertThat(secondProject.investment).isEqualTo(testContext.portfolio.data[1].amount)
-        }
-    }
-
-    @Test
-    @WithMockCrowdfoundUser
-    fun mustBeAbleToGetMyPortfolioStats() {
-        suppose("User has wallet") {
-            createWalletForUser(userUuid, "user-wallet-hash")
-        }
-        suppose("Blockchain service will return portfolio stats") {
-            val walletHash = getWalletHash(userUuid)
-            val now = ZonedDateTime.now()
-            testContext.transactions = listOf(
-                BlockchainTransaction(walletHash, "to", 1000,
-                    TransactionsResponse.Transaction.Type.INVEST, now.minusYears(1)),
-                BlockchainTransaction(walletHash, "to_2", 1000,
-                    TransactionsResponse.Transaction.Type.INVEST, now.minusMonths(1)),
-                BlockchainTransaction("from", walletHash, 10,
-                    TransactionsResponse.Transaction.Type.SHARE_PAYOUT, now.minusDays(1)),
-                BlockchainTransaction("from_2", walletHash, 10,
-                    TransactionsResponse.Transaction.Type.SHARE_PAYOUT, now)
-            )
-            Mockito.`when`(
-                blockchainService.getTransactions(getWalletHash(userUuid))
-            ).thenReturn(testContext.transactions)
-        }
-
-        verify("User can get portfolio stats") {
-            val result = mockMvc.perform(get("$portfolioPath/stats"))
-                .andExpect(status().isOk)
-                .andReturn()
-
-            val stats: PortfolioStats = objectMapper.readValue(result.response.contentAsString)
-            assertThat(stats.investments).isEqualTo(2000)
-            assertThat(stats.earnings).isEqualTo(20)
-            assertThat(stats.dateOfFirstInvestment).isEqualTo(testContext.transactions.first().date)
-        }
-    }
-
-    @Test
-    @WithMockCrowdfoundUser
-    fun mustBeAbleToGetEmptyPortfolioStats() {
-        suppose("User has wallet") {
-            createWalletForUser(userUuid, "user-wallet-hash")
-        }
-        suppose("Blockchain service will return empty portfolio stats") {
-            Mockito.`when`(
-                blockchainService.getTransactions(getWalletHash(userUuid))
-            ).thenReturn(emptyList())
-        }
-
-        verify("User can get empty portfolio stats") {
-            val result = mockMvc.perform(get("$portfolioPath/stats"))
-                .andExpect(status().isOk)
-                .andReturn()
-
-            val stats: PortfolioStats = objectMapper.readValue(result.response.contentAsString)
-            assertThat(stats.investments).isEqualTo(0)
-            assertThat(stats.earnings).isEqualTo(0)
-            assertThat(stats.dateOfFirstInvestment).isNull()
         }
     }
 

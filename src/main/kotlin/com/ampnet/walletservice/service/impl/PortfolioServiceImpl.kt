@@ -7,7 +7,6 @@ import com.ampnet.walletservice.grpc.blockchain.pojo.PortfolioData
 import com.ampnet.walletservice.grpc.projectservice.ProjectService
 import com.ampnet.walletservice.persistence.repository.WalletRepository
 import com.ampnet.walletservice.service.PortfolioService
-import com.ampnet.walletservice.service.pojo.PortfolioStats
 import com.ampnet.walletservice.service.pojo.ProjectWithInvestment
 import java.util.UUID
 import org.springframework.stereotype.Service
@@ -25,18 +24,6 @@ class PortfolioServiceImpl(
         val userWallet = ServiceUtils.getWalletHash(user, walletRepository)
         val portfolio = blockchainService.getPortfolio(userWallet).data.associateBy { it.projectTxHash }
         return getProjectsWithInvestments(portfolio)
-    }
-
-    @Transactional(readOnly = true)
-    override fun getPortfolioStats(user: UUID): PortfolioStats {
-        val userWallet = ServiceUtils.getWalletHash(user, walletRepository)
-        val transactions = blockchainService.getTransactions(userWallet)
-        val investments = sumTransactionForType(transactions, TransactionsResponse.Transaction.Type.INVEST)
-        val earnings = sumTransactionForType(transactions, TransactionsResponse.Transaction.Type.SHARE_PAYOUT)
-        val dateOfFirstInvestment = transactions
-            .filter { it.type == TransactionsResponse.Transaction.Type.INVEST }
-            .minBy { it.date }?.date
-        return PortfolioStats(investments, earnings, dateOfFirstInvestment)
     }
 
     @Transactional(readOnly = true)

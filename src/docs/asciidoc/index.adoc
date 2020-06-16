@@ -223,12 +223,6 @@ include::{snippets}/PortfolioControllerTest/mustBeAbleToGetMyPortfolio/http-requ
 .Response
 include::{snippets}/PortfolioControllerTest/mustBeAbleToGetMyPortfolio/http-response.adoc[]
 
-=== Get stats
-.Request
-include::{snippets}/PortfolioControllerTest/mustBeAbleToGetMyPortfolioStats/http-request.adoc[]
-.Response
-include::{snippets}/PortfolioControllerTest/mustBeAbleToGetMyPortfolioStats/http-response.adoc[]
-
 === Get investments in project
 .Request
 include::{snippets}/PortfolioControllerTest/mustBeAbleToGetInvestmentsInProject/http-request.adoc[]

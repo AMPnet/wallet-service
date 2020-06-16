@@ -6,7 +6,6 @@ import com.ampnet.walletservice.controller.pojo.response.ProjectWithInvestmentRe
 import com.ampnet.walletservice.controller.pojo.response.ProjectWithInvestments
 import com.ampnet.walletservice.grpc.projectservice.ProjectService
 import com.ampnet.walletservice.service.PortfolioService
-import com.ampnet.walletservice.service.pojo.PortfolioStats
 import java.util.UUID
 import mu.KLogging
 import org.springframework.http.ResponseEntity
@@ -29,14 +28,6 @@ class PortfolioController(
         val responseList = portfolioService.getPortfolio(userPrincipal.uuid)
             .map { ProjectWithInvestmentResponse(it) }
         return ResponseEntity.ok(PortfolioResponse(responseList))
-    }
-
-    @GetMapping("/portfolio/stats")
-    fun getMyPortfolioStats(): ResponseEntity<PortfolioStats> {
-        val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
-        logger.debug { "Received request to get my portfolio stats by user: ${userPrincipal.uuid}" }
-        val portfolioStats = portfolioService.getPortfolioStats(userPrincipal.uuid)
-        return ResponseEntity.ok(portfolioStats)
     }
 
     @GetMapping("/portfolio/project/{uuid}")
