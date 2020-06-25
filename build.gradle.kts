@@ -104,6 +104,7 @@ jib {
     container {
         creationTime = "USE_CURRENT_TIMESTAMP"
     }
+    setAllowInsecureRegistries(true)
 }
 
 jacoco.toolVersion = "0.8.5"
