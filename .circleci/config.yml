@@ -94,6 +94,6 @@ workflows:
           requires:
             - test
             - codeQuality
-          filters:
-            branches:
-              only: master
+#          filters:
+#            branches:
+#              only: master
