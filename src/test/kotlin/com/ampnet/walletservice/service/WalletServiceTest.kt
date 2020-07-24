@@ -10,20 +10,22 @@ import com.ampnet.walletservice.persistence.model.PairWalletCode
 import com.ampnet.walletservice.persistence.model.Wallet
 import com.ampnet.walletservice.service.impl.TransactionInfoServiceImpl
 import com.ampnet.walletservice.service.impl.WalletServiceImpl
-import java.time.ZonedDateTime
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
+import java.time.ZonedDateTime
 
 class WalletServiceTest : JpaServiceTestBase() {
 
     private val walletService: WalletService by lazy {
         val transactionService = TransactionInfoServiceImpl(transactionInfoRepository)
-        WalletServiceImpl(walletRepository, pairWalletCodeRepository,
-                mockedBlockchainService, transactionService, mockedProjectService)
+        WalletServiceImpl(
+            walletRepository, pairWalletCodeRepository,
+            mockedBlockchainService, transactionService, mockedProjectService
+        )
     }
     private lateinit var testContext: TestContext
 

@@ -7,20 +7,22 @@ import com.ampnet.walletservice.grpc.blockchain.pojo.ProjectInvestmentTxRequest
 import com.ampnet.walletservice.service.impl.ProjectInvestmentServiceImpl
 import com.ampnet.walletservice.service.impl.TransactionInfoServiceImpl
 import com.ampnet.walletservice.service.pojo.ProjectInvestmentRequest
-import java.time.ZonedDateTime
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
+import java.time.ZonedDateTime
 
 class ProjectInvestmentServiceTest : JpaServiceTestBase() {
 
     private val projectInvestmentService: ProjectInvestmentService by lazy {
         val transactionService = TransactionInfoServiceImpl(transactionInfoRepository)
-        ProjectInvestmentServiceImpl(walletRepository, mockedBlockchainService,
-            mockedProjectService, transactionService)
+        ProjectInvestmentServiceImpl(
+            walletRepository, mockedBlockchainService,
+            mockedProjectService, transactionService
+        )
     }
     private lateinit var testContext: TestContext
 
@@ -192,8 +194,10 @@ class ProjectInvestmentServiceTest : JpaServiceTestBase() {
         suppose("Blockchain service will generate transaction") {
             val userWalletHash = getWalletHash(userUuid)
             val projectWalletHash = getWalletHash(projectUuid)
-            Mockito.`when`(mockedBlockchainService.generateProjectInvestmentTransaction(
-                ProjectInvestmentTxRequest(userWalletHash, projectWalletHash, 100_00))
+            Mockito.`when`(
+                mockedBlockchainService.generateProjectInvestmentTransaction(
+                    ProjectInvestmentTxRequest(userWalletHash, projectWalletHash, 100_00)
+                )
             ).thenReturn(transactionData)
         }
 
@@ -236,7 +240,8 @@ class ProjectInvestmentServiceTest : JpaServiceTestBase() {
     @Test
     fun mustBeAbleInvestInProject() {
         suppose("Blockchain service will return hash for post transaction") {
-            Mockito.`when`(mockedBlockchainService
+            Mockito.`when`(
+                mockedBlockchainService
                     .postTransaction(signedTransaction)
             ).thenReturn(txHash)
         }

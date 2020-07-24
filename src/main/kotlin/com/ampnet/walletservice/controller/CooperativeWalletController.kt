@@ -6,7 +6,6 @@ import com.ampnet.walletservice.controller.pojo.response.ProjectWithWalletListRe
 import com.ampnet.walletservice.controller.pojo.response.TransactionResponse
 import com.ampnet.walletservice.controller.pojo.response.UserWithWalletListResponse
 import com.ampnet.walletservice.service.CooperativeWalletService
-import java.util.UUID
 import mu.KLogging
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
@@ -16,6 +15,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
+import java.util.UUID
 
 @RestController
 class CooperativeWalletController(

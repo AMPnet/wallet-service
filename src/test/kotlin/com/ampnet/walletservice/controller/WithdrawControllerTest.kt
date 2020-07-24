@@ -11,7 +11,6 @@ import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionData
 import com.ampnet.walletservice.persistence.model.Withdraw
 import com.ampnet.walletservice.security.WithMockCrowdfoundUser
 import com.fasterxml.jackson.module.kotlin.readValue
-import java.time.ZonedDateTime
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -21,6 +20,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delet
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import java.time.ZonedDateTime
 
 class WithdrawControllerTest : ControllerTestBase() {
 
@@ -50,7 +50,8 @@ class WithdrawControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(
                 post(withdrawPath)
                     .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -110,7 +111,8 @@ class WithdrawControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(
                 post("$withdrawPath/project/$projectUuid")
                     .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -161,7 +163,8 @@ class WithdrawControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(
                 post(withdrawPath)
                     .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
                 .andExpect(status().isBadRequest)
                 .andReturn()
             verifyResponseErrorCode(result, ErrorCode.WALLET_MISSING)
@@ -252,13 +255,14 @@ class WithdrawControllerTest : ControllerTestBase() {
         suppose("Blockchain service will return approve burn transaction") {
             testContext.transactionData = TransactionData("approve-burn-transaction")
             Mockito.`when`(
-                    blockchainService.generateApproveBurnTransaction(walletHash, testContext.amount)
+                blockchainService.generateApproveBurnTransaction(walletHash, testContext.amount)
             ).thenReturn(testContext.transactionData)
         }
 
         verify("User can generate approval transaction") {
             val result = mockMvc.perform(
-                post("$withdrawPath/${testContext.withdraw.id}/transaction/approve"))
+                post("$withdrawPath/${testContext.withdraw.id}/transaction/approve")
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -298,7 +302,8 @@ class WithdrawControllerTest : ControllerTestBase() {
         suppose("Blockchain service will return approve burn transaction") {
             testContext.transactionData = TransactionData("approve-burn-transaction")
             val request = ApproveProjectBurnTransactionRequest(
-                testContext.projectWalletHash, testContext.amount, walletHash)
+                testContext.projectWalletHash, testContext.amount, walletHash
+            )
             Mockito.`when`(
                 blockchainService.generateApproveProjectBurnTransaction(request)
             ).thenReturn(testContext.transactionData)
@@ -306,7 +311,8 @@ class WithdrawControllerTest : ControllerTestBase() {
 
         verify("User can generate approval transaction") {
             val result = mockMvc.perform(
-                post("$withdrawPath/${testContext.withdraw.id}/transaction/approve"))
+                post("$withdrawPath/${testContext.withdraw.id}/transaction/approve")
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 

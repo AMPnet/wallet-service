@@ -11,14 +11,14 @@ import com.ampnet.walletservice.grpc.blockchain.pojo.PortfolioData
 import com.ampnet.walletservice.security.WithMockCrowdfoundUser
 import com.ampnet.walletservice.service.pojo.PortfolioStats
 import com.fasterxml.jackson.module.kotlin.readValue
-import java.time.ZonedDateTime
-import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import java.time.ZonedDateTime
+import java.util.UUID
 
 class PortfolioControllerTest : ControllerTestBase() {
 
@@ -43,10 +43,12 @@ class PortfolioControllerTest : ControllerTestBase() {
             createWalletForProject(testContext.secondProject, "2-project-wallet-hash")
         }
         suppose("Blockchain service will return portfolio") {
-            testContext.portfolio = Portfolio(listOf(
-                PortfolioData(getWalletHash(projectUuid), 10_000_00),
-                PortfolioData(getWalletHash(testContext.secondProject), 50_000_00)
-            ))
+            testContext.portfolio = Portfolio(
+                listOf(
+                    PortfolioData(getWalletHash(projectUuid), 10_000_00),
+                    PortfolioData(getWalletHash(testContext.secondProject), 50_000_00)
+                )
+            )
             Mockito.`when`(
                 blockchainService.getPortfolio(getWalletHash(userUuid))
             ).thenReturn(testContext.portfolio)
@@ -57,7 +59,8 @@ class PortfolioControllerTest : ControllerTestBase() {
             ).thenReturn(
                 listOf(
                     getProjectResponse(projectUuid, userUuid, UUID.randomUUID()),
-                    getProjectResponse(testContext.secondProject, userUuid, UUID.randomUUID()))
+                    getProjectResponse(testContext.secondProject, userUuid, UUID.randomUUID())
+                )
             )
         }
 
@@ -88,14 +91,22 @@ class PortfolioControllerTest : ControllerTestBase() {
             val walletHash = getWalletHash(userUuid)
             val now = ZonedDateTime.now()
             testContext.transactions = listOf(
-                BlockchainTransaction(walletHash, "to", 1000,
-                    TransactionsResponse.Transaction.Type.INVEST, now.minusYears(1)),
-                BlockchainTransaction(walletHash, "to_2", 1000,
-                    TransactionsResponse.Transaction.Type.INVEST, now.minusMonths(1)),
-                BlockchainTransaction("from", walletHash, 10,
-                    TransactionsResponse.Transaction.Type.SHARE_PAYOUT, now.minusDays(1)),
-                BlockchainTransaction("from_2", walletHash, 10,
-                    TransactionsResponse.Transaction.Type.SHARE_PAYOUT, now)
+                BlockchainTransaction(
+                    walletHash, "to", 1000,
+                    TransactionsResponse.Transaction.Type.INVEST, now.minusYears(1)
+                ),
+                BlockchainTransaction(
+                    walletHash, "to_2", 1000,
+                    TransactionsResponse.Transaction.Type.INVEST, now.minusMonths(1)
+                ),
+                BlockchainTransaction(
+                    "from", walletHash, 10,
+                    TransactionsResponse.Transaction.Type.SHARE_PAYOUT, now.minusDays(1)
+                ),
+                BlockchainTransaction(
+                    "from_2", walletHash, 10,
+                    TransactionsResponse.Transaction.Type.SHARE_PAYOUT, now
+                )
             )
             Mockito.`when`(
                 blockchainService.getTransactions(getWalletHash(userUuid))
@@ -154,7 +165,8 @@ class PortfolioControllerTest : ControllerTestBase() {
             )
             Mockito.`when`(
                 blockchainService.getInvestmentsInProject(
-                    getWalletHash(userUuid), getWalletHash(projectUuid))
+                    getWalletHash(userUuid), getWalletHash(projectUuid)
+                )
             ).thenReturn(testContext.transactions)
         }
         suppose("Project service will return project") {
@@ -196,14 +208,22 @@ class PortfolioControllerTest : ControllerTestBase() {
             val walletHash = getWalletHash(userUuid)
             val now = ZonedDateTime.now()
             testContext.transactions = listOf(
-                BlockchainTransaction(walletHash, "to", 1000,
-                    TransactionsResponse.Transaction.Type.DEPOSIT, now.minusYears(1)),
-                BlockchainTransaction(walletHash, "to_2", 1000,
-                    TransactionsResponse.Transaction.Type.INVEST, now.minusMonths(1)),
-                BlockchainTransaction("from", walletHash, 10,
-                    TransactionsResponse.Transaction.Type.SHARE_PAYOUT, now.minusDays(1)),
-                BlockchainTransaction("from_2", walletHash, 10,
-                    TransactionsResponse.Transaction.Type.WITHDRAW, now)
+                BlockchainTransaction(
+                    walletHash, "to", 1000,
+                    TransactionsResponse.Transaction.Type.DEPOSIT, now.minusYears(1)
+                ),
+                BlockchainTransaction(
+                    walletHash, "to_2", 1000,
+                    TransactionsResponse.Transaction.Type.INVEST, now.minusMonths(1)
+                ),
+                BlockchainTransaction(
+                    "from", walletHash, 10,
+                    TransactionsResponse.Transaction.Type.SHARE_PAYOUT, now.minusDays(1)
+                ),
+                BlockchainTransaction(
+                    "from_2", walletHash, 10,
+                    TransactionsResponse.Transaction.Type.WITHDRAW, now
+                )
             )
             Mockito.`when`(
                 blockchainService.getTransactions(getWalletHash(userUuid))

@@ -9,11 +9,11 @@ import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.exception.GrpcException
 import com.ampnet.walletservice.exception.ResourceNotFoundException
 import io.grpc.StatusRuntimeException
-import java.util.UUID
-import java.util.concurrent.TimeUnit
 import mu.KLogging
 import net.devh.boot.grpc.client.channelfactory.GrpcChannelFactory
 import org.springframework.stereotype.Service
+import java.util.UUID
+import java.util.concurrent.TimeUnit
 
 @Service
 class ProjectServiceImpl(

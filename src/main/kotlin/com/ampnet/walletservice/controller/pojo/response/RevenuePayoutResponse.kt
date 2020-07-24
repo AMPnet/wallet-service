@@ -1,9 +1,9 @@
 package com.ampnet.walletservice.controller.pojo.response
 
 import com.ampnet.walletservice.persistence.model.RevenuePayout
+import org.springframework.data.domain.Page
 import java.time.ZonedDateTime
 import java.util.UUID
-import org.springframework.data.domain.Page
 
 data class RevenuePayoutResponse(
     val projectUuid: UUID,

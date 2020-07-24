@@ -8,12 +8,12 @@ import com.ampnet.walletservice.exception.ResourceNotFoundException
 import com.ampnet.walletservice.persistence.model.Deposit
 import com.ampnet.walletservice.service.impl.DepositServiceImpl
 import com.ampnet.walletservice.service.pojo.DepositCreateServiceRequest
-import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
+import java.util.UUID
 
 class DepositServiceTest : JpaServiceTestBase() {
 
@@ -61,7 +61,8 @@ class DepositServiceTest : JpaServiceTestBase() {
         verify("Service will throw exception for missing project privileges by user") {
             val exception = assertThrows<InvalidRequestException> {
                 val serviceRequest = DepositCreateServiceRequest(
-                    projectUuid, userUuid, 100L, DepositWithdrawType.PROJECT)
+                    projectUuid, userUuid, 100L, DepositWithdrawType.PROJECT
+                )
                 depositService.create(serviceRequest)
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.PRJ_MISSING_PRIVILEGE)

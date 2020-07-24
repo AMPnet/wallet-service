@@ -12,8 +12,6 @@ import com.ampnet.walletservice.persistence.model.TransactionInfo
 import com.ampnet.walletservice.persistence.model.Wallet
 import com.ampnet.walletservice.persistence.model.Withdraw
 import com.fasterxml.jackson.module.kotlin.readValue
-import java.time.ZonedDateTime
-import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -21,6 +19,8 @@ import org.mockito.Mockito
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import java.time.ZonedDateTime
+import java.util.UUID
 
 class BroadcastTransactionControllerTest : ControllerTestBase() {
 
@@ -43,11 +43,12 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
         verify("User cannot post signed non existing transaction") {
             val request = TxBroadcastRequest(0, signedTransaction)
             val response = mockMvc.perform(
-                    post(broadcastPath)
-                        .content(objectMapper.writeValueAsString(request))
-                        .contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isBadRequest)
-                    .andReturn()
+                post(broadcastPath)
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+                .andExpect(status().isBadRequest)
+                .andReturn()
             verifyResponseErrorCode(response, ErrorCode.TX_MISSING)
         }
     }
@@ -68,7 +69,8 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(
                 post(broadcastPath)
                     .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -103,7 +105,8 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(
                 post(broadcastPath)
                     .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -139,9 +142,10 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(
                 post(broadcastPath)
                     .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isBadRequest)
-                    .andReturn()
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+                .andExpect(status().isBadRequest)
+                .andReturn()
             verifyResponseErrorCode(result, ErrorCode.TX_COMPANION_DATA_MISSING)
         }
     }
@@ -161,7 +165,8 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(
                 post(broadcastPath)
                     .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -197,7 +202,8 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(
                 post(broadcastPath)
                     .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
                 .andExpect(status().isBadRequest)
                 .andReturn()
             verifyResponseErrorCode(result, ErrorCode.TX_COMPANION_DATA_MISSING)
@@ -218,7 +224,8 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(
                 post(broadcastPath)
                     .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -245,7 +252,8 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(
                 post(broadcastPath)
                     .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -276,7 +284,8 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(
                 post(broadcastPath)
                     .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -311,7 +320,8 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(
                 post(broadcastPath)
                     .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -342,7 +352,8 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(
                 post(broadcastPath)
                     .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -377,7 +388,8 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(
                 post(broadcastPath)
                     .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -405,7 +417,8 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(
                 post(broadcastPath)
                     .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -433,7 +446,8 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(
                 post(broadcastPath)
                     .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 

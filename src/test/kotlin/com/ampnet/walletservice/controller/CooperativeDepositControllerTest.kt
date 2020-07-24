@@ -15,8 +15,6 @@ import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionData
 import com.ampnet.walletservice.persistence.model.Deposit
 import com.ampnet.walletservice.security.WithMockCrowdfoundUser
 import com.fasterxml.jackson.module.kotlin.readValue
-import java.time.ZonedDateTime
-import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -27,6 +25,8 @@ import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import java.time.ZonedDateTime
+import java.util.UUID
 
 class CooperativeDepositControllerTest : ControllerTestBase() {
 
@@ -54,7 +54,8 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
         verify("Cooperative can search deposit by reference") {
             val savedDeposit = testContext.deposits.first()
             val result = mockMvc.perform(
-                get("$depositPath/search").param("reference", savedDeposit.reference))
+                get("$depositPath/search").param("reference", savedDeposit.reference)
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -74,7 +75,8 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
 
         verify("Cooperative gets not found for searching deposit by non-existing reference") {
             mockMvc.perform(
-                get("$depositPath/search").param("reference", "non-existing"))
+                get("$depositPath/search").param("reference", "non-existing")
+            )
                 .andExpect(status().isNotFound)
         }
     }
@@ -91,9 +93,10 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
             val request = CommentRequest("Decline!")
             val depositId = testContext.deposits.first().id
             val result = mockMvc.perform(
-                    post("$depositPath/$depositId/decline")
-                        .content(objectMapper.writeValueAsString(request))
-                        .contentType(MediaType.APPLICATION_JSON))
+                post("$depositPath/$depositId/decline")
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -130,10 +133,13 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
         }
         suppose("File storage will store document") {
             testContext.multipartFile = MockMultipartFile(
-                "file", "test.txt", "text/plain", "Some document data".toByteArray())
+                "file", "test.txt", "text/plain", "Some document data".toByteArray()
+            )
             Mockito.`when`(
-                cloudStorageService.saveFile(testContext.multipartFile.originalFilename,
-                    testContext.multipartFile.bytes)
+                cloudStorageService.saveFile(
+                    testContext.multipartFile.originalFilename,
+                    testContext.multipartFile.bytes
+                )
             ).thenReturn(testContext.documentLink)
         }
 
@@ -141,7 +147,8 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
             val depositId = testContext.deposits.first().id
             val result = mockMvc.perform(
                 RestDocumentationRequestBuilders.fileUpload("$depositPath/$depositId/approve?amount=${testContext.amount}")
-                    .file(testContext.multipartFile))
+                    .file(testContext.multipartFile)
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -168,11 +175,15 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
     @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWA_DEPOSIT])
     fun mustNotBeAbleToApproveNonExistingDeposit() {
         suppose("File storage will store document") {
-            testContext.multipartFile = MockMultipartFile("file", "test.txt",
-                "text/plain", "Some document data".toByteArray())
+            testContext.multipartFile = MockMultipartFile(
+                "file", "test.txt",
+                "text/plain", "Some document data".toByteArray()
+            )
             Mockito.`when`(
-                cloudStorageService.saveFile(testContext.multipartFile.originalFilename,
-                    testContext.multipartFile.bytes)
+                cloudStorageService.saveFile(
+                    testContext.multipartFile.originalFilename,
+                    testContext.multipartFile.bytes
+                )
             ).thenReturn(testContext.documentLink)
         }
 
@@ -180,7 +191,8 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(
                 RestDocumentationRequestBuilders.fileUpload("$depositPath/0/approve")
                     .file(testContext.multipartFile)
-                    .param("amount", testContext.amount.toString()))
+                    .param("amount", testContext.amount.toString())
+            )
                 .andExpect(status().isBadRequest)
                 .andReturn()
 
@@ -205,7 +217,8 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
                 get("$depositPath/unapproved")
                     .param("size", "20")
                     .param("page", "0")
-                    .param("sort", "createdAt,desc"))
+                    .param("sort", "createdAt,desc")
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -235,7 +248,8 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
                 get("$depositPath/unapproved/project")
                     .param("size", "20")
                     .param("page", "0")
-                    .param("sort", "createdAt,desc"))
+                    .param("sort", "createdAt,desc")
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -264,7 +278,8 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
                 get("$depositPath/approved")
                     .param("size", "20")
                     .param("page", "0")
-                    .param("sort", "approvedAt,desc"))
+                    .param("sort", "approvedAt,desc")
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -293,7 +308,8 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
                 get("$depositPath/unsigned")
                     .param("size", "20")
                     .param("page", "0")
-                    .param("sort", "approvedAt,desc"))
+                    .param("sort", "approvedAt,desc")
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -324,7 +340,8 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
                 get("$depositPath/approved/project")
                     .param("size", "20")
                     .param("page", "0")
-                    .param("sort", "approvedAt,desc"))
+                    .param("sort", "approvedAt,desc")
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -354,7 +371,8 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
                 get("$depositPath/unsigned/project")
                     .param("size", "20")
                     .param("page", "0")
-                    .param("sort", "approvedAt,desc"))
+                    .param("sort", "approvedAt,desc")
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 

@@ -17,8 +17,10 @@ class CooperativeDepositServiceTest : JpaServiceTestBase() {
     private val cooperativeDepositService: CooperativeDepositService by lazy {
         val storageServiceImpl = StorageServiceImpl(documentRepository, mockedCloudStorageService)
         val transactionInfoService = TransactionInfoServiceImpl(transactionInfoRepository)
-        CooperativeDepositServiceImpl(walletRepository, depositRepository, declinedRepository, mockedBlockchainService,
-            transactionInfoService, storageServiceImpl, mockedMailService)
+        CooperativeDepositServiceImpl(
+            walletRepository, depositRepository, declinedRepository, mockedBlockchainService,
+            transactionInfoService, storageServiceImpl, mockedMailService
+        )
     }
     private lateinit var deposit: Deposit
 

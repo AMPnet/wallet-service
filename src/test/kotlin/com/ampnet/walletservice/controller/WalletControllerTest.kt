@@ -15,8 +15,6 @@ import com.ampnet.walletservice.persistence.model.PairWalletCode
 import com.ampnet.walletservice.persistence.model.Wallet
 import com.ampnet.walletservice.security.WithMockCrowdfoundUser
 import com.fasterxml.jackson.module.kotlin.readValue
-import java.time.ZonedDateTime
-import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -25,6 +23,8 @@ import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import java.time.ZonedDateTime
+import java.util.UUID
 
 class WalletControllerTest : ControllerTestBase() {
 
@@ -52,7 +52,8 @@ class WalletControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(
                 post("$walletPath/pair")
                     .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -94,7 +95,8 @@ class WalletControllerTest : ControllerTestBase() {
 
         verify("User can pair wallet code") {
             val result = mockMvc.perform(
-                get("$walletPath/pair/${testContext.pairWalletCode}"))
+                get("$walletPath/pair/${testContext.pairWalletCode}")
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -117,7 +119,8 @@ class WalletControllerTest : ControllerTestBase() {
 
         verify("User can get his wallet") {
             val result = mockMvc.perform(
-                get(walletPath))
+                get(walletPath)
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -149,7 +152,8 @@ class WalletControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(
                 post(walletPath)
                     .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -187,7 +191,8 @@ class WalletControllerTest : ControllerTestBase() {
             mockMvc.perform(
                 post(walletPath)
                     .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
                 .andExpect(status().isBadRequest)
         }
     }
@@ -200,7 +205,8 @@ class WalletControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(
                 post(walletPath)
                     .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
                 .andExpect(status().isConflict)
                 .andReturn()
             val errorMessage = result.response.errorMessage
@@ -223,10 +229,12 @@ class WalletControllerTest : ControllerTestBase() {
             val userWalletHash = getWalletHash(userUuid)
             testContext.transactionData = TransactionData(signedTransaction)
             testContext.time = ZonedDateTime.now().plusDays(30)
-            val request = GenerateProjectWalletRequest(userWalletHash, orgWalletHash, 100000, 100, 10000000,
-                testContext.time.toInstant().toEpochMilli())
+            val request = GenerateProjectWalletRequest(
+                userWalletHash, orgWalletHash, 100000, 100, 10000000,
+                testContext.time.toInstant().toEpochMilli()
+            )
             Mockito.`when`(
-                    blockchainService.generateProjectWalletTransaction(request)
+                blockchainService.generateProjectWalletTransaction(request)
             ).thenReturn(testContext.transactionData)
         }
         suppose("Project service will return project") {
@@ -237,7 +245,8 @@ class WalletControllerTest : ControllerTestBase() {
 
         verify("User can get transaction to create project wallet") {
             val result = mockMvc.perform(
-                get("$projectWalletPath/$projectUuid/transaction"))
+                get("$projectWalletPath/$projectUuid/transaction")
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -257,7 +266,8 @@ class WalletControllerTest : ControllerTestBase() {
 
         verify("User cannot get create project wallet transaction for additional wallet") {
             val response = mockMvc.perform(
-                get("$projectWalletPath/$projectUuid/transaction"))
+                get("$projectWalletPath/$projectUuid/transaction")
+            )
                 .andExpect(status().isBadRequest)
                 .andReturn()
             verifyResponseErrorCode(response, ErrorCode.WALLET_EXISTS)
@@ -274,7 +284,8 @@ class WalletControllerTest : ControllerTestBase() {
 
         verify("User can fetch organization wallet") {
             val result = mockMvc.perform(
-                get("$organizationWalletPath/$organizationUuid"))
+                get("$organizationWalletPath/$organizationUuid")
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -317,7 +328,8 @@ class WalletControllerTest : ControllerTestBase() {
         verify("User can get transaction to create organization wallet") {
             val path = "$organizationWalletPath/$organizationUuid/transaction"
             val result = mockMvc.perform(
-                get(path))
+                get(path)
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 

@@ -36,10 +36,10 @@ import com.ampnet.walletservice.grpc.blockchain.pojo.RevenuePayoutTxRequest
 import com.ampnet.walletservice.grpc.blockchain.pojo.SellOfferData
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionData
 import io.grpc.StatusRuntimeException
-import java.util.concurrent.TimeUnit
 import mu.KLogging
 import net.devh.boot.grpc.client.channelfactory.GrpcChannelFactory
 import org.springframework.stereotype.Service
+import java.util.concurrent.TimeUnit
 
 @Service
 class BlockchainServiceImpl(
@@ -99,8 +99,10 @@ class BlockchainServiceImpl(
             logger.info { "Successfully created organization wallet" }
             return TransactionData(response)
         } catch (ex: StatusRuntimeException) {
-            throw getInternalExceptionFromStatusException(ex,
-                "Could not generate transaction create organization: $userWalletHash")
+            throw getInternalExceptionFromStatusException(
+                ex,
+                "Could not generate transaction create organization: $userWalletHash"
+            )
         }
     }
 
@@ -142,8 +144,10 @@ class BlockchainServiceImpl(
     }
 
     override fun generateProjectInvestmentTransaction(request: ProjectInvestmentTxRequest): TransactionData {
-        logger.info { "User: ${request.userWalletHash} is investing to project: ${request.projectWalletHash} " +
-            "with amount ${request.amount}" }
+        logger.info {
+            "User: ${request.userWalletHash} is investing to project: ${request.projectWalletHash} " +
+                "with amount ${request.amount}"
+        }
         try {
             val response = serviceWithTimeout()
                 .generateInvestTx(
@@ -157,7 +161,8 @@ class BlockchainServiceImpl(
             return TransactionData(response)
         } catch (ex: StatusRuntimeException) {
             throw getInternalExceptionFromStatusException(
-                ex, "Could not invest in project: ${request.projectWalletHash}")
+                ex, "Could not invest in project: ${request.projectWalletHash}"
+            )
         }
     }
 
@@ -178,7 +183,8 @@ class BlockchainServiceImpl(
             return TransactionData(response)
         } catch (ex: StatusRuntimeException) {
             throw getInternalExceptionFromStatusException(
-                ex, "Could not cancel invests in project: $projectWalletHash by user: $userWalletHash")
+                ex, "Could not cancel invests in project: $projectWalletHash by user: $userWalletHash"
+            )
         }
     }
 
@@ -233,8 +239,10 @@ class BlockchainServiceImpl(
     }
 
     override fun generateApproveProjectBurnTransaction(request: ApproveProjectBurnTransactionRequest): TransactionData {
-        logger.info { "Generating Approve Burn Project Transaction projectTxHash: ${request.projectTxHash} " +
-            "for amount = ${request.amount} by user walletHash: ${request.userWalletHash}" }
+        logger.info {
+            "Generating Approve Burn Project Transaction projectTxHash: ${request.projectTxHash} " +
+                "for amount = ${request.amount} by user walletHash: ${request.userWalletHash}"
+        }
         try {
             val response = serviceWithTimeout()
                 .generateApproveProjectWithdrawTx(
@@ -248,13 +256,16 @@ class BlockchainServiceImpl(
             return TransactionData(response)
         } catch (ex: StatusRuntimeException) {
             throw getInternalExceptionFromStatusException(
-                ex, "Could not Burn Transaction for project: ${request.projectTxHash}")
+                ex, "Could not Burn Transaction for project: ${request.projectTxHash}"
+            )
         }
     }
 
     override fun generateRevenuePayout(request: RevenuePayoutTxRequest): TransactionData {
-        logger.info { "Generating Revenue Payout Transaction projectTxHash: ${request.projectWallet} " +
-            "for amount = ${request.amount} by user walletHash: ${request.userWallet}" }
+        logger.info {
+            "Generating Revenue Payout Transaction projectTxHash: ${request.projectWallet} " +
+                "for amount = ${request.amount} by user walletHash: ${request.userWallet}"
+        }
         try {
             val response = serviceWithTimeout()
                 .generateStartRevenueSharesPayoutTx(
@@ -268,7 +279,8 @@ class BlockchainServiceImpl(
             return TransactionData(response)
         } catch (ex: StatusRuntimeException) {
             throw getInternalExceptionFromStatusException(
-                ex, "Could not Revenue Payout Transaction for project: ${request.projectWallet}")
+                ex, "Could not Revenue Payout Transaction for project: ${request.projectWallet}"
+            )
         }
     }
 
@@ -321,8 +333,10 @@ class BlockchainServiceImpl(
             logger.debug { "Investments in project response: $response" }
             return response.transactionsList.map { BlockchainTransaction(it) }
         } catch (ex: StatusRuntimeException) {
-            throw getInternalExceptionFromStatusException(ex,
-                "Could not get investments by user: $userWalletHash in project: $projectWalletHash")
+            throw getInternalExceptionFromStatusException(
+                ex,
+                "Could not get investments by user: $userWalletHash in project: $projectWalletHash"
+            )
         }
     }
 
@@ -338,8 +352,10 @@ class BlockchainServiceImpl(
             logger.debug { "Projects info response: $response" }
             return response.projectsList.map { ProjectInfoResponse(it) }
         } catch (ex: StatusRuntimeException) {
-            throw getInternalExceptionFromStatusException(ex,
-                "Could not get projects info for hashes: $hashes")
+            throw getInternalExceptionFromStatusException(
+                ex,
+                "Could not get projects info for hashes: $hashes"
+            )
         }
     }
 

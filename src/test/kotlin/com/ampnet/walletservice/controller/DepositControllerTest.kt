@@ -7,8 +7,6 @@ import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.persistence.model.Deposit
 import com.ampnet.walletservice.security.WithMockCrowdfoundUser
 import com.fasterxml.jackson.module.kotlin.readValue
-import java.time.ZonedDateTime
-import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -18,6 +16,8 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delet
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import java.time.ZonedDateTime
+import java.util.UUID
 
 class DepositControllerTest : ControllerTestBase() {
 
@@ -44,11 +44,12 @@ class DepositControllerTest : ControllerTestBase() {
         verify("User can create new deposit") {
             val request = AmountRequest(testContext.amount)
             val result = mockMvc.perform(
-                    post(depositPath)
-                            .content(objectMapper.writeValueAsString(request))
-                            .contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isOk)
-                    .andReturn()
+                post(depositPath)
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+                .andExpect(status().isOk)
+                .andReturn()
 
             val deposit: DepositResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(deposit.owner).isEqualTo(userUuid)
@@ -70,7 +71,7 @@ class DepositControllerTest : ControllerTestBase() {
         }
         verify("Mail notification is sent") {
             Mockito.verify(mailService, Mockito.times(1))
-                    .sendDepositRequest(userUuid, testContext.amount)
+                .sendDepositRequest(userUuid, testContext.amount)
         }
     }
 
@@ -84,11 +85,12 @@ class DepositControllerTest : ControllerTestBase() {
         verify("User cannot create deposit without wallet") {
             val request = AmountRequest(testContext.amount)
             val result = mockMvc.perform(
-                    post(depositPath)
-                            .content(objectMapper.writeValueAsString(request))
-                            .contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isBadRequest)
-                    .andReturn()
+                post(depositPath)
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+                .andExpect(status().isBadRequest)
+                .andReturn()
             verifyResponseErrorCode(result, ErrorCode.WALLET_MISSING)
         }
     }
@@ -135,8 +137,8 @@ class DepositControllerTest : ControllerTestBase() {
 
         verify("User can his get pending deposit") {
             val result = mockMvc.perform(get(depositPath))
-                    .andExpect(status().isOk)
-                    .andReturn()
+                .andExpect(status().isOk)
+                .andReturn()
 
             val deposit: DepositResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(deposit.owner).isEqualTo(userUuid)
@@ -150,7 +152,7 @@ class DepositControllerTest : ControllerTestBase() {
     fun mustGetNotFoundForNoPendingDeposit() {
         verify("User gets not found for non pending deposit") {
             mockMvc.perform(get(depositPath))
-                    .andExpect(status().isNotFound)
+                .andExpect(status().isNotFound)
         }
     }
 
@@ -174,7 +176,8 @@ class DepositControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(
                 post("$depositPath/project/$projectUuid")
                     .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 

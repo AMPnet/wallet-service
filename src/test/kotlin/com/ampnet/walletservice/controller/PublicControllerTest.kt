@@ -5,14 +5,14 @@ import com.ampnet.walletservice.controller.pojo.response.WalletResponse
 import com.ampnet.walletservice.persistence.model.Wallet
 import com.ampnet.walletservice.security.WithMockCrowdfoundUser
 import com.fasterxml.jackson.module.kotlin.readValue
-import java.time.ZonedDateTime
-import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import java.time.ZonedDateTime
+import java.util.UUID
 
 class PublicControllerTest : ControllerTestBase() {
 
@@ -73,14 +73,18 @@ class PublicControllerTest : ControllerTestBase() {
             Mockito.`when`(
                 blockchainService.getProjectsInfo(listOf(walletHash, inactiveWalletHash))
             ).thenReturn(
-                listOf(getProjectInfoResponse(walletHash, testContext.projectBalance),
-                    getProjectInfoResponse(inactiveWalletHash, testContext.projectBalance - 100))
+                listOf(
+                    getProjectInfoResponse(walletHash, testContext.projectBalance),
+                    getProjectInfoResponse(inactiveWalletHash, testContext.projectBalance - 100)
+                )
             )
             Mockito.`when`(
                 blockchainService.getProjectsInfo(listOf(inactiveWalletHash, walletHash))
             ).thenReturn(
-                listOf(getProjectInfoResponse(inactiveWalletHash, testContext.projectBalance - 100),
-                    getProjectInfoResponse(walletHash, testContext.projectBalance))
+                listOf(
+                    getProjectInfoResponse(inactiveWalletHash, testContext.projectBalance - 100),
+                    getProjectInfoResponse(walletHash, testContext.projectBalance)
+                )
             )
         }
         suppose("Project service will return projects") {
@@ -90,7 +94,8 @@ class PublicControllerTest : ControllerTestBase() {
             ).thenReturn(
                 listOf(
                     getProjectResponse(projects[0], userUuid, UUID.randomUUID()),
-                    getProjectResponse(projects[1], userUuid, UUID.randomUUID(), active = false))
+                    getProjectResponse(projects[1], userUuid, UUID.randomUUID(), active = false)
+                )
             )
         }
 
@@ -99,7 +104,8 @@ class PublicControllerTest : ControllerTestBase() {
                 get(publicProjectActivePath)
                     .param("size", "20")
                     .param("page", "0")
-                    .param("sort", "createdAt,desc"))
+                    .param("sort", "createdAt,desc")
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 

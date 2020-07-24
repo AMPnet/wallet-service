@@ -5,13 +5,13 @@ import com.ampnet.walletservice.exception.InvalidRequestException
 import com.ampnet.walletservice.persistence.repository.RevenuePayoutRepository
 import com.ampnet.walletservice.service.impl.RevenueServiceImpl
 import com.ampnet.walletservice.service.impl.TransactionInfoServiceImpl
-import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
+import java.util.UUID
 
 class RevenueServiceTest : JpaServiceTestBase() {
 
@@ -20,8 +20,10 @@ class RevenueServiceTest : JpaServiceTestBase() {
 
     private val revenueService: RevenueService by lazy {
         val transactionInfoService = TransactionInfoServiceImpl(transactionInfoRepository)
-        RevenueServiceImpl(revenuePayoutRepository, walletRepository,
-            mockedProjectService, mockedBlockchainService, transactionInfoService)
+        RevenueServiceImpl(
+            revenuePayoutRepository, walletRepository,
+            mockedProjectService, mockedBlockchainService, transactionInfoService
+        )
     }
     private val projectWallet = "project-wallet"
 

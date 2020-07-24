@@ -17,10 +17,10 @@ import com.ampnet.walletservice.service.TransactionInfoService
 import com.ampnet.walletservice.service.WalletService
 import com.ampnet.walletservice.service.WithdrawService
 import com.ampnet.walletservice.service.pojo.TransferOwnershipRequest
-import java.util.UUID
-import javax.transaction.Transactional
 import mu.KLogging
 import org.springframework.stereotype.Service
+import java.util.UUID
+import javax.transaction.Transactional
 
 @Service
 class BroadcastTransactionServiceImpl(
@@ -123,7 +123,8 @@ class BroadcastTransactionServiceImpl(
         try {
             val companionData = transactionInfo.companionData
                 ?: throw InvalidRequestException(
-                    ErrorCode.TX_COMPANION_DATA_MISSING, "Missing id for ${transactionInfo.type}")
+                    ErrorCode.TX_COMPANION_DATA_MISSING, "Missing id for ${transactionInfo.type}"
+                )
             return companionData.toInt()
         } catch (ex: NumberFormatException) {
             throw InternalException(ErrorCode.INT_INVALID_VALUE, "Companion data is not Int")
@@ -134,7 +135,8 @@ class BroadcastTransactionServiceImpl(
         try {
             val companionData = transactionInfo.companionData
                 ?: throw InvalidRequestException(
-                    ErrorCode.TX_COMPANION_DATA_MISSING, "Missing uuid for ${transactionInfo.type}")
+                    ErrorCode.TX_COMPANION_DATA_MISSING, "Missing uuid for ${transactionInfo.type}"
+                )
             return UUID.fromString(companionData)
         } catch (ex: IllegalArgumentException) {
             throw InternalException(ErrorCode.INT_INVALID_VALUE, "Companion data is not UUID")

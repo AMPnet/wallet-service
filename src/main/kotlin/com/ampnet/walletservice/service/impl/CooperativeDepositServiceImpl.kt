@@ -18,13 +18,13 @@ import com.ampnet.walletservice.service.StorageService
 import com.ampnet.walletservice.service.TransactionInfoService
 import com.ampnet.walletservice.service.pojo.ApproveDepositRequest
 import com.ampnet.walletservice.service.pojo.MintServiceRequest
-import java.time.ZonedDateTime
-import java.util.UUID
 import mu.KLogging
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.ZonedDateTime
+import java.util.UUID
 
 @Service
 class CooperativeDepositServiceImpl(
@@ -113,8 +113,10 @@ class CooperativeDepositServiceImpl(
 
     private fun validateDepositForMintTransaction(deposit: Deposit) {
         if (deposit.approved.not()) {
-            throw InvalidRequestException(ErrorCode.WALLET_DEPOSIT_NOT_APPROVED,
-                "Deposit: ${deposit.id} is not approved")
+            throw InvalidRequestException(
+                ErrorCode.WALLET_DEPOSIT_NOT_APPROVED,
+                "Deposit: ${deposit.id} is not approved"
+            )
         }
         if (deposit.txHash != null) {
             throw ResourceAlreadyExistsException(ErrorCode.WALLET_DEPOSIT_MINTED, "Mint txHash: ${deposit.txHash}")

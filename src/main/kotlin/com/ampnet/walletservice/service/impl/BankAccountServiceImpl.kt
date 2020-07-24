@@ -6,7 +6,6 @@ import com.ampnet.walletservice.exception.InvalidRequestException
 import com.ampnet.walletservice.persistence.model.BankAccount
 import com.ampnet.walletservice.persistence.repository.BankAccountRepository
 import com.ampnet.walletservice.service.BankAccountService
-import java.util.UUID
 import mu.KLogging
 import org.iban4j.BicFormatException
 import org.iban4j.BicUtil
@@ -14,6 +13,7 @@ import org.iban4j.Iban4jException
 import org.iban4j.IbanUtil
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.util.UUID
 
 @Service
 class BankAccountServiceImpl(private val bankAccountRepository: BankAccountRepository) : BankAccountService {

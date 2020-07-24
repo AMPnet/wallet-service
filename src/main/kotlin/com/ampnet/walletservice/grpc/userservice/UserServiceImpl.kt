@@ -8,11 +8,11 @@ import com.ampnet.walletservice.config.ApplicationProperties
 import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.exception.GrpcException
 import io.grpc.StatusRuntimeException
-import java.util.UUID
-import java.util.concurrent.TimeUnit
 import mu.KLogging
 import net.devh.boot.grpc.client.channelfactory.GrpcChannelFactory
 import org.springframework.stereotype.Service
+import java.util.UUID
+import java.util.concurrent.TimeUnit
 
 @Service
 class UserServiceImpl(

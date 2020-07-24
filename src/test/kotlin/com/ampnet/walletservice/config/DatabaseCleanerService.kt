@@ -1,8 +1,8 @@
 package com.ampnet.walletservice.config
 
+import org.springframework.stereotype.Service
 import javax.persistence.EntityManager
 import javax.transaction.Transactional
-import org.springframework.stereotype.Service
 
 @Service
 class DatabaseCleanerService(val em: EntityManager) {

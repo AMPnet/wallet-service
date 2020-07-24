@@ -49,8 +49,10 @@ class InvestmentControllerTest : ControllerTestBase() {
         suppose("Blockchain service will generate invest transaction") {
             val userWalletHash = getWalletHash(userUuid)
             val projectWalletHash = getWalletHash(projectUuid)
-            Mockito.`when`(blockchainService.generateProjectInvestmentTransaction(
-                ProjectInvestmentTxRequest(userWalletHash, projectWalletHash, testContext.investment))
+            Mockito.`when`(
+                blockchainService.generateProjectInvestmentTransaction(
+                    ProjectInvestmentTxRequest(userWalletHash, projectWalletHash, testContext.investment)
+                )
             ).thenReturn(testContext.transactionData)
         }
 
@@ -59,7 +61,8 @@ class InvestmentControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(
                 post("$projectInvestmentPath/$projectUuid")
                     .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -95,7 +98,8 @@ class InvestmentControllerTest : ControllerTestBase() {
 
         verify("User can generate cancel invests in project transaction") {
             val result = mockMvc.perform(
-                post("$projectInvestmentPath/$projectUuid/cancel"))
+                post("$projectInvestmentPath/$projectUuid/cancel")
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 

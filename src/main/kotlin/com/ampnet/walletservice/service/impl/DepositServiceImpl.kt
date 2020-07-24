@@ -12,10 +12,10 @@ import com.ampnet.walletservice.persistence.repository.DepositRepository
 import com.ampnet.walletservice.persistence.repository.WalletRepository
 import com.ampnet.walletservice.service.DepositService
 import com.ampnet.walletservice.service.pojo.DepositCreateServiceRequest
-import java.util.UUID
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.util.UUID
 
 @Service
 class DepositServiceImpl(
@@ -76,7 +76,8 @@ class DepositServiceImpl(
             DepositWithdrawType.USER -> {
                 if (deposit.ownerUuid != user) {
                     throw InvalidRequestException(
-                        ErrorCode.USER_MISSING_PRIVILEGE, "Deposit does not belong to this user")
+                        ErrorCode.USER_MISSING_PRIVILEGE, "Deposit does not belong to this user"
+                    )
                 }
             }
             DepositWithdrawType.PROJECT -> {
@@ -91,8 +92,10 @@ class DepositServiceImpl(
             .findByOwnerUuid(owner)
             .filter { it.approved.not() }
         if (unapprovedDeposits.isEmpty().not()) {
-            throw ResourceAlreadyExistsException(ErrorCode.WALLET_DEPOSIT_EXISTS,
-                "Check your unapproved deposit: ${unapprovedDeposits.firstOrNull()?.id}")
+            throw ResourceAlreadyExistsException(
+                ErrorCode.WALLET_DEPOSIT_EXISTS,
+                "Check your unapproved deposit: ${unapprovedDeposits.firstOrNull()?.id}"
+            )
         }
     }
 
