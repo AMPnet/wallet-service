@@ -6,13 +6,13 @@ import com.ampnet.walletservice.grpc.blockchain.pojo.SellOfferData
 import com.ampnet.walletservice.persistence.model.Wallet
 import com.ampnet.walletservice.security.WithMockCrowdfoundUser
 import com.fasterxml.jackson.module.kotlin.readValue
-import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
+import java.util.UUID
 
 class SellOfferControllerTest : ControllerTestBase() {
 
@@ -42,14 +42,16 @@ class SellOfferControllerTest : ControllerTestBase() {
             ).thenReturn(
                 listOf(
                     getProjectResponse(testContext.projects[0], userUuid, UUID.randomUUID()),
-                    getProjectResponse(testContext.projects[1], userUuid, UUID.randomUUID()))
+                    getProjectResponse(testContext.projects[1], userUuid, UUID.randomUUID())
+                )
             )
             Mockito.`when`(
                 projectService.getProjects(testContext.projects.reversed().toSet())
             ).thenReturn(
                 listOf(
                     getProjectResponse(testContext.projects[1], userUuid, UUID.randomUUID()),
-                    getProjectResponse(testContext.projects[0], userUuid, UUID.randomUUID()))
+                    getProjectResponse(testContext.projects[0], userUuid, UUID.randomUUID())
+                )
             )
         }
         suppose("Blockchain service will return sell offers") {

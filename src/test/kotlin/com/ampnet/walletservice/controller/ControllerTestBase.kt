@@ -26,8 +26,6 @@ import com.ampnet.walletservice.persistence.repository.WithdrawRepository
 import com.ampnet.walletservice.service.CloudStorageService
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import java.time.ZonedDateTime
-import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
@@ -46,6 +44,8 @@ import org.springframework.test.web.servlet.MvcResult
 import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
+import java.time.ZonedDateTime
+import java.util.UUID
 
 @ExtendWith(value = [SpringExtension::class, RestDocumentationExtension::class])
 @SpringBootTest
@@ -93,10 +93,13 @@ abstract class ControllerTestBase : TestBase() {
         mockMvc = MockMvcBuilders.webAppContextSetup(wac)
             .apply<DefaultMockMvcBuilder>(SecurityMockMvcConfigurers.springSecurity())
             .apply<DefaultMockMvcBuilder>(MockMvcRestDocumentation.documentationConfiguration(restDocumentation))
-            .alwaysDo<DefaultMockMvcBuilder>(MockMvcRestDocumentation.document(
-                "{ClassName}/{methodName}",
-                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                Preprocessors.preprocessResponse(Preprocessors.prettyPrint())))
+            .alwaysDo<DefaultMockMvcBuilder>(
+                MockMvcRestDocumentation.document(
+                    "{ClassName}/{methodName}",
+                    Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                    Preprocessors.preprocessResponse(Preprocessors.prettyPrint())
+                )
+            )
             .build()
     }
 
@@ -124,8 +127,10 @@ abstract class ControllerTestBase : TestBase() {
         } else {
             null
         }
-        val wallet = Wallet(UUID.randomUUID(), owner, hash, type, Currency.EUR,
-            ZonedDateTime.now(), hash, ZonedDateTime.now(), alias)
+        val wallet = Wallet(
+            UUID.randomUUID(), owner, hash, type, Currency.EUR,
+            ZonedDateTime.now(), hash, ZonedDateTime.now(), alias
+        )
         return walletRepository.save(wallet)
     }
 
@@ -176,8 +181,10 @@ abstract class ControllerTestBase : TestBase() {
         type: DepositWithdrawType = DepositWithdrawType.USER
     ): Deposit {
         val document = saveFile("doc", "document-link", "type", 1, user)
-        val deposit = Deposit(0, user, "S34SDGFT", true, amount,
-            ZonedDateTime.now(), user, type, txHash, user, ZonedDateTime.now(), document, null)
+        val deposit = Deposit(
+            0, user, "S34SDGFT", true, amount,
+            ZonedDateTime.now(), user, type, txHash, user, ZonedDateTime.now(), document, null
+        )
         return depositRepository.save(deposit)
     }
 
@@ -186,9 +193,11 @@ abstract class ControllerTestBase : TestBase() {
         amount: Long = 1000,
         type: DepositWithdrawType = DepositWithdrawType.USER
     ): Withdraw {
-        val withdraw = Withdraw(0, owner, amount, ZonedDateTime.now(), owner, "bank-account",
+        val withdraw = Withdraw(
+            0, owner, amount, ZonedDateTime.now(), owner, "bank-account",
             "approved-tx", ZonedDateTime.now(),
-            null, null, null, null, type)
+            null, null, null, null, type
+        )
         return withdrawRepository.save(withdraw)
     }
 
@@ -199,14 +208,18 @@ abstract class ControllerTestBase : TestBase() {
         userUuid: UUID? = null
     ): Withdraw {
         val user = userUuid ?: owner
-        val withdraw = Withdraw(0, owner, amount, ZonedDateTime.now(), user, "bank-account",
-            null, null, null, null, null, null, type)
+        val withdraw = Withdraw(
+            0, owner, amount, ZonedDateTime.now(), user, "bank-account",
+            null, null, null, null, null, null, type
+        )
         return withdrawRepository.save(withdraw)
     }
 
     protected fun createUnapprovedDeposit(user: UUID, type: DepositWithdrawType = DepositWithdrawType.USER): Deposit {
-        val deposit = Deposit(0, user, "S34SDGFT", false, 10_000,
-            ZonedDateTime.now(), user, type, null, null, null, null, null)
+        val deposit = Deposit(
+            0, user, "S34SDGFT", false, 10_000,
+            ZonedDateTime.now(), user, type, null, null, null, null, null
+        )
         return depositRepository.save(deposit)
     }
 }

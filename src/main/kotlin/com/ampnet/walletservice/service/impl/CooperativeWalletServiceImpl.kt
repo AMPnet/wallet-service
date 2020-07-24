@@ -21,16 +21,16 @@ import com.ampnet.walletservice.service.pojo.OrganizationWithWallet
 import com.ampnet.walletservice.service.pojo.ProjectWithWallet
 import com.ampnet.walletservice.service.pojo.TransferOwnershipRequest
 import com.ampnet.walletservice.service.pojo.UserWithWallet
-import java.lang.Thread.sleep
-import java.time.ZonedDateTime
-import java.util.UUID
-import kotlin.concurrent.thread
 import mu.KLogging
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.lang.Thread.sleep
+import java.time.ZonedDateTime
+import java.util.UUID
+import kotlin.concurrent.thread
 
 @Service
 class CooperativeWalletServiceImpl(

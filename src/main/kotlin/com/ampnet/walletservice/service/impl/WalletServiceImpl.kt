@@ -18,14 +18,14 @@ import com.ampnet.walletservice.persistence.repository.WalletRepository
 import com.ampnet.walletservice.service.TransactionInfoService
 import com.ampnet.walletservice.service.WalletService
 import com.ampnet.walletservice.service.pojo.ProjectWithWallet
-import java.time.ZonedDateTime
-import java.util.UUID
 import mu.KotlinLogging
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.ZonedDateTime
+import java.util.UUID
 
 @Service
 class WalletServiceImpl(
@@ -108,8 +108,10 @@ class WalletServiceImpl(
         logger.debug { "Generating create wallet transaction for organization: $organization" }
         val organizationResponse = projectService.getOrganization(organization)
         if (organizationResponse.createdByUser != user.toString()) {
-            throw InvalidRequestException(ErrorCode.ORG_MISSING_PRIVILEGE,
-                "User: $user did not create this organization: $organization and cannot create a wallet")
+            throw InvalidRequestException(
+                ErrorCode.ORG_MISSING_PRIVILEGE,
+                "User: $user did not create this organization: $organization and cannot create a wallet"
+            )
         }
         val data = blockchainService.generateCreateOrganizationTransaction(userWalletHash)
         val info =
@@ -173,8 +175,10 @@ class WalletServiceImpl(
 
     private fun createWallet(owner: UUID, activationData: String, type: WalletType, alias: String? = null): Wallet {
         if (walletRepository.findByActivationData(activationData).isPresent) {
-            throw ResourceAlreadyExistsException(ErrorCode.WALLET_HASH_EXISTS,
-                "Trying to create wallet: $type with existing activationData: $activationData")
+            throw ResourceAlreadyExistsException(
+                ErrorCode.WALLET_HASH_EXISTS,
+                "Trying to create wallet: $type with existing activationData: $activationData"
+            )
         }
         val wallet = Wallet(owner, activationData, type, Currency.EUR, alias)
         return walletRepository.save(wallet)
@@ -188,8 +192,10 @@ class WalletServiceImpl(
 
     private fun throwExceptionIfOrganizationAlreadyHasWallet(organization: UUID) {
         if (walletRepository.findByOwner(organization).isPresent) {
-            throw ResourceAlreadyExistsException(ErrorCode.WALLET_EXISTS,
-                "Organization: $organization already has a wallet.")
+            throw ResourceAlreadyExistsException(
+                ErrorCode.WALLET_EXISTS,
+                "Organization: $organization already has a wallet."
+            )
         }
     }
 

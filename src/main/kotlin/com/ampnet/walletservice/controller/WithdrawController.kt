@@ -6,8 +6,6 @@ import com.ampnet.walletservice.controller.pojo.response.WithdrawResponse
 import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.service.WithdrawService
 import com.ampnet.walletservice.service.pojo.WithdrawCreateServiceRequest
-import java.util.UUID
-import javax.validation.Valid
 import mu.KLogging
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -16,6 +14,8 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
+import java.util.UUID
+import javax.validation.Valid
 
 @RestController
 class WithdrawController(
@@ -39,7 +39,8 @@ class WithdrawController(
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to create Withdraw:$request by user: ${userPrincipal.uuid}" }
         val serviceRequest = WithdrawCreateServiceRequest(
-            userPrincipal.uuid, request.bankAccount, request.amount, userPrincipal.uuid, DepositWithdrawType.USER)
+            userPrincipal.uuid, request.bankAccount, request.amount, userPrincipal.uuid, DepositWithdrawType.USER
+        )
         val withdraw = withdrawService.createWithdraw(serviceRequest)
         return ResponseEntity.ok(WithdrawResponse(withdraw))
     }
@@ -62,7 +63,8 @@ class WithdrawController(
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.info { "Received request to create project withdraw:$request by user: ${userPrincipal.uuid}" }
         val serviceRequest = WithdrawCreateServiceRequest(
-            projectUuid, request.bankAccount, request.amount, userPrincipal.uuid, DepositWithdrawType.PROJECT)
+            projectUuid, request.bankAccount, request.amount, userPrincipal.uuid, DepositWithdrawType.PROJECT
+        )
         val withdraw = withdrawService.createWithdraw(serviceRequest)
         return ResponseEntity.ok(WithdrawResponse(withdraw))
     }

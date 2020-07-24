@@ -12,11 +12,11 @@ import com.ampnet.walletservice.persistence.repository.WalletRepository
 import com.ampnet.walletservice.service.ProjectInvestmentService
 import com.ampnet.walletservice.service.TransactionInfoService
 import com.ampnet.walletservice.service.pojo.ProjectInvestmentRequest
-import java.time.ZonedDateTime
-import java.util.UUID
 import mu.KLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.ZonedDateTime
+import java.util.UUID
 
 @Service
 class ProjectInvestmentServiceImpl(
@@ -49,7 +49,8 @@ class ProjectInvestmentServiceImpl(
         )
         val data = blockchainService.generateProjectInvestmentTransaction(investRequest)
         val info = transactionInfoService.createInvestTransaction(
-            projectResponse.name, request.amount, request.investorUuid)
+            projectResponse.name, request.amount, request.investorUuid
+        )
         logger.debug { "Generated Investment in project for request: $request" }
         return TransactionDataAndInfo(data, info)
     }
@@ -91,7 +92,8 @@ class ProjectInvestmentServiceImpl(
         }
         if (amount < project.minPerUser) {
             throw InvalidRequestException(
-                ErrorCode.PRJ_MIN_PER_USER, "User has to invest at least ${project.minPerUser}")
+                ErrorCode.PRJ_MIN_PER_USER, "User has to invest at least ${project.minPerUser}"
+            )
         }
     }
 
@@ -106,7 +108,8 @@ class ProjectInvestmentServiceImpl(
         val currentFunds = blockchainService.getBalance(hash)
         if (currentFunds == expectedFunding) {
             throw InvalidRequestException(
-                ErrorCode.PRJ_MAX_FUNDS, "Project has reached expected funding: $currentFunds")
+                ErrorCode.PRJ_MAX_FUNDS, "Project has reached expected funding: $currentFunds"
+            )
         }
     }
 }

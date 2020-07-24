@@ -59,7 +59,8 @@ class RevenueControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(
                 post("$revenuePath/payout/project/$projectUuid")
                     .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
                 .andExpect(MockMvcResultMatchers.status().isOk)
                 .andReturn()
 
@@ -97,7 +98,8 @@ class RevenueControllerTest : ControllerTestBase() {
                 get("$revenuePath/payout/project/$projectUuid")
                     .param("size", "20")
                     .param("page", "0")
-                    .param("sort", "createdAt,desc"))
+                    .param("sort", "createdAt,desc")
+            )
                 .andExpect(MockMvcResultMatchers.status().isOk)
                 .andReturn()
 

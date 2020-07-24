@@ -67,7 +67,8 @@ class BankAccountControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(
                 post(bankAccountPath)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(request)))
+                    .content(objectMapper.writeValueAsString(request))
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -92,7 +93,8 @@ class BankAccountControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(
                 post(bankAccountPath)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(request)))
+                    .content(objectMapper.writeValueAsString(request))
+            )
                 .andExpect(status().isBadRequest)
                 .andReturn()
 
@@ -126,7 +128,8 @@ class BankAccountControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(
                 post(bankAccountPath)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(request)))
+                    .content(objectMapper.writeValueAsString(request))
+            )
                 .andExpect(status().isBadRequest)
                 .andReturn()
 
@@ -141,7 +144,8 @@ class BankAccountControllerTest : ControllerTestBase() {
         val result = mockMvc.perform(
             post(bankAccountPath)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                .content(objectMapper.writeValueAsString(request))
+        )
             .andExpect(status().isBadRequest)
             .andReturn()
 

@@ -61,7 +61,8 @@ class TransactionInfoServiceTest : JpaServiceTestBase() {
     fun mustCreateInvestAllowanceTransaction() {
         suppose("Service can create invest allowance transactionInfo") {
             testContext.transactionInfo = transactionInfoService.createInvestTransaction(
-                    testContext.projectName, testContext.amount, userUuid)
+                testContext.projectName, testContext.amount, userUuid
+            )
         }
 
         verify("Invest allowance transactionInfo is created") {

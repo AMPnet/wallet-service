@@ -9,14 +9,14 @@ import com.ampnet.walletservice.grpc.userservice.UserService
 import com.ampnet.walletservice.service.impl.CooperativeWalletServiceImpl
 import com.ampnet.walletservice.service.impl.TransactionInfoServiceImpl
 import com.ampnet.walletservice.service.pojo.TransferOwnershipRequest
-import java.util.UUID
-import java.util.concurrent.TimeUnit
 import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.context.annotation.Import
+import java.util.UUID
+import java.util.concurrent.TimeUnit
 
 @Import(ApplicationProperties::class)
 class CooperativeWalletServiceTest : JpaServiceTestBase() {
@@ -35,8 +35,10 @@ class CooperativeWalletServiceTest : JpaServiceTestBase() {
         createWallet(userUuid, walletAddress, WalletType.USER)
         createWallet(secondUser, secondWalletAddress, WalletType.USER)
         val transactionInfoService = TransactionInfoServiceImpl(transactionInfoRepository)
-        CooperativeWalletServiceImpl(walletRepository, mockedUserService, mockedBlockchainService,
-            transactionInfoService, mockedProjectService, applicationProperties)
+        CooperativeWalletServiceImpl(
+            walletRepository, mockedUserService, mockedBlockchainService,
+            transactionInfoService, mockedProjectService, applicationProperties
+        )
     }
 
     @Test
@@ -58,7 +60,8 @@ class CooperativeWalletServiceTest : JpaServiceTestBase() {
 
         verify("Service will set user as admin") {
             val request = TransferOwnershipRequest(
-                secondUser, walletAddress, TransferWalletType.TOKEN_ISSUER, signedTransaction)
+                secondUser, walletAddress, TransferWalletType.TOKEN_ISSUER, signedTransaction
+            )
             service.transferOwnership(request)
             await().atLeast(applicationProperties.grpc.blockchainPollingDelay * 5, TimeUnit.MILLISECONDS)
                 .until { true }
@@ -86,7 +89,8 @@ class CooperativeWalletServiceTest : JpaServiceTestBase() {
 
         verify("Service will set user as token issuer") {
             val request = TransferOwnershipRequest(
-                secondUser, walletAddress, TransferWalletType.TOKEN_ISSUER, signedTransaction)
+                secondUser, walletAddress, TransferWalletType.TOKEN_ISSUER, signedTransaction
+            )
             service.transferOwnership(request)
             await().pollDelay(applicationProperties.grpc.blockchainPollingDelay * 5, TimeUnit.MILLISECONDS)
                 .until { true }
@@ -114,7 +118,8 @@ class CooperativeWalletServiceTest : JpaServiceTestBase() {
 
         verify("Service will set user as platform manager") {
             val request = TransferOwnershipRequest(
-                secondUser, walletAddress, TransferWalletType.PLATFORM_MANAGER, signedTransaction)
+                secondUser, walletAddress, TransferWalletType.PLATFORM_MANAGER, signedTransaction
+            )
             service.transferOwnership(request)
             await().pollDelay(applicationProperties.grpc.blockchainPollingDelay * 5, TimeUnit.MILLISECONDS)
                 .until { true }

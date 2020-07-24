@@ -24,8 +24,6 @@ import com.ampnet.walletservice.persistence.repository.TransactionInfoRepository
 import com.ampnet.walletservice.persistence.repository.WalletRepository
 import com.ampnet.walletservice.persistence.repository.WithdrawRepository
 import com.ampnet.walletservice.service.impl.CloudStorageServiceImpl
-import java.time.ZonedDateTime
-import java.util.UUID
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.api.fail
 import org.mockito.Mockito
@@ -35,6 +33,8 @@ import org.springframework.context.annotation.Import
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
+import java.time.ZonedDateTime
+import java.util.UUID
 
 @ExtendWith(SpringExtension::class)
 @DataJpaTest
@@ -81,8 +81,10 @@ abstract class JpaServiceTestBase : TestBase() {
         createWallet(organization, hash, WalletType.ORG)
 
     protected fun createWallet(owner: UUID, hash: String, type: WalletType): Wallet {
-        val wallet = Wallet(UUID.randomUUID(), owner, hash, type, Currency.EUR,
-            ZonedDateTime.now(), hash, ZonedDateTime.now(), null)
+        val wallet = Wallet(
+            UUID.randomUUID(), owner, hash, type, Currency.EUR,
+            ZonedDateTime.now(), hash, ZonedDateTime.now(), null
+        )
         return walletRepository.save(wallet)
     }
 
@@ -100,22 +102,28 @@ abstract class JpaServiceTestBase : TestBase() {
     }
 
     protected fun createBurnedWithdraw(user: UUID, type: DepositWithdrawType = DepositWithdrawType.USER): Withdraw {
-        val withdraw = Withdraw(0, user, 100L, ZonedDateTime.now(), user, bankAccount,
+        val withdraw = Withdraw(
+            0, user, 100L, ZonedDateTime.now(), user, bankAccount,
             "approved-tx", ZonedDateTime.now(),
-            "burned-tx", ZonedDateTime.now(), UUID.randomUUID(), null, type)
+            "burned-tx", ZonedDateTime.now(), UUID.randomUUID(), null, type
+        )
         return withdrawRepository.save(withdraw)
     }
 
     protected fun createApprovedWithdraw(user: UUID, type: DepositWithdrawType = DepositWithdrawType.USER): Withdraw {
-        val withdraw = Withdraw(0, user, 100L, ZonedDateTime.now(), user, bankAccount,
+        val withdraw = Withdraw(
+            0, user, 100L, ZonedDateTime.now(), user, bankAccount,
             "approved-tx", ZonedDateTime.now(),
-            null, null, null, null, type)
+            null, null, null, null, type
+        )
         return withdrawRepository.save(withdraw)
     }
 
     protected fun createWithdraw(user: UUID, type: DepositWithdrawType = DepositWithdrawType.USER): Withdraw {
-        val withdraw = Withdraw(0, user, 100L, ZonedDateTime.now(), userUuid, bankAccount,
-            null, null, null, null, null, null, type)
+        val withdraw = Withdraw(
+            0, user, 100L, ZonedDateTime.now(), userUuid, bankAccount,
+            null, null, null, null, null, null, type
+        )
         return withdrawRepository.save(withdraw)
     }
 
@@ -124,14 +132,18 @@ abstract class JpaServiceTestBase : TestBase() {
         type: DepositWithdrawType = DepositWithdrawType.USER
     ): Deposit {
         val document = saveFile(userUuid)
-        val deposit = Deposit(0, userUuid, "S34SDGFT", true, 10_000,
-            ZonedDateTime.now(), userUuid, type, txHash, userUuid, ZonedDateTime.now(), document, null)
+        val deposit = Deposit(
+            0, userUuid, "S34SDGFT", true, 10_000,
+            ZonedDateTime.now(), userUuid, type, txHash, userUuid, ZonedDateTime.now(), document, null
+        )
         return depositRepository.save(deposit)
     }
 
     protected fun createUnapprovedDeposit(owner: UUID, type: DepositWithdrawType = DepositWithdrawType.USER): Deposit {
-        val deposit = Deposit(0, owner, "S34SDGFT", false, 10_000,
-            ZonedDateTime.now(), userUuid, type, null, null, null, null, null)
+        val deposit = Deposit(
+            0, owner, "S34SDGFT", false, 10_000,
+            ZonedDateTime.now(), userUuid, type, null, null, null, null, null
+        )
         return depositRepository.save(deposit)
     }
 }

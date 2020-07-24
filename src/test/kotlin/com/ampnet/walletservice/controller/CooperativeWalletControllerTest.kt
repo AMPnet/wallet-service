@@ -15,7 +15,6 @@ import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionData
 import com.ampnet.walletservice.persistence.model.Wallet
 import com.ampnet.walletservice.security.WithMockCrowdfoundUser
 import com.fasterxml.jackson.module.kotlin.readValue
-import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -24,6 +23,7 @@ import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import java.util.UUID
 
 class CooperativeWalletControllerTest : ControllerTestBase() {
 
@@ -54,7 +54,8 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
 
         verify("Cooperative can generate activate wallet transaction") {
             val result = mockMvc.perform(
-                post("$cooperativeWalletPath/${testContext.wallet.uuid}/transaction"))
+                post("$cooperativeWalletPath/${testContext.wallet.uuid}/transaction")
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -93,7 +94,8 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
                 get("$cooperativeWalletPath/user")
                     .param("size", "20")
                     .param("page", "0")
-                    .param("sort", createdAtDesc))
+                    .param("sort", createdAtDesc)
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -129,14 +131,16 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
             ).thenReturn(
                 listOf(
                     getOrganizationResponse(testContext.organizations[0], userUuid),
-                    getOrganizationResponse(testContext.organizations[1], userUuid))
+                    getOrganizationResponse(testContext.organizations[1], userUuid)
+                )
             )
             Mockito.`when`(
                 projectService.getOrganizations(testContext.organizations.reversed().toSet())
             ).thenReturn(
                 listOf(
                     getOrganizationResponse(testContext.organizations[1], userUuid),
-                    getOrganizationResponse(testContext.organizations[0], userUuid))
+                    getOrganizationResponse(testContext.organizations[0], userUuid)
+                )
             )
         }
 
@@ -145,7 +149,8 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
                 get("$cooperativeWalletPath/organization")
                     .param("size", "20")
                     .param("page", "0")
-                    .param("sort", createdAtDesc))
+                    .param("sort", createdAtDesc)
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -181,14 +186,16 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
             ).thenReturn(
                 listOf(
                     getProjectResponse(testContext.projects[0], userUuid, UUID.randomUUID()),
-                    getProjectResponse(testContext.projects[1], userUuid, UUID.randomUUID()))
+                    getProjectResponse(testContext.projects[1], userUuid, UUID.randomUUID())
+                )
             )
             Mockito.`when`(
                 projectService.getProjects(testContext.projects.reversed().toSet())
             ).thenReturn(
                 listOf(
                     getProjectResponse(testContext.projects[1], userUuid, UUID.randomUUID()),
-                    getProjectResponse(testContext.projects[0], userUuid, UUID.randomUUID()))
+                    getProjectResponse(testContext.projects[0], userUuid, UUID.randomUUID())
+                )
             )
         }
 
@@ -197,7 +204,8 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
                 get("$cooperativeWalletPath/project")
                     .param("size", "20")
                     .param("page", "0")
-                    .param("sort", createdAtDesc))
+                    .param("sort", createdAtDesc)
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -228,7 +236,8 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(
                 post("$cooperativeWalletPath/transfer/transaction")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(request)))
+                    .content(objectMapper.writeValueAsString(request))
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -260,7 +269,8 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(
                 post("$cooperativeWalletPath/transfer/transaction")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(request)))
+                    .content(objectMapper.writeValueAsString(request))
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 

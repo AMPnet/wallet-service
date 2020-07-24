@@ -17,11 +17,11 @@ import com.ampnet.walletservice.service.BankAccountService
 import com.ampnet.walletservice.service.TransactionInfoService
 import com.ampnet.walletservice.service.WithdrawService
 import com.ampnet.walletservice.service.pojo.WithdrawCreateServiceRequest
-import java.time.ZonedDateTime
-import java.util.UUID
 import mu.KLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.ZonedDateTime
+import java.util.UUID
 
 @Service
 class WithdrawServiceImpl(
@@ -122,7 +122,8 @@ class WithdrawServiceImpl(
             DepositWithdrawType.USER -> {
                 if (withdraw.ownerUuid != user) {
                     throw InvalidRequestException(
-                        ErrorCode.USER_MISSING_PRIVILEGE, "Withdraw does not belong to this user")
+                        ErrorCode.USER_MISSING_PRIVILEGE, "Withdraw does not belong to this user"
+                    )
                 }
             }
             DepositWithdrawType.PROJECT -> {
@@ -154,7 +155,8 @@ class WithdrawServiceImpl(
     fun validateWithdrawIsNotApproved(withdraw: Withdraw) {
         if (withdraw.approvedTxHash != null) {
             throw InvalidRequestException(
-                ErrorCode.WALLET_WITHDRAW_APPROVED, "Approved txHash: ${withdraw.approvedTxHash}")
+                ErrorCode.WALLET_WITHDRAW_APPROVED, "Approved txHash: ${withdraw.approvedTxHash}"
+            )
         }
     }
 }

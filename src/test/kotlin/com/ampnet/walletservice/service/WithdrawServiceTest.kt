@@ -9,20 +9,22 @@ import com.ampnet.walletservice.service.impl.BankAccountServiceImpl
 import com.ampnet.walletservice.service.impl.TransactionInfoServiceImpl
 import com.ampnet.walletservice.service.impl.WithdrawServiceImpl
 import com.ampnet.walletservice.service.pojo.WithdrawCreateServiceRequest
-import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
+import java.util.UUID
 
 class WithdrawServiceTest : JpaServiceTestBase() {
 
     private val withdrawService: WithdrawService by lazy {
         val transactionInfoService = TransactionInfoServiceImpl(transactionInfoRepository)
         val bankAccountService = BankAccountServiceImpl(bankAccountRepository)
-        WithdrawServiceImpl(walletRepository, withdrawRepository, mockedBlockchainService, transactionInfoService,
-            mockedMailService, mockedProjectService, bankAccountService)
+        WithdrawServiceImpl(
+            walletRepository, withdrawRepository, mockedBlockchainService, transactionInfoService,
+            mockedMailService, mockedProjectService, bankAccountService
+        )
     }
     private lateinit var withdraw: Withdraw
 
@@ -55,7 +57,8 @@ class WithdrawServiceTest : JpaServiceTestBase() {
     fun mustThrowExceptionForInvalidIban() {
         verify("Service will throw exception for invalid IBAN") {
             val requet = WithdrawCreateServiceRequest(
-                userUuid, "ivalid-iban", 100L, userUuid, DepositWithdrawType.USER)
+                userUuid, "ivalid-iban", 100L, userUuid, DepositWithdrawType.USER
+            )
             val exception = assertThrows<InvalidRequestException> {
                 withdrawService.createWithdraw(requet)
             }
@@ -122,7 +125,8 @@ class WithdrawServiceTest : JpaServiceTestBase() {
         verify("Service will throw exception missing privilege for project") {
             val exception = assertThrows<InvalidRequestException> {
                 val request = WithdrawCreateServiceRequest(
-                    projectUuid, bankAccount, 100L, userUuid, DepositWithdrawType.PROJECT)
+                    projectUuid, bankAccount, 100L, userUuid, DepositWithdrawType.PROJECT
+                )
                 withdrawService.createWithdraw(request)
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.PRJ_MISSING_PRIVILEGE)

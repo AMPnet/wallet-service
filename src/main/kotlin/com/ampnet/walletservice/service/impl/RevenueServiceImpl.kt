@@ -13,13 +13,13 @@ import com.ampnet.walletservice.persistence.repository.WalletRepository
 import com.ampnet.walletservice.service.RevenueService
 import com.ampnet.walletservice.service.TransactionInfoService
 import com.ampnet.walletservice.service.pojo.RevenuePayoutTxInfo
-import java.time.ZonedDateTime
-import java.util.UUID
 import mu.KLogging
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.ZonedDateTime
+import java.util.UUID
 
 @Service
 class RevenueServiceImpl(
@@ -55,7 +55,8 @@ class RevenueServiceImpl(
     override fun confirmRevenuePayout(signedTransaction: String, revenuePayoutId: Int): RevenuePayout {
         val revenuePayout = revenuePayoutRepository.findById(revenuePayoutId).orElseThrow {
             throw ResourceNotFoundException(
-                ErrorCode.WALLET_PAYOUT_MISSING, "Missing RevenuePayout with id: $revenuePayoutId")
+                ErrorCode.WALLET_PAYOUT_MISSING, "Missing RevenuePayout with id: $revenuePayoutId"
+            )
         }
         val txHash = blockchainService.postTransaction(signedTransaction)
         revenuePayout.txHash = txHash

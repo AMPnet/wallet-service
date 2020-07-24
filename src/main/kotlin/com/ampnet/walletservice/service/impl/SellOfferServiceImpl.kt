@@ -5,9 +5,9 @@ import com.ampnet.walletservice.grpc.projectservice.ProjectService
 import com.ampnet.walletservice.persistence.repository.WalletRepository
 import com.ampnet.walletservice.service.SellOfferService
 import com.ampnet.walletservice.service.pojo.ProjectWithSellOffers
-import java.util.UUID
 import mu.KLogging
 import org.springframework.stereotype.Service
+import java.util.UUID
 
 @Service
 class SellOfferServiceImpl(

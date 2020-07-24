@@ -6,7 +6,6 @@ import com.ampnet.walletservice.controller.pojo.response.PairWalletResponse
 import com.ampnet.walletservice.controller.pojo.response.TransactionResponse
 import com.ampnet.walletservice.controller.pojo.response.WalletResponse
 import com.ampnet.walletservice.service.WalletService
-import java.util.UUID
 import mu.KLogging
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -14,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
+import java.util.UUID
 
 @RestController
 class WalletController(
@@ -94,7 +94,7 @@ class WalletController(
             "Received request to create Wallet for Organization: $organizationUuid by user: ${userPrincipal.email}"
         }
         val transaction = walletService
-                .generateTransactionToCreateOrganizationWallet(organizationUuid, userPrincipal.uuid)
+            .generateTransactionToCreateOrganizationWallet(organizationUuid, userPrincipal.uuid)
         val response = TransactionResponse(transaction)
         return ResponseEntity.ok(response)
     }

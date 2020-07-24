@@ -11,8 +11,6 @@ import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionData
 import com.ampnet.walletservice.persistence.model.Withdraw
 import com.ampnet.walletservice.security.WithMockCrowdfoundUser
 import com.fasterxml.jackson.module.kotlin.readValue
-import java.time.ZonedDateTime
-import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -23,6 +21,8 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import java.time.ZonedDateTime
+import java.util.UUID
 
 class CooperativeWithdrawControllerTest : ControllerTestBase() {
 
@@ -61,7 +61,8 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
                 get("$withdrawPath/approved")
                     .param("size", "1")
                     .param("page", "0")
-                    .param("sort", "approvedAt,desc"))
+                    .param("sort", "approvedAt,desc")
+            )
                 .andExpect(MockMvcResultMatchers.status().isOk)
                 .andReturn()
 
@@ -108,7 +109,8 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
                 get("$withdrawPath/approved/project")
                     .param("size", "1")
                     .param("page", "0")
-                    .param("sort", "approvedAt,desc"))
+                    .param("sort", "approvedAt,desc")
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -154,7 +156,8 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
                 get("$withdrawPath/burned")
                     .param("size", "20")
                     .param("page", "0")
-                    .param("sort", "burnedAt,desc"))
+                    .param("sort", "burnedAt,desc")
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -201,7 +204,8 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
                 get("$withdrawPath/burned/project")
                     .param("size", "20")
                     .param("page", "0")
-                    .param("sort", "burnedAt,desc"))
+                    .param("sort", "burnedAt,desc")
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -253,7 +257,8 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
 
         verify("User can generate burn transaction") {
             val result = mockMvc.perform(
-                post("$withdrawPath/${testContext.withdraw.id}/transaction/burn"))
+                post("$withdrawPath/${testContext.withdraw.id}/transaction/burn")
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -287,16 +292,20 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
         }
         suppose("File storage will store document") {
             testContext.multipartFile = MockMultipartFile(
-                "file", "test.txt", "text/plain", "DocumentData".toByteArray())
+                "file", "test.txt", "text/plain", "DocumentData".toByteArray()
+            )
             Mockito.`when`(
-                cloudStorageService.saveFile(testContext.multipartFile.originalFilename,
-                    testContext.multipartFile.bytes)
+                cloudStorageService.saveFile(
+                    testContext.multipartFile.originalFilename,
+                    testContext.multipartFile.bytes
+                )
             ).thenReturn(testContext.documentLink)
         }
 
         verify("Cooperative can add document for withdraw") {
             val result = mockMvc.perform(
-                fileUpload("$withdrawPath/${testContext.withdraw.id}/document").file(testContext.multipartFile))
+                fileUpload("$withdrawPath/${testContext.withdraw.id}/document").file(testContext.multipartFile)
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -308,9 +317,11 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
 
     private fun createBurnedWithdraw(user: UUID, type: DepositWithdrawType = DepositWithdrawType.USER): Withdraw {
         val document = saveFile("withdraw-doc", "doc-link", "type", 1, user)
-        val withdraw = Withdraw(0, user, testContext.amount, ZonedDateTime.now(), user, testContext.bankAccount,
+        val withdraw = Withdraw(
+            0, user, testContext.amount, ZonedDateTime.now(), user, testContext.bankAccount,
             testContext.approvedTx, ZonedDateTime.now(),
-            testContext.burnedTx, ZonedDateTime.now(), UUID.randomUUID(), document, type)
+            testContext.burnedTx, ZonedDateTime.now(), UUID.randomUUID(), document, type
+        )
         return withdrawRepository.save(withdraw)
     }
 

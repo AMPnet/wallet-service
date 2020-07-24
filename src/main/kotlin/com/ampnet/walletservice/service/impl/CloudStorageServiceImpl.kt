@@ -4,8 +4,6 @@ import com.ampnet.walletservice.config.ApplicationProperties
 import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.exception.InternalException
 import com.ampnet.walletservice.service.CloudStorageService
-import java.net.URI
-import java.time.ZonedDateTime
 import mu.KLogging
 import org.springframework.stereotype.Service
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider
@@ -17,6 +15,8 @@ import software.amazon.awssdk.services.s3.model.ListObjectsRequest
 import software.amazon.awssdk.services.s3.model.ObjectCannedACL
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import software.amazon.awssdk.services.s3.model.S3Exception
+import java.net.URI
+import java.time.ZonedDateTime
 
 @Service
 class CloudStorageServiceImpl(applicationProperties: ApplicationProperties) : CloudStorageService {
@@ -50,8 +50,11 @@ class CloudStorageServiceImpl(applicationProperties: ApplicationProperties) : Cl
             return getFileLink(key)
         } catch (ex: S3Exception) {
             logger.warn { ex.message }
-            throw InternalException(ErrorCode.INT_FILE_STORAGE, "Could not store file with key: $key on cloud\n" +
-                "Exception message: ${ex.message}")
+            throw InternalException(
+                ErrorCode.INT_FILE_STORAGE,
+                "Could not store file with key: $key on cloud\n" +
+                    "Exception message: ${ex.message}"
+            )
         }
     }
 

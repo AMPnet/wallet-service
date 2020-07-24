@@ -33,9 +33,11 @@ internal object ServiceUtils {
     @Throws(InvalidRequestException::class)
     fun validateUserIsProjectOwner(user: UUID, projectResponse: ProjectResponse) {
         if (projectResponse.createdByUser != user.toString()) {
-            throw InvalidRequestException(ErrorCode.PRJ_MISSING_PRIVILEGE,
+            throw InvalidRequestException(
+                ErrorCode.PRJ_MISSING_PRIVILEGE,
                 "User: $user did not create this project: ${projectResponse.uuid} " +
-                    "and cannot create a Withdraw for project")
+                    "and cannot create a Withdraw for project"
+            )
         }
     }
 }
