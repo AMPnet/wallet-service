@@ -47,9 +47,9 @@ dependencies {
     implementation("org.flywaydb:flyway-core")
     runtimeOnly("org.postgresql:postgresql")
 
-    implementation("io.github.microutils:kotlin-logging:1.7.8")
+    implementation("io.github.microutils:kotlin-logging:1.8.3")
     implementation("io.micrometer:micrometer-registry-prometheus")
-    implementation("net.devh:grpc-client-spring-boot-starter:2.7.0.RELEASE")
+    implementation("net.devh:grpc-client-spring-boot-starter:2.9.0.RELEASE")
     implementation("software.amazon.awssdk:s3:2.5.27")
     implementation("com.github.AMPnet:jwt:0.0.6")
     implementation("org.iban4j:iban4j:3.2.1")
