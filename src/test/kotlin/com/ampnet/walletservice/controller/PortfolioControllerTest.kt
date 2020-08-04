@@ -93,19 +93,19 @@ class PortfolioControllerTest : ControllerTestBase() {
             testContext.transactions = listOf(
                 BlockchainTransaction(
                     walletHash, "to", 1000,
-                    TransactionsResponse.Transaction.Type.INVEST, now.minusYears(1)
+                    TransactionsResponse.Transaction.Type.INVEST, now.minusYears(1), "MINED"
                 ),
                 BlockchainTransaction(
                     walletHash, "to_2", 1000,
-                    TransactionsResponse.Transaction.Type.INVEST, now.minusMonths(1)
+                    TransactionsResponse.Transaction.Type.INVEST, now.minusMonths(1), "MINED"
                 ),
                 BlockchainTransaction(
                     "from", walletHash, 10,
-                    TransactionsResponse.Transaction.Type.SHARE_PAYOUT, now.minusDays(1)
+                    TransactionsResponse.Transaction.Type.SHARE_PAYOUT, now.minusDays(1), "MINED"
                 ),
                 BlockchainTransaction(
                     "from_2", walletHash, 10,
-                    TransactionsResponse.Transaction.Type.SHARE_PAYOUT, now
+                    TransactionsResponse.Transaction.Type.SHARE_PAYOUT, now, "MINED"
                 )
             )
             Mockito.`when`(
@@ -210,19 +210,19 @@ class PortfolioControllerTest : ControllerTestBase() {
             testContext.transactions = listOf(
                 BlockchainTransaction(
                     walletHash, "to", 1000,
-                    TransactionsResponse.Transaction.Type.DEPOSIT, now.minusYears(1)
+                    TransactionsResponse.Transaction.Type.DEPOSIT, now.minusYears(1), "MINED"
                 ),
                 BlockchainTransaction(
                     walletHash, "to_2", 1000,
-                    TransactionsResponse.Transaction.Type.INVEST, now.minusMonths(1)
+                    TransactionsResponse.Transaction.Type.INVEST, now.minusMonths(1), "MINED"
                 ),
                 BlockchainTransaction(
                     "from", walletHash, 10,
-                    TransactionsResponse.Transaction.Type.SHARE_PAYOUT, now.minusDays(1)
+                    TransactionsResponse.Transaction.Type.SHARE_PAYOUT, now.minusDays(1), "MINED"
                 ),
                 BlockchainTransaction(
                     "from_2", walletHash, 10,
-                    TransactionsResponse.Transaction.Type.WITHDRAW, now
+                    TransactionsResponse.Transaction.Type.WITHDRAW, now, "MINED"
                 )
             )
             Mockito.`when`(
@@ -245,7 +245,7 @@ class PortfolioControllerTest : ControllerTestBase() {
             getWalletHash(userUuid),
             getWalletHash(projectUuid), amount,
             TransactionsResponse.Transaction.Type.INVEST,
-            ZonedDateTime.now()
+            ZonedDateTime.now(), "MINED"
         )
 
     private class TestContext {
