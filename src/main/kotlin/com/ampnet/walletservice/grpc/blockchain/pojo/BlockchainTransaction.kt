@@ -10,13 +10,15 @@ data class BlockchainTransaction(
     val toTxHash: String,
     val amount: Long,
     val type: TransactionsResponse.Transaction.Type,
-    val date: ZonedDateTime
+    val date: ZonedDateTime,
+    val state: String
 ) {
     constructor(transaction: TransactionsResponse.Transaction) : this(
         transaction.fromTxHash,
         transaction.toTxHash,
         transaction.amount.toLong(),
         transaction.type,
-        ZonedDateTime.ofInstant(Instant.ofEpochMilli(transaction.date.toLong()), ZoneId.systemDefault())
+        ZonedDateTime.ofInstant(Instant.ofEpochMilli(transaction.date.toLong()), ZoneId.systemDefault()),
+        transaction.state
     )
 }

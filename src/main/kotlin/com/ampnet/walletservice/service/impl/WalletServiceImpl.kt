@@ -155,12 +155,13 @@ class WalletServiceImpl(
             return PageImpl(emptyList(), pageable, walletsPage.totalElements)
         }
 
+        val now = ZonedDateTime.now().toInstant().toEpochMilli()
         val projectWalletHashes = projectWallets.values.mapNotNull { it.hash }
         val projectsInfo = blockchainService.getProjectsInfo(projectWalletHashes)
             .toList()
             .associateBy { it.txHash }
         val projectsWithWallet = projectService.getProjects(projectWallets.keys)
-            .filter { it.active }
+            .filter { it.active && it.endDate > now }
             .mapNotNull { project ->
                 val uuid = UUID.fromString(project.uuid)
                 projectWallets[uuid]?.let { wallet ->
