@@ -28,7 +28,7 @@ class PublicController(private val walletService: WalletService) {
 
     @GetMapping("/public/project/active")
     fun getAllActiveProjectsWithWallet(pageable: Pageable): ResponseEntity<ProjectWithWalletListResponse> {
-        logger.debug { "Received request to get project all projects" }
+        logger.debug { "Received request to get all active projects" }
         val projectsResponse = walletService.getProjectsWithActiveWallet(pageable)
         return ResponseEntity.ok(ProjectWithWalletListResponse(projectsResponse))
     }

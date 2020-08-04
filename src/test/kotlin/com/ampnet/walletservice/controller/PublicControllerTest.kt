@@ -135,6 +135,39 @@ class PublicControllerTest : ControllerTestBase() {
     }
 
     @Test
+    fun mustNotReturnEndedProjectInActiveProjects() {
+        suppose("Project wallet exists") {
+            testContext.wallet = createWalletForProject(projectUuid, walletHash)
+        }
+        suppose("Blockchain service will return projects info") {
+            Mockito.`when`(
+                blockchainService.getProjectsInfo(listOf(walletHash))
+            ).thenReturn(
+                listOf(getProjectInfoResponse(walletHash, testContext.projectBalance))
+            )
+        }
+        suppose("Project service will return projects") {
+            Mockito.`when`(
+                projectService.getProjects(setOf(projectUuid))
+            ).thenReturn(
+                listOf(getProjectResponse(projectUuid, userUuid, UUID.randomUUID(), endDate = ZonedDateTime.now().minusDays(10)))
+            )
+        }
+
+        verify("Controller will not return ended project") {
+            val result = mockMvc.perform(
+                get(publicProjectActivePath)
+            )
+                .andExpect(status().isOk)
+                .andReturn()
+
+            val projectsResponse: ProjectWithWalletListResponse =
+                objectMapper.readValue(result.response.contentAsString)
+            assertThat(projectsResponse.projects).hasSize(0)
+        }
+    }
+
+    @Test
     @WithMockCrowdfoundUser(verified = false)
     fun mustBeAbleToGetActiveProjectsWithUnVerifiedAccount() {
         verify("User with unverified account can access public project path") {
