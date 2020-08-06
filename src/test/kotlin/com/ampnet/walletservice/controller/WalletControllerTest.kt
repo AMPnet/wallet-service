@@ -210,7 +210,7 @@ class WalletControllerTest : ControllerTestBase() {
                 .andExpect(status().isConflict)
                 .andReturn()
             val errorMessage = result.response.errorMessage
-            assertThat(errorMessage).contains("User did not verified his profile.")
+            assertThat(errorMessage).contains("User profile not verified.")
         }
     }
 

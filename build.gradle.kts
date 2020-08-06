@@ -26,7 +26,7 @@ plugins {
 }
 
 group = "com.ampnet"
-version = "0.3.11"
+version = "0.3.12"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
@@ -51,7 +51,7 @@ dependencies {
     implementation("io.micrometer:micrometer-registry-prometheus")
     implementation("net.devh:grpc-client-spring-boot-starter:2.9.0.RELEASE")
     implementation("software.amazon.awssdk:s3:2.5.27")
-    implementation("com.github.AMPnet:jwt:0.0.6")
+    implementation("com.github.AMPnet:jwt:0.0.9")
     implementation("org.iban4j:iban4j:3.2.1")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
