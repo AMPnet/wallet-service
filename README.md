@@ -58,8 +58,8 @@ Online storage uses for storing project data like documents and images. It is im
   * `AWS_ACCESS_KEY_ID`
   * `AWS_SECRET_ACCESS_KEY`
 
-Set online storage URL: `com.ampnet.projectservice.file-storage.url`
+Set online storage URL: `com.ampnet.walletservice.file-storage.url`
 
 ### JWT
 
-Set singing key property to verify JWT: `com.ampnet.projectservice.jwt.signing-key`
+Set singing key property to verify JWT: `com.ampnet.walletservice.jwt.signing-key`
