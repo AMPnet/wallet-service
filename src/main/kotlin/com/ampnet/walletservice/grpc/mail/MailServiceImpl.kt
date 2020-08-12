@@ -4,6 +4,7 @@ import com.ampnet.mailservice.proto.DepositInfoRequest
 import com.ampnet.mailservice.proto.DepositRequest
 import com.ampnet.mailservice.proto.Empty
 import com.ampnet.mailservice.proto.MailServiceGrpc
+import com.ampnet.mailservice.proto.WalletTypeRequest
 import com.ampnet.mailservice.proto.WithdrawInfoRequest
 import com.ampnet.mailservice.proto.WithdrawRequest
 import com.ampnet.walletservice.config.ApplicationProperties
@@ -80,10 +81,13 @@ class MailServiceImpl(
         }
     }
 
-    override fun sendNewWalletMail() {
+    override fun sendNewWalletMail(walletType: WalletTypeRequest.Type) {
         logger.debug { "Sending new wallet mail" }
         try {
-            serviceWithTimeout()?.sendNewWalletMail(Empty.getDefaultInstance(), createSteamObserver("new wallet mail"))
+            val request = WalletTypeRequest.newBuilder()
+                .setType(walletType)
+                .build()
+            serviceWithTimeout()?.sendNewWalletMail(request, createSteamObserver("new wallet mail"))
         } catch (ex: StatusRuntimeException) {
             logger.warn("Failed to send new wallet mail.", ex)
         }

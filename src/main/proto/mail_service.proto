@@ -34,6 +34,19 @@ message WithdrawInfoRequest {
     bool burned = 2;
 }
 
+message ResetPasswordRequest {
+    string email = 1;
+    string token = 2;
+}
+
+message WalletTypeRequest {
+    enum Type {
+        USER = 0;
+        PROJECT = 1;
+    }
+    Type type = 1;
+}
+
 message Empty {
 }
 
@@ -44,5 +57,7 @@ service MailService {
     rpc SendWithdrawInfo(WithdrawInfoRequest) returns (Empty);
     rpc SendWithdrawRequest(WithdrawRequest) returns (Empty);
     rpc SendDepositInfo(DepositInfoRequest) returns (Empty);
-    rpc SendNewWalletMail(Empty) returns (Empty);
+    rpc SendResetPassword(ResetPasswordRequest) returns (Empty);
+    rpc SendNewWalletMail(WalletTypeRequest) returns (Empty);
 }
+
