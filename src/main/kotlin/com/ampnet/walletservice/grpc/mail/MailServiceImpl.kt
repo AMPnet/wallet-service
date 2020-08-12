@@ -80,6 +80,15 @@ class MailServiceImpl(
         }
     }
 
+    override fun sendNewWalletMail() {
+        logger.debug { "Sending new wallet mail" }
+        try {
+            serviceWithTimeout()?.sendNewWalletMail(Empty.getDefaultInstance(), createSteamObserver("new wallet mail"))
+        } catch (ex: StatusRuntimeException) {
+            logger.warn("Failed to send new wallet mail.", ex)
+        }
+    }
+
     private fun serviceWithTimeout(): MailServiceGrpc.MailServiceStub? {
         return if (applicationProperties.mail.sendNotification) {
             mailServiceStub.withDeadlineAfter(applicationProperties.grpc.mailServiceTimeout, TimeUnit.MILLISECONDS)

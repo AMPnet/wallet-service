@@ -7,4 +7,5 @@ interface MailService {
     fun sendDepositInfo(user: UUID, minted: Boolean)
     fun sendWithdrawRequest(user: UUID, amount: Long)
     fun sendWithdrawInfo(user: UUID, burned: Boolean)
+    fun sendNewWalletMail()
 }

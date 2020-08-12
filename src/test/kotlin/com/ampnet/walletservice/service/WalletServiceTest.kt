@@ -24,7 +24,8 @@ class WalletServiceTest : JpaServiceTestBase() {
         val transactionService = TransactionInfoServiceImpl(transactionInfoRepository)
         WalletServiceImpl(
             walletRepository, pairWalletCodeRepository,
-            mockedBlockchainService, transactionService, mockedProjectService
+            mockedBlockchainService, transactionService,
+            mockedProjectService, mockedMailService
         )
     }
     private lateinit var testContext: TestContext
@@ -78,6 +79,9 @@ class WalletServiceTest : JpaServiceTestBase() {
         verify("Pair wallet code is deleted") {
             val optionalPairWalletCode = pairWalletCodeRepository.findByPublicKey(defaultPublicKey)
             assertThat(optionalPairWalletCode).isNotPresent
+        }
+        verify("Mail notification for created wallet") {
+            Mockito.verify(mockedMailService, Mockito.times(1)).sendNewWalletMail()
         }
     }
 
