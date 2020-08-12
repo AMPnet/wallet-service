@@ -1,5 +1,6 @@
 package com.ampnet.walletservice.controller
 
+import com.ampnet.mailservice.proto.WalletTypeRequest
 import com.ampnet.walletservice.controller.pojo.request.WalletCreateRequest
 import com.ampnet.walletservice.controller.pojo.request.WalletPairRequest
 import com.ampnet.walletservice.controller.pojo.response.PairWalletResponse
@@ -178,7 +179,7 @@ class WalletControllerTest : ControllerTestBase() {
             assertThat(wallet.hash).isNull()
         }
         verify("Mail notification for created wallet") {
-            Mockito.verify(mailService, Mockito.times(1)).sendNewWalletMail()
+            Mockito.verify(mailService, Mockito.times(1)).sendNewWalletMail(WalletTypeRequest.Type.USER)
         }
     }
 

@@ -1,5 +1,6 @@
 package com.ampnet.walletservice.service.impl
 
+import com.ampnet.mailservice.proto.WalletTypeRequest
 import com.ampnet.walletservice.controller.pojo.request.WalletCreateRequest
 import com.ampnet.walletservice.enums.Currency
 import com.ampnet.walletservice.enums.WalletType
@@ -68,7 +69,7 @@ class WalletServiceImpl(
 
         logger.debug { "Creating wallet: $request for user: $user" }
         val wallet = createWallet(user, request.publicKey, WalletType.USER, request.alias)
-        mailService.sendNewWalletMail()
+        mailService.sendNewWalletMail(WalletTypeRequest.Type.USER)
         return wallet
     }
 
@@ -102,6 +103,7 @@ class WalletServiceImpl(
         val txHash = blockchainService.postTransaction(signedTransaction)
         val wallet = createWallet(project, txHash, WalletType.PROJECT)
         logger.debug { "Created wallet for project: $project" }
+        mailService.sendNewWalletMail(WalletTypeRequest.Type.PROJECT)
         return wallet
     }
 

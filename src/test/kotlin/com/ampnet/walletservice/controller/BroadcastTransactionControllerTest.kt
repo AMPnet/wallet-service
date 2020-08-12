@@ -1,5 +1,6 @@
 package com.ampnet.walletservice.controller
 
+import com.ampnet.mailservice.proto.WalletTypeRequest
 import com.ampnet.walletservice.controller.pojo.request.TxBroadcastRequest
 import com.ampnet.walletservice.controller.pojo.response.TxHashResponse
 import com.ampnet.walletservice.enums.Currency
@@ -188,6 +189,9 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
         verify("TransactionInfo for creating project wallet is deleted") {
             val transactionInfo = transactionInfoRepository.findById(testContext.transactionInfo.id)
             assertThat(transactionInfo).isNotPresent
+        }
+        verify("Mail notification for created project wallet") {
+            Mockito.verify(mailService, Mockito.times(1)).sendNewWalletMail(WalletTypeRequest.Type.PROJECT)
         }
     }
 

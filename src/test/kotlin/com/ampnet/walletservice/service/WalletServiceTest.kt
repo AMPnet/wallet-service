@@ -1,5 +1,6 @@
 package com.ampnet.walletservice.service
 
+import com.ampnet.mailservice.proto.WalletTypeRequest
 import com.ampnet.walletservice.controller.pojo.request.WalletCreateRequest
 import com.ampnet.walletservice.enums.Currency
 import com.ampnet.walletservice.enums.WalletType
@@ -81,7 +82,7 @@ class WalletServiceTest : JpaServiceTestBase() {
             assertThat(optionalPairWalletCode).isNotPresent
         }
         verify("Mail notification for created wallet") {
-            Mockito.verify(mockedMailService, Mockito.times(1)).sendNewWalletMail()
+            Mockito.verify(mockedMailService, Mockito.times(1)).sendNewWalletMail(WalletTypeRequest.Type.USER)
         }
     }
 
@@ -106,6 +107,9 @@ class WalletServiceTest : JpaServiceTestBase() {
             val projectWallet = walletService.getWallet(projectUuid) ?: fail("Missing project wallet")
             assertThat(projectWallet.activationData).isEqualTo(defaultAddressHash)
             assertThat(projectWallet.hash).isNull()
+        }
+        verify("Mail notification for created wallet") {
+            Mockito.verify(mockedMailService, Mockito.times(1)).sendNewWalletMail(WalletTypeRequest.Type.PROJECT)
         }
     }
 
