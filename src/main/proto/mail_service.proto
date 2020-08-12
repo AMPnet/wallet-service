@@ -44,4 +44,5 @@ service MailService {
     rpc SendWithdrawInfo(WithdrawInfoRequest) returns (Empty);
     rpc SendWithdrawRequest(WithdrawRequest) returns (Empty);
     rpc SendDepositInfo(DepositInfoRequest) returns (Empty);
+    rpc SendNewWalletMail(Empty) returns (Empty);
 }

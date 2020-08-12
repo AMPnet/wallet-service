@@ -24,7 +24,8 @@ class WalletServiceTest : JpaServiceTestBase() {
         val transactionService = TransactionInfoServiceImpl(transactionInfoRepository)
         WalletServiceImpl(
             walletRepository, pairWalletCodeRepository,
-            mockedBlockchainService, transactionService, mockedProjectService
+            mockedBlockchainService, transactionService,
+            mockedProjectService, mockedMailService
         )
     }
     private lateinit var testContext: TestContext

@@ -10,6 +10,7 @@ import com.ampnet.walletservice.exception.ResourceAlreadyExistsException
 import com.ampnet.walletservice.grpc.blockchain.BlockchainService
 import com.ampnet.walletservice.grpc.blockchain.pojo.GenerateProjectWalletRequest
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionDataAndInfo
+import com.ampnet.walletservice.grpc.mail.MailService
 import com.ampnet.walletservice.grpc.projectservice.ProjectService
 import com.ampnet.walletservice.persistence.model.PairWalletCode
 import com.ampnet.walletservice.persistence.model.Wallet
@@ -33,7 +34,8 @@ class WalletServiceImpl(
     private val pairWalletCodeRepository: PairWalletCodeRepository,
     private val blockchainService: BlockchainService,
     private val transactionInfoService: TransactionInfoService,
-    private val projectService: ProjectService
+    private val projectService: ProjectService,
+    private val mailService: MailService
 ) : WalletService {
 
     companion object {
@@ -65,7 +67,9 @@ class WalletServiceImpl(
         }
 
         logger.debug { "Creating wallet: $request for user: $user" }
-        return createWallet(user, request.publicKey, WalletType.USER, request.alias)
+        val wallet = createWallet(user, request.publicKey, WalletType.USER, request.alias)
+        mailService.sendNewWalletMail()
+        return wallet
     }
 
     @Transactional
