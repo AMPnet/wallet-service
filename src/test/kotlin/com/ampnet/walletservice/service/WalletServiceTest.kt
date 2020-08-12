@@ -80,6 +80,9 @@ class WalletServiceTest : JpaServiceTestBase() {
             val optionalPairWalletCode = pairWalletCodeRepository.findByPublicKey(defaultPublicKey)
             assertThat(optionalPairWalletCode).isNotPresent
         }
+        verify("Mail notification for created wallet") {
+            Mockito.verify(mockedMailService, Mockito.times(1)).sendNewWalletMail()
+        }
     }
 
     @Test

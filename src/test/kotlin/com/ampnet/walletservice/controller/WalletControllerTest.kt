@@ -177,6 +177,9 @@ class WalletControllerTest : ControllerTestBase() {
             assertThat(wallet.alias).isEqualTo(testContext.alias)
             assertThat(wallet.hash).isNull()
         }
+        verify("Mail notification for created wallet") {
+            Mockito.verify(mailService, Mockito.times(1)).sendNewWalletMail()
+        }
     }
 
     @Test
