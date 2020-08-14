@@ -43,7 +43,8 @@ internal object ServiceUtils {
     }
 
     @Throws(ResourceNotFoundException::class)
-    fun getWalletByUserUuid(userUuid: UUID, walletRepository: WalletRepository): Wallet = walletRepository.findByOwner(userUuid).orElseThrow {
-        throw ResourceNotFoundException(ErrorCode.WALLET_MISSING, "Missing wallet for user with uuid: $userUuid")
-    }
+    fun getWalletByUserUuid(userUuid: UUID, walletRepository: WalletRepository):
+        Wallet = walletRepository.findByOwner(userUuid).orElseThrow {
+            throw ResourceNotFoundException(ErrorCode.WALLET_MISSING, "Missing wallet for user with uuid: $userUuid")
+        }
 }
