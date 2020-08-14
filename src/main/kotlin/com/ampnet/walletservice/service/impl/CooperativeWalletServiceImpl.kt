@@ -104,7 +104,7 @@ class CooperativeWalletServiceImpl(
         owner: UUID,
         request: WalletTransferRequest
     ): TransactionDataAndInfo {
-        val userWallet = ServiceUtils.getWalletByUserUuid(owner, walletRepository)
+        val userWallet = ServiceUtils.getWalletByUserUuid(request.userUuid, walletRepository)
         val data = when (request.type) {
             TransferWalletType.TOKEN_ISSUER -> blockchainService.generateTransferTokenIssuer(userWallet.activationData)
             TransferWalletType.PLATFORM_MANAGER ->

@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test
 class TransactionInfoServiceTest : JpaServiceTestBase() {
 
     private val transactionInfoService: TransactionInfoService by lazy {
-        TransactionInfoServiceImpl(transactionInfoRepository, walletRepository)
+        TransactionInfoServiceImpl(transactionInfoRepository)
     }
 
     private lateinit var testContext: TestContext

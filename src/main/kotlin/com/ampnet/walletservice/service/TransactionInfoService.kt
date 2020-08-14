@@ -17,7 +17,7 @@ interface TransactionInfoService {
     fun createApprovalTransaction(amount: Long, userUuid: UUID, withdrawId: Int): TransactionInfo
     fun createBurnTransaction(amount: Long, userUuid: UUID, withdrawId: Int): TransactionInfo
     fun createRevenuePayoutTransaction(request: RevenuePayoutTxInfo): TransactionInfo
-    fun createTransferOwnership(userUuid: UUID, request: WalletTransferRequest): TransactionInfo
+    fun createTransferOwnership(owner: UUID, request: WalletTransferRequest): TransactionInfo
     fun deleteTransaction(id: Int)
     fun findTransactionInfo(id: Int): TransactionInfo?
 }

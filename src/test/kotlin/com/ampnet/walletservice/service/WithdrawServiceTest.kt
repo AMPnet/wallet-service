@@ -19,7 +19,7 @@ import java.util.UUID
 class WithdrawServiceTest : JpaServiceTestBase() {
 
     private val withdrawService: WithdrawService by lazy {
-        val transactionInfoService = TransactionInfoServiceImpl(transactionInfoRepository, walletRepository)
+        val transactionInfoService = TransactionInfoServiceImpl(transactionInfoRepository)
         val bankAccountService = BankAccountServiceImpl(bankAccountRepository)
         WithdrawServiceImpl(
             walletRepository, withdrawRepository, mockedBlockchainService, transactionInfoService,

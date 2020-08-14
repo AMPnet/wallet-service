@@ -22,7 +22,7 @@ import java.time.ZonedDateTime
 class WalletServiceTest : JpaServiceTestBase() {
 
     private val walletService: WalletService by lazy {
-        val transactionService = TransactionInfoServiceImpl(transactionInfoRepository, walletRepository)
+        val transactionService = TransactionInfoServiceImpl(transactionInfoRepository)
         WalletServiceImpl(
             walletRepository, pairWalletCodeRepository,
             mockedBlockchainService, transactionService,

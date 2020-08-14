@@ -34,7 +34,7 @@ class CooperativeWalletServiceTest : JpaServiceTestBase() {
         databaseCleanerService.deleteAllWallets()
         createWallet(userUuid, walletAddress, WalletType.USER)
         createWallet(secondUser, secondWalletAddress, WalletType.USER)
-        val transactionInfoService = TransactionInfoServiceImpl(transactionInfoRepository, walletRepository)
+        val transactionInfoService = TransactionInfoServiceImpl(transactionInfoRepository)
         CooperativeWalletServiceImpl(
             walletRepository, mockedUserService, mockedBlockchainService,
             transactionInfoService, mockedProjectService, applicationProperties
