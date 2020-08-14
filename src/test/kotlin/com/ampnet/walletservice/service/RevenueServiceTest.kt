@@ -19,7 +19,7 @@ class RevenueServiceTest : JpaServiceTestBase() {
     private lateinit var revenuePayoutRepository: RevenuePayoutRepository
 
     private val revenueService: RevenueService by lazy {
-        val transactionInfoService = TransactionInfoServiceImpl(transactionInfoRepository)
+        val transactionInfoService = TransactionInfoServiceImpl(transactionInfoRepository, walletRepository)
         RevenueServiceImpl(
             revenuePayoutRepository, walletRepository,
             mockedProjectService, mockedBlockchainService, transactionInfoService

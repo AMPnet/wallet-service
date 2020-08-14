@@ -6,6 +6,7 @@ import com.ampnet.walletservice.enums.TransferWalletType
 import com.ampnet.walletservice.enums.WalletType
 import com.ampnet.walletservice.persistence.model.TransactionInfo
 import com.ampnet.walletservice.persistence.repository.TransactionInfoRepository
+import com.ampnet.walletservice.persistence.repository.WalletRepository
 import com.ampnet.walletservice.service.TransactionInfoService
 import com.ampnet.walletservice.service.pojo.CreateTransactionRequest
 import com.ampnet.walletservice.service.pojo.MintServiceRequest
@@ -16,7 +17,8 @@ import java.util.UUID
 
 @Service
 class TransactionInfoServiceImpl(
-    private val transactionInfoRepository: TransactionInfoRepository
+    private val transactionInfoRepository: TransactionInfoRepository,
+    private val walletRepository: WalletRepository
 ) : TransactionInfoService {
 
     @Transactional
@@ -99,8 +101,9 @@ class TransactionInfoServiceImpl(
             TransferWalletType.TOKEN_ISSUER -> TransactionType.TRNSF_TOKEN_OWN
             TransferWalletType.PLATFORM_MANAGER -> TransactionType.TRNSF_PLTFRM_OWN
         }
-        val description = type.description.format(request.walletAddress)
-        val transactionRequest = CreateTransactionRequest(type, description, userUuid, request.walletAddress)
+        val wallet = ServiceUtils.getWalletByUserUuid(userUuid, walletRepository)
+        val description = type.description.format(wallet.activationData)
+        val transactionRequest = CreateTransactionRequest(type, description, userUuid, wallet.activationData)
         return createTransaction(transactionRequest)
     }
 

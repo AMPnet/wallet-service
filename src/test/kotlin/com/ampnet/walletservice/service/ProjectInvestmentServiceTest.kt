@@ -18,7 +18,7 @@ import java.time.ZonedDateTime
 class ProjectInvestmentServiceTest : JpaServiceTestBase() {
 
     private val projectInvestmentService: ProjectInvestmentService by lazy {
-        val transactionService = TransactionInfoServiceImpl(transactionInfoRepository)
+        val transactionService = TransactionInfoServiceImpl(transactionInfoRepository, walletRepository)
         ProjectInvestmentServiceImpl(
             walletRepository, mockedBlockchainService,
             mockedProjectService, transactionService

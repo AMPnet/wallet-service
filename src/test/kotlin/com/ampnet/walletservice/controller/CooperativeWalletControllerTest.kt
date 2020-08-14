@@ -224,15 +224,18 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
     @Test
     @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWA_WALLET_TRANSFER])
     fun mustBeAbleToTransferTokenIssuer() {
+        suppose("There is user with activated wallet") {
+            testContext.wallet = createWalletForUser(userUuid, testContext.walletHash)
+        }
         suppose("Blockchain service will return transaction data for transferring token issuer") {
             testContext.transactionData = TransactionData(testContext.walletHash)
             Mockito.`when`(
-                blockchainService.generateTransferTokenIssuer(testContext.walletAddress)
+                blockchainService.generateTransferTokenIssuer(testContext.wallet.activationData)
             ).thenReturn(testContext.transactionData)
         }
 
         verify("Admin can transfer wallet ownership to user") {
-            val request = WalletTransferRequest(testContext.walletAddress, TransferWalletType.TOKEN_ISSUER)
+            val request = WalletTransferRequest(userUuid, TransferWalletType.TOKEN_ISSUER)
             val result = mockMvc.perform(
                 post("$cooperativeWalletPath/transfer/transaction")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -250,22 +253,25 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
             val transactionInfo = transactionInfoRepository.findAll().first()
             assertThat(transactionInfo.type).isEqualTo(TransactionType.TRNSF_TOKEN_OWN)
             assertThat(transactionInfo.userUuid).isEqualTo(userUuid)
-            assertThat(transactionInfo.companionData).isEqualTo(testContext.walletAddress)
+            assertThat(transactionInfo.companionData).isEqualTo(testContext.wallet.activationData)
         }
     }
 
     @Test
     @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWA_WALLET_TRANSFER])
     fun mustBeAbleToTransferPlatformOwner() {
+        suppose("There is user with activated wallet") {
+            testContext.wallet = createWalletForUser(userUuid, testContext.walletHash)
+        }
         suppose("Blockchain service will return transaction data for transferring platform owner") {
             testContext.transactionData = TransactionData(testContext.walletHash)
             Mockito.`when`(
-                blockchainService.generateTransferPlatformManager(testContext.walletAddress)
+                blockchainService.generateTransferPlatformManager(testContext.wallet.activationData)
             ).thenReturn(testContext.transactionData)
         }
 
         verify("Admin can transfer wallet ownership to user") {
-            val request = WalletTransferRequest(testContext.walletAddress, TransferWalletType.PLATFORM_MANAGER)
+            val request = WalletTransferRequest(userUuid, TransferWalletType.PLATFORM_MANAGER)
             val result = mockMvc.perform(
                 post("$cooperativeWalletPath/transfer/transaction")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -283,7 +289,7 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
             val transactionInfo = transactionInfoRepository.findAll().first()
             assertThat(transactionInfo.type).isEqualTo(TransactionType.TRNSF_PLTFRM_OWN)
             assertThat(transactionInfo.userUuid).isEqualTo(userUuid)
-            assertThat(transactionInfo.companionData).isEqualTo(testContext.walletAddress)
+            assertThat(transactionInfo.companionData).isEqualTo(testContext.wallet.activationData)
         }
     }
 
