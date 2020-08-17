@@ -4,6 +4,7 @@ import com.ampnet.projectservice.proto.ProjectResponse
 import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.exception.InvalidRequestException
 import com.ampnet.walletservice.exception.ResourceNotFoundException
+import com.ampnet.walletservice.persistence.model.Wallet
 import com.ampnet.walletservice.persistence.model.Withdraw
 import com.ampnet.walletservice.persistence.repository.WalletRepository
 import com.ampnet.walletservice.persistence.repository.WithdrawRepository
@@ -40,4 +41,10 @@ internal object ServiceUtils {
             )
         }
     }
+
+    @Throws(ResourceNotFoundException::class)
+    fun getWalletByUserUuid(userUuid: UUID, walletRepository: WalletRepository):
+        Wallet = walletRepository.findByOwner(userUuid).orElseThrow {
+            throw ResourceNotFoundException(ErrorCode.WALLET_MISSING, "Missing wallet for user with uuid: $userUuid")
+        }
 }

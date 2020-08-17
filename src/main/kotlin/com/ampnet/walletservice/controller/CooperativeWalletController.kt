@@ -63,7 +63,10 @@ class CooperativeWalletController(
         @RequestBody request: WalletTransferRequest
     ): ResponseEntity<TransactionResponse> {
         val user = ControllerUtils.getUserPrincipalFromSecurityContext()
-        logger.info { "Received request to transfer wallet ownership for ${request.type} by: ${user.uuid}" }
+        logger.info {
+            "Received request to transfer wallet ownership for ${request.type} to user: ${request.userUuid}" +
+                " by: ${user.uuid}"
+        }
         val transaction = cooperativeWalletService.generateSetTransferOwnership(user.uuid, request)
         return ResponseEntity.ok(TransactionResponse(transaction))
     }
