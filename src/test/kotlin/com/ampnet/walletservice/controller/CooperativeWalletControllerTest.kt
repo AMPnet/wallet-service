@@ -224,15 +224,19 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
     @Test
     @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWA_WALLET_TRANSFER])
     fun mustBeAbleToTransferTokenIssuer() {
+        suppose("There is a user with activated wallet") {
+            testContext.userUuid = UUID.randomUUID()
+            testContext.wallet = createWalletForUser(testContext.userUuid, testContext.walletHash)
+        }
         suppose("Blockchain service will return transaction data for transferring token issuer") {
             testContext.transactionData = TransactionData(testContext.walletHash)
             Mockito.`when`(
-                blockchainService.generateTransferTokenIssuer(testContext.walletAddress)
+                blockchainService.generateTransferTokenIssuer(testContext.wallet.activationData)
             ).thenReturn(testContext.transactionData)
         }
 
         verify("Admin can transfer wallet ownership to user") {
-            val request = WalletTransferRequest(testContext.walletAddress, TransferWalletType.TOKEN_ISSUER)
+            val request = WalletTransferRequest(testContext.userUuid, TransferWalletType.TOKEN_ISSUER)
             val result = mockMvc.perform(
                 post("$cooperativeWalletPath/transfer/transaction")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -250,22 +254,26 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
             val transactionInfo = transactionInfoRepository.findAll().first()
             assertThat(transactionInfo.type).isEqualTo(TransactionType.TRNSF_TOKEN_OWN)
             assertThat(transactionInfo.userUuid).isEqualTo(userUuid)
-            assertThat(transactionInfo.companionData).isEqualTo(testContext.walletAddress)
+            assertThat(transactionInfo.companionData).isEqualTo(testContext.userUuid.toString())
         }
     }
 
     @Test
     @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWA_WALLET_TRANSFER])
     fun mustBeAbleToTransferPlatformOwner() {
+        suppose("There is a user with activated wallet") {
+            testContext.userUuid = UUID.randomUUID()
+            testContext.wallet = createWalletForUser(testContext.userUuid, testContext.walletHash)
+        }
         suppose("Blockchain service will return transaction data for transferring platform owner") {
             testContext.transactionData = TransactionData(testContext.walletHash)
             Mockito.`when`(
-                blockchainService.generateTransferPlatformManager(testContext.walletAddress)
+                blockchainService.generateTransferPlatformManager(testContext.wallet.activationData)
             ).thenReturn(testContext.transactionData)
         }
 
         verify("Admin can transfer wallet ownership to user") {
-            val request = WalletTransferRequest(testContext.walletAddress, TransferWalletType.PLATFORM_MANAGER)
+            val request = WalletTransferRequest(testContext.userUuid, TransferWalletType.PLATFORM_MANAGER)
             val result = mockMvc.perform(
                 post("$cooperativeWalletPath/transfer/transaction")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -283,7 +291,7 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
             val transactionInfo = transactionInfoRepository.findAll().first()
             assertThat(transactionInfo.type).isEqualTo(TransactionType.TRNSF_PLTFRM_OWN)
             assertThat(transactionInfo.userUuid).isEqualTo(userUuid)
-            assertThat(transactionInfo.companionData).isEqualTo(testContext.walletAddress)
+            assertThat(transactionInfo.companionData).isEqualTo(testContext.userUuid.toString())
         }
     }
 
@@ -295,10 +303,10 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
     private class TestContext {
         val activationData = "th_HKYbpdgc8yhGvMaEmpk2KK9AXE3yz8kf5imyv52XVwcnqZKei"
         val walletHash = "th_R26wx2hTnhmgDKJhXC9GAH3evCRnTyyXg4fivLLEAyiAcVW2K"
-        val walletAddress = "ak_2kHmiJN1RzQL6zXZVuoTuFaVLTCeH3BKyDMZKmixCV3QSWs3dd"
         val users = mutableListOf<UUID>()
         val organizations = mutableListOf<UUID>()
         val projects = mutableListOf<UUID>()
+        lateinit var userUuid: UUID
         lateinit var transactionData: TransactionData
         lateinit var wallet: Wallet
     }

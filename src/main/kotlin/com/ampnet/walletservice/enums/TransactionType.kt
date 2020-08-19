@@ -12,10 +12,10 @@ enum class TransactionType(val title: String, val description: String) {
     REVENUE_PAYOUT("Revenue Payout", "You are signing transaction to start revenue payout %.2f for project: %s"),
     TRNSF_TOKEN_OWN(
         "Transfer token ownership",
-        "You are signing transaction to transfer token issuer ownership to wallet: %s"
+        "You are signing transaction to transfer token issuer ownership to user: %s"
     ),
     TRNSF_PLTFRM_OWN(
         "Transfer platform ownership",
-        "You are signing transaction to transfer platform manager ownership to wallet: %s"
+        "You are signing transaction to transfer platform manager ownership to user: %s"
     )
 }

@@ -34,9 +34,7 @@ class DepositServiceImpl(
     @Transactional
     override fun create(request: DepositCreateServiceRequest): Deposit {
         validateOwnerDoesNotHavePendingDeposit(request.owner)
-        if (walletRepository.findByOwner(request.owner).isPresent.not()) {
-            throw ResourceNotFoundException(ErrorCode.WALLET_MISSING, "Wallet needed to create a deposit")
-        }
+        ServiceUtils.getWalletByUserUuid(request.owner, walletRepository)
         if (request.type == DepositWithdrawType.PROJECT) {
             val projectResponse = projectService.getProject(request.owner)
             ServiceUtils.validateUserIsProjectOwner(request.createdBy, projectResponse)
