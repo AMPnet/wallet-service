@@ -25,6 +25,8 @@ class PortfolioServiceImpl(
     private val userService: UserService
 ) : PortfolioService {
 
+    private val platformWalletName = "Platform"
+
     @Transactional(readOnly = true)
     override fun getPortfolio(user: UUID): List<ProjectWithInvestment> {
         val userWallet = ServiceUtils.getWalletHash(user, walletRepository)
@@ -55,19 +57,13 @@ class PortfolioServiceImpl(
     override fun getTransactions(user: UUID): List<BlockchainTransaction> {
         val userWalletHash = ServiceUtils.getWalletHash(user, walletRepository)
         val blockchainTransactions = blockchainService.getTransactions(userWalletHash)
-        val setOfWalletHashes: MutableSet<String> = mutableSetOf()
-        blockchainTransactions.forEach { transaction ->
-            setOfWalletHashes.add(transaction.fromTxHash)
-            setOfWalletHashes.add(transaction.toTxHash)
-        }
-        val wallets = walletRepository.findByHashes(setOfWalletHashes)
-        val walletsOwnerMap = wallets.associateBy { it.owner }
+        val walletHashes = getWalletHashes(blockchainTransactions)
+        val wallets = walletRepository.findByHashes(walletHashes)
+        val walletOwners = wallets.map { it.owner }.toSet()
         val walletsHashMap = wallets.associateBy { it.hash }
-
-        val users = userService.getUsers(walletsOwnerMap.keys).associateBy { it.uuid }
-        val projects = projectService.getProjects(walletsOwnerMap.keys).associateBy { it.uuid }
-
-        return mapBlockchainTrxBasedOnTransactionType(
+        val users = userService.getUsers(walletOwners).associateBy { it.uuid }
+        val projects = projectService.getProjects(walletOwners).associateBy { it.uuid }
+        return setBlockchainTransactionFromToNames(
             blockchainTransactions, users, projects, walletsHashMap
         )
     }
@@ -100,7 +96,7 @@ class PortfolioServiceImpl(
             emptyList()
         }
 
-    private fun mapBlockchainTrxBasedOnTransactionType(
+    private fun setBlockchainTransactionFromToNames(
         blockchainTransactions: List<BlockchainTransaction>,
         users: Map<String, UserResponse>,
         projects: Map<String, ProjectResponse>,
@@ -123,31 +119,34 @@ class PortfolioServiceImpl(
                     transaction.to = getUserNameWithUuid(ownerUuidTo, users)
                 }
                 TransactionsResponse.Transaction.Type.DEPOSIT -> {
-                    transaction.from = "Platform"
+                    transaction.from = platformWalletName
                     transaction.to = getUserNameWithUuid(ownerUuidTo, users)
                 }
                 TransactionsResponse.Transaction.Type.WITHDRAW -> {
                     transaction.from = getUserNameWithUuid(ownerUuidFrom, users)
-                    transaction.to = "Platform"
+                    transaction.to = platformWalletName
                 }
             }
         }
         return blockchainTransactions
     }
 
-    private fun getUserNameWithUuid(ownerUuid: UUID?, users: Map<String, UserResponse>): String? {
-        val user = users[ownerUuid.toString()]
-        if (ownerUuid == null || user == null) {
-            return null
+    private fun getWalletHashes(transactions: List<BlockchainTransaction>): Set<String> {
+        val walletHashes: MutableSet<String> = mutableSetOf()
+        transactions.forEach { transaction ->
+            walletHashes.add(transaction.fromTxHash)
+            walletHashes.add(transaction.toTxHash)
         }
-        return "${user.firstName} ${user.lastName}"
+        return walletHashes
+    }
+
+    private fun getUserNameWithUuid(ownerUuid: UUID?, users: Map<String, UserResponse>): String? {
+        return users[ownerUuid?.toString()]?.let { user ->
+            "${user.firstName} ${user.lastName}"
+        }
     }
 
     private fun getProjectNameWithUuid(ownerUuid: UUID?, projects: Map<String, ProjectResponse>): String? {
-        val project = projects[ownerUuid.toString()]
-        if (ownerUuid == null || project == null) {
-            return null
-        }
-        return project.name
+        return projects[ownerUuid?.toString()]?.name
     }
 }

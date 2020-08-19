@@ -51,6 +51,7 @@ import java.util.UUID
 @ExtendWith(value = [SpringExtension::class, RestDocumentationExtension::class])
 @SpringBootTest
 abstract class ControllerTestBase : TestBase() {
+
     protected val userUuid: UUID = UUID.fromString("89fb3b1c-9c0a-11e9-a2a3-2a2ae2dbcce4")
     protected val organizationUuid: UUID = UUID.randomUUID()
     protected val projectUuid: UUID = UUID.randomUUID()
@@ -59,30 +60,43 @@ abstract class ControllerTestBase : TestBase() {
 
     @Autowired
     protected lateinit var objectMapper: ObjectMapper
+
     @Autowired
     protected lateinit var databaseCleanerService: DatabaseCleanerService
+
     @Autowired
     protected lateinit var walletRepository: WalletRepository
+
     @Autowired
     protected lateinit var transactionInfoRepository: TransactionInfoRepository
+
     @Autowired
     protected lateinit var pairWalletCodeRepository: PairWalletCodeRepository
+
     @Autowired
     protected lateinit var depositRepository: DepositRepository
+
     @Autowired
     protected lateinit var withdrawRepository: WithdrawRepository
+
     @Autowired
     private lateinit var documentRepository: DocumentRepository
+
     @Autowired
     protected lateinit var revenuePayoutRepository: RevenuePayoutRepository
+
     @MockBean
     protected lateinit var userService: UserService
+
     @MockBean
     protected lateinit var mailService: MailService
+
     @MockBean
     protected lateinit var projectService: ProjectService
+
     @MockBean
     protected lateinit var blockchainService: BlockchainService
+
     @MockBean
     protected lateinit var cloudStorageService: CloudStorageService
 
@@ -222,6 +236,7 @@ abstract class ControllerTestBase : TestBase() {
         )
         return depositRepository.save(deposit)
     }
+
     protected fun createProjectResponse(
         uuid: UUID,
         name: String = "project",

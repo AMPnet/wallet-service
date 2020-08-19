@@ -25,6 +25,7 @@ import java.util.UUID
 class PortfolioControllerTest : ControllerTestBase() {
 
     private val portfolioPath = "/portfolio"
+    private val platformWalletName = "Platform"
 
     private lateinit var testContext: TestContext
 
@@ -261,7 +262,7 @@ class PortfolioControllerTest : ControllerTestBase() {
             assertThat(response.transactions).hasSize(5)
 
             val responseDeposit = response.transactions.first { it.type == TransactionsResponse.Transaction.Type.DEPOSIT }
-            assertThat(responseDeposit.from).isEqualTo("Platform")
+            assertThat(responseDeposit.from).isEqualTo(platformWalletName)
             assertThat(responseDeposit.to).isEqualTo("${user.firstName} ${user.lastName}")
             val responseInvest = response.transactions.first { it.type == TransactionsResponse.Transaction.Type.INVEST }
             assertThat(responseInvest.from).isEqualTo("${user.firstName} ${user.lastName}")
@@ -274,7 +275,7 @@ class PortfolioControllerTest : ControllerTestBase() {
             assertThat(responseSharePayout.to).isEqualTo("${user.firstName} ${user.lastName}")
             val responseWithdraw = response.transactions.first { it.type == TransactionsResponse.Transaction.Type.WITHDRAW }
             assertThat(responseWithdraw.from).isEqualTo("${user.firstName} ${user.lastName}")
-            assertThat(responseWithdraw.to).isEqualTo("Platform")
+            assertThat(responseWithdraw.to).isEqualTo(platformWalletName)
         }
     }
 
