@@ -1,5 +1,6 @@
 package com.ampnet.walletservice.controller
 
+import com.ampnet.projectservice.proto.ProjectResponse
 import com.ampnet.userservice.proto.UserResponse
 import com.ampnet.walletservice.TestBase
 import com.ampnet.walletservice.config.DatabaseCleanerService
@@ -59,30 +60,43 @@ abstract class ControllerTestBase : TestBase() {
 
     @Autowired
     protected lateinit var objectMapper: ObjectMapper
+
     @Autowired
     protected lateinit var databaseCleanerService: DatabaseCleanerService
+
     @Autowired
     protected lateinit var walletRepository: WalletRepository
+
     @Autowired
     protected lateinit var transactionInfoRepository: TransactionInfoRepository
+
     @Autowired
     protected lateinit var pairWalletCodeRepository: PairWalletCodeRepository
+
     @Autowired
     protected lateinit var depositRepository: DepositRepository
+
     @Autowired
     protected lateinit var withdrawRepository: WithdrawRepository
+
     @Autowired
     private lateinit var documentRepository: DocumentRepository
+
     @Autowired
     protected lateinit var revenuePayoutRepository: RevenuePayoutRepository
+
     @MockBean
     protected lateinit var userService: UserService
+
     @MockBean
     protected lateinit var mailService: MailService
+
     @MockBean
     protected lateinit var projectService: ProjectService
+
     @MockBean
     protected lateinit var blockchainService: BlockchainService
+
     @MockBean
     protected lateinit var cloudStorageService: CloudStorageService
 
@@ -222,4 +236,23 @@ abstract class ControllerTestBase : TestBase() {
         )
         return depositRepository.save(deposit)
     }
+
+    protected fun createProjectResponse(
+        uuid: UUID,
+        name: String = "project",
+        createdByUser: String = "user",
+        currency: String = "EUR",
+        organizationUuid: UUID = UUID.randomUUID(),
+        imageUrl: String = "image_url",
+        description: String = "Description"
+    ): ProjectResponse = ProjectResponse
+        .newBuilder()
+        .setUuid(uuid.toString())
+        .setName(name)
+        .setCreatedByUser(createdByUser)
+        .setCurrency(currency)
+        .setOrganizationUuid(organizationUuid.toString())
+        .setImageUrl(imageUrl)
+        .setDescription(description)
+        .build()
 }
