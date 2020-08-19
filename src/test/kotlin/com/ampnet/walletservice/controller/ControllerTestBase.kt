@@ -1,5 +1,6 @@
 package com.ampnet.walletservice.controller
 
+import com.ampnet.projectservice.proto.ProjectResponse
 import com.ampnet.userservice.proto.UserResponse
 import com.ampnet.walletservice.TestBase
 import com.ampnet.walletservice.config.DatabaseCleanerService
@@ -50,7 +51,6 @@ import java.util.UUID
 @ExtendWith(value = [SpringExtension::class, RestDocumentationExtension::class])
 @SpringBootTest
 abstract class ControllerTestBase : TestBase() {
-
     protected val userUuid: UUID = UUID.fromString("89fb3b1c-9c0a-11e9-a2a3-2a2ae2dbcce4")
     protected val organizationUuid: UUID = UUID.randomUUID()
     protected val projectUuid: UUID = UUID.randomUUID()
@@ -222,4 +222,22 @@ abstract class ControllerTestBase : TestBase() {
         )
         return depositRepository.save(deposit)
     }
+    protected fun createProjectResponse(
+        uuid: UUID,
+        name: String = "project",
+        createdByUser: String = "user",
+        currency: String = "EUR",
+        organizationUuid: UUID = UUID.randomUUID(),
+        imageUrl: String = "image_url",
+        description: String = "Description"
+    ): ProjectResponse = ProjectResponse
+        .newBuilder()
+        .setUuid(uuid.toString())
+        .setName(name)
+        .setCreatedByUser(createdByUser)
+        .setCurrency(currency)
+        .setOrganizationUuid(organizationUuid.toString())
+        .setImageUrl(imageUrl)
+        .setDescription(description)
+        .build()
 }

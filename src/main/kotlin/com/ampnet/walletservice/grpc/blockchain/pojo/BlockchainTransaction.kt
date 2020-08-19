@@ -13,6 +13,9 @@ data class BlockchainTransaction(
     val date: ZonedDateTime,
     val state: String
 ) {
+    var from: String? = null
+    var to: String? = null
+
     constructor(transaction: TransactionsResponse.Transaction) : this(
         transaction.fromTxHash,
         transaction.toTxHash,

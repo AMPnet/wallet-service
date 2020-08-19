@@ -1,10 +1,14 @@
 package com.ampnet.walletservice.service.impl
 
 import com.ampnet.crowdfunding.proto.TransactionsResponse
+import com.ampnet.projectservice.proto.ProjectResponse
+import com.ampnet.userservice.proto.UserResponse
 import com.ampnet.walletservice.grpc.blockchain.BlockchainService
 import com.ampnet.walletservice.grpc.blockchain.pojo.BlockchainTransaction
 import com.ampnet.walletservice.grpc.blockchain.pojo.PortfolioData
 import com.ampnet.walletservice.grpc.projectservice.ProjectService
+import com.ampnet.walletservice.grpc.userservice.UserService
+import com.ampnet.walletservice.persistence.model.Wallet
 import com.ampnet.walletservice.persistence.repository.WalletRepository
 import com.ampnet.walletservice.service.PortfolioService
 import com.ampnet.walletservice.service.pojo.PortfolioStats
@@ -17,7 +21,8 @@ import java.util.UUID
 class PortfolioServiceImpl(
     private val walletRepository: WalletRepository,
     private val blockchainService: BlockchainService,
-    private val projectService: ProjectService
+    private val projectService: ProjectService,
+    private val userService: UserService
 ) : PortfolioService {
 
     @Transactional(readOnly = true)
@@ -49,7 +54,22 @@ class PortfolioServiceImpl(
     @Transactional(readOnly = true)
     override fun getTransactions(user: UUID): List<BlockchainTransaction> {
         val userWalletHash = ServiceUtils.getWalletHash(user, walletRepository)
-        return blockchainService.getTransactions(userWalletHash)
+        val blockchainTransactions = blockchainService.getTransactions(userWalletHash)
+        val setOfWalletHashes: MutableSet<String> = mutableSetOf()
+        blockchainTransactions.forEach { transaction ->
+            setOfWalletHashes.add(transaction.fromTxHash)
+            setOfWalletHashes.add(transaction.toTxHash)
+        }
+        val wallets = walletRepository.findByHashes(setOfWalletHashes)
+        val walletsOwnerMap = wallets.associateBy { it.owner }
+        val walletsHashMap = wallets.associateBy { it.hash }
+
+        val users = userService.getUsers(walletsOwnerMap.keys).associateBy { it.uuid }
+        val projects = projectService.getProjects(walletsOwnerMap.keys).associateBy { it.uuid }
+
+        return mapBlockchainTrxBasedOnTransactionType(
+            blockchainTransactions, users, projects, walletsHashMap
+        )
     }
 
     private fun sumTransactionForType(
@@ -79,4 +99,59 @@ class PortfolioServiceImpl(
         } else {
             emptyList()
         }
+
+    private fun mapBlockchainTrxBasedOnTransactionType(
+        blockchainTransactions: List<BlockchainTransaction>,
+        users: Map<String, UserResponse>,
+        projects: Map<String, ProjectResponse>,
+        walletsMap: Map<String?, Wallet>
+    ): List<BlockchainTransaction> {
+        blockchainTransactions.forEach { transaction ->
+            val ownerUuidFrom = walletsMap[transaction.fromTxHash]?.owner
+            val ownerUuidTo = walletsMap[transaction.toTxHash]?.owner
+            when (transaction.type) {
+                TransactionsResponse.Transaction.Type.INVEST -> {
+                    transaction.from = getUserNameWithUuid(ownerUuidFrom, users)
+                    transaction.to = getProjectNameWithUuid(ownerUuidTo, projects)
+                }
+                TransactionsResponse.Transaction.Type.CANCEL_INVESTMENT -> {
+                    transaction.from = getProjectNameWithUuid(ownerUuidFrom, projects)
+                    transaction.to = getUserNameWithUuid(ownerUuidTo, users)
+                }
+                TransactionsResponse.Transaction.Type.SHARE_PAYOUT -> {
+                    transaction.from = getProjectNameWithUuid(ownerUuidFrom, projects)
+                    transaction.to = getUserNameWithUuid(ownerUuidTo, users)
+                }
+                TransactionsResponse.Transaction.Type.DEPOSIT -> {
+                    transaction.from = null
+                    transaction.to = getUserNameWithUuid(ownerUuidTo, users)
+                }
+                TransactionsResponse.Transaction.Type.WITHDRAW -> {
+                    transaction.from = getUserNameWithUuid(ownerUuidFrom, users)
+                    transaction.to = null
+                }
+                else -> {
+                    transaction.from = null
+                    transaction.to = null
+                }
+            }
+        }
+        return blockchainTransactions
+    }
+
+    private fun getUserNameWithUuid(ownerUuid: UUID?, users: Map<String, UserResponse>): String? {
+        val user = users[ownerUuid.toString()]
+        if (ownerUuid == null || user == null) {
+            return null
+        }
+        return "${user.firstName} ${user.lastName}"
+    }
+
+    private fun getProjectNameWithUuid(ownerUuid: UUID?, projects: Map<String, ProjectResponse>): String? {
+        val project = projects[ownerUuid.toString()]
+        if (ownerUuid == null || project == null) {
+            return null
+        }
+        return project.name
+    }
 }
