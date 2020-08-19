@@ -123,16 +123,12 @@ class PortfolioServiceImpl(
                     transaction.to = getUserNameWithUuid(ownerUuidTo, users)
                 }
                 TransactionsResponse.Transaction.Type.DEPOSIT -> {
-                    transaction.from = null
+                    transaction.from = "Platform"
                     transaction.to = getUserNameWithUuid(ownerUuidTo, users)
                 }
                 TransactionsResponse.Transaction.Type.WITHDRAW -> {
                     transaction.from = getUserNameWithUuid(ownerUuidFrom, users)
-                    transaction.to = null
-                }
-                else -> {
-                    transaction.from = null
-                    transaction.to = null
+                    transaction.to = "Platform"
                 }
             }
         }
