@@ -261,7 +261,7 @@ class PortfolioControllerTest : ControllerTestBase() {
             assertThat(response.transactions).hasSize(5)
 
             val responseDeposit = response.transactions.first { it.type == TransactionsResponse.Transaction.Type.DEPOSIT }
-            assertThat(responseDeposit.from).isNull()
+            assertThat(responseDeposit.from).isEqualTo("Platform")
             assertThat(responseDeposit.to).isEqualTo("${user.firstName} ${user.lastName}")
             val responseInvest = response.transactions.first { it.type == TransactionsResponse.Transaction.Type.INVEST }
             assertThat(responseInvest.from).isEqualTo("${user.firstName} ${user.lastName}")
@@ -274,7 +274,7 @@ class PortfolioControllerTest : ControllerTestBase() {
             assertThat(responseSharePayout.to).isEqualTo("${user.firstName} ${user.lastName}")
             val responseWithdraw = response.transactions.first { it.type == TransactionsResponse.Transaction.Type.WITHDRAW }
             assertThat(responseWithdraw.from).isEqualTo("${user.firstName} ${user.lastName}")
-            assertThat(responseWithdraw.to).isNull()
+            assertThat(responseWithdraw.to).isEqualTo("Platform")
         }
     }
 
