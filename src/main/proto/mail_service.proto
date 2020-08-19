@@ -59,5 +59,6 @@ service MailService {
     rpc SendDepositInfo(DepositInfoRequest) returns (Empty);
     rpc SendResetPassword(ResetPasswordRequest) returns (Empty);
     rpc SendNewWalletMail(WalletTypeRequest) returns (Empty);
+    rpc SendNewOrganizationMail(Empty) returns (Empty);
 }
 

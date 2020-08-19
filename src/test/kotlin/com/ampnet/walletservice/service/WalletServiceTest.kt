@@ -256,6 +256,9 @@ class WalletServiceTest : JpaServiceTestBase() {
             assertThat(wallet.activationData).isEqualTo(defaultAddressHash)
             assertThat(wallet.hash).isNull()
         }
+        verify("Mail notification for created wallet") {
+            Mockito.verify(mockedMailService, Mockito.times(1)).sendNewOrganizationMail()
+        }
     }
 
     @Test
