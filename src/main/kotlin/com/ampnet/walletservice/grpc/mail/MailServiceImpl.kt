@@ -93,15 +93,6 @@ class MailServiceImpl(
         }
     }
 
-    override fun sendNewOrganizationMail() {
-        logger.debug { "Sending new organization mail" }
-        try {
-            serviceWithTimeout()?.sendNewOrganizationMail(Empty.getDefaultInstance(), createSteamObserver("new organization mail"))
-        } catch (ex: StatusRuntimeException) {
-            logger.warn("Failed to send new organization wallet mail.", ex)
-        }
-    }
-
     private fun serviceWithTimeout(): MailServiceGrpc.MailServiceStub? {
         return if (applicationProperties.mail.sendNotification) {
             mailServiceStub.withDeadlineAfter(applicationProperties.grpc.mailServiceTimeout, TimeUnit.MILLISECONDS)

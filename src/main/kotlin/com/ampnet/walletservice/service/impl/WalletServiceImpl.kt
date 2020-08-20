@@ -133,7 +133,7 @@ class WalletServiceImpl(
         val txHash = blockchainService.postTransaction(signedTransaction)
         val wallet = createWallet(organization, txHash, WalletType.ORG)
         logger.debug { "Created wallet for organization: $organization" }
-        mailService.sendNewOrganizationMail()
+        mailService.sendNewWalletMail(WalletTypeRequest.Type.ORGANIZATION)
         return wallet
     }
 

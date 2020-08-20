@@ -257,7 +257,7 @@ class WalletServiceTest : JpaServiceTestBase() {
             assertThat(wallet.hash).isNull()
         }
         verify("Mail notification for created wallet") {
-            Mockito.verify(mockedMailService, Mockito.times(1)).sendNewOrganizationMail()
+            Mockito.verify(mockedMailService, Mockito.times(1)).sendNewWalletMail(WalletTypeRequest.Type.ORGANIZATION)
         }
     }
 

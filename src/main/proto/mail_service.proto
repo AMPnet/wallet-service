@@ -43,6 +43,7 @@ message WalletTypeRequest {
     enum Type {
         USER = 0;
         PROJECT = 1;
+        ORGANIZATION = 2;
     }
     Type type = 1;
 }
@@ -59,6 +60,5 @@ service MailService {
     rpc SendDepositInfo(DepositInfoRequest) returns (Empty);
     rpc SendResetPassword(ResetPasswordRequest) returns (Empty);
     rpc SendNewWalletMail(WalletTypeRequest) returns (Empty);
-    rpc SendNewOrganizationMail(Empty) returns (Empty);
 }
 
