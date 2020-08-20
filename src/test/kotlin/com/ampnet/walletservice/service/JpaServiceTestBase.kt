@@ -44,20 +44,28 @@ abstract class JpaServiceTestBase : TestBase() {
 
     @Autowired
     protected lateinit var databaseCleanerService: DatabaseCleanerService
+
     @Autowired
     protected lateinit var walletRepository: WalletRepository
+
     @Autowired
     protected lateinit var documentRepository: DocumentRepository
+
     @Autowired
     protected lateinit var transactionInfoRepository: TransactionInfoRepository
+
     @Autowired
     protected lateinit var pairWalletCodeRepository: PairWalletCodeRepository
+
     @Autowired
     protected lateinit var withdrawRepository: WithdrawRepository
+
     @Autowired
     protected lateinit var depositRepository: DepositRepository
+
     @Autowired
     protected lateinit var declinedRepository: DeclinedRepository
+
     @Autowired
     protected lateinit var bankAccountRepository: BankAccountRepository
 

@@ -43,6 +43,7 @@ message WalletTypeRequest {
     enum Type {
         USER = 0;
         PROJECT = 1;
+        ORGANIZATION = 2;
     }
     Type type = 1;
 }
