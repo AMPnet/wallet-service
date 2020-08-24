@@ -26,7 +26,7 @@ plugins {
 }
 
 group = "com.ampnet"
-version = "0.4.2"
+version = "0.4.3"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
