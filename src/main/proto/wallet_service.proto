@@ -1,0 +1,29 @@
+syntax = "proto3";
+option java_multiple_files = true;
+package com.ampnet.walletservice.proto;
+
+message GetWalletsByOwnerRequest {
+    repeated string owners_uuids = 1;
+}
+
+message WalletResponse {
+    string uuid = 1;
+    string owner = 2;
+    string activation_data = 3;
+    Type type = 4;
+    string currency = 5;
+    string hash = 6;
+    enum Type {
+        USER = 0;
+        ORGANIZATION = 1;
+        PROJECT = 2;
+    }
+}
+
+message WalletsResponse {
+    repeated WalletResponse wallets = 1;
+}
+
+service WalletService {
+    rpc GetWallets (GetWalletsByOwnerRequest) returns (WalletsResponse);
+}
