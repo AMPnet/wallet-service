@@ -57,7 +57,7 @@ class CooperativeWalletServiceImpl(
         val wallet = getWalletByUuid(walletUuid)
         wallet.hash = blockchainService.postTransaction(signedTransaction)
         wallet.activatedAt = ZonedDateTime.now()
-        return walletRepository.save(wallet)
+        return wallet
     }
 
     @Transactional(readOnly = true)

@@ -52,7 +52,6 @@ class CooperativeWithdrawServiceImpl(
         val data = blockchainService.generateBurnTransaction(ownerWallet)
         val info = transactionInfoService.createBurnTransaction(withdraw.amount, user, withdraw.id)
         withdraw.burnedBy = user
-        withdrawRepository.save(withdraw)
         logger.info { "Burned withdraw: $withdraw" }
         return TransactionDataAndInfo(data, info)
     }
@@ -65,7 +64,6 @@ class CooperativeWithdrawServiceImpl(
         val burnedTxHash = blockchainService.postTransaction(signedTransaction)
         withdraw.burnedTxHash = burnedTxHash
         withdraw.burnedAt = ZonedDateTime.now()
-        withdrawRepository.save(withdraw)
         logger.info { "Burned Withdraw: $withdraw" }
         mailService.sendWithdrawInfo(withdraw.ownerUuid, true)
         return withdraw
@@ -78,7 +76,7 @@ class CooperativeWithdrawServiceImpl(
         val document = storageService.saveDocument(request)
         withdraw.file = document
         logger.info { "Document added" }
-        return withdrawRepository.save(withdraw)
+        return withdraw
     }
 
     private fun validateWithdrawForBurn(withdraw: Withdraw) {

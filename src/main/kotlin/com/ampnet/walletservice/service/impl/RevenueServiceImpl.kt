@@ -61,7 +61,7 @@ class RevenueServiceImpl(
         val txHash = blockchainService.postTransaction(signedTransaction)
         revenuePayout.txHash = txHash
         revenuePayout.completedAt = ZonedDateTime.now()
-        return revenuePayoutRepository.save(revenuePayout)
+        return revenuePayout
     }
 
     @Transactional(readOnly = true)
