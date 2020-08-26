@@ -51,7 +51,7 @@ class CooperativeDepositServiceImpl(
         deposit.approvedAt = ZonedDateTime.now()
         deposit.amount = request.amount
         deposit.file = document
-        return depositRepository.save(deposit)
+        return deposit
     }
 
     @Transactional
@@ -65,7 +65,7 @@ class CooperativeDepositServiceImpl(
         deposit.declined = declinedRepository.save(declined)
         deposit.approved = false
         mailService.sendDepositInfo(deposit.ownerUuid, false)
-        return depositRepository.save(deposit)
+        return deposit
     }
 
     @Transactional(readOnly = true)
@@ -103,7 +103,7 @@ class CooperativeDepositServiceImpl(
         val txHash = blockchainService.postTransaction(signedTransaction)
         deposit.txHash = txHash
         mailService.sendDepositInfo(deposit.ownerUuid, true)
-        return depositRepository.save(deposit)
+        return deposit
     }
 
     @Transactional(readOnly = true)

@@ -100,7 +100,7 @@ class WithdrawServiceImpl(
         withdraw.approvedTxHash = approvalTxHash
         withdraw.approvedAt = ZonedDateTime.now()
         logger.info { "Approved Withdraw: $withdraw" }
-        return withdrawRepository.save(withdraw)
+        return withdraw
     }
 
     private fun getApprovalTransactionData(withdraw: Withdraw, user: UUID): TransactionData {
