@@ -19,7 +19,6 @@ class BroadcastTransactionController(
     @PostMapping("/tx_broadcast")
     fun broadcastTransaction(@RequestBody request: TxBroadcastRequest): ResponseEntity<TxHashResponse> {
         logger.info { "Received request to broadcast transaction with txId: ${request.txId}" }
-        logger.debug { "Received request to broadcast transaction with txSig: ${request.txSig}" }
         val txHash = broadcastService.broadcast(request.txId, request.txSig)
         return ResponseEntity.ok(TxHashResponse(txHash))
     }

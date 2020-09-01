@@ -18,7 +18,7 @@ class GrpcWalletServer(val walletRepository: WalletRepository) : WalletServiceGr
     companion object : KLogging()
 
     override fun getWallets(request: GetWalletsByOwnerRequest, responseObserver: StreamObserver<WalletsResponse>) {
-        logger.debug { "Received gRPC request: getWallets = $request" }
+        logger.debug { "Received gRPC request: getWallets = ${request.ownersUuidsList}" }
         val uuids = request.ownersUuidsList.mapNotNull {
             try {
                 UUID.fromString(it)

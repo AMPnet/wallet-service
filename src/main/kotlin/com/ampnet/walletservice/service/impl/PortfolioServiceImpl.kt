@@ -59,12 +59,8 @@ class PortfolioServiceImpl(
         val blockchainTransactions = blockchainService.getTransactions(userWalletHash)
         val walletHashes = getWalletHashes(blockchainTransactions)
         val wallets = walletRepository.findByHashes(walletHashes)
-        val walletOwners = wallets.map { it.owner }.toSet()
-        val walletsHashMap = wallets.associateBy { it.hash }
-        val users = userService.getUsers(walletOwners).associateBy { it.uuid }
-        val projects = projectService.getProjects(walletOwners).associateBy { it.uuid }
         return setBlockchainTransactionFromToNames(
-            blockchainTransactions, users, projects, walletsHashMap
+            blockchainTransactions, wallets
         )
     }
 
@@ -84,7 +80,6 @@ class PortfolioServiceImpl(
             val projects = projectService
                 .getProjects(wallets.map { it.owner })
                 .associateBy { it.uuid }
-
             wallets.mapNotNull { wallet ->
                 portfolio[wallet.hash]?.let { portfolio ->
                     projects[wallet.owner.toString()]?.let { project ->
@@ -98,10 +93,12 @@ class PortfolioServiceImpl(
 
     private fun setBlockchainTransactionFromToNames(
         blockchainTransactions: List<BlockchainTransaction>,
-        users: Map<String, UserResponse>,
-        projects: Map<String, ProjectResponse>,
-        walletsMap: Map<String?, Wallet>
+        wallets: List<Wallet>
     ): List<BlockchainTransaction> {
+        val walletOwners = wallets.map { it.owner }.toSet()
+        val walletsMap = wallets.associateBy { it.hash }
+        val users = userService.getUsers(walletOwners).associateBy { it.uuid }
+        val projects = projectService.getProjects(walletOwners).associateBy { it.uuid }
         blockchainTransactions.forEach { transaction ->
             val ownerUuidFrom = walletsMap[transaction.fromTxHash]?.owner
             val ownerUuidTo = walletsMap[transaction.toTxHash]?.owner
@@ -125,6 +122,9 @@ class PortfolioServiceImpl(
                 TransactionsResponse.Transaction.Type.WITHDRAW -> {
                     transaction.from = getUserNameWithUuid(ownerUuidFrom, users)
                     transaction.to = platformWalletName
+                }
+                TransactionsResponse.Transaction.Type.UNRECOGNIZED -> {
+                    // skip
                 }
             }
         }
