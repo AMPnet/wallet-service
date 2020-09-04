@@ -45,4 +45,7 @@ data class Wallet(
 ) {
     constructor(owner: UUID, activationData: String, type: WalletType, currency: Currency, alias: String? = null) :
         this(UUID.randomUUID(), owner, activationData, type, currency, ZonedDateTime.now(), null, null, alias)
+
+    constructor(owner: UUID, activationData: String, type: WalletType, currency: Currency, hash: String?, alias: String? = null) :
+        this(UUID.randomUUID(), owner, activationData, type, currency, ZonedDateTime.now(), hash, null, alias)
 }
