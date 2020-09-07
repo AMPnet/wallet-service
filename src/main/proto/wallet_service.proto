@@ -6,6 +6,10 @@ message GetWalletsByOwnerRequest {
     repeated string owners_uuids = 1;
 }
 
+message GetWalletsByHashRequest {
+    repeated string hashes = 1;
+}
+
 message WalletResponse {
     string uuid = 1;
     string owner = 2;
@@ -25,5 +29,6 @@ message WalletsResponse {
 }
 
 service WalletService {
-    rpc GetWallets (GetWalletsByOwnerRequest) returns (WalletsResponse);
+    rpc GetWalletsByOwner (GetWalletsByOwnerRequest) returns (WalletsResponse);
+    rpc GetWalletsByHash (GetWalletsByHashRequest) returns (WalletsResponse);
 }

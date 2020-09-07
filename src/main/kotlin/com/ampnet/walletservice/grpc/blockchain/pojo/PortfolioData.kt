@@ -7,4 +7,5 @@ data class PortfolioData(val projectTxHash: String, val amount: Long) {
         portfolioInvestment.projectTxHash, portfolioInvestment.amount.toLong()
     )
 }
+
 data class Portfolio(val data: List<PortfolioData>)

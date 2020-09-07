@@ -19,7 +19,7 @@ data class WithdrawResponse(
     val createdAt: ZonedDateTime,
     val documentResponse: DocumentResponse?
 ) {
-    constructor(withdraw: Withdraw) : this (
+    constructor(withdraw: Withdraw) : this(
         withdraw.id,
         withdraw.ownerUuid,
         withdraw.amount,
@@ -63,6 +63,7 @@ data class WithdrawWithUserResponse(
         withdraw.file?.let { DocumentResponse(it) }
     )
 }
+
 data class WithdrawWithUserListResponse(
     val withdraws: List<WithdrawWithUserResponse>,
     val page: Int,
@@ -98,6 +99,7 @@ data class WithdrawWithProjectResponse(
         withdraw.file?.let { DocumentResponse(it) }
     )
 }
+
 data class WithdrawWithProjectListResponse(
     val withdraws: List<WithdrawWithProjectResponse>,
     val page: Int,

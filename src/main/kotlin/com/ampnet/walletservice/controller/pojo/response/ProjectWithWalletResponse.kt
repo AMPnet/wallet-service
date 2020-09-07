@@ -14,6 +14,7 @@ data class ProjectWithWalletResponse(
         projectWithWallet.payoutInProcess
     )
 }
+
 data class ProjectWithWalletListResponse(
     val projects: List<ProjectWithWalletResponse>,
     val page: Int,

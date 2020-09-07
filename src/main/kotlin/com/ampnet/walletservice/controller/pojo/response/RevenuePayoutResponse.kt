@@ -22,6 +22,7 @@ data class RevenuePayoutResponse(
         revenuePayout.completedAt
     )
 }
+
 data class RevenuePayoutsResponse(
     val revenuePayouts: List<RevenuePayoutResponse>,
     val page: Int,

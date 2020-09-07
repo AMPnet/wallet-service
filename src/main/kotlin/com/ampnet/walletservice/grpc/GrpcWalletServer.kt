@@ -3,6 +3,7 @@ package com.ampnet.walletservice.grpc
 import com.ampnet.walletservice.enums.WalletType
 import com.ampnet.walletservice.persistence.model.Wallet
 import com.ampnet.walletservice.persistence.repository.WalletRepository
+import com.ampnet.walletservice.proto.GetWalletsByHashRequest
 import com.ampnet.walletservice.proto.GetWalletsByOwnerRequest
 import com.ampnet.walletservice.proto.WalletResponse
 import com.ampnet.walletservice.proto.WalletServiceGrpc
@@ -17,8 +18,8 @@ class GrpcWalletServer(val walletRepository: WalletRepository) : WalletServiceGr
 
     companion object : KLogging()
 
-    override fun getWallets(request: GetWalletsByOwnerRequest, responseObserver: StreamObserver<WalletsResponse>) {
-        logger.debug { "Received gRPC request: getWallets = ${request.ownersUuidsList}" }
+    override fun getWalletsByOwner(request: GetWalletsByOwnerRequest, responseObserver: StreamObserver<WalletsResponse>) {
+        logger.debug { "Received gRPC request: getWalletsByOwner = ${request.ownersUuidsList}" }
         val uuids = request.ownersUuidsList.mapNotNull {
             try {
                 UUID.fromString(it)
@@ -28,6 +29,18 @@ class GrpcWalletServer(val walletRepository: WalletRepository) : WalletServiceGr
             }
         }.toSet()
         val wallets = walletRepository.findByOwnerIn(uuids)
+            .map { generateWalletResponseFromWallet(it) }
+        logger.debug { "Wallets response: $wallets" }
+        val response = WalletsResponse.newBuilder()
+            .addAllWallets(wallets)
+            .build()
+        responseObserver.onNext(response)
+        responseObserver.onCompleted()
+    }
+
+    override fun getWalletsByHash(request: GetWalletsByHashRequest, responseObserver: StreamObserver<WalletsResponse>) {
+        logger.debug { "Received gRPC request: getWalletsByHash = ${request.hashesList}" }
+        val wallets = walletRepository.findByHashes(request.hashesList)
             .map { generateWalletResponseFromWallet(it) }
         logger.debug { "Wallets response: $wallets" }
         val response = WalletsResponse.newBuilder()
