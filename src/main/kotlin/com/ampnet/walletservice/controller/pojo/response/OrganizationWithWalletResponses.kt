@@ -12,6 +12,7 @@ data class OrganizationWithWalletResponse(
         WalletResponse(organizationWithWallet.wallet)
     )
 }
+
 data class OrganizationWithWalletListResponse(
     val organizations: List<OrganizationWithWalletResponse>,
     val page: Int,

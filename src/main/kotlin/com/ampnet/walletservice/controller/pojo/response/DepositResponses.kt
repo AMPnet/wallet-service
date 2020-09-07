@@ -48,6 +48,7 @@ data class DepositWithUserResponse(
         userResponse?.let { UserControllerResponse(it) }
     )
 }
+
 data class DepositWithUserListResponse(
     val deposits: List<DepositWithUserResponse>,
     val page: Int,
@@ -63,6 +64,7 @@ data class DepositWithProjectResponse(
         project?.let { ProjectControllerResponse(it) }
     )
 }
+
 data class DepositWithProjectListResponse(
     val deposits: List<DepositWithProjectResponse>,
     val page: Int,

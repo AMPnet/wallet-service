@@ -12,4 +12,5 @@ data class BankAccountResponse(
         bankAccount.id, bankAccount.iban, bankAccount.bankCode, bankAccount.alias
     )
 }
+
 data class BankAccountsResponse(val bankAccounts: List<BankAccountResponse>)

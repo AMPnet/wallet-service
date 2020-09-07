@@ -19,11 +19,13 @@ interface WalletRepository : JpaRepository<Wallet, UUID> {
             "WHERE wallet.type = ?1 AND wallet.hash IS NULL"
     )
     fun findUnactivatedByType(type: WalletType, pageable: Pageable): Page<Wallet>
+
     @Query(
         "SELECT wallet FROM Wallet wallet " +
             "WHERE wallet.type = ?1 AND wallet.hash IS NOT NULL"
     )
     fun findActivatedByType(type: WalletType, pageable: Pageable): Page<Wallet>
+
     @Query(
         "SELECT wallet FROM Wallet wallet " +
             "WHERE wallet.hash IN (:hashes)"

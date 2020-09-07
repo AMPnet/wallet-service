@@ -40,8 +40,7 @@ class GrpcWalletServer(val walletRepository: WalletRepository) : WalletServiceGr
 
     override fun getWalletsByHash(request: GetWalletsByHashRequest, responseObserver: StreamObserver<WalletsResponse>) {
         logger.debug { "Received gRPC request: getWalletsByHash = ${request.hashesList}" }
-        val hashes = request.hashesList.filter { it.isNotEmpty() }
-        val wallets = walletRepository.findByHashes(hashes)
+        val wallets = walletRepository.findByHashes(request.hashesList)
             .map { generateWalletResponseFromWallet(it) }
         logger.debug { "Wallets response: $wallets" }
         val response = WalletsResponse.newBuilder()

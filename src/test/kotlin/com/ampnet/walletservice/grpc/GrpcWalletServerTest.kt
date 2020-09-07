@@ -33,7 +33,7 @@ class GrpcWalletServerTest : TestBase() {
     fun mustReturnRequestedWalletsByOwners() {
         suppose("Wallets exist") {
             testContext.uuids = listOf(UUID.randomUUID(), UUID.randomUUID())
-            testContext.wallets = createListOfWallets(testContext.uuids)
+            testContext.wallets = createListOfWalletsWithHashes(testContext.uuids)
             Mockito.`when`(mockedWalletRepository.findByOwnerIn(testContext.uuids.toSet())).thenReturn(testContext.wallets)
         }
 
@@ -58,7 +58,7 @@ class GrpcWalletServerTest : TestBase() {
         suppose("Wallets exist") {
             testContext.uuids = listOf(UUID.randomUUID(), UUID.randomUUID())
             testContext.hashes = listOf("hash-1", "hash-2")
-            testContext.wallets = createListOfWallets(testContext.uuids, testContext.hashes)
+            testContext.wallets = createListOfWalletsWithHashes(testContext.uuids, testContext.hashes)
             Mockito.`when`(mockedWalletRepository.findByHashes(testContext.hashes)).thenReturn(testContext.wallets)
         }
 
@@ -90,13 +90,15 @@ class GrpcWalletServerTest : TestBase() {
                 .build()
         }
 
-    private fun createListOfWallets(
+    private fun createListOfWalletsWithHashes(
         uuids: List<UUID>,
         hashes: List<String> = mutableListOf()
     ): List<Wallet> {
         val uuidsWithHashes = uuids.zip(hashes).toMap()
         return uuidsWithHashes.map {
-            Wallet(it.key, "activation-data", WalletType.USER, Currency.EUR, it.value, "alias")
+            val wallet = Wallet(it.key, "activation-data", WalletType.USER, Currency.EUR, "alias")
+            wallet.hash = it.value
+            wallet
         }
     }
 
