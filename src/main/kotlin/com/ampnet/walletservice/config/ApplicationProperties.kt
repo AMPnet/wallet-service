@@ -13,7 +13,7 @@ class ApplicationProperties {
 }
 
 class JwtProperties {
-    lateinit var signingKey: String
+    lateinit var publicKey: String
 }
 
 class FileStorageProperties {
