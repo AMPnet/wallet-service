@@ -1,5 +1,6 @@
 package com.ampnet.walletservice.service
 
+import com.ampnet.core.jwt.UserPrincipal
 import com.ampnet.walletservice.TestBase
 import com.ampnet.walletservice.config.DatabaseCleanerService
 import com.ampnet.walletservice.enums.Currency
@@ -80,6 +81,7 @@ abstract class JpaServiceTestBase : TestBase() {
     protected val txHash = "tx-hash"
     protected val transactionData = TransactionData("data")
     protected val bankAccount = "AL35202111090000000001234567"
+    protected val coop = "ampnet"
 
     protected fun createWalletForUser(userUuid: UUID, hash: String) = createWallet(userUuid, hash, WalletType.USER)
 
@@ -91,7 +93,7 @@ abstract class JpaServiceTestBase : TestBase() {
     protected fun createWallet(owner: UUID, hash: String, type: WalletType): Wallet {
         val wallet = Wallet(
             UUID.randomUUID(), owner, hash, type, Currency.EUR,
-            ZonedDateTime.now(), hash, ZonedDateTime.now(), null
+            ZonedDateTime.now(), hash, ZonedDateTime.now(), null, coop
         )
         return walletRepository.save(wallet)
     }
@@ -113,7 +115,7 @@ abstract class JpaServiceTestBase : TestBase() {
         val withdraw = Withdraw(
             0, user, 100L, ZonedDateTime.now(), user, bankAccount,
             "approved-tx", ZonedDateTime.now(),
-            "burned-tx", ZonedDateTime.now(), UUID.randomUUID(), null, type
+            "burned-tx", ZonedDateTime.now(), UUID.randomUUID(), null, type, coop
         )
         return withdrawRepository.save(withdraw)
     }
@@ -122,15 +124,15 @@ abstract class JpaServiceTestBase : TestBase() {
         val withdraw = Withdraw(
             0, user, 100L, ZonedDateTime.now(), user, bankAccount,
             "approved-tx", ZonedDateTime.now(),
-            null, null, null, null, type
+            null, null, null, null, type, coop
         )
         return withdrawRepository.save(withdraw)
     }
 
     protected fun createWithdraw(user: UUID, type: DepositWithdrawType = DepositWithdrawType.USER): Withdraw {
         val withdraw = Withdraw(
-            0, user, 100L, ZonedDateTime.now(), userUuid, bankAccount,
-            null, null, null, null, null, null, type
+            0, user, 100L, ZonedDateTime.now(), userUuid, bankAccount, null,
+            null, null, null, null, null, type, coop
         )
         return withdrawRepository.save(withdraw)
     }
@@ -141,17 +143,32 @@ abstract class JpaServiceTestBase : TestBase() {
     ): Deposit {
         val document = saveFile(userUuid)
         val deposit = Deposit(
-            0, userUuid, "S34SDGFT", true, 10_000,
-            ZonedDateTime.now(), userUuid, type, txHash, userUuid, ZonedDateTime.now(), document, null
+            0, userUuid, "S34SDGFT", true, 10_000, ZonedDateTime.now(), userUuid,
+            type, txHash, userUuid, ZonedDateTime.now(), document, null, coop
         )
         return depositRepository.save(deposit)
     }
 
     protected fun createUnapprovedDeposit(owner: UUID, type: DepositWithdrawType = DepositWithdrawType.USER): Deposit {
         val deposit = Deposit(
-            0, owner, "S34SDGFT", false, 10_000,
-            ZonedDateTime.now(), userUuid, type, null, null, null, null, null
+            0, owner, "S34SDGFT", false, 10_000, ZonedDateTime.now(),
+            userUuid, type, null, null, null, null, null, coop
         )
         return depositRepository.save(deposit)
+    }
+
+    protected fun createUserPrincipal(
+        userUuid: UUID,
+        email: String = "email@email",
+        name: String = "Username",
+        authorities: Set<String> = mutableSetOf(),
+        enabled: Boolean = true,
+        verified: Boolean = true,
+        coop: String = "ampnet"
+    ): UserPrincipal {
+        return UserPrincipal(
+            userUuid, email, name, authorities,
+            enabled, verified, coop
+        )
     }
 }

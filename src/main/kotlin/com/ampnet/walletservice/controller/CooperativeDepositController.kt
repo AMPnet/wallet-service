@@ -125,7 +125,7 @@ class CooperativeDepositController(
     fun generateMintTransaction(@PathVariable("id") id: Int): ResponseEntity<TransactionResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.info { "Received request to generate mint transaction by user: ${userPrincipal.uuid}" }
-        val serviceRequest = MintServiceRequest(id, userPrincipal.uuid)
+        val serviceRequest = MintServiceRequest(id, userPrincipal)
         val transactionDataAndInfo = cooperativeDepositService.generateMintTransaction(serviceRequest)
         return ResponseEntity.ok(TransactionResponse(transactionDataAndInfo))
     }

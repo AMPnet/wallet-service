@@ -1,5 +1,6 @@
 package com.ampnet.walletservice.service.impl
 
+import com.ampnet.core.jwt.UserPrincipal
 import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.exception.InvalidRequestException
@@ -19,7 +20,6 @@ import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.ZonedDateTime
-import java.util.UUID
 
 @Service
 class CooperativeWithdrawServiceImpl(
@@ -44,14 +44,14 @@ class CooperativeWithdrawServiceImpl(
     }
 
     @Transactional
-    override fun generateBurnTransaction(withdrawId: Int, user: UUID): TransactionDataAndInfo {
+    override fun generateBurnTransaction(withdrawId: Int, user: UserPrincipal): TransactionDataAndInfo {
         val withdraw = ServiceUtils.getWithdraw(withdrawId, withdrawRepository)
         logger.info { "Generating Burn transaction for withdraw: $withdraw" }
         validateWithdrawForBurn(withdraw)
         val ownerWallet = ServiceUtils.getWalletHash(withdraw.ownerUuid, walletRepository)
         val data = blockchainService.generateBurnTransaction(ownerWallet)
         val info = transactionInfoService.createBurnTransaction(withdraw.amount, user, withdraw.id)
-        withdraw.burnedBy = user
+        withdraw.burnedBy = user.uuid
         logger.info { "Burned withdraw: $withdraw" }
         return TransactionDataAndInfo(data, info)
     }

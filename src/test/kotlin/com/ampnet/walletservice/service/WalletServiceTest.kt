@@ -64,7 +64,8 @@ class WalletServiceTest : JpaServiceTestBase() {
 
         verify("Service can create wallet for a user") {
             val request = WalletCreateRequest(defaultPublicKey, "alias")
-            val wallet = walletService.createUserWallet(userUuid, request)
+            val user = createUserPrincipal(userUuid, coop = coop)
+            val wallet = walletService.createUserWallet(user, request)
             assertThat(wallet.activationData).isEqualTo(request.publicKey)
             assertThat(wallet.alias).isEqualTo(request.alias)
             assertThat(wallet.currency).isEqualTo(Currency.EUR)
@@ -72,6 +73,7 @@ class WalletServiceTest : JpaServiceTestBase() {
             assertThat(wallet.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
             assertThat(wallet.hash).isNull()
             assertThat(wallet.activatedAt).isNull()
+            assertThat(wallet.coop).isEqualTo(user.coop)
         }
         verify("Wallet is assigned to the user") {
             val wallet = walletService.getWallet(userUuid) ?: fail("User must have a wallet")
@@ -95,13 +97,14 @@ class WalletServiceTest : JpaServiceTestBase() {
         }
 
         verify("Service can create wallet for project") {
-            val wallet = walletService.createProjectWallet(projectUuid, signedTransaction)
+            val wallet = walletService.createProjectWallet(projectUuid, signedTransaction, coop)
             assertThat(wallet.activationData).isEqualTo(defaultAddressHash)
             assertThat(wallet.currency).isEqualTo(Currency.EUR)
             assertThat(wallet.type).isEqualTo(WalletType.PROJECT)
             assertThat(wallet.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
             assertThat(wallet.hash).isNull()
             assertThat(wallet.activatedAt).isNull()
+            assertThat(wallet.coop).isEqualTo(coop)
         }
         verify("Wallet is assigned to the project") {
             val projectWallet = walletService.getWallet(projectUuid) ?: fail("Missing project wallet")
@@ -121,7 +124,7 @@ class WalletServiceTest : JpaServiceTestBase() {
 
         verify("Service cannot create additional account") {
             val exception = assertThrows<ResourceAlreadyExistsException> {
-                walletService.createUserWallet(userUuid, WalletCreateRequest(defaultPublicKey, "alias"))
+                walletService.createUserWallet(createUserPrincipal(userUuid), WalletCreateRequest(defaultPublicKey, "alias"))
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.WALLET_EXISTS)
         }
@@ -135,7 +138,7 @@ class WalletServiceTest : JpaServiceTestBase() {
 
         verify("Service cannot create additional account") {
             val exception = assertThrows<ResourceAlreadyExistsException> {
-                walletService.createProjectWallet(projectUuid, signedTransaction)
+                walletService.createProjectWallet(projectUuid, signedTransaction, coop)
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.WALLET_EXISTS)
         }
@@ -162,7 +165,7 @@ class WalletServiceTest : JpaServiceTestBase() {
     fun mustThrowExceptionIfUserWithoutWalletTriesToGenerateCreateProjectWallet() {
         verify("Service will throw InternalException") {
             val exception = assertThrows<ResourceNotFoundException> {
-                walletService.generateTransactionToCreateProjectWallet(projectUuid, userUuid)
+                walletService.generateTransactionToCreateProjectWallet(projectUuid, createUserPrincipal(userUuid))
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.WALLET_MISSING)
         }
@@ -181,7 +184,7 @@ class WalletServiceTest : JpaServiceTestBase() {
 
         verify("Service will throw InternalException") {
             val exception = assertThrows<ResourceNotFoundException> {
-                walletService.generateTransactionToCreateProjectWallet(projectUuid, userUuid)
+                walletService.generateTransactionToCreateProjectWallet(projectUuid, createUserPrincipal(userUuid))
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.WALLET_MISSING)
         }
@@ -191,7 +194,7 @@ class WalletServiceTest : JpaServiceTestBase() {
     fun mustThrowExceptionWhenGenerateTransactionToCreateOrganizationWalletWithoutUserWallet() {
         verify("Service can generate create organization transaction") {
             val exception = assertThrows<ResourceNotFoundException> {
-                walletService.generateTransactionToCreateOrganizationWallet(organizationUuid, userUuid)
+                walletService.generateTransactionToCreateOrganizationWallet(organizationUuid, createUserPrincipal(userUuid))
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.WALLET_MISSING)
         }
@@ -205,7 +208,7 @@ class WalletServiceTest : JpaServiceTestBase() {
 
         verify("Service will throw exception that organization already has a wallet") {
             val exception = assertThrows<ResourceAlreadyExistsException> {
-                walletService.generateTransactionToCreateOrganizationWallet(organizationUuid, userUuid)
+                walletService.generateTransactionToCreateOrganizationWallet(organizationUuid, createUserPrincipal(userUuid))
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.WALLET_EXISTS)
         }
@@ -229,7 +232,7 @@ class WalletServiceTest : JpaServiceTestBase() {
 
         verify("Service can generate transaction") {
             val transaction = walletService
-                .generateTransactionToCreateOrganizationWallet(organizationUuid, userUuid)
+                .generateTransactionToCreateOrganizationWallet(organizationUuid, createUserPrincipal(userUuid))
             assertThat(transaction.transactionData).isEqualTo(transactionData)
         }
     }
@@ -243,13 +246,14 @@ class WalletServiceTest : JpaServiceTestBase() {
         }
 
         verify("Service can create wallet for organization") {
-            val wallet = walletService.createOrganizationWallet(organizationUuid, signedTransaction)
+            val wallet = walletService.createOrganizationWallet(organizationUuid, signedTransaction, coop)
             assertThat(wallet.activationData).isEqualTo(defaultAddressHash)
             assertThat(wallet.currency).isEqualTo(Currency.EUR)
             assertThat(wallet.type).isEqualTo(WalletType.ORG)
             assertThat(wallet.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
             assertThat(wallet.hash).isNull()
             assertThat(wallet.activatedAt).isNull()
+            assertThat(wallet.coop).isEqualTo(coop)
         }
         verify("Wallet is assigned to the organization") {
             val wallet = walletService.getWallet(organizationUuid) ?: fail("Missing organization wallet")
@@ -269,7 +273,7 @@ class WalletServiceTest : JpaServiceTestBase() {
 
         verify("Service cannot create additional organization account") {
             val exception = assertThrows<ResourceAlreadyExistsException> {
-                walletService.createOrganizationWallet(organizationUuid, signedTransaction)
+                walletService.createOrganizationWallet(organizationUuid, signedTransaction, coop)
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.WALLET_EXISTS)
         }
@@ -288,7 +292,7 @@ class WalletServiceTest : JpaServiceTestBase() {
 
         verify("User will not be able to create organization wallet with the same hash") {
             val exception = assertThrows<ResourceAlreadyExistsException> {
-                walletService.createProjectWallet(projectUuid, signedTransaction)
+                walletService.createProjectWallet(projectUuid, signedTransaction, coop)
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.WALLET_HASH_EXISTS)
         }

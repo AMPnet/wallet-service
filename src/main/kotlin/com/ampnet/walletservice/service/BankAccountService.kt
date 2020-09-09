@@ -1,12 +1,12 @@
 package com.ampnet.walletservice.service
 
+import com.ampnet.core.jwt.UserPrincipal
 import com.ampnet.walletservice.controller.pojo.request.BankAccountCreateRequest
 import com.ampnet.walletservice.persistence.model.BankAccount
-import java.util.UUID
 
 interface BankAccountService {
     fun getAllBankAccounts(): List<BankAccount>
-    fun createBankAccount(user: UUID, request: BankAccountCreateRequest): BankAccount
+    fun createBankAccount(user: UserPrincipal, request: BankAccountCreateRequest): BankAccount
     fun deleteBankAccount(id: Int)
     fun validateIban(iban: String)
 }

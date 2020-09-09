@@ -28,7 +28,7 @@ class BankAccountController(private val bankAccountService: BankAccountService) 
     @PostMapping("/bank-account")
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PWA_DEPOSIT)")
     fun createBankAccount(@RequestBody request: BankAccountCreateRequest): ResponseEntity<BankAccountResponse> {
-        val user = ControllerUtils.getUserPrincipalFromSecurityContext().uuid
+        val user = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to create bank account: $request by user $user" }
         val bankAccount = bankAccountService.createBankAccount(user, request)
         return ResponseEntity.ok(BankAccountResponse(bankAccount))

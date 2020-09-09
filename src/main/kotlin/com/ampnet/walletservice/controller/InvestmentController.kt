@@ -25,7 +25,7 @@ class InvestmentController(private val projectInvestmentService: ProjectInvestme
     ): ResponseEntity<TransactionResponse> {
         logger.debug { "Received request to generate invest transaction for project: $projectUuid" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
-        val serviceRequest = ProjectInvestmentRequest(projectUuid, userPrincipal.uuid, request.amount)
+        val serviceRequest = ProjectInvestmentRequest(projectUuid, userPrincipal, request.amount)
         val transaction = projectInvestmentService.generateInvestInProjectTransaction(serviceRequest)
         return ResponseEntity.ok(TransactionResponse(transaction))
     }
@@ -37,7 +37,7 @@ class InvestmentController(private val projectInvestmentService: ProjectInvestme
         logger.debug { "Received request to generate cancel invests in project transaction for project: $projectUuid" }
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         val transaction = projectInvestmentService
-            .generateCancelInvestmentsInProjectTransaction(projectUuid, userPrincipal.uuid)
+            .generateCancelInvestmentsInProjectTransaction(projectUuid, userPrincipal)
         return ResponseEntity.ok(TransactionResponse(transaction))
     }
 }

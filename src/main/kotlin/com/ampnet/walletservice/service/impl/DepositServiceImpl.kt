@@ -37,14 +37,15 @@ class DepositServiceImpl(
         ServiceUtils.getWalletByUserUuid(request.owner, walletRepository)
         if (request.type == DepositWithdrawType.PROJECT) {
             val projectResponse = projectService.getProject(request.owner)
-            ServiceUtils.validateUserIsProjectOwner(request.createdBy, projectResponse)
+            ServiceUtils.validateUserIsProjectOwner(request.createdBy.uuid, projectResponse)
         }
 
         val deposit = Deposit(
-            request.owner, generateDepositReference(), request.amount, request.createdBy, request.type
+            request.owner, generateDepositReference(), request.amount,
+            request.createdBy.uuid, request.type, request.createdBy.coop
         )
         depositRepository.save(deposit)
-        mailService.sendDepositRequest(request.createdBy, request.amount)
+        mailService.sendDepositRequest(request.createdBy.uuid, request.amount)
         logger.debug {
             "Created Deposit for owner: ${request.owner} with amount: ${request.amount} by user: ${request.createdBy}"
         }

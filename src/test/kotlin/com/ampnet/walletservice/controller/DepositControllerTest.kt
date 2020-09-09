@@ -31,7 +31,7 @@ class DepositControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser
+    @WithMockCrowdfoundUser(coop = coop)
     fun mustBeAbleToCreateDeposit() {
         suppose("User has a wallet") {
             databaseCleanerService.deleteAllWallets()
@@ -68,6 +68,7 @@ class DepositControllerTest : ControllerTestBase() {
             assertThat(deposit.approved).isFalse()
             assertThat(deposit.reference).isNotNull()
             assertThat(deposit.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
+            assertThat(deposit.coop).isEqualTo(coop)
         }
         verify("Mail notification is sent") {
             Mockito.verify(mailService, Mockito.times(1))
@@ -198,6 +199,7 @@ class DepositControllerTest : ControllerTestBase() {
             assertThat(deposit.approved).isFalse()
             assertThat(deposit.reference).isNotNull()
             assertThat(deposit.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
+            assertThat(deposit.coop).isEqualTo(coop)
         }
         verify("Mail notification is sent to user") {
             Mockito.verify(mailService, Mockito.times(1))

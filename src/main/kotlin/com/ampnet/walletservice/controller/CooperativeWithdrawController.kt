@@ -84,7 +84,7 @@ class CooperativeWithdrawController(
     fun generateBurnTransaction(@PathVariable("id") id: Int): ResponseEntity<TransactionResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.info { "Received request to generate withdraw burn transaction by user: ${userPrincipal.uuid}" }
-        val transactionDataAndInfo = cooperativeWithdrawService.generateBurnTransaction(id, userPrincipal.uuid)
+        val transactionDataAndInfo = cooperativeWithdrawService.generateBurnTransaction(id, userPrincipal)
         return ResponseEntity.ok(TransactionResponse(transactionDataAndInfo))
     }
 

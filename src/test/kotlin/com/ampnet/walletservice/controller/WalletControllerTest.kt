@@ -146,7 +146,7 @@ class WalletControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser
+    @WithMockCrowdfoundUser(coop = coop)
     fun mustBeAbleToCreateWallet() {
         verify("User can create a wallet") {
             val request = WalletCreateRequest(testContext.publicKey, testContext.alias)
@@ -177,6 +177,7 @@ class WalletControllerTest : ControllerTestBase() {
             assertThat(wallet.activationData).isEqualTo(testContext.publicKey)
             assertThat(wallet.alias).isEqualTo(testContext.alias)
             assertThat(wallet.hash).isNull()
+            assertThat(wallet.coop).isEqualTo(coop)
         }
         verify("Mail notification for created wallet") {
             Mockito.verify(mailService, Mockito.times(1)).sendNewWalletMail(WalletTypeRequest.Type.USER)

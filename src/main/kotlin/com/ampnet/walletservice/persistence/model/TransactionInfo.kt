@@ -30,5 +30,8 @@ data class TransactionInfo(
     val userUuid: UUID,
 
     @Column(nullable = true, length = 128)
-    val companionData: String?
+    val companionData: String?,
+
+    @Column(nullable = false)
+    var coop: String
 )

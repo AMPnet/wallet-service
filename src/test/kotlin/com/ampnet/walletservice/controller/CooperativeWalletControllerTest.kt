@@ -222,7 +222,7 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWA_WALLET_TRANSFER])
+    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWA_WALLET_TRANSFER], coop = "ampnet")
     fun mustBeAbleToTransferTokenIssuer() {
         suppose("There is a user with activated wallet") {
             testContext.userUuid = UUID.randomUUID()
@@ -255,6 +255,7 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
             assertThat(transactionInfo.type).isEqualTo(TransactionType.TRNSF_TOKEN_OWN)
             assertThat(transactionInfo.userUuid).isEqualTo(userUuid)
             assertThat(transactionInfo.companionData).isEqualTo(testContext.userUuid.toString())
+            assertThat(transactionInfo.coop).isEqualTo(coop)
         }
     }
 
@@ -292,11 +293,12 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
             assertThat(transactionInfo.type).isEqualTo(TransactionType.TRNSF_PLTFRM_OWN)
             assertThat(transactionInfo.userUuid).isEqualTo(userUuid)
             assertThat(transactionInfo.companionData).isEqualTo(testContext.userUuid.toString())
+            assertThat(transactionInfo.coop).isEqualTo(coop)
         }
     }
 
     private fun createUnactivatedWallet(owner: UUID, activationData: String, type: WalletType): Wallet {
-        val wallet = Wallet(owner, activationData, type, Currency.EUR)
+        val wallet = Wallet(owner, activationData, type, Currency.EUR, coop = coop)
         return walletRepository.save(wallet)
     }
 

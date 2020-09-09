@@ -1,5 +1,6 @@
 package com.ampnet.walletservice.service.impl
 
+import com.ampnet.core.jwt.UserPrincipal
 import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.exception.InvalidRequestException
@@ -55,15 +56,15 @@ class WithdrawServiceImpl(
         checkIfOwnerHasEnoughFunds(request.owner, request.amount)
         if (request.type == DepositWithdrawType.PROJECT) {
             val projectResponse = projectService.getProject(request.owner)
-            ServiceUtils.validateUserIsProjectOwner(request.createBy, projectResponse)
+            ServiceUtils.validateUserIsProjectOwner(request.createBy.uuid, projectResponse)
         }
         val withdraw = Withdraw(
-            0, request.owner, request.amount, ZonedDateTime.now(), request.createBy, request.bankAccount,
+            0, request.owner, request.amount, ZonedDateTime.now(), request.createBy.uuid, request.bankAccount,
             null, null, null, null, null, null,
-            type = request.type
+            type = request.type, coop = request.createBy.coop
         )
         withdrawRepository.save(withdraw)
-        mailService.sendWithdrawRequest(request.createBy, request.amount)
+        mailService.sendWithdrawRequest(request.createBy.uuid, request.amount)
         logger.info {
             "Created Withdraw, type = ${request.type} for owner: ${request.owner} with amount: ${request.amount} " +
                 "by user: ${request.createBy}"
@@ -82,11 +83,11 @@ class WithdrawServiceImpl(
     }
 
     @Transactional
-    override fun generateApprovalTransaction(withdrawId: Int, user: UUID): TransactionDataAndInfo {
+    override fun generateApprovalTransaction(withdrawId: Int, user: UserPrincipal): TransactionDataAndInfo {
         val withdraw = ServiceUtils.getWithdraw(withdrawId, withdrawRepository)
         validateWithdrawIsNotApproved(withdraw)
-        validateUserCanEditWithdraw(withdraw, user)
-        val data = getApprovalTransactionData(withdraw, user)
+        validateUserCanEditWithdraw(withdraw, user.uuid)
+        val data = getApprovalTransactionData(withdraw, user.uuid)
         val info = transactionInfoService.createApprovalTransaction(withdraw.amount, user, withdraw.id)
         return TransactionDataAndInfo(data, info)
     }

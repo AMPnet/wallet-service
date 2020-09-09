@@ -1,5 +1,6 @@
 package com.ampnet.walletservice.service.impl
 
+import com.ampnet.core.jwt.UserPrincipal
 import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.exception.InvalidRequestException
 import com.ampnet.walletservice.exception.ResourceNotFoundException
@@ -33,15 +34,15 @@ class RevenueServiceImpl(
     companion object : KLogging()
 
     @Transactional
-    override fun generateRevenuePayout(user: UUID, project: UUID, amount: Long): TransactionDataAndInfo {
+    override fun generateRevenuePayout(user: UserPrincipal, project: UUID, amount: Long): TransactionDataAndInfo {
         logger.info { "Generating revenue payout transaction info" }
         val projectResponse = projectService.getProject(project)
-        ServiceUtils.validateUserIsProjectOwner(user, projectResponse)
-        val userWallet = ServiceUtils.getWalletHash(user, walletRepository)
+        ServiceUtils.validateUserIsProjectOwner(user.uuid, projectResponse)
+        val userWallet = ServiceUtils.getWalletHash(user.uuid, walletRepository)
         val projectWallet = ServiceUtils.getWalletHash(project, walletRepository)
         validateProjectHasEnoughFunds(projectWallet, amount)
 
-        val revenuePayout = RevenuePayout(project, amount, user)
+        val revenuePayout = RevenuePayout(project, amount, user.uuid, user.coop)
         revenuePayoutRepository.save(revenuePayout)
         val request = RevenuePayoutTxRequest(userWallet, projectWallet, amount)
         val data = blockchainService.generateRevenuePayout(request)

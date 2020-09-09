@@ -40,7 +40,7 @@ class CooperativeDepositServiceTest : JpaServiceTestBase() {
 
         verify("Service will throw exception for existing unapproved deposit") {
             assertThrows<ResourceNotFoundException> {
-                val request = MintServiceRequest(deposit.id, userUuid)
+                val request = MintServiceRequest(deposit.id, createUserPrincipal(userUuid))
                 cooperativeDepositService.generateMintTransaction(request)
             }
         }
@@ -50,7 +50,7 @@ class CooperativeDepositServiceTest : JpaServiceTestBase() {
     fun mustThrowExceptionIfDepositIsMissingForMintTransaction() {
         verify("Service will throw exception if the deposit is missing") {
             assertThrows<ResourceNotFoundException> {
-                val request = MintServiceRequest(0, userUuid)
+                val request = MintServiceRequest(0, createUserPrincipal(userUuid))
                 cooperativeDepositService.generateMintTransaction(request)
             }
         }
@@ -64,7 +64,7 @@ class CooperativeDepositServiceTest : JpaServiceTestBase() {
 
         verify("Service will throw exception if the deposit already has tx hash") {
             assertThrows<ResourceAlreadyExistsException> {
-                val request = MintServiceRequest(deposit.id, userUuid)
+                val request = MintServiceRequest(deposit.id, createUserPrincipal(userUuid))
                 cooperativeDepositService.generateMintTransaction(request)
             }
         }
@@ -78,7 +78,7 @@ class CooperativeDepositServiceTest : JpaServiceTestBase() {
 
         verify("Service will throw exception if the deposit is not approved") {
             assertThrows<InvalidRequestException> {
-                val request = MintServiceRequest(deposit.id, userUuid)
+                val request = MintServiceRequest(deposit.id, createUserPrincipal(userUuid))
                 cooperativeDepositService.generateMintTransaction(request)
             }
         }

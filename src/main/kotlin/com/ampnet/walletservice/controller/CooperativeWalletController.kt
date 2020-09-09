@@ -29,7 +29,7 @@ class CooperativeWalletController(
     fun activateWalletTransaction(@PathVariable uuid: UUID): ResponseEntity<TransactionResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.info { "Received request to activate wallet: $uuid by user: ${userPrincipal.uuid}" }
-        val transaction = cooperativeWalletService.generateWalletActivationTransaction(uuid, userPrincipal.uuid)
+        val transaction = cooperativeWalletService.generateWalletActivationTransaction(uuid, userPrincipal)
         return ResponseEntity.ok(TransactionResponse(transaction))
     }
 
@@ -67,7 +67,7 @@ class CooperativeWalletController(
             "Received request to transfer wallet ownership for ${request.type} to user: ${request.userUuid}" +
                 " by: ${user.uuid}"
         }
-        val transaction = cooperativeWalletService.generateSetTransferOwnership(user.uuid, request)
+        val transaction = cooperativeWalletService.generateSetTransferOwnership(user, request)
         return ResponseEntity.ok(TransactionResponse(transaction))
     }
 }

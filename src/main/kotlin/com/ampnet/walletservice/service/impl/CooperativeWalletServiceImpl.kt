@@ -1,5 +1,6 @@
 package com.ampnet.walletservice.service.impl
 
+import com.ampnet.core.jwt.UserPrincipal
 import com.ampnet.userservice.proto.SetRoleRequest
 import com.ampnet.walletservice.config.ApplicationProperties
 import com.ampnet.walletservice.controller.pojo.request.WalletTransferRequest
@@ -45,10 +46,10 @@ class CooperativeWalletServiceImpl(
     companion object : KLogging()
 
     @Transactional
-    override fun generateWalletActivationTransaction(walletUuid: UUID, userUuid: UUID): TransactionDataAndInfo {
+    override fun generateWalletActivationTransaction(walletUuid: UUID, user: UserPrincipal): TransactionDataAndInfo {
         val wallet = getWalletByUuid(walletUuid)
         val data = blockchainService.addWallet(wallet.activationData)
-        val info = transactionInfoService.activateWalletTransaction(wallet.uuid, wallet.type, userUuid)
+        val info = transactionInfoService.activateWalletTransaction(wallet.uuid, wallet.type, user)
         return TransactionDataAndInfo(data, info)
     }
 
@@ -101,7 +102,7 @@ class CooperativeWalletServiceImpl(
 
     @Transactional
     override fun generateSetTransferOwnership(
-        owner: UUID,
+        owner: UserPrincipal,
         request: WalletTransferRequest
     ): TransactionDataAndInfo {
         val userWallet = ServiceUtils.getWalletByUserUuid(request.userUuid, walletRepository)

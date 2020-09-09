@@ -469,12 +469,12 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
         userUuid: UUID,
         companionData: String? = null
     ): TransactionInfo {
-        val transactionInfo = TransactionInfo(0, type, "description", userUuid, companionData)
+        val transactionInfo = TransactionInfo(0, type, "description", userUuid, companionData, coop = coop)
         return transactionInfoRepository.save(transactionInfo)
     }
 
     private fun createUnactivatedWallet(owner: UUID): Wallet {
-        val wallet = Wallet(owner, "activation-data", WalletType.USER, Currency.EUR)
+        val wallet = Wallet(owner, "activation-data", WalletType.USER, Currency.EUR, coop = coop)
         return walletRepository.save(wallet)
     }
 

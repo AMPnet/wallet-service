@@ -1,5 +1,6 @@
 package com.ampnet.walletservice.service.impl
 
+import com.ampnet.core.jwt.UserPrincipal
 import com.ampnet.walletservice.controller.pojo.request.BankAccountCreateRequest
 import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.exception.InvalidRequestException
@@ -13,7 +14,6 @@ import org.iban4j.Iban4jException
 import org.iban4j.IbanUtil
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.util.UUID
 
 @Service
 class BankAccountServiceImpl(private val bankAccountRepository: BankAccountRepository) : BankAccountService {
@@ -24,11 +24,11 @@ class BankAccountServiceImpl(private val bankAccountRepository: BankAccountRepos
     override fun getAllBankAccounts(): List<BankAccount> = bankAccountRepository.findAll()
 
     @Transactional
-    override fun createBankAccount(user: UUID, request: BankAccountCreateRequest): BankAccount {
+    override fun createBankAccount(user: UserPrincipal, request: BankAccountCreateRequest): BankAccount {
         validateBankCode(request.bankCode)
         validateIban(request.iban)
         logger.info { "Creating new bank account: $request" }
-        val bankAccount = BankAccount(request.iban, request.bankCode, user, request.alias)
+        val bankAccount = BankAccount(request.iban, request.bankCode, user.uuid, request.alias, user.coop)
         return bankAccountRepository.save(bankAccount)
     }
 

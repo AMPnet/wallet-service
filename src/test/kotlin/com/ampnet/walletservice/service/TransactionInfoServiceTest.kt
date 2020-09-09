@@ -25,7 +25,9 @@ class TransactionInfoServiceTest : JpaServiceTestBase() {
     fun mustCreateOrgTransaction() {
         suppose("Service can create org transactionInfo") {
             testContext.transactionInfo =
-                transactionInfoService.createOrgTransaction(organizationUuid, testContext.organizationName, userUuid)
+                transactionInfoService.createOrgTransaction(
+                    organizationUuid, testContext.organizationName, createUserPrincipal(userUuid, coop = coop)
+                )
         }
 
         verify("Org transactionInfo is created") {
@@ -36,6 +38,7 @@ class TransactionInfoServiceTest : JpaServiceTestBase() {
             assertThat(tx.userUuid).isEqualTo(userUuid)
             assertThat(tx.companionData).contains(organizationUuid.toString())
             assertThat(tx.description).contains(testContext.organizationName)
+            assertThat(tx.coop).isEqualTo(coop)
         }
     }
 
@@ -43,7 +46,9 @@ class TransactionInfoServiceTest : JpaServiceTestBase() {
     fun mustCreateProjectTransaction() {
         suppose("Service can create project transactionInfo") {
             testContext.transactionInfo =
-                transactionInfoService.createProjectTransaction(projectUuid, testContext.projectName, userUuid)
+                transactionInfoService.createProjectTransaction(
+                    projectUuid, testContext.projectName, createUserPrincipal(userUuid, coop = coop)
+                )
         }
 
         verify("Project transactionInfo is created") {
@@ -54,6 +59,7 @@ class TransactionInfoServiceTest : JpaServiceTestBase() {
             assertThat(tx.userUuid).isEqualTo(userUuid)
             assertThat(tx.companionData).contains(projectUuid.toString())
             assertThat(tx.description).contains(testContext.projectName)
+            assertThat(tx.coop).isEqualTo(coop)
         }
     }
 
@@ -61,7 +67,7 @@ class TransactionInfoServiceTest : JpaServiceTestBase() {
     fun mustCreateInvestAllowanceTransaction() {
         suppose("Service can create invest allowance transactionInfo") {
             testContext.transactionInfo = transactionInfoService.createInvestTransaction(
-                testContext.projectName, testContext.amount, userUuid
+                testContext.projectName, testContext.amount, createUserPrincipal(userUuid, coop = coop)
             )
         }
 
@@ -73,6 +79,7 @@ class TransactionInfoServiceTest : JpaServiceTestBase() {
             assertThat(tx.userUuid).isEqualTo(userUuid)
             assertThat(tx.description).contains(testContext.projectName)
             assertThat(tx.description).contains("100.23")
+            assertThat(tx.coop).isEqualTo(coop)
         }
     }
 

@@ -49,7 +49,7 @@ class RevenueServiceTest : JpaServiceTestBase() {
 
         verify("Service will throw exception for missing funds") {
             val exception = assertThrows<InvalidRequestException> {
-                revenueService.generateRevenuePayout(userUuid, projectUuid, 101L)
+                revenueService.generateRevenuePayout(createUserPrincipal(userUuid), projectUuid, 101L)
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.WALLET_FUNDS)
         }
@@ -64,7 +64,7 @@ class RevenueServiceTest : JpaServiceTestBase() {
 
         verify("Service will throw exception for missing project privileges") {
             val exception = assertThrows<InvalidRequestException> {
-                revenueService.generateRevenuePayout(userUuid, projectUuid, 100L)
+                revenueService.generateRevenuePayout(createUserPrincipal(userUuid), projectUuid, 100L)
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.PRJ_MISSING_PRIVILEGE)
         }

@@ -41,8 +41,20 @@ data class Wallet(
     var activatedAt: ZonedDateTime?,
 
     @Column(length = 128)
-    var alias: String?
+    var alias: String?,
+
+    @Column(nullable = false)
+    var coop: String
 ) {
-    constructor(owner: UUID, activationData: String, type: WalletType, currency: Currency, alias: String? = null) :
-        this(UUID.randomUUID(), owner, activationData, type, currency, ZonedDateTime.now(), null, null, alias)
+    constructor(
+        owner: UUID,
+        activationData: String,
+        type: WalletType,
+        currency: Currency,
+        alias: String? = null,
+        coop: String
+    ) : this(
+        UUID.randomUUID(), owner, activationData, type, currency,
+        ZonedDateTime.now(), null, null, alias, coop
+    )
 }

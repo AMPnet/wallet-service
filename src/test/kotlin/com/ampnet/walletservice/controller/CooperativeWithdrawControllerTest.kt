@@ -19,7 +19,6 @@ import org.springframework.mock.web.MockMultipartFile
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.fileUpload
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.time.ZonedDateTime
 import java.util.UUID
@@ -63,7 +62,7 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
                     .param("page", "0")
                     .param("sort", "approvedAt,desc")
             )
-                .andExpect(MockMvcResultMatchers.status().isOk)
+                .andExpect(status().isOk)
                 .andReturn()
 
             val withdrawList: WithdrawWithUserListResponse = objectMapper.readValue(result.response.contentAsString)
@@ -237,7 +236,7 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWA_WITHDRAW])
+    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWA_WITHDRAW], coop = coop)
     fun mustBeAbleToGenerateBurnTransaction() {
         suppose("Transaction info is clean") {
             databaseCleanerService.deleteAllTransactionInfo()
@@ -273,6 +272,7 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
             val transactionInfo = transactionInfos.first()
             assertThat(transactionInfo.companionData).isEqualTo(testContext.withdraw.id.toString())
             assertThat(transactionInfo.type).isEqualTo(TransactionType.BURN)
+            assertThat(transactionInfo.userUuid).isEqualTo(userUuid)
             assertThat(transactionInfo.userUuid).isEqualTo(userUuid)
         }
     }
@@ -319,8 +319,8 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
         val document = saveFile("withdraw-doc", "doc-link", "type", 1, user)
         val withdraw = Withdraw(
             0, user, testContext.amount, ZonedDateTime.now(), user, testContext.bankAccount,
-            testContext.approvedTx, ZonedDateTime.now(),
-            testContext.burnedTx, ZonedDateTime.now(), UUID.randomUUID(), document, type
+            testContext.approvedTx, ZonedDateTime.now(), testContext.burnedTx,
+            ZonedDateTime.now(), UUID.randomUUID(), document, type, coop
         )
         return withdrawRepository.save(withdraw)
     }

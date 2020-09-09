@@ -39,9 +39,9 @@ class BankAccountControllerTest : ControllerTestBase() {
     @WithMockCrowdfoundUser
     fun mustBeAbleToGetAllBankAccounts() {
         suppose("There are two bank accounts") {
-            val bankAccount = BankAccount(iban, bankCode, userUuid, alias)
+            val bankAccount = BankAccount(iban, bankCode, userUuid, alias, coop)
             bankAccountRepository.save(bankAccount)
-            val secondBankAccount = BankAccount("AL47212110090000000235698741", "AKIVALTR", userUuid, "albalias")
+            val secondBankAccount = BankAccount("AL47212110090000000235698741", "AKIVALTR", userUuid, "albalias", coop)
             bankAccountRepository.save(secondBankAccount)
         }
 
@@ -60,7 +60,11 @@ class BankAccountControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWA_DEPOSIT])
+    @WithMockCrowdfoundUser(
+        privileges = [PrivilegeType.PWA_DEPOSIT],
+        uuid = "89fb3b1c-9c0a-11e9-a2a3-2a2ae2dbcce4",
+        coop = "ampnet"
+    )
     fun mustBeAbleToCreateBankAccount() {
         verify("Admin can create bank account") {
             val request = BankAccountCreateRequest(iban, bankCode, alias)
@@ -82,6 +86,8 @@ class BankAccountControllerTest : ControllerTestBase() {
             assertThat(bankAccount.iban).isEqualTo(iban)
             assertThat(bankAccount.bankCode).isEqualTo(bankAccount.bankCode)
             assertThat(bankAccount.alias).isEqualTo(alias)
+            assertThat(bankAccount.createdBy).isEqualTo(userUuid)
+            assertThat(bankAccount.coop).isEqualTo(coop)
         }
     }
 
@@ -106,7 +112,7 @@ class BankAccountControllerTest : ControllerTestBase() {
     @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWA_DEPOSIT])
     fun mustBeAbleToDeleteBankAccount() {
         suppose("There is bank account") {
-            bankAccount = BankAccount(iban, bankCode, userUuid, alias)
+            bankAccount = BankAccount(iban, bankCode, userUuid, alias, coop)
             bankAccountRepository.save(bankAccount)
         }
 

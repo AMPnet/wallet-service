@@ -44,10 +44,13 @@ class BroadcastTransactionServiceImpl(
 
         val txHash = when (transactionInfo.type) {
             TransactionType.WALLET_ACTIVATE -> activateWallet(transactionInfo, signedTransaction)
-            TransactionType.CREATE_ORG -> createOrganizationWallet(transactionInfo, signedTransaction)
-            TransactionType.CREATE_PROJECT -> createProjectWallet(transactionInfo, signedTransaction)
+            TransactionType.CREATE_ORG ->
+                createOrganizationWallet(transactionInfo, signedTransaction, transactionInfo.coop)
+            TransactionType.CREATE_PROJECT ->
+                createProjectWallet(transactionInfo, signedTransaction, transactionInfo.coop)
             TransactionType.INVEST -> projectInvestmentService.investInProject(signedTransaction)
-            TransactionType.CANCEL_INVEST -> projectInvestmentService.cancelInvestmentsInProject(signedTransaction)
+            TransactionType.CANCEL_INVEST ->
+                projectInvestmentService.cancelInvestmentsInProject(signedTransaction)
             TransactionType.MINT -> confirmMintTransaction(transactionInfo, signedTransaction)
             TransactionType.BURN_APPROVAL ->
                 confirmApprovalTransaction(transactionInfo, signedTransaction)
@@ -64,18 +67,20 @@ class BroadcastTransactionServiceImpl(
     private fun activateWallet(transactionInfo: TransactionInfo, signedTransaction: String): String {
         val walletUuid = getUuidFromCompanionData(transactionInfo)
         val wallet = cooperativeWalletService.activateWallet(walletUuid, signedTransaction)
-        return wallet.hash ?: throw ResourceNotFoundException(ErrorCode.TX_MISSING, "Wallet: $wallet is missing hash")
+        return wallet.hash ?: throw ResourceNotFoundException(
+            ErrorCode.TX_MISSING, "Wallet: $wallet is missing hash"
+        )
     }
 
-    private fun createOrganizationWallet(transactionInfo: TransactionInfo, signedTransaction: String): String {
+    private fun createOrganizationWallet(transactionInfo: TransactionInfo, signedTransaction: String, coop: String): String {
         val organization = getUuidFromCompanionData(transactionInfo)
-        val wallet = walletService.createOrganizationWallet(organization, signedTransaction)
+        val wallet = walletService.createOrganizationWallet(organization, signedTransaction, coop)
         return wallet.activationData
     }
 
-    private fun createProjectWallet(transactionInfo: TransactionInfo, signedTransaction: String): String {
+    private fun createProjectWallet(transactionInfo: TransactionInfo, signedTransaction: String, coop: String): String {
         val project = getUuidFromCompanionData(transactionInfo)
-        val wallet = walletService.createProjectWallet(project, signedTransaction)
+        val wallet = walletService.createProjectWallet(project, signedTransaction, coop)
         return wallet.activationData
     }
 

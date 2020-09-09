@@ -48,6 +48,8 @@ import org.springframework.web.context.WebApplicationContext
 import java.time.ZonedDateTime
 import java.util.UUID
 
+const val coop = "ampnet"
+
 @ExtendWith(value = [SpringExtension::class, RestDocumentationExtension::class])
 @SpringBootTest
 abstract class ControllerTestBase : TestBase() {
@@ -143,7 +145,7 @@ abstract class ControllerTestBase : TestBase() {
         }
         val wallet = Wallet(
             UUID.randomUUID(), owner, hash, type, Currency.EUR,
-            ZonedDateTime.now(), hash, ZonedDateTime.now(), alias
+            ZonedDateTime.now(), hash, ZonedDateTime.now(), alias, coop
         )
         return walletRepository.save(wallet)
     }
@@ -196,8 +198,8 @@ abstract class ControllerTestBase : TestBase() {
     ): Deposit {
         val document = saveFile("doc", "document-link", "type", 1, user)
         val deposit = Deposit(
-            0, user, "S34SDGFT", true, amount,
-            ZonedDateTime.now(), user, type, txHash, user, ZonedDateTime.now(), document, null
+            0, user, "S34SDGFT", true, amount, ZonedDateTime.now(), user,
+            type, txHash, user, ZonedDateTime.now(), document, null, coop
         )
         return depositRepository.save(deposit)
     }
@@ -209,8 +211,8 @@ abstract class ControllerTestBase : TestBase() {
     ): Withdraw {
         val withdraw = Withdraw(
             0, owner, amount, ZonedDateTime.now(), owner, "bank-account",
-            "approved-tx", ZonedDateTime.now(),
-            null, null, null, null, type
+            "approved-tx", ZonedDateTime.now(), null,
+            null, null, null, type, coop
         )
         return withdrawRepository.save(withdraw)
     }
@@ -223,16 +225,16 @@ abstract class ControllerTestBase : TestBase() {
     ): Withdraw {
         val user = userUuid ?: owner
         val withdraw = Withdraw(
-            0, owner, amount, ZonedDateTime.now(), user, "bank-account",
-            null, null, null, null, null, null, type
+            0, owner, amount, ZonedDateTime.now(), user, "bank-account", null,
+            null, null, null, null, null, type, coop
         )
         return withdrawRepository.save(withdraw)
     }
 
     protected fun createUnapprovedDeposit(user: UUID, type: DepositWithdrawType = DepositWithdrawType.USER): Deposit {
         val deposit = Deposit(
-            0, user, "S34SDGFT", false, 10_000,
-            ZonedDateTime.now(), user, type, null, null, null, null, null
+            0, user, "S34SDGFT", false, 10_000, ZonedDateTime.now(), user,
+            type, null, null, null, null, null, coop
         )
         return depositRepository.save(deposit)
     }

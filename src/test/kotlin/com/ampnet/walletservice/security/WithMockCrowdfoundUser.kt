@@ -11,5 +11,6 @@ annotation class WithMockCrowdfoundUser(
     val email: String = "user@email.com",
     val privileges: Array<PrivilegeType> = [],
     val enabled: Boolean = true,
-    val verified: Boolean = true
+    val verified: Boolean = true,
+    val coop: String = "ampnet"
 )

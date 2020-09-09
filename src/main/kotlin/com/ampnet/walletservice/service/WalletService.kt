@@ -1,5 +1,6 @@
 package com.ampnet.walletservice.service
 
+import com.ampnet.core.jwt.UserPrincipal
 import com.ampnet.walletservice.controller.pojo.request.WalletCreateRequest
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionDataAndInfo
 import com.ampnet.walletservice.persistence.model.PairWalletCode
@@ -12,11 +13,11 @@ import java.util.UUID
 interface WalletService {
     fun getWalletBalance(wallet: Wallet): Long?
     fun getWallet(owner: UUID): Wallet?
-    fun createUserWallet(user: UUID, request: WalletCreateRequest): Wallet
-    fun generateTransactionToCreateProjectWallet(project: UUID, user: UUID): TransactionDataAndInfo
-    fun createProjectWallet(project: UUID, signedTransaction: String): Wallet
-    fun generateTransactionToCreateOrganizationWallet(organization: UUID, user: UUID): TransactionDataAndInfo
-    fun createOrganizationWallet(organization: UUID, signedTransaction: String): Wallet
+    fun createUserWallet(user: UserPrincipal, request: WalletCreateRequest): Wallet
+    fun generateTransactionToCreateProjectWallet(project: UUID, user: UserPrincipal): TransactionDataAndInfo
+    fun createProjectWallet(project: UUID, signedTransaction: String, coop: String): Wallet
+    fun generateTransactionToCreateOrganizationWallet(organization: UUID, user: UserPrincipal): TransactionDataAndInfo
+    fun createOrganizationWallet(organization: UUID, signedTransaction: String, coop: String): Wallet
     fun generatePairWalletCode(publicKey: String): PairWalletCode
     fun getPairWalletCode(code: String): PairWalletCode?
     fun getProjectsWithActiveWallet(pageable: Pageable): Page<ProjectWithWallet>

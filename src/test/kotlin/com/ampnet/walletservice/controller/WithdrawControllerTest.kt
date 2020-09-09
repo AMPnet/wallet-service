@@ -34,7 +34,7 @@ class WithdrawControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser
+    @WithMockCrowdfoundUser(coop = coop)
     fun mustBeAbleToCreateWithdraw() {
         suppose("User has a wallet") {
             databaseCleanerService.deleteAllWallets()
@@ -83,6 +83,7 @@ class WithdrawControllerTest : ControllerTestBase() {
             assertThat(withdraw.burnedTxHash).isNull()
             assertThat(withdraw.burnedBy).isNull()
             assertThat(withdraw.file).isNull()
+            assertThat(withdraw.coop).isEqualTo(coop)
         }
         verify("Mail notification for created withdraw is sent") {
             Mockito.verify(mailService, Mockito.times(1))
@@ -91,7 +92,7 @@ class WithdrawControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser
+    @WithMockCrowdfoundUser(coop = coop)
     fun mustBeAbleToCreateProjectWithdraw() {
         suppose("Project has a wallet") {
             databaseCleanerService.deleteAllWallets()
@@ -144,6 +145,7 @@ class WithdrawControllerTest : ControllerTestBase() {
             assertThat(withdraw.burnedTxHash).isNull()
             assertThat(withdraw.burnedBy).isNull()
             assertThat(withdraw.file).isNull()
+            assertThat(withdraw.coop).isEqualTo(coop)
         }
         verify("Mail notification for created project withdraw to user is sent") {
             Mockito.verify(mailService, Mockito.times(1))
@@ -240,7 +242,7 @@ class WithdrawControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser
+    @WithMockCrowdfoundUser(coop = coop)
     fun mustBeAbleToGenerateApprovalTransaction() {
         suppose("Transaction info is clean") {
             databaseCleanerService.deleteAllTransactionInfo()
@@ -278,11 +280,12 @@ class WithdrawControllerTest : ControllerTestBase() {
             assertThat(transactionInfo.companionData).isEqualTo(testContext.withdraw.id.toString())
             assertThat(transactionInfo.type).isEqualTo(TransactionType.BURN_APPROVAL)
             assertThat(transactionInfo.userUuid).isEqualTo(userUuid)
+            assertThat(transactionInfo.coop).isEqualTo(coop)
         }
     }
 
     @Test
-    @WithMockCrowdfoundUser
+    @WithMockCrowdfoundUser(coop = coop)
     fun mustBeAbleToGenerateApprovalTransactionForProject() {
         suppose("Transaction info is clean") {
             databaseCleanerService.deleteAllTransactionInfo()
@@ -328,6 +331,7 @@ class WithdrawControllerTest : ControllerTestBase() {
             assertThat(transactionInfo.companionData).isEqualTo(testContext.withdraw.id.toString())
             assertThat(transactionInfo.type).isEqualTo(TransactionType.BURN_APPROVAL)
             assertThat(transactionInfo.userUuid).isEqualTo(userUuid)
+            assertThat(transactionInfo.coop).isEqualTo(coop)
         }
     }
 

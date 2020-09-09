@@ -1,5 +1,5 @@
 package com.ampnet.walletservice.service.pojo
 
-import java.util.UUID
+import com.ampnet.core.jwt.UserPrincipal
 
-data class MintServiceRequest(val depositId: Int, val byUser: UUID)
+data class MintServiceRequest(val depositId: Int, val byUser: UserPrincipal)
