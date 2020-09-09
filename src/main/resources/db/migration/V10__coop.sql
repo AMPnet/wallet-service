@@ -4,3 +4,5 @@ ALTER TABLE withdraw ADD COLUMN coop VARCHAR(64) NOT NULL DEFAULT 'ampnet';
 ALTER TABLE revenue_payout ADD COLUMN coop VARCHAR(64) NOT NULL DEFAULT 'ampnet';
 ALTER TABLE bank_account ADD COLUMN coop VARCHAR(64) NOT NULL DEFAULT 'ampnet';
 ALTER TABLE transaction_info ADD COLUMN coop VARCHAR(64) NOT NULL DEFAULT 'ampnet';
+
+ALTER TABLE wallet ADD CONSTRAINT uc_wallet_in_coop UNIQUE(activation_data, coop);
