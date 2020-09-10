@@ -98,7 +98,7 @@ class GrpcWalletServerTest : TestBase() {
     ): List<Wallet> {
         val uuidsWithHashes = uuids.zip(hashes).toMap()
         return uuidsWithHashes.map {
-            val wallet = Wallet(it.key, "activation-data", WalletType.USER, Currency.EUR, "alias", coop)
+            val wallet = Wallet(it.key, "activation-data", WalletType.USER, Currency.EUR, coop, "alias")
             wallet.hash = it.value
             wallet
         }

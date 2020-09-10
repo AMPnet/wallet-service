@@ -1,5 +1,6 @@
 package com.ampnet.walletservice.security
 
+import com.ampnet.walletservice.controller.COOP
 import com.ampnet.walletservice.enums.PrivilegeType
 import org.springframework.security.test.context.support.WithSecurityContext
 
@@ -12,5 +13,5 @@ annotation class WithMockCrowdfoundUser(
     val privileges: Array<PrivilegeType> = [],
     val enabled: Boolean = true,
     val verified: Boolean = true,
-    val coop: String = "ampnet"
+    val coop: String = COOP
 )

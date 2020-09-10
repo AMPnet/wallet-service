@@ -236,7 +236,7 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWA_WITHDRAW], coop = coop)
+    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWA_WITHDRAW])
     fun mustBeAbleToGenerateBurnTransaction() {
         suppose("Transaction info is clean") {
             databaseCleanerService.deleteAllTransactionInfo()
@@ -320,7 +320,7 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
         val withdraw = Withdraw(
             0, user, testContext.amount, ZonedDateTime.now(), user, testContext.bankAccount,
             testContext.approvedTx, ZonedDateTime.now(), testContext.burnedTx,
-            ZonedDateTime.now(), UUID.randomUUID(), document, type, coop
+            ZonedDateTime.now(), UUID.randomUUID(), document, type, COOP
         )
         return withdrawRepository.save(withdraw)
     }

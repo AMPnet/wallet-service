@@ -39,9 +39,9 @@ class BankAccountControllerTest : ControllerTestBase() {
     @WithMockCrowdfoundUser
     fun mustBeAbleToGetAllBankAccounts() {
         suppose("There are two bank accounts") {
-            val bankAccount = BankAccount(iban, bankCode, userUuid, alias, coop)
+            val bankAccount = BankAccount(iban, bankCode, userUuid, alias, COOP)
             bankAccountRepository.save(bankAccount)
-            val secondBankAccount = BankAccount("AL47212110090000000235698741", "AKIVALTR", userUuid, "albalias", coop)
+            val secondBankAccount = BankAccount("AL47212110090000000235698741", "AKIVALTR", userUuid, "albalias", COOP)
             bankAccountRepository.save(secondBankAccount)
         }
 
@@ -60,11 +60,7 @@ class BankAccountControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser(
-        privileges = [PrivilegeType.PWA_DEPOSIT],
-        uuid = "89fb3b1c-9c0a-11e9-a2a3-2a2ae2dbcce4",
-        coop = "ampnet"
-    )
+    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWA_DEPOSIT])
     fun mustBeAbleToCreateBankAccount() {
         verify("Admin can create bank account") {
             val request = BankAccountCreateRequest(iban, bankCode, alias)
@@ -87,7 +83,7 @@ class BankAccountControllerTest : ControllerTestBase() {
             assertThat(bankAccount.bankCode).isEqualTo(bankAccount.bankCode)
             assertThat(bankAccount.alias).isEqualTo(alias)
             assertThat(bankAccount.createdBy).isEqualTo(userUuid)
-            assertThat(bankAccount.coop).isEqualTo(coop)
+            assertThat(bankAccount.coop).isEqualTo(COOP)
         }
     }
 
@@ -112,7 +108,7 @@ class BankAccountControllerTest : ControllerTestBase() {
     @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWA_DEPOSIT])
     fun mustBeAbleToDeleteBankAccount() {
         suppose("There is bank account") {
-            bankAccount = BankAccount(iban, bankCode, userUuid, alias, coop)
+            bankAccount = BankAccount(iban, bankCode, userUuid, alias, COOP)
             bankAccountRepository.save(bankAccount)
         }
 

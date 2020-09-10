@@ -386,7 +386,7 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWA_DEPOSIT], coop = "ampnet")
+    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWA_DEPOSIT])
     fun mustBeAbleToGenerateMintTransaction() {
         suppose("User has a wallet") {
             databaseCleanerService.deleteAllWallets()
@@ -426,7 +426,7 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
             assertThat(transactionInfo.companionData).isEqualTo(testContext.deposits.first().id.toString())
             assertThat(transactionInfo.type).isEqualTo(TransactionType.MINT)
             assertThat(transactionInfo.userUuid).isEqualTo(userUuid)
-            assertThat(transactionInfo.coop).isEqualTo(coop)
+            assertThat(transactionInfo.coop).isEqualTo(COOP)
         }
     }
 

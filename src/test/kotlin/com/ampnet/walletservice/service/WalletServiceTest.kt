@@ -64,7 +64,7 @@ class WalletServiceTest : JpaServiceTestBase() {
 
         verify("Service can create wallet for a user") {
             val request = WalletCreateRequest(defaultPublicKey, "alias")
-            val user = createUserPrincipal(userUuid, coop = coop)
+            val user = createUserPrincipal(userUuid)
             val wallet = walletService.createUserWallet(user, request)
             assertThat(wallet.activationData).isEqualTo(request.publicKey)
             assertThat(wallet.alias).isEqualTo(request.alias)

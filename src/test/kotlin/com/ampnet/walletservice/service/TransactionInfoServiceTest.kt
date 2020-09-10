@@ -26,7 +26,7 @@ class TransactionInfoServiceTest : JpaServiceTestBase() {
         suppose("Service can create org transactionInfo") {
             testContext.transactionInfo =
                 transactionInfoService.createOrgTransaction(
-                    organizationUuid, testContext.organizationName, createUserPrincipal(userUuid, coop = coop)
+                    organizationUuid, testContext.organizationName, createUserPrincipal(userUuid)
                 )
         }
 
@@ -47,7 +47,7 @@ class TransactionInfoServiceTest : JpaServiceTestBase() {
         suppose("Service can create project transactionInfo") {
             testContext.transactionInfo =
                 transactionInfoService.createProjectTransaction(
-                    projectUuid, testContext.projectName, createUserPrincipal(userUuid, coop = coop)
+                    projectUuid, testContext.projectName, createUserPrincipal(userUuid)
                 )
         }
 
@@ -67,7 +67,7 @@ class TransactionInfoServiceTest : JpaServiceTestBase() {
     fun mustCreateInvestAllowanceTransaction() {
         suppose("Service can create invest allowance transactionInfo") {
             testContext.transactionInfo = transactionInfoService.createInvestTransaction(
-                testContext.projectName, testContext.amount, createUserPrincipal(userUuid, coop = coop)
+                testContext.projectName, testContext.amount, createUserPrincipal(userUuid)
             )
         }
 

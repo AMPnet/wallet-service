@@ -51,8 +51,8 @@ data class Wallet(
         activationData: String,
         type: WalletType,
         currency: Currency,
-        alias: String? = null,
-        coop: String
+        coop: String,
+        alias: String? = null
     ) : this(
         UUID.randomUUID(), owner, activationData, type, currency,
         ZonedDateTime.now(), null, null, alias, coop

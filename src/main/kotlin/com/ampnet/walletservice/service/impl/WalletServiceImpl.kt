@@ -69,7 +69,7 @@ class WalletServiceImpl(
         }
 
         logger.debug { "Creating wallet: $request for user: $user" }
-        val wallet = createWallet(user.uuid, request.publicKey, WalletType.USER, request.alias, user.coop)
+        val wallet = createWallet(user.uuid, request.publicKey, WalletType.USER, user.coop, request.alias)
         mailService.sendNewWalletMail(WalletTypeRequest.Type.USER)
         return wallet
     }
@@ -102,7 +102,7 @@ class WalletServiceImpl(
         throwExceptionIfProjectHasWallet(project)
         logger.debug { "Creating wallet for project: $project" }
         val txHash = blockchainService.postTransaction(signedTransaction)
-        val wallet = createWallet(project, txHash, WalletType.PROJECT, coop = coop)
+        val wallet = createWallet(project, txHash, WalletType.PROJECT, coop)
         logger.debug { "Created wallet for project: $project" }
         mailService.sendNewWalletMail(WalletTypeRequest.Type.PROJECT)
         return wallet
@@ -135,7 +135,7 @@ class WalletServiceImpl(
         throwExceptionIfOrganizationAlreadyHasWallet(organization)
         logger.debug { "Creating wallet for organization: $organization" }
         val txHash = blockchainService.postTransaction(signedTransaction)
-        val wallet = createWallet(organization, txHash, WalletType.ORG, coop = coop)
+        val wallet = createWallet(organization, txHash, WalletType.ORG, coop)
         logger.debug { "Created wallet for organization: $organization" }
         mailService.sendNewWalletMail(WalletTypeRequest.Type.ORGANIZATION)
         return wallet
@@ -189,8 +189,8 @@ class WalletServiceImpl(
         owner: UUID,
         activationData: String,
         type: WalletType,
-        alias: String? = null,
-        coop: String
+        coop: String,
+        alias: String? = null
     ): Wallet {
         if (walletRepository.findByActivationData(activationData).isPresent) {
             throw ResourceAlreadyExistsException(
@@ -198,7 +198,7 @@ class WalletServiceImpl(
                 "Trying to create wallet: $type with existing activationData: $activationData"
             )
         }
-        val wallet = Wallet(owner, activationData, type, Currency.EUR, alias, coop)
+        val wallet = Wallet(owner, activationData, type, Currency.EUR, coop, alias)
         return walletRepository.save(wallet)
     }
 

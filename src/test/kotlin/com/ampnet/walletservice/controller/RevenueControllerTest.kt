@@ -32,7 +32,7 @@ class RevenueControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser(coop = coop)
+    @WithMockCrowdfoundUser
     fun mustBeAbleToGenerateRevenuePayoutTransaction() {
         suppose("User has a wallet") {
             createWalletForUser(userUuid, walletHash)
@@ -82,7 +82,7 @@ class RevenueControllerTest : ControllerTestBase() {
             assertThat(revenuePayout.createdBy).isEqualTo(userUuid)
             assertThat(revenuePayout.txHash).isNull()
             assertThat(revenuePayout.completedAt).isNull()
-            assertThat(revenuePayout.coop).isEqualTo(coop)
+            assertThat(revenuePayout.coop).isEqualTo(COOP)
         }
     }
 
