@@ -27,6 +27,7 @@ message SetRoleRequest {
     }
     string uuid = 1;
     Role role = 2;
+    string coop = 3;    // coop is just for safety
 }
 
 service UserService {

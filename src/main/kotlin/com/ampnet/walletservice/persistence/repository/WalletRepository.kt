@@ -11,7 +11,7 @@ import java.util.UUID
 
 interface WalletRepository : JpaRepository<Wallet, UUID> {
     fun findByOwner(owner: UUID): Optional<Wallet>
-    fun findByActivationData(activationData: String): Optional<Wallet>
+    fun findByActivationDataAndCoop(activationData: String, coop: String): Optional<Wallet>
     fun findByOwnerIn(owners: Collection<UUID>): List<Wallet>
 
     @Query(

@@ -120,7 +120,7 @@ class BroadcastTransactionServiceImpl(
             TransactionType.TRNSF_TOKEN_OWN -> TransferWalletType.TOKEN_ISSUER
             else -> throw InternalException(ErrorCode.INT_INVALID_VALUE, "Invalid type of wallet transfer ownership")
         }
-        val request = TransferOwnershipRequest(info.userUuid, walletAddress, transferType, signed)
+        val request = TransferOwnershipRequest(info.userUuid, walletAddress, transferType, signed, info.coop)
         return cooperativeWalletService.transferOwnership(request)
     }
 

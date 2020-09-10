@@ -119,36 +119,36 @@ class CooperativeWalletServiceImpl(
     override fun transferOwnership(request: TransferOwnershipRequest): String {
         val txHash = blockchainService.postTransaction(request.signedTransaction)
         thread(start = true, isDaemon = true, name = "waitForTransaction:$txHash") {
-            handleTransaction(txHash)
+            handleTransaction(txHash, request.coop)
         }
         return txHash
     }
 
-    private fun handleTransaction(txHash: String) {
+    private fun handleTransaction(txHash: String, coop: String) {
         logger.info { "Wait for transaction: $txHash" }
         sleep(applicationProperties.grpc.blockchainPollingDelay)
         when (blockchainService.getTransactionState(txHash)) {
-            TransactionState.MINED -> setNewUserRoles()
-            TransactionState.PENDING -> handleTransaction(txHash)
+            TransactionState.MINED -> setNewUserRoles(coop)
+            TransactionState.PENDING -> handleTransaction(txHash, coop)
             TransactionState.FAILED -> logger.warn { "Failed to change wallet ownership" }
             else -> logger.warn { "Unknown status for transaction: $txHash" }
         }
     }
 
-    private fun setNewUserRoles() {
-        val platformManagerAddress = blockchainService.getPlatformManager()
-        val tokenIssuerAddress = blockchainService.getTokenIssuer()
+    private fun setNewUserRoles(coop: String) {
+        val platformManagerAddress = blockchainService.getPlatformManager(coop)
+        val tokenIssuerAddress = blockchainService.getTokenIssuer(coop)
         if (platformManagerAddress == tokenIssuerAddress) {
-            setUserRole(platformManagerAddress, SetRoleRequest.Role.ADMIN)
+            setUserRole(platformManagerAddress, SetRoleRequest.Role.ADMIN, coop)
             return
         }
-        setUserRole(tokenIssuerAddress, SetRoleRequest.Role.TOKEN_ISSUER)
-        setUserRole(platformManagerAddress, SetRoleRequest.Role.PLATFORM_MANAGER)
+        setUserRole(tokenIssuerAddress, SetRoleRequest.Role.TOKEN_ISSUER, coop)
+        setUserRole(platformManagerAddress, SetRoleRequest.Role.PLATFORM_MANAGER, coop)
     }
 
-    private fun setUserRole(walletAddress: String, role: SetRoleRequest.Role) {
-        val userWallet = getWalletByAddress(walletAddress)
-        userService.setUserRole(userWallet.owner, role)
+    private fun setUserRole(walletAddress: String, role: SetRoleRequest.Role, coop: String) {
+        val userWallet = getWalletByAddress(walletAddress, coop)
+        userService.setUserRole(userWallet.owner, role, coop)
         logger.info { "Set new user role: $role to user: ${userWallet.owner}" }
     }
 
@@ -156,8 +156,8 @@ class CooperativeWalletServiceImpl(
         throw ResourceNotFoundException(ErrorCode.WALLET_MISSING, "Missing wallet uuid: $walletUuid")
     }
 
-    private fun getWalletByAddress(address: String): Wallet =
-        walletRepository.findByActivationData(address).orElseThrow {
-            throw InvalidRequestException(ErrorCode.WALLET_MISSING, "Wallet: $address is unknown")
+    private fun getWalletByAddress(address: String, coop: String): Wallet =
+        walletRepository.findByActivationDataAndCoop(address, coop).orElseThrow {
+            throw InvalidRequestException(ErrorCode.WALLET_MISSING, "Wallet: $address is unknown for coop: $coop")
         }
 }

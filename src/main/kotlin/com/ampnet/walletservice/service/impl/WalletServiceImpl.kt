@@ -86,11 +86,7 @@ class WalletServiceImpl(
         val organization = UUID.fromString(projectResponse.organizationUuid)
         val organizationWalletHash = ServiceUtils.getWalletHash(organization, walletRepository)
 
-        val request = GenerateProjectWalletRequest(
-            userWalletHash,
-            organizationWalletHash,
-            projectResponse
-        )
+        val request = GenerateProjectWalletRequest(userWalletHash, organizationWalletHash, projectResponse)
         val data = blockchainService.generateProjectWalletTransaction(request)
         val info = transactionInfoService.createProjectTransaction(project, projectResponse.name, user)
         return TransactionDataAndInfo(data, info)
@@ -192,7 +188,7 @@ class WalletServiceImpl(
         coop: String,
         alias: String? = null
     ): Wallet {
-        if (walletRepository.findByActivationData(activationData).isPresent) {
+        if (walletRepository.findByActivationDataAndCoop(activationData, coop).isPresent) {
             throw ResourceAlreadyExistsException(
                 ErrorCode.WALLET_HASH_EXISTS,
                 "Trying to create wallet: $type with existing activationData: $activationData"

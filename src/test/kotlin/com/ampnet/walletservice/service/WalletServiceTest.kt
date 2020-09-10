@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
 import java.time.ZonedDateTime
+import java.util.UUID
 
 class WalletServiceTest : JpaServiceTestBase() {
 
@@ -280,7 +281,7 @@ class WalletServiceTest : JpaServiceTestBase() {
     }
 
     @Test
-    fun mustNotBeAbleToCreateWalletWithTheSameHash() {
+    fun mustNotBeAbleToCreateWalletWithTheSameHashInsideCoop() {
         suppose("User has a wallet") {
             createWalletForUser(userUuid, defaultAddressHash)
         }
@@ -295,6 +296,26 @@ class WalletServiceTest : JpaServiceTestBase() {
                 walletService.createProjectWallet(projectUuid, signedTransaction, coop)
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.WALLET_HASH_EXISTS)
+        }
+    }
+
+    @Test
+    fun mustBeAbleToCreateWalletWithTheSameHashInAnotherCoop() {
+        suppose("User has a wallet") {
+            createWalletForUser(userUuid, defaultPublicKey)
+        }
+
+        verify("New user has the same public key") {
+            val newCoop = "new-coop"
+            val request = WalletCreateRequest(defaultPublicKey, "alias")
+            val wallet = walletService.createUserWallet(createUserPrincipal(UUID.randomUUID(), coop = newCoop), request)
+            assertThat(wallet.activationData).isEqualTo(defaultPublicKey)
+            assertThat(wallet.currency).isEqualTo(Currency.EUR)
+            assertThat(wallet.type).isEqualTo(WalletType.USER)
+            assertThat(wallet.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
+            assertThat(wallet.hash).isNull()
+            assertThat(wallet.activatedAt).isNull()
+            assertThat(wallet.coop).isEqualTo(newCoop)
         }
     }
 

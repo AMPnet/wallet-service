@@ -41,15 +41,15 @@ class UserServiceImpl(
         }
     }
 
-    override fun setUserRole(uuid: UUID, role: SetRoleRequest.Role): UserResponse {
+    override fun setUserRole(uuid: UUID, role: SetRoleRequest.Role, coop: String): UserResponse {
         logger.info { "Received request to change user: $uuid role to: ${role.name}" }
         try {
             val request = SetRoleRequest.newBuilder()
                 .setUuid(uuid.toString())
                 .setRole(role)
+                .setCoop(coop)
                 .build()
             val response = serviceWithTimeout().setUserRole(request)
-
             logger.info { "Successfully change role for user: ${response.uuid}" }
             return response
         } catch (ex: StatusRuntimeException) {

@@ -6,5 +6,5 @@ import java.util.UUID
 
 interface UserService {
     fun getUsers(uuids: Set<UUID>): List<UserResponse>
-    fun setUserRole(uuid: UUID, role: SetRoleRequest.Role): UserResponse
+    fun setUserRole(uuid: UUID, role: SetRoleRequest.Role, coop: String): UserResponse
 }
