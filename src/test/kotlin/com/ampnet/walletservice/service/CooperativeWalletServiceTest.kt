@@ -5,12 +5,14 @@ import com.ampnet.walletservice.config.ApplicationProperties
 import com.ampnet.walletservice.enums.TransactionState
 import com.ampnet.walletservice.enums.TransferWalletType
 import com.ampnet.walletservice.enums.WalletType
+import com.ampnet.walletservice.exception.InvalidRequestException
 import com.ampnet.walletservice.grpc.userservice.UserService
 import com.ampnet.walletservice.service.impl.CooperativeWalletServiceImpl
 import com.ampnet.walletservice.service.impl.TransactionInfoServiceImpl
 import com.ampnet.walletservice.service.pojo.TransferOwnershipRequest
 import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.mock.mockito.MockBean
@@ -52,21 +54,21 @@ class CooperativeWalletServiceTest : JpaServiceTestBase() {
                 .thenReturn(TransactionState.MINED)
         }
         suppose("Blockchain service will return user address as token issuer and platform manager") {
-            Mockito.`when`(mockedBlockchainService.getTokenIssuer())
+            Mockito.`when`(mockedBlockchainService.getTokenIssuer(coop))
                 .thenReturn(walletAddress)
-            Mockito.`when`(mockedBlockchainService.getPlatformManager())
+            Mockito.`when`(mockedBlockchainService.getPlatformManager(coop))
                 .thenReturn(walletAddress)
         }
 
         verify("Service will set user as admin") {
             val request = TransferOwnershipRequest(
-                secondUser, walletAddress, TransferWalletType.TOKEN_ISSUER, signedTransaction
+                secondUser, walletAddress, TransferWalletType.TOKEN_ISSUER, signedTransaction, coop
             )
             service.transferOwnership(request)
             await().atLeast(applicationProperties.grpc.blockchainPollingDelay * 5, TimeUnit.MILLISECONDS)
                 .until { true }
             Mockito.verify(mockedUserService, Mockito.times(1))
-                .setUserRole(userUuid, SetRoleRequest.Role.ADMIN)
+                .setUserRole(userUuid, SetRoleRequest.Role.ADMIN, coop)
         }
     }
 
@@ -81,21 +83,21 @@ class CooperativeWalletServiceTest : JpaServiceTestBase() {
                 .thenReturn(TransactionState.MINED)
         }
         suppose("Blockchain service will return user address as token issuer") {
-            Mockito.`when`(mockedBlockchainService.getTokenIssuer())
+            Mockito.`when`(mockedBlockchainService.getTokenIssuer(coop))
                 .thenReturn(walletAddress)
-            Mockito.`when`(mockedBlockchainService.getPlatformManager())
+            Mockito.`when`(mockedBlockchainService.getPlatformManager(coop))
                 .thenReturn(secondWalletAddress)
         }
 
         verify("Service will set user as token issuer") {
             val request = TransferOwnershipRequest(
-                secondUser, walletAddress, TransferWalletType.TOKEN_ISSUER, signedTransaction
+                secondUser, walletAddress, TransferWalletType.TOKEN_ISSUER, signedTransaction, coop
             )
             service.transferOwnership(request)
             await().pollDelay(applicationProperties.grpc.blockchainPollingDelay * 5, TimeUnit.MILLISECONDS)
                 .until { true }
             Mockito.verify(mockedUserService, Mockito.times(1))
-                .setUserRole(userUuid, SetRoleRequest.Role.TOKEN_ISSUER)
+                .setUserRole(userUuid, SetRoleRequest.Role.TOKEN_ISSUER, coop)
         }
     }
 
@@ -110,21 +112,52 @@ class CooperativeWalletServiceTest : JpaServiceTestBase() {
                 .thenReturn(TransactionState.MINED)
         }
         suppose("Blockchain service will return user address as platform manager") {
-            Mockito.`when`(mockedBlockchainService.getTokenIssuer())
+            Mockito.`when`(mockedBlockchainService.getTokenIssuer(coop))
                 .thenReturn(secondWalletAddress)
-            Mockito.`when`(mockedBlockchainService.getPlatformManager())
+            Mockito.`when`(mockedBlockchainService.getPlatformManager(coop))
                 .thenReturn(walletAddress)
         }
 
         verify("Service will set user as platform manager") {
             val request = TransferOwnershipRequest(
-                secondUser, walletAddress, TransferWalletType.PLATFORM_MANAGER, signedTransaction
+                secondUser, walletAddress, TransferWalletType.PLATFORM_MANAGER, signedTransaction, coop
             )
             service.transferOwnership(request)
             await().pollDelay(applicationProperties.grpc.blockchainPollingDelay * 5, TimeUnit.MILLISECONDS)
                 .until { true }
             Mockito.verify(mockedUserService, Mockito.times(1))
-                .setUserRole(userUuid, SetRoleRequest.Role.PLATFORM_MANAGER)
+                .setUserRole(userUuid, SetRoleRequest.Role.PLATFORM_MANAGER, coop)
+        }
+    }
+
+    @Test
+    fun mustNotTransferOwnershipToPlatformManagerFromAnotherCoop() {
+        suppose("Blockchain service will handle post transaction") {
+            Mockito.`when`(mockedBlockchainService.postTransaction(signedTransaction))
+                .thenReturn(txHash)
+        }
+        suppose("Blockchain service will return transaction status") {
+            Mockito.`when`(mockedBlockchainService.getTransactionState(txHash))
+                .thenReturn(TransactionState.MINED)
+        }
+        suppose("Blockchain service will return user address as platform manager") {
+            Mockito.`when`(mockedBlockchainService.getTokenIssuer("new-coop"))
+                .thenReturn(secondWalletAddress)
+            Mockito.`when`(mockedBlockchainService.getPlatformManager("new-coop"))
+                .thenReturn(walletAddress)
+        }
+
+        verify("Service will set user as platform manager") {
+            val request = TransferOwnershipRequest(
+                secondUser, walletAddress, TransferWalletType.PLATFORM_MANAGER, signedTransaction, "new-coop"
+            )
+            service.transferOwnership(request)
+            assertThrows<InvalidRequestException> {
+                service.transferOwnership(request)
+                await().pollDelay(applicationProperties.grpc.blockchainPollingDelay * 5, TimeUnit.MILLISECONDS)
+                    .until { true }
+            }
+            Mockito.verifyNoInteractions(mockedUserService)
         }
     }
 }

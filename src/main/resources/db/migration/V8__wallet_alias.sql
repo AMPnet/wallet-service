@@ -1,1 +1,0 @@
-ALTER TABLE wallet ADD COLUMN alias VARCHAR(128);
