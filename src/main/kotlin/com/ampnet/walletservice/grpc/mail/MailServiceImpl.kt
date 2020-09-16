@@ -1,7 +1,6 @@
 package com.ampnet.walletservice.grpc.mail
 
 import com.ampnet.mailservice.proto.DepositInfoRequest
-import com.ampnet.mailservice.proto.DepositRequest
 import com.ampnet.mailservice.proto.Empty
 import com.ampnet.mailservice.proto.MailServiceGrpc
 import com.ampnet.mailservice.proto.WalletTypeRequest
@@ -27,19 +26,6 @@ class MailServiceImpl(
     private val mailServiceStub: MailServiceGrpc.MailServiceStub by lazy {
         val channel = grpcChannelFactory.createChannel("mail-service")
         MailServiceGrpc.newStub(channel)
-    }
-
-    override fun sendDepositRequest(user: UUID, amount: Long) {
-        logger.debug { "Sending deposit request mail" }
-        try {
-            val request = DepositRequest.newBuilder()
-                .setUser(user.toString())
-                .setAmount(amount)
-                .build()
-            serviceWithTimeout()?.sendDepositRequest(request, createSteamObserver("deposit request mail to: $user"))
-        } catch (ex: StatusRuntimeException) {
-            logger.warn("Failed to send deposit request mail.", ex)
-        }
     }
 
     override fun sendDepositInfo(user: UUID, minted: Boolean) {

@@ -5,7 +5,6 @@ import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.exception.InvalidRequestException
 import com.ampnet.walletservice.exception.ResourceAlreadyExistsException
 import com.ampnet.walletservice.exception.ResourceNotFoundException
-import com.ampnet.walletservice.grpc.mail.MailService
 import com.ampnet.walletservice.grpc.projectservice.ProjectService
 import com.ampnet.walletservice.persistence.model.Deposit
 import com.ampnet.walletservice.persistence.repository.DepositRepository
@@ -21,7 +20,6 @@ import java.util.UUID
 class DepositServiceImpl(
     private val walletRepository: WalletRepository,
     private val depositRepository: DepositRepository,
-    private val mailService: MailService,
     private val projectService: ProjectService
 ) : DepositService {
 
@@ -44,7 +42,6 @@ class DepositServiceImpl(
             request.owner, generateDepositReference(), request.amount, request.createdBy, request.type
         )
         depositRepository.save(deposit)
-        mailService.sendDepositRequest(request.createdBy, request.amount)
         logger.debug {
             "Created Deposit for owner: ${request.owner} with amount: ${request.amount} by user: ${request.createdBy}"
         }
