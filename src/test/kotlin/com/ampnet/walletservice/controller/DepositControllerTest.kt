@@ -69,10 +69,6 @@ class DepositControllerTest : ControllerTestBase() {
             assertThat(deposit.reference).isNotNull()
             assertThat(deposit.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
         }
-        verify("Mail notification is sent") {
-            Mockito.verify(mailService, Mockito.times(1))
-                .sendDepositRequest(userUuid, testContext.amount)
-        }
     }
 
     @Test
@@ -198,10 +194,6 @@ class DepositControllerTest : ControllerTestBase() {
             assertThat(deposit.approved).isFalse()
             assertThat(deposit.reference).isNotNull()
             assertThat(deposit.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
-        }
-        verify("Mail notification is sent to user") {
-            Mockito.verify(mailService, Mockito.times(1))
-                .sendDepositRequest(userUuid, testContext.amount)
         }
     }
 
