@@ -18,7 +18,7 @@ import java.util.UUID
 class DepositServiceTest : JpaServiceTestBase() {
 
     private val depositService: DepositService by lazy {
-        DepositServiceImpl(walletRepository, depositRepository, mockedMailService, mockedProjectService)
+        DepositServiceImpl(walletRepository, depositRepository, mockedProjectService)
     }
     private lateinit var deposit: Deposit
 

@@ -14,11 +14,6 @@ message OrganizationInvitationRequest {
     string organization = 2;
 }
 
-message DepositRequest {
-    string user = 1;
-    uint64 amount = 2;
-}
-
 message DepositInfoRequest {
     string user = 1;
     bool minted = 2;
@@ -54,7 +49,6 @@ message Empty {
 service MailService {
     rpc SendMailConfirmation(MailConfirmationRequest) returns (Empty);
     rpc SendOrganizationInvitation(OrganizationInvitationRequest) returns (Empty);
-    rpc SendDepositRequest(DepositRequest) returns (Empty);
     rpc SendWithdrawInfo(WithdrawInfoRequest) returns (Empty);
     rpc SendWithdrawRequest(WithdrawRequest) returns (Empty);
     rpc SendDepositInfo(DepositInfoRequest) returns (Empty);
