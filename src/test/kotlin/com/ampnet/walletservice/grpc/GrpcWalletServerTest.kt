@@ -89,6 +89,7 @@ class GrpcWalletServerTest : TestBase() {
                 .setType(WalletResponse.Type.USER)
                 .setCurrency(Currency.EUR.name)
                 .setHash(it.hash)
+                .setCoop(it.coop)
                 .build()
         }
 
