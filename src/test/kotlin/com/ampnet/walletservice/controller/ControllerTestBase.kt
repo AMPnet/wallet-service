@@ -48,7 +48,7 @@ import org.springframework.web.context.WebApplicationContext
 import java.time.ZonedDateTime
 import java.util.UUID
 
-const val COOP = "ampnet"
+const val COOP = "ampnet-test"
 
 @ExtendWith(value = [SpringExtension::class, RestDocumentationExtension::class])
 @SpringBootTest

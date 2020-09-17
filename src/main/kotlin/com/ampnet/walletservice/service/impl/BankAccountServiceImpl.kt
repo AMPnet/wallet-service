@@ -21,7 +21,7 @@ class BankAccountServiceImpl(private val bankAccountRepository: BankAccountRepos
     companion object : KLogging()
 
     @Transactional(readOnly = true)
-    override fun getAllBankAccounts(): List<BankAccount> = bankAccountRepository.findAll()
+    override fun getAllBankAccounts(coop: String): List<BankAccount> = bankAccountRepository.findAllByCoop(coop)
 
     @Transactional
     override fun createBankAccount(user: UserPrincipal, request: BankAccountCreateRequest): BankAccount {

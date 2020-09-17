@@ -13,23 +13,24 @@ import java.util.UUID
 interface DepositRepository : JpaRepository<Deposit, Int> {
     @Query(
         "SELECT deposit FROM Deposit deposit LEFT JOIN FETCH deposit.file LEFT JOIN FETCH deposit.declined " +
-            "WHERE deposit.approved = :approved AND deposit.type = :type",
+            "WHERE deposit.approved = :approved AND deposit.type = :type AND deposit.coop = :coop",
         countQuery = "SELECT COUNT(deposit) FROM Deposit deposit " +
-            "WHERE deposit.approved = :approved AND deposit.type = :type"
+            "WHERE deposit.approved = :approved AND deposit.type = :type AND deposit.coop = :coop"
     )
     fun findAllWithFile(
         @Param("approved") approved: Boolean,
         type: DepositWithdrawType,
+        coop: String,
         pageable: Pageable
     ): Page<Deposit>
 
     @Query(
         "SELECT deposit FROM Deposit deposit LEFT JOIN FETCH deposit.file LEFT JOIN FETCH deposit.declined " +
-            "WHERE deposit.approved = true AND deposit.type = :type AND deposit.txHash IS NOT NULL",
+            "WHERE deposit.approved = true AND deposit.type = :type AND deposit.txHash IS NOT NULL AND deposit.coop = :coop",
         countQuery = "SELECT COUNT(deposit) FROM Deposit deposit " +
-            "WHERE deposit.approved = true AND deposit.type = :type AND deposit.txHash IS NOT NULL"
+            "WHERE deposit.approved = true AND deposit.type = :type AND deposit.txHash IS NOT NULL AND deposit.coop = :coop"
     )
-    fun findApprovedUnsignedWithFile(type: DepositWithdrawType, pageable: Pageable): Page<Deposit>
+    fun findApprovedUnsignedWithFile(type: DepositWithdrawType, coop: String, pageable: Pageable): Page<Deposit>
 
     fun findByReference(reference: String): Optional<Deposit>
     fun findByOwnerUuid(ownerUuid: UUID): List<Deposit>

@@ -21,7 +21,9 @@ class BankAccountController(private val bankAccountService: BankAccountService) 
 
     @GetMapping("/bank-account")
     fun getBankAccounts(): ResponseEntity<BankAccountsResponse> {
-        val bankAccounts = bankAccountService.getAllBankAccounts().map { BankAccountResponse(it) }
+        val user = ControllerUtils.getUserPrincipalFromSecurityContext()
+        logger.debug { "Received request to get bank accounts for coop: ${user.coop}" }
+        val bankAccounts = bankAccountService.getAllBankAccounts(user.coop).map { BankAccountResponse(it) }
         return ResponseEntity.ok(BankAccountsResponse(bankAccounts))
     }
 

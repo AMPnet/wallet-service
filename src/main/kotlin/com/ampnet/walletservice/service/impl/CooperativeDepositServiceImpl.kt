@@ -17,6 +17,7 @@ import com.ampnet.walletservice.service.CooperativeDepositService
 import com.ampnet.walletservice.service.StorageService
 import com.ampnet.walletservice.service.TransactionInfoService
 import com.ampnet.walletservice.service.pojo.ApproveDepositRequest
+import com.ampnet.walletservice.service.pojo.GetDepositsServiceRequest
 import com.ampnet.walletservice.service.pojo.MintServiceRequest
 import mu.KLogging
 import org.springframework.data.domain.Page
@@ -69,13 +70,13 @@ class CooperativeDepositServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun getAllWithDocuments(approved: Boolean, type: DepositWithdrawType, pageable: Pageable): Page<Deposit> {
-        return depositRepository.findAllWithFile(approved, type, pageable)
+    override fun getAllWithDocuments(request: GetDepositsServiceRequest): Page<Deposit> {
+        return depositRepository.findAllWithFile(request.approved, request.type, request.coop, request.pageable)
     }
 
     @Transactional(readOnly = true)
-    override fun getUnsigned(type: DepositWithdrawType, pageable: Pageable): Page<Deposit> {
-        return depositRepository.findApprovedUnsignedWithFile(type, pageable)
+    override fun getUnsigned(type: DepositWithdrawType, coop: String, pageable: Pageable): Page<Deposit> {
+        return depositRepository.findApprovedUnsignedWithFile(type, coop, pageable)
     }
 
     @Transactional(readOnly = true)
