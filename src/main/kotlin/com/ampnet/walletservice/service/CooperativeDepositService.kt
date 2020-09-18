@@ -13,10 +13,10 @@ import java.util.UUID
 interface CooperativeDepositService {
     fun approve(request: ApproveDepositRequest): Deposit
     fun decline(id: Int, user: UUID, comment: String): Deposit
-    fun getAllWithDocuments(request: GetDepositsServiceRequest): Page<Deposit>
+    fun getAllWithDocuments(request: GetDepositsServiceRequest, pageable: Pageable): Page<Deposit>
     fun getUnsigned(type: DepositWithdrawType, coop: String, pageable: Pageable): Page<Deposit>
-    fun findByReference(reference: String): Deposit?
+    fun findByReference(reference: String, coop: String): Deposit?
     fun generateMintTransaction(request: MintServiceRequest): TransactionDataAndInfo
     fun confirmMintTransaction(signedTransaction: String, depositId: Int): Deposit
-    fun countUsersWithApprovedDeposit(): Int
+    fun countUsersWithApprovedDeposit(coop: String): Int
 }

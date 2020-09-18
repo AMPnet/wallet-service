@@ -26,20 +26,20 @@ interface DepositRepository : JpaRepository<Deposit, Int> {
 
     @Query(
         "SELECT deposit FROM Deposit deposit LEFT JOIN FETCH deposit.file LEFT JOIN FETCH deposit.declined " +
-            "WHERE deposit.approved = true AND deposit.type = :type " +
-            "AND deposit.txHash IS NOT NULL AND deposit.coop = :coop",
+            "WHERE deposit.approved = true AND deposit.type = :type AND deposit.txHash IS NOT NULL " +
+            "AND deposit.coop = :coop",
         countQuery = "SELECT COUNT(deposit) FROM Deposit deposit " +
-            "WHERE deposit.approved = true AND deposit.type = :type " +
-            "AND deposit.txHash IS NOT NULL AND deposit.coop = :coop"
+            "WHERE deposit.approved = true AND deposit.type = :type AND deposit.txHash IS NOT NULL " +
+            "AND deposit.coop = :coop"
     )
     fun findApprovedUnsignedWithFile(type: DepositWithdrawType, coop: String, pageable: Pageable): Page<Deposit>
 
-    fun findByReference(reference: String): Optional<Deposit>
+    fun findByReferenceAndCoop(reference: String, coop: String): Optional<Deposit>
     fun findByOwnerUuid(ownerUuid: UUID): List<Deposit>
 
     @Query(
         "SELECT COUNT(DISTINCT deposit.ownerUuid) FROM Deposit deposit " +
-            "WHERE deposit.approved = true AND deposit.type = 'USER'"
+            "WHERE deposit.approved = true AND deposit.type = 'USER' AND deposit.coop = :coop"
     )
-    fun countUsersWithApprovedDeposit(): Int
+    fun countUsersWithApprovedDeposit(coop: String): Int
 }

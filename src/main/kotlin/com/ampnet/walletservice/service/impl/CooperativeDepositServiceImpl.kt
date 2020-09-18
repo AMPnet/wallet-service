@@ -70,8 +70,8 @@ class CooperativeDepositServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun getAllWithDocuments(request: GetDepositsServiceRequest): Page<Deposit> {
-        return depositRepository.findAllWithFile(request.approved, request.type, request.coop, request.pageable)
+    override fun getAllWithDocuments(request: GetDepositsServiceRequest, pageable: Pageable): Page<Deposit> {
+        return depositRepository.findAllWithFile(request.approved, request.type, request.coop, pageable)
     }
 
     @Transactional(readOnly = true)
@@ -80,8 +80,8 @@ class CooperativeDepositServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun findByReference(reference: String): Deposit? {
-        return ServiceUtils.wrapOptional(depositRepository.findByReference(reference))
+    override fun findByReference(reference: String, coop: String): Deposit? {
+        return ServiceUtils.wrapOptional(depositRepository.findByReferenceAndCoop(reference, coop))
     }
 
     @Transactional
@@ -108,8 +108,8 @@ class CooperativeDepositServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun countUsersWithApprovedDeposit(): Int {
-        return depositRepository.countUsersWithApprovedDeposit()
+    override fun countUsersWithApprovedDeposit(coop: String): Int {
+        return depositRepository.countUsersWithApprovedDeposit(coop)
     }
 
     private fun validateDepositForMintTransaction(deposit: Deposit) {

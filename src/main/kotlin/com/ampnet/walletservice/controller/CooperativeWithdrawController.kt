@@ -39,9 +39,12 @@ class CooperativeWithdrawController(
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_WITHDRAW)")
     fun getApprovedUserWithdraws(pageable: Pageable): ResponseEntity<WithdrawWithUserListResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
-        logger.debug { "Received request to get all approved withdraws by user: ${userPrincipal.uuid}" }
+        logger.debug {
+            "Received request to get all approved withdraws by user: ${userPrincipal.uuid}, " +
+                "for cooperative with id: ${userPrincipal.coop}"
+        }
         val response = generateUserResponseWithWithdraws(
-            cooperativeWithdrawService.getAllApproved(DepositWithdrawType.USER, pageable)
+            cooperativeWithdrawService.getAllApproved(DepositWithdrawType.USER, userPrincipal.coop, pageable)
         )
         return ResponseEntity.ok(response)
     }
@@ -50,9 +53,12 @@ class CooperativeWithdrawController(
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_WITHDRAW)")
     fun getApprovedProjectWithdraws(pageable: Pageable): ResponseEntity<WithdrawWithProjectListResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
-        logger.debug { "Received request to get all approved withdraws by user: ${userPrincipal.uuid}" }
+        logger.debug {
+            "Received request to get all approved withdraws by user: ${userPrincipal.uuid}, " +
+                "for cooperative with id: ${userPrincipal.coop}"
+        }
         val response = generateProjectResponseWithWithdraws(
-            cooperativeWithdrawService.getAllApproved(DepositWithdrawType.PROJECT, pageable)
+            cooperativeWithdrawService.getAllApproved(DepositWithdrawType.PROJECT, userPrincipal.coop, pageable)
         )
         return ResponseEntity.ok(response)
     }
@@ -61,9 +67,12 @@ class CooperativeWithdrawController(
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_WITHDRAW)")
     fun getBurnedUserWithdraws(pageable: Pageable): ResponseEntity<WithdrawWithUserListResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
-        logger.debug { "Received request to get all burned withdraws by user: ${userPrincipal.uuid}" }
+        logger.debug {
+            "Received request to get all burned withdraws by user: ${userPrincipal.uuid}, " +
+                "for cooperative with id: ${userPrincipal.coop}"
+        }
         val response = generateUserResponseWithWithdraws(
-            cooperativeWithdrawService.getAllBurned(DepositWithdrawType.USER, pageable)
+            cooperativeWithdrawService.getAllBurned(DepositWithdrawType.USER, userPrincipal.coop, pageable)
         )
         return ResponseEntity.ok(response)
     }
@@ -72,9 +81,12 @@ class CooperativeWithdrawController(
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_WITHDRAW)")
     fun getBurnedProjectWithdraws(pageable: Pageable): ResponseEntity<WithdrawWithProjectListResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
-        logger.debug { "Received request to get all burned withdraws by user: ${userPrincipal.uuid}" }
+        logger.debug {
+            "Received request to get all burned withdraws by user: ${userPrincipal.uuid}, " +
+                "for cooperative with id: ${userPrincipal.coop}"
+        }
         val response = generateProjectResponseWithWithdraws(
-            cooperativeWithdrawService.getAllBurned(DepositWithdrawType.PROJECT, pageable)
+            cooperativeWithdrawService.getAllBurned(DepositWithdrawType.PROJECT, userPrincipal.coop, pageable)
         )
         return ResponseEntity.ok(response)
     }

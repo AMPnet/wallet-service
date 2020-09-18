@@ -72,7 +72,11 @@ class BroadcastTransactionServiceImpl(
         )
     }
 
-    private fun createOrganizationWallet(transactionInfo: TransactionInfo, signedTransaction: String, coop: String): String {
+    private fun createOrganizationWallet(
+        transactionInfo: TransactionInfo,
+        signedTransaction: String,
+        coop: String
+    ): String {
         val organization = getUuidFromCompanionData(transactionInfo)
         val wallet = walletService.createOrganizationWallet(organization, signedTransaction, coop)
         return wallet.activationData

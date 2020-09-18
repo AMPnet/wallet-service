@@ -44,8 +44,12 @@ class CooperativeDepositController(
     fun getDepositByReference(
         @RequestParam("reference") reference: String
     ): ResponseEntity<DepositWithUserResponse> {
-        logger.debug { "Received request to get find deposit by reference: $reference" }
-        cooperativeDepositService.findByReference(reference)?.let {
+        val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
+        logger.debug {
+            "Received request to get find deposit by reference: $reference " +
+                "from cooperative with id: ${userPrincipal.coop}"
+        }
+        cooperativeDepositService.findByReference(reference, userPrincipal.coop)?.let {
             val user = userService.getUsers(setOf(it.ownerUuid)).firstOrNull()
             val response = DepositWithUserResponse(it, user)
             return ResponseEntity.ok(response)
@@ -85,9 +89,10 @@ class CooperativeDepositController(
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_DEPOSIT)")
     fun getUnapprovedDeposits(pageable: Pageable): ResponseEntity<DepositWithUserListResponse> {
         val user = ControllerUtils.getUserPrincipalFromSecurityContext()
-        logger.debug { "Received request to get unapproved deposits" }
-        val request = GetDepositsServiceRequest(false, DepositWithdrawType.USER, user.coop, pageable)
-        val deposits = cooperativeDepositService.getAllWithDocuments(request)
+        logger.debug { "Received request to get unapproved deposits from cooperative with id: ${user.coop}" }
+        val request = GetDepositsServiceRequest(false, DepositWithdrawType.USER, user.coop)
+        val deposits = cooperativeDepositService
+            .getAllWithDocuments(request, pageable)
         val response = createDepositWithUserListResponse(deposits)
         return ResponseEntity.ok(response)
     }
@@ -96,9 +101,10 @@ class CooperativeDepositController(
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_DEPOSIT)")
     fun getUnapprovedProjectDeposits(pageable: Pageable): ResponseEntity<DepositWithProjectListResponse> {
         val user = ControllerUtils.getUserPrincipalFromSecurityContext()
-        logger.debug { "Received request to get unapproved deposits" }
-        val request = GetDepositsServiceRequest(false, DepositWithdrawType.USER, user.coop, pageable)
-        val deposits = cooperativeDepositService.getAllWithDocuments(request)
+        logger.debug { "Received request to get unapproved deposits from cooperative with id: ${user.coop}" }
+        val request = GetDepositsServiceRequest(false, DepositWithdrawType.PROJECT, user.coop)
+        val deposits = cooperativeDepositService
+            .getAllWithDocuments(request, pageable)
         val response = createDepositWithProjectListResponse(deposits)
         return ResponseEntity.ok(response)
     }
@@ -107,9 +113,10 @@ class CooperativeDepositController(
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_DEPOSIT)")
     fun getApprovedDeposits(pageable: Pageable): ResponseEntity<DepositWithUserListResponse> {
         val user = ControllerUtils.getUserPrincipalFromSecurityContext()
-        logger.debug { "Received request to get approved deposits" }
-        val request = GetDepositsServiceRequest(true, DepositWithdrawType.USER, user.coop, pageable)
-        val deposits = cooperativeDepositService.getAllWithDocuments(request)
+        logger.debug { "Received request to get approved deposits from cooperative with id: ${user.coop}" }
+        val request = GetDepositsServiceRequest(true, DepositWithdrawType.USER, user.coop)
+        val deposits = cooperativeDepositService
+            .getAllWithDocuments(request, pageable)
         val response = createDepositWithUserListResponse(deposits)
         return ResponseEntity.ok(response)
     }
@@ -118,9 +125,10 @@ class CooperativeDepositController(
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_DEPOSIT)")
     fun getApprovedProjectDeposits(pageable: Pageable): ResponseEntity<DepositWithProjectListResponse> {
         val user = ControllerUtils.getUserPrincipalFromSecurityContext()
-        logger.debug { "Received request to get approved deposits" }
-        val request = GetDepositsServiceRequest(true, DepositWithdrawType.USER, user.coop, pageable)
-        val deposits = cooperativeDepositService.getAllWithDocuments(request)
+        logger.debug { "Received request to get approved deposits from cooperative with id: ${user.coop}" }
+        val request = GetDepositsServiceRequest(true, DepositWithdrawType.PROJECT, user.coop)
+        val deposits = cooperativeDepositService
+            .getAllWithDocuments(request, pageable)
         val response = createDepositWithProjectListResponse(deposits)
         return ResponseEntity.ok(response)
     }
@@ -139,7 +147,7 @@ class CooperativeDepositController(
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_DEPOSIT)")
     fun getUnsignedDeposits(pageable: Pageable): ResponseEntity<DepositWithUserListResponse> {
         val user = ControllerUtils.getUserPrincipalFromSecurityContext()
-        logger.debug { "Received request for unsigned deposits" }
+        logger.debug { "Received request for unsigned deposits from cooperative with id: ${user.coop}" }
         val deposits = cooperativeDepositService.getUnsigned(DepositWithdrawType.USER, user.coop, pageable)
         val response = createDepositWithUserListResponse(deposits)
         return ResponseEntity.ok(response)
@@ -149,7 +157,7 @@ class CooperativeDepositController(
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_DEPOSIT)")
     fun getUnsignedProjectDeposits(pageable: Pageable): ResponseEntity<DepositWithProjectListResponse> {
         val user = ControllerUtils.getUserPrincipalFromSecurityContext()
-        logger.debug { "Received request for unsigned project deposits" }
+        logger.debug { "Received request for unsigned project deposits from cooperative with id: ${user.coop}" }
         val deposits = cooperativeDepositService.getUnsigned(DepositWithdrawType.PROJECT, user.coop, pageable)
         val response = createDepositWithProjectListResponse(deposits)
         return ResponseEntity.ok(response)
@@ -158,8 +166,9 @@ class CooperativeDepositController(
     @GetMapping("/cooperative/deposit/count")
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_DEPOSIT)")
     fun countUsersWithApprovedDeposit(): ResponseEntity<UsersWithApprovedDeposit> {
-        logger.debug { "Received request to count users with approved deposit" }
-        val counted = cooperativeDepositService.countUsersWithApprovedDeposit()
+        val user = ControllerUtils.getUserPrincipalFromSecurityContext()
+        logger.debug { "Received request to count users with approved deposit from cooperative with id: ${user.coop}" }
+        val counted = cooperativeDepositService.countUsersWithApprovedDeposit(user.coop)
         return ResponseEntity.ok(UsersWithApprovedDeposit(counted))
     }
 

@@ -34,13 +34,13 @@ class CooperativeWithdrawServiceImpl(
     companion object : KLogging()
 
     @Transactional(readOnly = true)
-    override fun getAllApproved(type: DepositWithdrawType, pageable: Pageable): Page<Withdraw> {
-        return withdrawRepository.findAllApproved(type, pageable)
+    override fun getAllApproved(type: DepositWithdrawType, coop: String, pageable: Pageable): Page<Withdraw> {
+        return withdrawRepository.findAllApproved(type, coop, pageable)
     }
 
     @Transactional(readOnly = true)
-    override fun getAllBurned(type: DepositWithdrawType, pageable: Pageable): Page<Withdraw> {
-        return withdrawRepository.findAllBurned(type, pageable)
+    override fun getAllBurned(type: DepositWithdrawType, coop: String, pageable: Pageable): Page<Withdraw> {
+        return withdrawRepository.findAllBurned(type, coop, pageable)
     }
 
     @Transactional

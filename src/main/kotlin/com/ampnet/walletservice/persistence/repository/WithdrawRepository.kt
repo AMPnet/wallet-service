@@ -11,15 +11,17 @@ import java.util.UUID
 interface WithdrawRepository : JpaRepository<Withdraw, Int> {
     @Query(
         "SELECT withdraw FROM Withdraw withdraw " +
-            "WHERE withdraw.approvedTxHash IS NOT NULL AND withdraw.burnedTxHash IS NULL AND withdraw.type = :type"
+            "WHERE withdraw.approvedTxHash IS NOT NULL AND withdraw.burnedTxHash IS NULL " +
+            "AND withdraw.type = :type AND withdraw.coop = :coop"
     )
-    fun findAllApproved(type: DepositWithdrawType, pageable: Pageable): Page<Withdraw>
+    fun findAllApproved(type: DepositWithdrawType, coop: String, pageable: Pageable): Page<Withdraw>
 
     @Query(
         "SELECT withdraw FROM Withdraw withdraw " +
-            "WHERE withdraw.approvedTxHash IS NOT NULL AND withdraw.burnedTxHash IS NOT NULL AND withdraw.type = :type"
+            "WHERE withdraw.approvedTxHash IS NOT NULL AND withdraw.burnedTxHash IS NOT NULL " +
+            "AND withdraw.type = :type AND withdraw.coop = :coop"
     )
-    fun findAllBurned(type: DepositWithdrawType, pageable: Pageable): Page<Withdraw>
+    fun findAllBurned(type: DepositWithdrawType, coop: String, pageable: Pageable): Page<Withdraw>
 
     fun findByOwnerUuid(owner: UUID): List<Withdraw>
 }

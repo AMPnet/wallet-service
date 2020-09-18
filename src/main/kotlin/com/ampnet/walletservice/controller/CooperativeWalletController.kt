@@ -36,24 +36,36 @@ class CooperativeWalletController(
     @GetMapping("/cooperative/wallet/user")
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_WALLET)")
     fun getUnactivatedUserWallets(pageable: Pageable): ResponseEntity<UserWithWalletListResponse> {
-        logger.debug { "Received request to get list of users with unactivated wallet" }
-        val users = cooperativeWalletService.getAllUserWithUnactivatedWallet(pageable)
+        val user = ControllerUtils.getUserPrincipalFromSecurityContext()
+        logger.debug {
+            "Received request to get list of users with unactivated wallet, " +
+                "for cooperative with id: ${user.coop}"
+        }
+        val users = cooperativeWalletService.getAllUserWithUnactivatedWallet(pageable, user.coop)
         return ResponseEntity.ok(UserWithWalletListResponse(users))
     }
 
     @GetMapping("/cooperative/wallet/organization")
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_WALLET)")
     fun getUnactivatedOrganizationWallets(pageable: Pageable): ResponseEntity<OrganizationWithWalletListResponse> {
-        logger.debug { "Received request to get list of organizations with unactivated wallet" }
-        val organizations = cooperativeWalletService.getOrganizationsWithUnactivatedWallet(pageable)
+        val user = ControllerUtils.getUserPrincipalFromSecurityContext()
+        logger.debug {
+            "Received request to get list of organizations with unactivated wallet, " +
+                "for cooperative with id: ${user.coop}"
+        }
+        val organizations = cooperativeWalletService.getOrganizationsWithUnactivatedWallet(pageable, user.coop)
         return ResponseEntity.ok(OrganizationWithWalletListResponse(organizations))
     }
 
     @GetMapping("/cooperative/wallet/project")
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_WALLET)")
     fun getUnactivatedProjectWallets(pageable: Pageable): ResponseEntity<ProjectWithWalletListResponse> {
-        logger.debug { "Received request to get list of projects with unactivated wallet" }
-        val projects = cooperativeWalletService.getProjectsWithUnactivatedWallet(pageable)
+        val user = ControllerUtils.getUserPrincipalFromSecurityContext()
+        logger.debug {
+            "Received request to get list of projects with unactivated wallet, " +
+                "for cooperative with id: ${user.coop}"
+        }
+        val projects = cooperativeWalletService.getProjectsWithUnactivatedWallet(pageable, user.coop)
         return ResponseEntity.ok(ProjectWithWalletListResponse(projects))
     }
 
