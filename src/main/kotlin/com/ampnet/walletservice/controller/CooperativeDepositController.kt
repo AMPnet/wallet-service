@@ -150,7 +150,7 @@ class CooperativeDepositController(
     fun getUnsignedProjectDeposits(pageable: Pageable): ResponseEntity<DepositWithProjectListResponse> {
         val user = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request for unsigned project deposits" }
-        val deposits = cooperativeDepositService.getUnsigned(DepositWithdrawType.PROJECT,user.coop, pageable)
+        val deposits = cooperativeDepositService.getUnsigned(DepositWithdrawType.PROJECT, user.coop, pageable)
         val response = createDepositWithProjectListResponse(deposits)
         return ResponseEntity.ok(response)
     }
