@@ -29,7 +29,6 @@ message GenerateTransferPlatformManagerOwnershipTxRequest {
     string new_owner_wallet = 1;
 }
 
-
 ///////// EUR contract messages //////////
 
 message BalanceRequest {
@@ -70,8 +69,6 @@ message GenerateTransferTokenIssuerOwnershipTxRequest {
 
 ///////// Organization contract //////////
 
-
-
 ///////// Project contract ///////////////
 
 message GenerateStartRevenueSharesPayoutTxRequest {
@@ -104,6 +101,7 @@ message GetProjectsInfoResponse {
         string max_per_user_investment = 5;
         string ends_at = 6;
         bool payout_in_process = 7;
+        string balance = 8;
     }
     repeated ProjectInfo projects = 1;
 }
@@ -116,7 +114,6 @@ message IsInvestmentCancelableRequest {
 message IsInvestmentCancelableResponse {
     bool can_cancel = 1;
 }
-
 
 ////////// Transaction messages //////////
 
@@ -157,13 +154,19 @@ message TransactionsResponse {
             INVEST = 2;
             SHARE_PAYOUT = 3;
             CANCEL_INVESTMENT = 4;
+            APPROVE_INVESTMENT = 5;
+        }
+        enum State {
+            MINED = 0;
+            PENDING = 1;
+            FAILED = 2;
         }
         string from_tx_hash = 1;
         string to_tx_hash = 2;
         string amount = 3;
         string date = 4;
         Type type = 5;
-        string state = 6;
+        State state = 6;
     }
     repeated Transaction transactions = 1;
 }
@@ -222,50 +225,48 @@ message Empty {
 
 }
 
-
 ///////// Service definition ////////////////
 
 service BlockchainService {
 
     // Cooperative
 
-    rpc GenerateAddWalletTx(GenerateAddWalletTxRequest) returns (RawTxResponse);
-    rpc IsWalletActive(WalletActiveRequest) returns (WalletActiveResponse);
-    rpc GetPlatformManager(Empty) returns (PlatformManagerResponse);
-    rpc GenerateTransferPlatformManagerOwnershipTx(GenerateTransferPlatformManagerOwnershipTxRequest) returns (RawTxResponse);
+    rpc GenerateAddWalletTx (GenerateAddWalletTxRequest) returns (RawTxResponse);
+    rpc IsWalletActive (WalletActiveRequest) returns (WalletActiveResponse);
+    rpc GetPlatformManager (Empty) returns (PlatformManagerResponse);
+    rpc GenerateTransferPlatformManagerOwnershipTx (GenerateTransferPlatformManagerOwnershipTxRequest) returns (RawTxResponse);
 
     // EUR
 
-    rpc GenerateMintTx(GenerateMintTxRequest) returns (RawTxResponse);
-    rpc GenerateBurnFromTx(GenerateBurnFromTxRequest) returns (RawTxResponse);
-    rpc GenerateApproveWithdrawTx(GenerateApproveWithdrawTxRequest) returns (RawTxResponse);
-    rpc GenerateInvestTx(GenerateInvestTxRequest) returns (RawTxResponse);
-    rpc GetBalance(BalanceRequest) returns (BalanceResponse);
-    rpc GetTokenIssuer(Empty) returns (TokenIssuerResponse);
-    rpc GenerateTransferTokenIssuerOwnershipTx(GenerateTransferTokenIssuerOwnershipTxRequest) returns (RawTxResponse);
+    rpc GenerateMintTx (GenerateMintTxRequest) returns (RawTxResponse);
+    rpc GenerateBurnFromTx (GenerateBurnFromTxRequest) returns (RawTxResponse);
+    rpc GenerateApproveWithdrawTx (GenerateApproveWithdrawTxRequest) returns (RawTxResponse);
+    rpc GenerateInvestTx (GenerateInvestTxRequest) returns (RawTxResponse);
+    rpc GetBalance (BalanceRequest) returns (BalanceResponse);
+    rpc GetTokenIssuer (Empty) returns (TokenIssuerResponse);
+    rpc GenerateTransferTokenIssuerOwnershipTx (GenerateTransferTokenIssuerOwnershipTxRequest) returns (RawTxResponse);
 
     // Organization
 
-
     // Project
 
-    rpc GenerateApproveProjectWithdrawTx(GenerateApproveProjectWithdrawTxRequest) returns (RawTxResponse);
-    rpc GenerateCancelInvestmentTx(GenerateCancelInvestmentTxRequest) returns (RawTxResponse);
-    rpc IsInvestmentCancelable(IsInvestmentCancelableRequest) returns (IsInvestmentCancelableResponse);
-    rpc GenerateStartRevenueSharesPayoutTx(GenerateStartRevenueSharesPayoutTxRequest) returns (RawTxResponse);
-    rpc GetProjectsInfo(GetProjectsInfoRequest) returns (GetProjectsInfoResponse);
+    rpc GenerateApproveProjectWithdrawTx (GenerateApproveProjectWithdrawTxRequest) returns (RawTxResponse);
+    rpc GenerateCancelInvestmentTx (GenerateCancelInvestmentTxRequest) returns (RawTxResponse);
+    rpc IsInvestmentCancelable (IsInvestmentCancelableRequest) returns (IsInvestmentCancelableResponse);
+    rpc GenerateStartRevenueSharesPayoutTx (GenerateStartRevenueSharesPayoutTxRequest) returns (RawTxResponse);
+    rpc GetProjectsInfo (GetProjectsInfoRequest) returns (GetProjectsInfoResponse);
 
     // Contract create
 
-    rpc GenerateCreateOrganizationTx(GenerateCreateOrganizationTxRequest) returns (RawTxResponse);
-    rpc GenerateCreateProjectTx(GenerateCreateProjectTxRequest) returns (RawTxResponse);
+    rpc GenerateCreateOrganizationTx (GenerateCreateOrganizationTxRequest) returns (RawTxResponse);
+    rpc GenerateCreateProjectTx (GenerateCreateProjectTxRequest) returns (RawTxResponse);
 
     // Transactions
 
-    rpc PostTransaction(PostTxRequest) returns (PostTxResponse);
-    rpc GetPortfolio(PortfolioRequest) returns (PortfolioResponse);
-    rpc GetTransactions(TransactionsRequest) returns (TransactionsResponse);
-    rpc GetInvestmentsInProject(InvestmentsInProjectRequest) returns (TransactionsResponse);
-    rpc GetTransactionInfo(TransactionInfoRequest) returns (TransactionInfoResponse);
-    rpc GetActiveSellOffers(Empty) returns (ActiveSellOffersResponse);
+    rpc PostTransaction (PostTxRequest) returns (PostTxResponse);
+    rpc GetPortfolio (PortfolioRequest) returns (PortfolioResponse);
+    rpc GetTransactions (TransactionsRequest) returns (TransactionsResponse);
+    rpc GetInvestmentsInProject (InvestmentsInProjectRequest) returns (TransactionsResponse);
+    rpc GetTransactionInfo (TransactionInfoRequest) returns (TransactionInfoResponse);
+    rpc GetActiveSellOffers (Empty) returns (ActiveSellOffersResponse);
 }

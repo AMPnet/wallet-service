@@ -103,7 +103,8 @@ class PortfolioServiceImpl(
             val ownerUuidFrom = walletsMap[transaction.fromTxHash]?.owner
             val ownerUuidTo = walletsMap[transaction.toTxHash]?.owner
             when (transaction.type) {
-                TransactionsResponse.Transaction.Type.INVEST -> {
+                TransactionsResponse.Transaction.Type.INVEST,
+                TransactionsResponse.Transaction.Type.APPROVE_INVESTMENT -> {
                     transaction.from = getUserNameWithUuid(ownerUuidFrom, users)
                     transaction.to = getProjectNameWithUuid(ownerUuidTo, projects)
                 }

@@ -96,19 +96,23 @@ class PortfolioControllerTest : ControllerTestBase() {
             testContext.transactions = listOf(
                 BlockchainTransaction(
                     walletHash, "to", 1000,
-                    TransactionsResponse.Transaction.Type.INVEST, now.minusYears(1), "MINED"
+                    TransactionsResponse.Transaction.Type.INVEST, now.minusYears(1),
+                    TransactionsResponse.Transaction.State.MINED
                 ),
                 BlockchainTransaction(
                     walletHash, "to_2", 1000,
-                    TransactionsResponse.Transaction.Type.INVEST, now.minusMonths(1), "MINED"
+                    TransactionsResponse.Transaction.Type.INVEST, now.minusMonths(1),
+                    TransactionsResponse.Transaction.State.MINED
                 ),
                 BlockchainTransaction(
                     "from", walletHash, 10,
-                    TransactionsResponse.Transaction.Type.SHARE_PAYOUT, now.minusDays(1), "MINED"
+                    TransactionsResponse.Transaction.Type.SHARE_PAYOUT, now.minusDays(1),
+                    TransactionsResponse.Transaction.State.MINED
                 ),
                 BlockchainTransaction(
                     "from_2", walletHash, 10,
-                    TransactionsResponse.Transaction.Type.SHARE_PAYOUT, now, "MINED"
+                    TransactionsResponse.Transaction.Type.SHARE_PAYOUT, now,
+                    TransactionsResponse.Transaction.State.MINED
                 )
             )
             Mockito.`when`(
@@ -217,23 +221,33 @@ class PortfolioControllerTest : ControllerTestBase() {
             testContext.transactions = listOf(
                 BlockchainTransaction(
                     "mint", userWalletHash, 1000,
-                    TransactionsResponse.Transaction.Type.DEPOSIT, now.minusYears(1), "MINED"
+                    TransactionsResponse.Transaction.Type.DEPOSIT, now.minusYears(1),
+                    TransactionsResponse.Transaction.State.MINED
                 ),
                 BlockchainTransaction(
                     userWalletHash, projectWalletHash, 1000,
-                    TransactionsResponse.Transaction.Type.INVEST, now.minusMonths(1), "MINED"
+                    TransactionsResponse.Transaction.Type.APPROVE_INVESTMENT, now.minusMonths(1),
+                    TransactionsResponse.Transaction.State.MINED
+                ),
+                BlockchainTransaction(
+                    userWalletHash, projectWalletHash, 1000,
+                    TransactionsResponse.Transaction.Type.INVEST, now.minusMonths(1),
+                    TransactionsResponse.Transaction.State.MINED
                 ),
                 BlockchainTransaction(
                     projectWalletHash, userWalletHash, 1000,
-                    TransactionsResponse.Transaction.Type.CANCEL_INVESTMENT, now.minusDays(1), "MINED"
+                    TransactionsResponse.Transaction.Type.CANCEL_INVESTMENT, now.minusDays(1),
+                    TransactionsResponse.Transaction.State.MINED
                 ),
                 BlockchainTransaction(
                     projectWalletHash, userWalletHash, 10,
-                    TransactionsResponse.Transaction.Type.SHARE_PAYOUT, now.minusDays(1), "MINED"
+                    TransactionsResponse.Transaction.Type.SHARE_PAYOUT, now.minusDays(1),
+                    TransactionsResponse.Transaction.State.MINED
                 ),
                 BlockchainTransaction(
                     userWalletHash, "burn", 10,
-                    TransactionsResponse.Transaction.Type.WITHDRAW, now, "MINED"
+                    TransactionsResponse.Transaction.Type.WITHDRAW, now,
+                    TransactionsResponse.Transaction.State.MINED
                 )
             )
             Mockito.`when`(
@@ -259,23 +273,38 @@ class PortfolioControllerTest : ControllerTestBase() {
             val user = testContext.users.first()
             val project = testContext.projects.first()
             val response: BlockchainTransactionsResponse = objectMapper.readValue(result.response.contentAsString)
-            assertThat(response.transactions).hasSize(5)
+            assertThat(response.transactions).hasSize(6)
 
-            val responseDeposit = response.transactions.first { it.type == TransactionsResponse.Transaction.Type.DEPOSIT }
+            val responseDeposit =
+                response.transactions.first { it.type == TransactionsResponse.Transaction.Type.DEPOSIT }
             assertThat(responseDeposit.from).isEqualTo(platformWalletName)
             assertThat(responseDeposit.to).isEqualTo("${user.firstName} ${user.lastName}")
-            val responseInvest = response.transactions.first { it.type == TransactionsResponse.Transaction.Type.INVEST }
+
+            val responseApproveInvestment =
+                response.transactions.first { it.type == TransactionsResponse.Transaction.Type.APPROVE_INVESTMENT }
+            assertThat(responseApproveInvestment.from).isEqualTo("${user.firstName} ${user.lastName}")
+            assertThat(responseApproveInvestment.to).isEqualTo(project.name)
+
+            val responseInvest =
+                response.transactions.first { it.type == TransactionsResponse.Transaction.Type.INVEST }
             assertThat(responseInvest.from).isEqualTo("${user.firstName} ${user.lastName}")
             assertThat(responseInvest.to).isEqualTo(project.name)
-            val responseCancelInvestment = response.transactions.first { it.type == TransactionsResponse.Transaction.Type.CANCEL_INVESTMENT }
+
+            val responseCancelInvestment =
+                response.transactions.first { it.type == TransactionsResponse.Transaction.Type.CANCEL_INVESTMENT }
             assertThat(responseCancelInvestment.from).isEqualTo(project.name)
             assertThat(responseCancelInvestment.to).isEqualTo("${user.firstName} ${user.lastName}")
-            val responseSharePayout = response.transactions.first { it.type == TransactionsResponse.Transaction.Type.SHARE_PAYOUT }
+
+            val responseSharePayout =
+                response.transactions.first { it.type == TransactionsResponse.Transaction.Type.SHARE_PAYOUT }
             assertThat(responseSharePayout.from).isEqualTo(project.name)
             assertThat(responseSharePayout.to).isEqualTo("${user.firstName} ${user.lastName}")
-            val responseWithdraw = response.transactions.first { it.type == TransactionsResponse.Transaction.Type.WITHDRAW }
+
+            val responseWithdraw =
+                response.transactions.first { it.type == TransactionsResponse.Transaction.Type.WITHDRAW }
             assertThat(responseWithdraw.from).isEqualTo("${user.firstName} ${user.lastName}")
             assertThat(responseWithdraw.to).isEqualTo(platformWalletName)
+            assertThat(responseWithdraw.state).isEqualTo(TransactionsResponse.Transaction.State.MINED)
         }
     }
 
@@ -284,7 +313,7 @@ class PortfolioControllerTest : ControllerTestBase() {
             getWalletHash(userUuid),
             getWalletHash(projectUuid), amount,
             TransactionsResponse.Transaction.Type.INVEST,
-            ZonedDateTime.now(), "MINED"
+            ZonedDateTime.now(), TransactionsResponse.Transaction.State.MINED
         )
 
     private class TestContext {

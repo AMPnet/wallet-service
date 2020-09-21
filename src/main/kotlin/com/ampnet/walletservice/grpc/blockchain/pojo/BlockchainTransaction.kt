@@ -11,7 +11,7 @@ data class BlockchainTransaction(
     val amount: Long,
     val type: TransactionsResponse.Transaction.Type,
     val date: ZonedDateTime,
-    val state: String
+    val state: TransactionsResponse.Transaction.State
 ) {
     var from: String? = null
     var to: String? = null
