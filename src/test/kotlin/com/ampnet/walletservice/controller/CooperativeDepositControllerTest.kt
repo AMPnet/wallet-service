@@ -215,10 +215,8 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
         suppose("User service will return user") {
             Mockito.`when`(userService.getUsers(setOf(userUuid))).thenReturn(listOf(createUserResponse(userUuid)))
         }
-
         suppose("There is unapproved deposit from another coop") {
-            val anotherCoopDeposit = createUnapprovedDeposit(userUuid, coop = anotherCoop)
-            testContext.deposits.add(anotherCoopDeposit)
+            createUnapprovedDeposit(userUuid, coop = anotherCoop)
         }
 
         verify("Cooperative can get unapproved user deposits") {
