@@ -37,7 +37,7 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
     @Test
     @WithMockCrowdfoundUser(privileges = [PrivilegeType.PRA_WITHDRAW])
     fun mustBeAbleToGetApprovedUserWithdraws() {
-        suppose("Approved and unapproved  user withdraws are created") {
+        suppose("Approved and unapproved user withdraws are created") {
             val approvedWithdraw = createApprovedWithdraw(userUuid)
             val secondApprovedWithdraw = createApprovedWithdraw(userUuid)
             val unapprovedWithdraw = createWithdraw(userUuid)
@@ -45,6 +45,9 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
         }
         suppose("Some project has approved withdraw") {
             createApprovedWithdraw(UUID.randomUUID(), type = DepositWithdrawType.PROJECT)
+        }
+        suppose("There is approved user withdraw from another cooperative") {
+            createApprovedWithdraw(userUuid, coop = anotherCoop)
         }
         suppose("User has a wallet") {
             databaseCleanerService.deleteAllWallets()
@@ -94,6 +97,9 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
         suppose("Some user has approved withdraw") {
             createApprovedWithdraw(UUID.randomUUID())
         }
+        suppose("There is approved project withdraw from another cooperative") {
+            createApprovedWithdraw(userUuid, type = DepositWithdrawType.PROJECT, coop = anotherCoop)
+        }
         suppose("Project has a wallet") {
             databaseCleanerService.deleteAllWallets()
             createWalletForProject(projectUuid, walletHash)
@@ -106,7 +112,7 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
         verify("Cooperative can get list of approved project withdraws") {
             val result = mockMvc.perform(
                 get("$withdrawPath/approved/project")
-                    .param("size", "1")
+                    .param("size", "2")
                     .param("page", "0")
                     .param("sort", "approvedAt,desc")
             )
@@ -114,7 +120,7 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
                 .andReturn()
 
             val withdrawList: WithdrawWithProjectListResponse = objectMapper.readValue(result.response.contentAsString)
-            assertThat(withdrawList.withdraws).hasSize(1)
+            assertThat(withdrawList.withdraws).hasSize(2)
             val withdraw = withdrawList.withdraws.first()
             assertThat(withdraw.amount).isEqualTo(testContext.amount)
             assertThat(withdraw.id).isNotNull()
@@ -140,6 +146,9 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
         }
         suppose("Some project has burned withdraw") {
             createBurnedWithdraw(UUID.randomUUID(), type = DepositWithdrawType.PROJECT)
+        }
+        suppose("There is burned user withdraw from another cooperative") {
+            createBurnedWithdraw(userUuid, coop = anotherCoop)
         }
         suppose("User has a wallet") {
             databaseCleanerService.deleteAllWallets()
@@ -188,6 +197,9 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
         }
         suppose("Some user has burned withdraw") {
             createBurnedWithdraw(UUID.randomUUID(), type = DepositWithdrawType.USER)
+        }
+        suppose("There is burned project withdraw from another cooperative") {
+            createBurnedWithdraw(projectUuid, type = DepositWithdrawType.PROJECT, coop = anotherCoop)
         }
         suppose("Project has a wallet") {
             databaseCleanerService.deleteAllWallets()
@@ -315,12 +327,16 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
         }
     }
 
-    private fun createBurnedWithdraw(user: UUID, type: DepositWithdrawType = DepositWithdrawType.USER): Withdraw {
+    private fun createBurnedWithdraw(
+        user: UUID,
+        type: DepositWithdrawType = DepositWithdrawType.USER,
+        coop: String = COOP
+    ): Withdraw {
         val document = saveFile("withdraw-doc", "doc-link", "type", 1, user)
         val withdraw = Withdraw(
             0, user, testContext.amount, ZonedDateTime.now(), user, testContext.bankAccount,
             testContext.approvedTx, ZonedDateTime.now(), testContext.burnedTx,
-            ZonedDateTime.now(), UUID.randomUUID(), document, type, COOP
+            ZonedDateTime.now(), UUID.randomUUID(), document, type, coop
         )
         return withdrawRepository.save(withdraw)
     }

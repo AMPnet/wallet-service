@@ -80,6 +80,12 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
         suppose("There is user with activated wallet") {
             testContext.wallet = createWalletForUser(userUuid, testContext.walletHash)
         }
+        suppose("There is user with unactivated wallet from another coop") {
+            val thirdUser = UUID.randomUUID()
+            testContext.anotherCoopWallet = createUnactivatedWallet(
+                thirdUser, "activation-data-3", WalletType.USER, anotherCoop
+            )
+        }
         suppose("User service will return data for users") {
             Mockito.`when`(
                 userService.getUsers(testContext.users.toSet())
@@ -106,6 +112,8 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
                 .doesNotContain(userUuid)
             assertThat(userListResponse.users.map { it.wallet })
                 .doesNotContain(WalletResponse(testContext.wallet, 0))
+            assertThat(userListResponse.users.map { it.wallet })
+                .doesNotContain(WalletResponse(testContext.anotherCoopWallet, 0))
             assertThat(userListResponse.page).isEqualTo(0)
             assertThat(userListResponse.totalPages).isEqualTo(1)
         }
@@ -124,6 +132,12 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
         }
         suppose("There is organization with activated wallet") {
             testContext.wallet = createWalletForOrganization(organizationUuid, testContext.walletHash)
+        }
+        suppose("There is organization with unactivated wallet from another coop") {
+            val thirdOrg = UUID.randomUUID()
+            testContext.anotherCoopWallet = createUnactivatedWallet(
+                thirdOrg, "org-3", WalletType.ORG, anotherCoop
+            )
         }
         suppose("Project service will return organizations data") {
             Mockito.`when`(
@@ -161,6 +175,8 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
                 .containsAll(testContext.organizations.map { it.toString() })
             assertThat(orgListResponse.organizations.map { it.wallet.activationData })
                 .doesNotContain(testContext.wallet.hash)
+            assertThat(orgListResponse.organizations.map { it.wallet.activationData })
+                .doesNotContain(testContext.anotherCoopWallet.hash)
             assertThat(orgListResponse.page).isEqualTo(0)
             assertThat(orgListResponse.totalPages).isEqualTo(1)
         }
@@ -179,6 +195,12 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
         }
         suppose("There is projects with activated wallet") {
             testContext.wallet = createWalletForProject(projectUuid, testContext.walletHash)
+        }
+        suppose("There is project with unactivated wallet from another coop") {
+            val thirdProject = UUID.randomUUID()
+            testContext.anotherCoopWallet = createUnactivatedWallet(
+                thirdProject, "project-3", WalletType.PROJECT, anotherCoop
+            )
         }
         suppose("Project service will return projects data") {
             Mockito.`when`(
@@ -216,6 +238,8 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
                 .containsAll(testContext.projects.map { it.toString() })
             assertThat(projectListResponse.projects.map { it.wallet.activationData })
                 .doesNotContain(testContext.wallet.hash)
+            assertThat(projectListResponse.projects.map { it.wallet.activationData })
+                .doesNotContain(testContext.anotherCoopWallet.hash)
             assertThat(projectListResponse.page).isEqualTo(0)
             assertThat(projectListResponse.totalPages).isEqualTo(1)
         }
@@ -297,8 +321,8 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
         }
     }
 
-    private fun createUnactivatedWallet(owner: UUID, activationData: String, type: WalletType): Wallet {
-        val wallet = Wallet(owner, activationData, type, Currency.EUR, COOP)
+    private fun createUnactivatedWallet(owner: UUID, activationData: String, type: WalletType, coop: String = COOP): Wallet {
+        val wallet = Wallet(owner, activationData, type, Currency.EUR, coop)
         return walletRepository.save(wallet)
     }
 
@@ -311,5 +335,6 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
         lateinit var userUuid: UUID
         lateinit var transactionData: TransactionData
         lateinit var wallet: Wallet
+        lateinit var anotherCoopWallet: Wallet
     }
 }

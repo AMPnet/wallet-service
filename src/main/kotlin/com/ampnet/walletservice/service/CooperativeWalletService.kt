@@ -15,9 +15,9 @@ import java.util.UUID
 interface CooperativeWalletService {
     fun generateWalletActivationTransaction(walletUuid: UUID, user: UserPrincipal): TransactionDataAndInfo
     fun activateWallet(walletUuid: UUID, signedTransaction: String): Wallet
-    fun getAllUserWithUnactivatedWallet(pageable: Pageable, coop: String): Page<UserWithWallet>
-    fun getOrganizationsWithUnactivatedWallet(pageable: Pageable, coop: String): Page<OrganizationWithWallet>
-    fun getProjectsWithUnactivatedWallet(pageable: Pageable, coop: String): Page<ProjectWithWallet>
+    fun getAllUserWithUnactivatedWallet(coop: String, pageable: Pageable): Page<UserWithWallet>
+    fun getOrganizationsWithUnactivatedWallet(coop: String, pageable: Pageable): Page<OrganizationWithWallet>
+    fun getProjectsWithUnactivatedWallet(coop: String, pageable: Pageable): Page<ProjectWithWallet>
     fun generateSetTransferOwnership(owner: UserPrincipal, request: WalletTransferRequest): TransactionDataAndInfo
     fun transferOwnership(request: TransferOwnershipRequest): String
 }

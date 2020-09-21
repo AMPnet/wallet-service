@@ -29,11 +29,11 @@ class PublicController(private val walletService: WalletService) {
 
     @GetMapping("/public/project/active")
     fun getAllActiveProjectsWithWallet(
-        @RequestParam coop: String,
+        @RequestParam(defaultValue = "ampnet") coop: String,
         pageable: Pageable
     ): ResponseEntity<ProjectWithWalletListResponse> {
         logger.debug { "Received request to get all active projects for cooperative with id: $coop" }
-        val projectsResponse = walletService.getProjectsWithActiveWallet(pageable, coop)
+        val projectsResponse = walletService.getProjectsWithActiveWallet(coop, pageable)
         return ResponseEntity.ok(ProjectWithWalletListResponse(projectsResponse))
     }
 }

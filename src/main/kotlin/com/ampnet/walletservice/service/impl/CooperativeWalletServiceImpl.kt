@@ -62,7 +62,7 @@ class CooperativeWalletServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun getAllUserWithUnactivatedWallet(pageable: Pageable, coop: String): Page<UserWithWallet> {
+    override fun getAllUserWithUnactivatedWallet(coop: String, pageable: Pageable): Page<UserWithWallet> {
         val walletsPage = walletRepository.findUnactivatedByType(WalletType.USER, coop, pageable)
         val wallets = walletsPage.toList().associateBy { it.owner }
         val users = userService.getUsers(wallets.keys)
@@ -75,7 +75,7 @@ class CooperativeWalletServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun getOrganizationsWithUnactivatedWallet(pageable: Pageable, coop: String): Page<OrganizationWithWallet> {
+    override fun getOrganizationsWithUnactivatedWallet(coop: String, pageable: Pageable): Page<OrganizationWithWallet> {
         val walletsPage = walletRepository.findUnactivatedByType(WalletType.ORG, coop, pageable)
         val wallets = walletsPage.toList().associateBy { it.owner }
         val organizations = projectService.getOrganizations(wallets.keys)
@@ -88,7 +88,7 @@ class CooperativeWalletServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun getProjectsWithUnactivatedWallet(pageable: Pageable, coop: String): Page<ProjectWithWallet> {
+    override fun getProjectsWithUnactivatedWallet(coop: String, pageable: Pageable): Page<ProjectWithWallet> {
         val walletsPage = walletRepository.findUnactivatedByType(WalletType.PROJECT, coop, pageable)
         val wallets = walletsPage.toList().associateBy { it.owner }
         val projects = projectService.getProjects(wallets.keys)

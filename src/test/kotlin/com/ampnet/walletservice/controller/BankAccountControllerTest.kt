@@ -39,10 +39,11 @@ class BankAccountControllerTest : ControllerTestBase() {
     @WithMockCrowdfoundUser
     fun mustBeAbleToGetAllBankAccounts() {
         suppose("There are two bank accounts") {
-            val bankAccount = BankAccount(iban, bankCode, userUuid, alias, COOP)
-            bankAccountRepository.save(bankAccount)
-            val secondBankAccount = BankAccount("AL47212110090000000235698741", "AKIVALTR", userUuid, "albalias", COOP)
-            bankAccountRepository.save(secondBankAccount)
+            createBankAccount(iban, bankCode, userUuid, alias, COOP)
+            createBankAccount("AL47212110090000000235698741", "AKIVALTR", userUuid, "albalias", COOP)
+        }
+        suppose("There is bank account from another cooperative") {
+            createBankAccount("AL47212110090000000235698742", "AKIVBLTR", userUuid, alias, anotherCoop)
         }
 
         verify("User can get bank accounts") {

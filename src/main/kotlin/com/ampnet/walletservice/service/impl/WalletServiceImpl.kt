@@ -153,7 +153,7 @@ class WalletServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun getProjectsWithActiveWallet(pageable: Pageable, coop: String): Page<ProjectWithWallet> {
+    override fun getProjectsWithActiveWallet(coop: String, pageable: Pageable): Page<ProjectWithWallet> {
         val walletsPage = walletRepository.findActivatedByType(WalletType.PROJECT, coop, pageable)
         val projectWallets = walletsPage.toList()
             .filter { it.hash != null }

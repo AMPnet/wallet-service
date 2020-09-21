@@ -20,5 +20,5 @@ interface WalletService {
     fun createOrganizationWallet(organization: UUID, signedTransaction: String, coop: String): Wallet
     fun generatePairWalletCode(publicKey: String): PairWalletCode
     fun getPairWalletCode(code: String): PairWalletCode?
-    fun getProjectsWithActiveWallet(pageable: Pageable, coop: String): Page<ProjectWithWallet>
+    fun getProjectsWithActiveWallet(coop: String, pageable: Pageable): Page<ProjectWithWallet>
 }

@@ -41,7 +41,7 @@ class CooperativeWalletController(
             "Received request to get list of users with unactivated wallet, " +
                 "for cooperative with id: ${user.coop}"
         }
-        val users = cooperativeWalletService.getAllUserWithUnactivatedWallet(pageable, user.coop)
+        val users = cooperativeWalletService.getAllUserWithUnactivatedWallet(user.coop, pageable)
         return ResponseEntity.ok(UserWithWalletListResponse(users))
     }
 
@@ -53,7 +53,7 @@ class CooperativeWalletController(
             "Received request to get list of organizations with unactivated wallet, " +
                 "for cooperative with id: ${user.coop}"
         }
-        val organizations = cooperativeWalletService.getOrganizationsWithUnactivatedWallet(pageable, user.coop)
+        val organizations = cooperativeWalletService.getOrganizationsWithUnactivatedWallet(user.coop, pageable)
         return ResponseEntity.ok(OrganizationWithWalletListResponse(organizations))
     }
 
@@ -65,7 +65,7 @@ class CooperativeWalletController(
             "Received request to get list of projects with unactivated wallet, " +
                 "for cooperative with id: ${user.coop}"
         }
-        val projects = cooperativeWalletService.getProjectsWithUnactivatedWallet(pageable, user.coop)
+        val projects = cooperativeWalletService.getProjectsWithUnactivatedWallet(user.coop, pageable)
         return ResponseEntity.ok(ProjectWithWalletListResponse(projects))
     }
 

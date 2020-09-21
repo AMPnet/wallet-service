@@ -16,7 +16,7 @@ class SellOfferController(private val sellOfferService: SellOfferService) {
     @GetMapping("/sell/offer")
     fun getSalesOffers(): ResponseEntity<ProjectsWithSellOffersResponse> {
         val user = ControllerUtils.getUserPrincipalFromSecurityContext()
-        BankAccountController.logger.debug { "Received request to get sales offers for cooperative with id: ${user.coop}" }
+        logger.debug { "Received request to get sales offers for cooperative with id: ${user.coop}" }
         val projectsWithSellOffers = sellOfferService.getProjectsWithSalesOffers(user.coop)
             .map { ProjectWithSellOffersResponse(it) }
         return ResponseEntity.ok(ProjectsWithSellOffersResponse(projectsWithSellOffers))

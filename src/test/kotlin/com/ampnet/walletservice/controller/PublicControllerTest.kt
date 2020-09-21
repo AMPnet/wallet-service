@@ -68,6 +68,10 @@ class PublicControllerTest : ControllerTestBase() {
             testContext.inactiveProjectWallet =
                 createWalletForProject(UUID.randomUUID(), "th_49bC6a8219c798394726f8e86E040A878da1d00A")
         }
+        suppose("There is project wallet from another cooperative") {
+            testContext.anotherCoopWallet =
+                createWalletForProject(UUID.randomUUID(), "th_49bC6a8219c798394726f8e86E040A878da1d00B", anotherCoop)
+        }
         suppose("Blockchain service will return projects info") {
             val inactiveWalletHash = getWalletHash(testContext.inactiveProjectWallet)
             Mockito.`when`(
@@ -192,6 +196,7 @@ class PublicControllerTest : ControllerTestBase() {
     private class TestContext {
         lateinit var wallet: Wallet
         lateinit var inactiveProjectWallet: Wallet
+        lateinit var anotherCoopWallet: Wallet
         val walletBalance = 100L
         val projectBalance = 10_000_000_00L
     }
