@@ -15,7 +15,11 @@ import com.ampnet.walletservice.service.pojo.PortfolioStats
 import com.ampnet.walletservice.service.pojo.ProjectWithInvestment
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.text.NumberFormat
 import java.util.UUID
+
+const val MIN_FRACTION_DIGITS = 1
+const val MAX_FRACTION_DIGITS = 10
 
 @Service
 class PortfolioServiceImpl(
@@ -106,14 +110,23 @@ class PortfolioServiceImpl(
                 TransactionsResponse.Transaction.Type.INVEST -> {
                     transaction.from = getUserNameWithUuid(ownerUuidFrom, users)
                     transaction.to = getProjectNameWithUuid(ownerUuidTo, projects)
+                    transaction.description = transaction.to +
+                        getExpectedProjectFunding(ownerUuidTo, projects)?.let {
+                            " | " + getPercentageInProject(it, transaction.amount)
+                        }
                 }
                 TransactionsResponse.Transaction.Type.CANCEL_INVESTMENT -> {
                     transaction.from = getProjectNameWithUuid(ownerUuidFrom, projects)
                     transaction.to = getUserNameWithUuid(ownerUuidTo, users)
+                    transaction.description = transaction.from +
+                        getExpectedProjectFunding(ownerUuidFrom, projects)?.let {
+                            " | " + getPercentageInProject(it, transaction.amount)
+                        }
                 }
                 TransactionsResponse.Transaction.Type.SHARE_PAYOUT -> {
                     transaction.from = getProjectNameWithUuid(ownerUuidFrom, projects)
                     transaction.to = getUserNameWithUuid(ownerUuidTo, users)
+                    transaction.description = transaction.from
                 }
                 TransactionsResponse.Transaction.Type.DEPOSIT -> {
                     transaction.from = platformWalletName
@@ -148,5 +161,16 @@ class PortfolioServiceImpl(
 
     private fun getProjectNameWithUuid(ownerUuid: UUID?, projects: Map<String, ProjectResponse>): String? {
         return projects[ownerUuid?.toString()]?.name
+    }
+
+    private fun getExpectedProjectFunding(ownerUuid: UUID?, projects: Map<String, ProjectResponse>): Long? {
+        return projects[ownerUuid.toString()]?.expectedFunding
+    }
+
+    private fun getPercentageInProject(projectFunding: Long, amount: Long): String {
+        return NumberFormat.getPercentInstance().apply {
+            minimumFractionDigits = MIN_FRACTION_DIGITS
+            maximumFractionDigits = MAX_FRACTION_DIGITS
+        }.format(amount.toDouble() / projectFunding)
     }
 }
