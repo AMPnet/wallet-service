@@ -108,7 +108,7 @@ class CooperativeWithdrawController(
     ): ResponseEntity<WithdrawResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Adding document for withdraw" }
-        val documentRequest = DocumentSaveRequest(file, userPrincipal.uuid)
+        val documentRequest = DocumentSaveRequest(file, userPrincipal)
         val withdraw = cooperativeWithdrawService.addDocument(id, documentRequest)
         return ResponseEntity.ok(WithdrawResponse(withdraw))
     }

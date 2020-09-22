@@ -1,5 +1,6 @@
 package com.ampnet.walletservice.service.impl
 
+import com.ampnet.core.jwt.UserPrincipal
 import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.exception.InvalidRequestException
@@ -25,7 +26,6 @@ import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.ZonedDateTime
-import java.util.UUID
 
 @Service
 class CooperativeDepositServiceImpl(
@@ -45,28 +45,31 @@ class CooperativeDepositServiceImpl(
         val deposit = getDepositForId(request.id)
         // TODO: think about document reading restrictions
         val document = storageService.saveDocument(request.documentSaveRequest)
-        logger.info { "Approving deposit: ${request.id} by user: ${request.user}" }
-
-        deposit.approved = true
-        deposit.approvedByUserUuid = request.user
-        deposit.approvedAt = ZonedDateTime.now()
-        deposit.amount = request.amount
-        deposit.file = document
-        return deposit
+        logger.info { "Approving deposit: ${request.id} by user: ${request.user.uuid}" }
+        return deposit.apply {
+            approved = true
+            approvedByUserUuid = request.user.uuid
+            approvedAt = ZonedDateTime.now()
+            amount = request.amount
+            file = document
+            coop = request.user.coop
+        }
     }
 
     @Transactional
-    override fun decline(id: Int, user: UUID, comment: String): Deposit {
+    override fun decline(id: Int, user: UserPrincipal, comment: String): Deposit {
         val deposit = getDepositForId(id)
         if (deposit.txHash != null) {
             throw InvalidRequestException(ErrorCode.WALLET_DEPOSIT_MINTED, "Cannot decline minted deposit")
         }
         logger.info { "Declining deposit: $id by user: $user" }
-        val declined = Declined(comment, user)
-        deposit.declined = declinedRepository.save(declined)
-        deposit.approved = false
+        val declined = Declined(comment, user.uuid)
         mailService.sendDepositInfo(deposit.ownerUuid, false)
-        return deposit
+        return deposit.apply {
+            this.declined = declinedRepository.save(declined)
+            approved = false
+            coop = user.coop
+        }
     }
 
     @Transactional(readOnly = true)

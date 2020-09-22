@@ -74,9 +74,11 @@ class CooperativeWithdrawServiceImpl(
         val withdraw = ServiceUtils.getWithdraw(withdrawId, withdrawRepository)
         logger.info { "Adding document for withdraw: $withdraw" }
         val document = storageService.saveDocument(request)
-        withdraw.file = document
         logger.info { "Document added" }
-        return withdraw
+        return withdraw.apply {
+            file = document
+            coop = request.user.coop
+        }
     }
 
     private fun validateWithdrawForBurn(withdraw: Withdraw) {

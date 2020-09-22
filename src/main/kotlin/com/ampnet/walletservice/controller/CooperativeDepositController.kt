@@ -67,8 +67,8 @@ class CooperativeDepositController(
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to approve deposit: $id" }
 
-        val documentRequest = DocumentSaveRequest(file, userPrincipal.uuid)
-        val serviceRequest = ApproveDepositRequest(id, userPrincipal.uuid, amount, documentRequest)
+        val documentRequest = DocumentSaveRequest(file, userPrincipal)
+        val serviceRequest = ApproveDepositRequest(id, userPrincipal, amount, documentRequest)
         val deposit = cooperativeDepositService.approve(serviceRequest)
         return ResponseEntity.ok(DepositResponse(deposit))
     }
@@ -80,8 +80,8 @@ class CooperativeDepositController(
         @RequestBody request: CommentRequest
     ): ResponseEntity<DepositResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
-        logger.info { "Received request to delcine deposit: $id by user: ${userPrincipal.uuid}" }
-        val deposit = cooperativeDepositService.decline(id, userPrincipal.uuid, request.comment)
+        logger.info { "Received request to decline deposit: $id by user: ${userPrincipal.uuid}" }
+        val deposit = cooperativeDepositService.decline(id, userPrincipal, request.comment)
         return ResponseEntity.ok(DepositResponse(deposit))
     }
 

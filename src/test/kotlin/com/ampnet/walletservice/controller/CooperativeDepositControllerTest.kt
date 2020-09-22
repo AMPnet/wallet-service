@@ -117,6 +117,7 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
             assertThat(declinedDeposit.approved).isFalse()
             assertThat(declinedDeposit.approvedByUserUuid).isNull()
             assertThat(declinedDeposit.approvedAt).isNull()
+            assertThat(declinedDeposit.coop).isEqualTo(COOP)
             assertThat(declinedDeposit.file?.link).isNull()
             assertThat(declinedDeposit.declined?.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
             assertThat(declinedDeposit.declined?.createdBy).isEqualTo(userUuid)
@@ -171,6 +172,7 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
             assertThat(approvedDeposit.amount).isEqualTo(testContext.amount)
             assertThat(approvedDeposit.approvedByUserUuid).isEqualTo(userUuid)
             assertThat(approvedDeposit.approvedAt).isBeforeOrEqualTo(ZonedDateTime.now())
+            assertThat(approvedDeposit.coop).isEqualTo(COOP)
             assertThat(approvedDeposit.file?.link).isEqualTo(testContext.documentLink)
         }
     }

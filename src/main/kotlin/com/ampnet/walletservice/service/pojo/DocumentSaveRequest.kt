@@ -1,20 +1,20 @@
 package com.ampnet.walletservice.service.pojo
 
+import com.ampnet.core.jwt.UserPrincipal
 import org.springframework.web.multipart.MultipartFile
-import java.util.UUID
 
 data class DocumentSaveRequest(
     val data: ByteArray,
     val name: String,
     val size: Int,
     val type: String,
-    val userUuid: UUID
+    val user: UserPrincipal
 ) {
-    constructor(file: MultipartFile, userUuid: UUID) : this(
+    constructor(file: MultipartFile, user: UserPrincipal) : this(
         file.bytes,
         file.originalFilename ?: file.name,
         file.size.toInt(),
         file.contentType ?: file.originalFilename?.split(".")?.lastOrNull() ?: "Unknown",
-        userUuid
+        user
     )
 }

@@ -1,10 +1,10 @@
 package com.ampnet.walletservice.service.pojo
 
-import java.util.UUID
+import com.ampnet.core.jwt.UserPrincipal
 
 data class ApproveDepositRequest(
     val id: Int,
-    val user: UUID,
+    val user: UserPrincipal,
     val amount: Long,
     val documentSaveRequest: DocumentSaveRequest
 )
