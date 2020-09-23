@@ -169,7 +169,7 @@ class CooperativeDepositController(
         val user = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to count users with approved deposit from cooperative with id: ${user.coop}" }
         val counted = cooperativeDepositService.countUsersWithApprovedDeposit(user.coop)
-        return ResponseEntity.ok(UsersWithApprovedDeposit(counted))
+        return ResponseEntity.ok(UsersWithApprovedDeposit(counted, user.coop))
     }
 
     private fun createDepositWithUserListResponse(depositsPage: Page<Deposit>): DepositWithUserListResponse {

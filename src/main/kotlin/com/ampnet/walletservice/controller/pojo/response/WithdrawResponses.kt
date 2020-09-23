@@ -10,6 +10,7 @@ data class WithdrawResponse(
     val id: Int,
     val owner: UUID,
     val amount: Long,
+    val coop: String,
     val approvedTxHash: String?,
     val approvedAt: ZonedDateTime?,
     val burnedTxHash: String?,
@@ -23,6 +24,7 @@ data class WithdrawResponse(
         withdraw.id,
         withdraw.ownerUuid,
         withdraw.amount,
+        withdraw.coop,
         withdraw.approvedTxHash,
         withdraw.approvedAt,
         withdraw.burnedTxHash,
@@ -46,7 +48,8 @@ data class WithdrawWithUserResponse(
     val createdAt: ZonedDateTime,
     val bankAccount: String,
     val userWallet: String,
-    val documentResponse: DocumentResponse?
+    val documentResponse: DocumentResponse?,
+    val coop: String
 ) {
     constructor(withdraw: Withdraw, user: UserResponse?, userWallet: String) : this(
         withdraw.id,
@@ -60,7 +63,8 @@ data class WithdrawWithUserResponse(
         withdraw.createdAt,
         withdraw.bankAccount,
         userWallet,
-        withdraw.file?.let { DocumentResponse(it) }
+        withdraw.file?.let { DocumentResponse(it) },
+        withdraw.coop
     )
 }
 
@@ -82,7 +86,9 @@ data class WithdrawWithProjectResponse(
     val createdAt: ZonedDateTime,
     val bankAccount: String,
     val projectWallet: String,
+    val coop: String,
     val documentResponse: DocumentResponse?
+
 ) {
     constructor(withdraw: Withdraw, project: ProjectResponse?, projectWallet: String) : this(
         withdraw.id,
@@ -96,6 +102,7 @@ data class WithdrawWithProjectResponse(
         withdraw.createdAt,
         withdraw.bankAccount,
         projectWallet,
+        withdraw.coop,
         withdraw.file?.let { DocumentResponse(it) }
     )
 }

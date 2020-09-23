@@ -82,6 +82,7 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
             assertThat(withdraw.burnedAt).isNull()
             assertThat(withdraw.burnedBy).isNull()
             assertThat(withdraw.burnedTxHash).isNull()
+            withdrawList.withdraws.forEach { assertThat(it.coop).isEqualTo(COOP) }
         }
     }
 
@@ -121,6 +122,7 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
 
             val withdrawList: WithdrawWithProjectListResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(withdrawList.withdraws).hasSize(2)
+            withdrawList.withdraws.forEach { assertThat(it.coop).isEqualTo(COOP) }
             val withdraw = withdrawList.withdraws.first()
             assertThat(withdraw.amount).isEqualTo(testContext.amount)
             assertThat(withdraw.id).isNotNull()
@@ -171,6 +173,7 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
 
             val withdrawList: WithdrawWithUserListResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(withdrawList.withdraws).hasSize(1)
+            withdrawList.withdraws.forEach { assertThat(it.coop).isEqualTo(COOP) }
             val withdraw = withdrawList.withdraws.first()
             assertThat(withdraw.amount).isEqualTo(testContext.amount)
             assertThat(withdraw.id).isNotNull()
@@ -222,6 +225,7 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
 
             val withdrawList: WithdrawWithProjectListResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(withdrawList.withdraws).hasSize(1)
+            withdrawList.withdraws.forEach { assertThat(it.coop).isEqualTo(COOP) }
             val withdraw = withdrawList.withdraws.first()
             assertThat(withdraw.amount).isEqualTo(testContext.amount)
             assertThat(withdraw.id).isNotNull()
@@ -277,6 +281,7 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
             assertThat(transactionResponse.tx).isEqualTo(testContext.transactionData.tx)
             assertThat(transactionResponse.txId).isNotNull()
             assertThat(transactionResponse.info.txType).isEqualTo(TransactionType.BURN)
+            assertThat(transactionResponse.coop).isEqualTo(COOP)
         }
         verify("TransactionInfo for burn is created") {
             val transactionInfos = transactionInfoRepository.findAll()
@@ -285,7 +290,7 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
             assertThat(transactionInfo.companionData).isEqualTo(testContext.withdraw.id.toString())
             assertThat(transactionInfo.type).isEqualTo(TransactionType.BURN)
             assertThat(transactionInfo.userUuid).isEqualTo(userUuid)
-            assertThat(transactionInfo.userUuid).isEqualTo(userUuid)
+            assertThat(transactionInfo.coop).isEqualTo(COOP)
         }
     }
 
@@ -324,6 +329,7 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
             val withdrawResponse: WithdrawResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(withdrawResponse.id).isEqualTo(testContext.withdraw.id)
             assertThat(withdrawResponse.documentResponse?.link).isEqualTo(testContext.documentLink)
+            assertThat(withdrawResponse.coop).isEqualTo(COOP)
         }
     }
 

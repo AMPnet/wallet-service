@@ -67,6 +67,7 @@ class WithdrawControllerTest : ControllerTestBase() {
             assertThat(withdrawResponse.burnedTxHash).isNull()
             assertThat(withdrawResponse.burnedBy).isNull()
             assertThat(withdrawResponse.documentResponse).isNull()
+            assertThat(withdrawResponse.coop).isEqualTo(COOP)
         }
         verify("Withdraw is created") {
             val withdraws = withdrawRepository.findAll()
@@ -129,6 +130,7 @@ class WithdrawControllerTest : ControllerTestBase() {
             assertThat(withdrawResponse.burnedTxHash).isNull()
             assertThat(withdrawResponse.burnedBy).isNull()
             assertThat(withdrawResponse.documentResponse).isNull()
+            assertThat(withdrawResponse.coop).isEqualTo(COOP)
         }
         verify("Withdraw is created") {
             val withdraws = withdrawRepository.findAll()
@@ -187,6 +189,7 @@ class WithdrawControllerTest : ControllerTestBase() {
 
             val withdrawResponse: WithdrawResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(withdrawResponse.owner).isEqualTo(userUuid)
+            assertThat(withdrawResponse.coop).isEqualTo(COOP)
         }
     }
 
@@ -208,6 +211,7 @@ class WithdrawControllerTest : ControllerTestBase() {
 
             val withdrawResponse: WithdrawResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(withdrawResponse.owner).isEqualTo(projectUuid)
+            assertThat(withdrawResponse.coop).isEqualTo(COOP)
         }
     }
 
@@ -272,6 +276,7 @@ class WithdrawControllerTest : ControllerTestBase() {
             assertThat(transactionResponse.tx).isEqualTo(testContext.transactionData.tx)
             assertThat(transactionResponse.txId).isNotNull()
             assertThat(transactionResponse.info.txType).isEqualTo(TransactionType.BURN_APPROVAL)
+            assertThat(transactionResponse.coop).isEqualTo(COOP)
         }
         verify("Transaction info is created") {
             val transactionInfos = transactionInfoRepository.findAll()
@@ -323,6 +328,7 @@ class WithdrawControllerTest : ControllerTestBase() {
             assertThat(transactionResponse.tx).isEqualTo(testContext.transactionData.tx)
             assertThat(transactionResponse.txId).isNotNull()
             assertThat(transactionResponse.info.txType).isEqualTo(TransactionType.BURN_APPROVAL)
+            assertThat(transactionResponse.coop).isEqualTo(COOP)
         }
         verify("Transaction info is created") {
             val transactionInfos = transactionInfoRepository.findAll()

@@ -59,6 +59,7 @@ class DepositControllerTest : ControllerTestBase() {
             assertThat(deposit.type).isEqualTo(DepositWithdrawType.USER)
             assertThat(deposit.reference).isNotNull()
             assertThat(deposit.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
+            assertThat(deposit.coop).isEqualTo(COOP)
         }
         verify("User deposit is stored") {
             val deposits = depositRepository.findAll()
@@ -139,6 +140,7 @@ class DepositControllerTest : ControllerTestBase() {
 
             val deposit: DepositResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(deposit.owner).isEqualTo(userUuid)
+            assertThat(deposit.coop).isEqualTo(COOP)
             val savedDeposit = testContext.deposits.first()
             assertThat(deposit.id).isEqualTo(savedDeposit.id)
         }
@@ -186,6 +188,7 @@ class DepositControllerTest : ControllerTestBase() {
             assertThat(deposit.type).isEqualTo(DepositWithdrawType.PROJECT)
             assertThat(deposit.reference).isNotNull()
             assertThat(deposit.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
+            assertThat(deposit.coop).isEqualTo(COOP)
         }
         verify("Project deposit is stored") {
             val deposits = depositRepository.findAll()

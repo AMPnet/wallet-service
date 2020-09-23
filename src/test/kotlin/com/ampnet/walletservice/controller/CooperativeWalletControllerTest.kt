@@ -63,6 +63,7 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
             assertThat(transactionResponse.tx).isEqualTo(testContext.transactionData.tx)
             assertThat(transactionResponse.txId).isNotNull()
             assertThat(transactionResponse.info.txType).isEqualTo(TransactionType.WALLET_ACTIVATE)
+            assertThat(transactionResponse.coop).isEqualTo(COOP)
         }
     }
 
@@ -107,6 +108,7 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
 
             val userListResponse: UserWithWalletListResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(userListResponse.users).hasSize(2)
+            userListResponse.users.forEach { assertThat(it.coop).isEqualTo(COOP) }
             assertThat(userListResponse.users.map { it.user.uuid })
                 .containsAll(testContext.users)
                 .doesNotContain(userUuid)
@@ -171,6 +173,7 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
             val orgListResponse: OrganizationWithWalletListResponse =
                 objectMapper.readValue(result.response.contentAsString)
             assertThat(orgListResponse.organizations).hasSize(2)
+            orgListResponse.organizations.forEach { assertThat(it.coop).isEqualTo(COOP) }
             assertThat(orgListResponse.organizations.map { it.organization.uuid })
                 .containsAll(testContext.organizations.map { it.toString() })
             assertThat(orgListResponse.organizations.map { it.wallet.activationData })
@@ -234,6 +237,7 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
             val projectListResponse: ProjectWithWalletListResponse =
                 objectMapper.readValue(result.response.contentAsString)
             assertThat(projectListResponse.projects).hasSize(2)
+            projectListResponse.projects.forEach { assertThat(it.coop).isEqualTo(COOP) }
             assertThat(projectListResponse.projects.map { it.project.uuid })
                 .containsAll(testContext.projects.map { it.toString() })
             assertThat(projectListResponse.projects.map { it.wallet.activationData })
@@ -273,6 +277,7 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
             assertThat(transactionResponse.tx).isEqualTo(testContext.transactionData.tx)
             assertThat(transactionResponse.txId).isNotNull()
             assertThat(transactionResponse.info.txType).isEqualTo(TransactionType.TRNSF_TOKEN_OWN)
+            assertThat(transactionResponse.coop).isEqualTo(COOP)
         }
         verify("Transaction info for transfer token issuer is created") {
             val transactionInfo = transactionInfoRepository.findAll().first()
@@ -311,6 +316,7 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
             assertThat(transactionResponse.tx).isEqualTo(testContext.transactionData.tx)
             assertThat(transactionResponse.txId).isNotNull()
             assertThat(transactionResponse.info.txType).isEqualTo(TransactionType.TRNSF_PLTFRM_OWN)
+            assertThat(transactionResponse.coop).isEqualTo(COOP)
         }
         verify("Transaction info for transfer platform owner is created") {
             val transactionInfo = transactionInfoRepository.findAll().first()

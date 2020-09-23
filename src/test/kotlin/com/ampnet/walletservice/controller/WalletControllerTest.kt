@@ -131,7 +131,7 @@ class WalletControllerTest : ControllerTestBase() {
             assertThat(walletResponse.currency).isEqualTo(testContext.wallet.currency)
             assertThat(walletResponse.type).isEqualTo(testContext.wallet.type)
             assertThat(walletResponse.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
-
+            assertThat(walletResponse.coop).isEqualTo(COOP)
             assertThat(walletResponse.balance).isEqualTo(testContext.balance)
         }
     }
@@ -167,6 +167,7 @@ class WalletControllerTest : ControllerTestBase() {
             assertThat(walletResponse.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
             assertThat(walletResponse.hash).isNull()
             assertThat(walletResponse.activatedAt).isNull()
+            assertThat(walletResponse.coop).isEqualTo(COOP)
 
             testContext.walletUuid = walletResponse.uuid
         }
@@ -259,6 +260,7 @@ class WalletControllerTest : ControllerTestBase() {
             assertThat(transactionResponse.tx).isEqualTo(testContext.transactionData.tx)
             assertThat(transactionResponse.txId).isNotNull()
             assertThat(transactionResponse.info.txType).isEqualTo(TransactionType.CREATE_PROJECT)
+            assertThat(transactionResponse.coop).isEqualTo(COOP)
         }
     }
 
@@ -300,6 +302,7 @@ class WalletControllerTest : ControllerTestBase() {
             assertThat(walletResponse.currency).isEqualTo(testContext.wallet.currency)
             assertThat(walletResponse.type).isEqualTo(testContext.wallet.type)
             assertThat(walletResponse.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
+            assertThat(walletResponse.coop).isEqualTo(COOP)
         }
     }
 
@@ -342,6 +345,7 @@ class WalletControllerTest : ControllerTestBase() {
             assertThat(transactionResponse.tx).isEqualTo(testContext.transactionData.tx)
             assertThat(transactionResponse.txId).isNotNull()
             assertThat(transactionResponse.info.txType).isEqualTo(TransactionType.CREATE_ORG)
+            assertThat(transactionResponse.coop).isEqualTo(COOP)
         }
     }
 

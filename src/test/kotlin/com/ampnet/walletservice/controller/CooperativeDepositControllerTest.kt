@@ -66,6 +66,7 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
             val response: DepositWithUserResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(response.deposit.reference).isEqualTo(savedDeposit.reference)
             assertThat(response.user).isNotNull
+            assertThat(response.coop).isEqualTo(COOP)
         }
     }
 
@@ -109,6 +110,7 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
             assertThat(depositResponse.approved).isEqualTo(false)
             assertThat(depositResponse.declinedComment).isEqualTo(request.comment)
             assertThat(depositResponse.declinedAt).isBeforeOrEqualTo(ZonedDateTime.now())
+            assertThat(depositResponse.coop).isEqualTo(COOP)
         }
         verify("User deposit is declined") {
             val optionalDeposit = depositRepository.findById(testContext.deposits.first().id)
@@ -163,6 +165,7 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
             assertThat(depositResponse.documentResponse?.link).isEqualTo(testContext.documentLink)
             assertThat(depositResponse.declinedComment).isNull()
             assertThat(depositResponse.declinedAt).isNull()
+            assertThat(depositResponse.coop).isEqualTo(COOP)
         }
         verify("User deposit is approved") {
             val optionalDeposit = depositRepository.findById(testContext.deposits.first().id)
@@ -236,6 +239,7 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
             val response = deposits.deposits[0]
             assertThat(response.deposit.approved).isFalse()
             assertThat(response.user).isNotNull
+            assertThat(response.coop).isEqualTo(COOP)
         }
     }
 
@@ -271,6 +275,7 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
             val response = deposits.deposits[0]
             assertThat(response.deposit.approved).isFalse()
             assertThat(response.project).isNotNull
+            assertThat(response.coop).isEqualTo(COOP)
         }
     }
 
@@ -305,6 +310,7 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
             val response = deposits.deposits[0]
             assertThat(response.deposit.approved).isTrue()
             assertThat(response.user).isNotNull
+            assertThat(response.coop).isEqualTo(COOP)
         }
     }
 
@@ -340,6 +346,7 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
             assertThat(response.deposit.approved).isTrue()
             assertThat(response.deposit.txHash).isNotEmpty()
             assertThat(response.user).isNotNull
+            assertThat(response.coop).isEqualTo(COOP)
         }
     }
 
@@ -375,6 +382,7 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
             val response = deposits.deposits[0]
             assertThat(response.deposit.approved).isTrue()
             assertThat(response.project).isNotNull
+            assertThat(response.coop).isEqualTo(COOP)
         }
     }
 
@@ -413,6 +421,7 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
             assertThat(response.deposit.approved).isTrue()
             assertThat(response.deposit.txHash).isNotEmpty()
             assertThat(response.project).isNotNull
+            assertThat(response.coop).isEqualTo(COOP)
         }
     }
 
@@ -449,6 +458,7 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
             assertThat(transactionResponse.tx).isEqualTo(testContext.transactionData.tx)
             assertThat(transactionResponse.txId).isNotNull()
             assertThat(transactionResponse.info.txType).isEqualTo(TransactionType.MINT)
+            assertThat(transactionResponse.coop).isEqualTo(COOP)
         }
         verify("TransactionInfo for mint transaction is created") {
             val transactionInfos = transactionInfoRepository.findAll()
@@ -487,6 +497,7 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
 
             val counted: UsersWithApprovedDeposit = objectMapper.readValue(result.response.contentAsString)
             assertThat(counted.usersWithApprovedDeposit).isEqualTo(2)
+            assertThat(counted.coop).isEqualTo(COOP)
         }
     }
 

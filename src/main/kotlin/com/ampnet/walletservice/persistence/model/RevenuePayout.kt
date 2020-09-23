@@ -37,7 +37,7 @@ data class RevenuePayout(
     @Column(nullable = false)
     var coop: String
 ) {
-    constructor(projectUuid: UUID, amount: Long, user: UUID, coop: String = "ampnet") : this(
+    constructor(projectUuid: UUID, amount: Long, user: UUID, coop: String) : this(
         0,
         projectUuid,
         amount,

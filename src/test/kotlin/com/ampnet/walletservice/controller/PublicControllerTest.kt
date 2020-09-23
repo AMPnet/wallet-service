@@ -48,6 +48,7 @@ class PublicControllerTest : ControllerTestBase() {
             assertThat(walletResponse.type).isEqualTo(testContext.wallet.type)
             assertThat(walletResponse.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
             assertThat(walletResponse.balance).isEqualTo(testContext.walletBalance)
+            assertThat(walletResponse.coop).isEqualTo(COOP)
         }
     }
 
@@ -113,6 +114,7 @@ class PublicControllerTest : ControllerTestBase() {
             val projectsResponse: ProjectWithWalletListResponse =
                 objectMapper.readValue(result.response.contentAsString)
             assertThat(projectsResponse.projects).hasSize(1)
+            projectsResponse.projects.forEach { assertThat(it.coop).isEqualTo(COOP) }
             val projectWithWallet = projectsResponse.projects.first()
             assertThat(projectWithWallet.project.uuid).isEqualTo(projectUuid.toString())
             assertThat(projectWithWallet.wallet.uuid).isEqualTo(testContext.wallet.uuid)

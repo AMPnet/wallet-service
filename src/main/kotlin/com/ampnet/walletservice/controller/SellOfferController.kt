@@ -19,6 +19,6 @@ class SellOfferController(private val sellOfferService: SellOfferService) {
         logger.debug { "Received request to get sales offers for cooperative with id: ${user.coop}" }
         val projectsWithSellOffers = sellOfferService.getProjectsWithSalesOffers(user.coop)
             .map { ProjectWithSellOffersResponse(it) }
-        return ResponseEntity.ok(ProjectsWithSellOffersResponse(projectsWithSellOffers))
+        return ResponseEntity.ok(ProjectsWithSellOffersResponse(user.coop, projectsWithSellOffers))
     }
 }

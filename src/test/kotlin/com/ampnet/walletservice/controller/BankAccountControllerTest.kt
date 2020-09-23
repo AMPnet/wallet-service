@@ -57,6 +57,7 @@ class BankAccountControllerTest : ControllerTestBase() {
             assertThat(bankAccount.iban).isEqualTo(iban)
             assertThat(bankAccount.bankCode).isEqualTo(bankAccount.bankCode)
             assertThat(bankAccount.alias).isEqualTo(alias)
+            assertThat(bankAccount.coop).isEqualTo(COOP)
         }
     }
 
@@ -77,6 +78,7 @@ class BankAccountControllerTest : ControllerTestBase() {
             assertThat(bankAccount.iban).isEqualTo(iban)
             assertThat(bankAccount.bankCode).isEqualTo(bankAccount.bankCode)
             assertThat(bankAccount.alias).isEqualTo(alias)
+            assertThat(bankAccount.coop).isEqualTo(COOP)
         }
         verify("Bank account is created") {
             val bankAccount = bankAccountRepository.findAll().first()
