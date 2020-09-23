@@ -50,7 +50,7 @@ class ProjectServiceImpl(
                 .addAllUuids(uuids.map { it.toString() })
                 .build()
             val response = serviceWithTimeout().getOrganizations(request).organizationsList
-            logger.debug { "Fetched organizations: $response" }
+            logger.debug { "Fetched organizations: ${response.map { it.uuid }}" }
             return response
         } catch (ex: StatusRuntimeException) {
             throw GrpcException(ErrorCode.INT_GRPC_PROJECT, "Failed to fetch organizations. ${ex.localizedMessage}")
@@ -67,7 +67,7 @@ class ProjectServiceImpl(
                 .addAllUuids(uuids.map { it.toString() })
                 .build()
             val response = serviceWithTimeout().getProjects(request).projectsList
-            logger.debug { "Fetched projects: $response" }
+            logger.debug { "Fetched projects: ${response.map { it.uuid }}" }
             return response
         } catch (ex: StatusRuntimeException) {
             throw GrpcException(ErrorCode.INT_GRPC_PROJECT, "Failed to fetch projects. ${ex.localizedMessage}")
