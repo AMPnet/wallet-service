@@ -244,7 +244,8 @@ abstract class ControllerTestBase : TestBase() {
         currency: String = "EUR",
         organizationUuid: UUID = UUID.randomUUID(),
         imageUrl: String = "image_url",
-        description: String = "Description"
+        description: String = "Description",
+        expectedFunding: Long = 100000000L
     ): ProjectResponse = ProjectResponse
         .newBuilder()
         .setUuid(uuid.toString())
@@ -254,5 +255,6 @@ abstract class ControllerTestBase : TestBase() {
         .setOrganizationUuid(organizationUuid.toString())
         .setImageUrl(imageUrl)
         .setDescription(description)
+        .setExpectedFunding(expectedFunding)
         .build()
 }
