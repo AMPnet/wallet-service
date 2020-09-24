@@ -71,13 +71,12 @@ class CooperativeWithdrawServiceImpl(
 
     @Transactional
     override fun addDocument(withdrawId: Int, request: DocumentSaveRequest): Withdraw {
-        val withdraw = ServiceUtils.getWithdraw(withdrawId, withdrawRepository)
+        val withdraw = ServiceUtils.getWithdrawForIdAndCoop(withdrawId, request.user.coop, withdrawRepository)
         logger.info { "Adding document for withdraw: $withdraw" }
         val document = storageService.saveDocument(request)
         logger.info { "Document added" }
         return withdraw.apply {
             file = document
-            coop = request.user.coop
         }
     }
 

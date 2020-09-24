@@ -43,13 +43,11 @@ data class DepositResponse(
 
 data class DepositWithUserResponse(
     val deposit: DepositResponse,
-    val user: UserControllerResponse?,
-    val coop: String
+    val user: UserControllerResponse?
 ) {
     constructor(deposit: Deposit, userResponse: UserResponse?) : this(
         DepositResponse(deposit),
-        userResponse?.let { UserControllerResponse(it) },
-        deposit.coop
+        userResponse?.let { UserControllerResponse(it) }
     )
 }
 
@@ -61,13 +59,11 @@ data class DepositWithUserListResponse(
 
 data class DepositWithProjectResponse(
     val deposit: DepositResponse,
-    val project: ProjectControllerResponse?,
-    val coop: String
+    val project: ProjectControllerResponse?
 ) {
     constructor(deposit: Deposit, project: ProjectResponse?) : this(
         DepositResponse(deposit),
-        project?.let { ProjectControllerResponse(it) },
-        deposit.coop
+        project?.let { ProjectControllerResponse(it) }
     )
 }
 

@@ -66,7 +66,7 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
             val response: DepositWithUserResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(response.deposit.reference).isEqualTo(savedDeposit.reference)
             assertThat(response.user).isNotNull
-            assertThat(response.coop).isEqualTo(COOP)
+            assertThat(response.deposit.coop).isEqualTo(COOP)
         }
     }
 
@@ -239,7 +239,7 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
             val response = deposits.deposits[0]
             assertThat(response.deposit.approved).isFalse()
             assertThat(response.user).isNotNull
-            assertThat(response.coop).isEqualTo(COOP)
+            assertThat(response.deposit.coop).isEqualTo(COOP)
         }
     }
 
@@ -275,7 +275,7 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
             val response = deposits.deposits[0]
             assertThat(response.deposit.approved).isFalse()
             assertThat(response.project).isNotNull
-            assertThat(response.coop).isEqualTo(COOP)
+            assertThat(response.deposit.coop).isEqualTo(COOP)
         }
     }
 
@@ -310,7 +310,7 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
             val response = deposits.deposits[0]
             assertThat(response.deposit.approved).isTrue()
             assertThat(response.user).isNotNull
-            assertThat(response.coop).isEqualTo(COOP)
+            assertThat(response.deposit.coop).isEqualTo(COOP)
         }
     }
 
@@ -346,7 +346,7 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
             assertThat(response.deposit.approved).isTrue()
             assertThat(response.deposit.txHash).isNotEmpty()
             assertThat(response.user).isNotNull
-            assertThat(response.coop).isEqualTo(COOP)
+            assertThat(response.deposit.coop).isEqualTo(COOP)
         }
     }
 
@@ -382,7 +382,7 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
             val response = deposits.deposits[0]
             assertThat(response.deposit.approved).isTrue()
             assertThat(response.project).isNotNull
-            assertThat(response.coop).isEqualTo(COOP)
+            assertThat(response.deposit.coop).isEqualTo(COOP)
         }
     }
 
@@ -421,7 +421,7 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
             assertThat(response.deposit.approved).isTrue()
             assertThat(response.deposit.txHash).isNotEmpty()
             assertThat(response.project).isNotNull
-            assertThat(response.coop).isEqualTo(COOP)
+            assertThat(response.deposit.coop).isEqualTo(COOP)
         }
     }
 

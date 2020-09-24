@@ -108,7 +108,7 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
 
             val userListResponse: UserWithWalletListResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(userListResponse.users).hasSize(2)
-            userListResponse.users.forEach { assertThat(it.coop).isEqualTo(COOP) }
+            userListResponse.users.forEach { assertThat(it.wallet.coop).isEqualTo(COOP) }
             assertThat(userListResponse.users.map { it.user.uuid })
                 .containsAll(testContext.users)
                 .doesNotContain(userUuid)
@@ -173,7 +173,7 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
             val orgListResponse: OrganizationWithWalletListResponse =
                 objectMapper.readValue(result.response.contentAsString)
             assertThat(orgListResponse.organizations).hasSize(2)
-            orgListResponse.organizations.forEach { assertThat(it.coop).isEqualTo(COOP) }
+            orgListResponse.organizations.forEach { assertThat(it.wallet.coop).isEqualTo(COOP) }
             assertThat(orgListResponse.organizations.map { it.organization.uuid })
                 .containsAll(testContext.organizations.map { it.toString() })
             assertThat(orgListResponse.organizations.map { it.wallet.activationData })
@@ -237,7 +237,7 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
             val projectListResponse: ProjectWithWalletListResponse =
                 objectMapper.readValue(result.response.contentAsString)
             assertThat(projectListResponse.projects).hasSize(2)
-            projectListResponse.projects.forEach { assertThat(it.coop).isEqualTo(COOP) }
+            projectListResponse.projects.forEach { assertThat(it.wallet.coop).isEqualTo(COOP) }
             assertThat(projectListResponse.projects.map { it.project.uuid })
                 .containsAll(testContext.projects.map { it.toString() })
             assertThat(projectListResponse.projects.map { it.wallet.activationData })

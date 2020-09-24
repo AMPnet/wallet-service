@@ -5,13 +5,11 @@ import org.springframework.data.domain.Page
 
 data class OrganizationWithWalletResponse(
     val organization: OrganizationControllerResponse,
-    val wallet: WalletResponse,
-    val coop: String
+    val wallet: WalletResponse
 ) {
     constructor(organizationWithWallet: OrganizationWithWallet) : this(
         OrganizationControllerResponse(organizationWithWallet.organization),
-        WalletResponse(organizationWithWallet.wallet),
-        organizationWithWallet.wallet.coop
+        WalletResponse(organizationWithWallet.wallet)
     )
 }
 

@@ -1,5 +1,6 @@
 package com.ampnet.walletservice.service
 
+import com.ampnet.walletservice.controller.COOP
 import com.ampnet.walletservice.enums.TransactionType
 import com.ampnet.walletservice.persistence.model.TransactionInfo
 import com.ampnet.walletservice.service.impl.TransactionInfoServiceImpl
@@ -38,7 +39,7 @@ class TransactionInfoServiceTest : JpaServiceTestBase() {
             assertThat(tx.userUuid).isEqualTo(userUuid)
             assertThat(tx.companionData).contains(organizationUuid.toString())
             assertThat(tx.description).contains(testContext.organizationName)
-            assertThat(tx.coop).isEqualTo(coop)
+            assertThat(tx.coop).isEqualTo(COOP)
         }
     }
 
@@ -59,7 +60,7 @@ class TransactionInfoServiceTest : JpaServiceTestBase() {
             assertThat(tx.userUuid).isEqualTo(userUuid)
             assertThat(tx.companionData).contains(projectUuid.toString())
             assertThat(tx.description).contains(testContext.projectName)
-            assertThat(tx.coop).isEqualTo(coop)
+            assertThat(tx.coop).isEqualTo(COOP)
         }
     }
 
@@ -79,7 +80,7 @@ class TransactionInfoServiceTest : JpaServiceTestBase() {
             assertThat(tx.userUuid).isEqualTo(userUuid)
             assertThat(tx.description).contains(testContext.projectName)
             assertThat(tx.description).contains("100.23")
-            assertThat(tx.coop).isEqualTo(coop)
+            assertThat(tx.coop).isEqualTo(COOP)
         }
     }
 

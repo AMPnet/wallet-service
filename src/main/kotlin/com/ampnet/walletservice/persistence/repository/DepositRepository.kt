@@ -42,4 +42,6 @@ interface DepositRepository : JpaRepository<Deposit, Int> {
             "WHERE deposit.approved = true AND deposit.type = 'USER' AND deposit.coop = :coop"
     )
     fun countUsersWithApprovedDeposit(coop: String): Int
+
+    fun findByIdAndCoop(id: Int, coop: String): Optional<Deposit>
 }

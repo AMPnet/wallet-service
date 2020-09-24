@@ -2,6 +2,7 @@ package com.ampnet.walletservice.service.impl
 
 import com.ampnet.core.jwt.UserPrincipal
 import com.ampnet.mailservice.proto.WalletTypeRequest
+import com.ampnet.walletservice.config.ApplicationProperties
 import com.ampnet.walletservice.controller.pojo.request.WalletCreateRequest
 import com.ampnet.walletservice.enums.Currency
 import com.ampnet.walletservice.enums.WalletType
@@ -37,7 +38,8 @@ class WalletServiceImpl(
     private val blockchainService: BlockchainService,
     private val transactionInfoService: TransactionInfoService,
     private val projectService: ProjectService,
-    private val mailService: MailService
+    private val mailService: MailService,
+    private val applicationProperties: ApplicationProperties
 ) : WalletService {
 
     companion object {
@@ -153,8 +155,10 @@ class WalletServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun getProjectsWithActiveWallet(coop: String, pageable: Pageable): Page<ProjectWithWallet> {
-        val walletsPage = walletRepository.findActivatedByType(WalletType.PROJECT, coop, pageable)
+    override fun getProjectsWithActiveWallet(coop: String?, pageable: Pageable): Page<ProjectWithWallet> {
+        val walletsPage = walletRepository.findActivatedByType(
+            WalletType.PROJECT, coop ?: applicationProperties.coop.default, pageable
+        )
         val projectWallets = walletsPage.toList()
             .filter { it.hash != null }
             .associateBy { it.owner }

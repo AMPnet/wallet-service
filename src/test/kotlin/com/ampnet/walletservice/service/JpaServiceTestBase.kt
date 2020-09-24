@@ -2,7 +2,9 @@ package com.ampnet.walletservice.service
 
 import com.ampnet.core.jwt.UserPrincipal
 import com.ampnet.walletservice.TestBase
+import com.ampnet.walletservice.config.ApplicationProperties
 import com.ampnet.walletservice.config.DatabaseCleanerService
+import com.ampnet.walletservice.controller.COOP
 import com.ampnet.walletservice.enums.Currency
 import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.enums.WalletType
@@ -40,7 +42,7 @@ import java.util.UUID
 @ExtendWith(SpringExtension::class)
 @DataJpaTest
 @Transactional(propagation = Propagation.SUPPORTS)
-@Import(DatabaseCleanerService::class)
+@Import(DatabaseCleanerService::class, ApplicationProperties::class)
 abstract class JpaServiceTestBase : TestBase() {
 
     @Autowired
@@ -70,6 +72,9 @@ abstract class JpaServiceTestBase : TestBase() {
     @Autowired
     protected lateinit var bankAccountRepository: BankAccountRepository
 
+    @Autowired
+    protected lateinit var applicationProperties: ApplicationProperties
+
     protected val mockedBlockchainService: BlockchainService = Mockito.mock(BlockchainService::class.java)
     protected val mockedCloudStorageService: CloudStorageServiceImpl = Mockito.mock(CloudStorageServiceImpl::class.java)
     protected val mockedMailService: MailService = Mockito.mock(MailServiceImpl::class.java)
@@ -81,7 +86,6 @@ abstract class JpaServiceTestBase : TestBase() {
     protected val txHash = "tx-hash"
     protected val transactionData = TransactionData("data")
     protected val bankAccount = "AL35202111090000000001234567"
-    protected val coop = "ampnet"
 
     protected fun createWalletForUser(userUuid: UUID, hash: String) = createWallet(userUuid, hash, WalletType.USER)
 
@@ -90,7 +94,7 @@ abstract class JpaServiceTestBase : TestBase() {
     protected fun createWalletForOrganization(organization: UUID, hash: String) =
         createWallet(organization, hash, WalletType.ORG)
 
-    protected fun createWallet(owner: UUID, hash: String, type: WalletType): Wallet {
+    protected fun createWallet(owner: UUID, hash: String, type: WalletType, coop: String = COOP): Wallet {
         val wallet = Wallet(
             UUID.randomUUID(), owner, hash, type, Currency.EUR,
             ZonedDateTime.now(), hash, ZonedDateTime.now(), null, coop
@@ -111,7 +115,11 @@ abstract class JpaServiceTestBase : TestBase() {
         fail("Missing wallet")
     }
 
-    protected fun createBurnedWithdraw(user: UUID, type: DepositWithdrawType = DepositWithdrawType.USER): Withdraw {
+    protected fun createBurnedWithdraw(
+        user: UUID,
+        type: DepositWithdrawType = DepositWithdrawType.USER,
+        coop: String = COOP
+    ): Withdraw {
         val withdraw = Withdraw(
             0, user, 100L, ZonedDateTime.now(), user, bankAccount,
             "approved-tx", ZonedDateTime.now(),
@@ -120,7 +128,11 @@ abstract class JpaServiceTestBase : TestBase() {
         return withdrawRepository.save(withdraw)
     }
 
-    protected fun createApprovedWithdraw(user: UUID, type: DepositWithdrawType = DepositWithdrawType.USER): Withdraw {
+    protected fun createApprovedWithdraw(
+        user: UUID,
+        type: DepositWithdrawType = DepositWithdrawType.USER,
+        coop: String = COOP
+    ): Withdraw {
         val withdraw = Withdraw(
             0, user, 100L, ZonedDateTime.now(), user, bankAccount,
             "approved-tx", ZonedDateTime.now(),
@@ -129,7 +141,11 @@ abstract class JpaServiceTestBase : TestBase() {
         return withdrawRepository.save(withdraw)
     }
 
-    protected fun createWithdraw(user: UUID, type: DepositWithdrawType = DepositWithdrawType.USER): Withdraw {
+    protected fun createWithdraw(
+        user: UUID,
+        type: DepositWithdrawType = DepositWithdrawType.USER,
+        coop: String = COOP
+    ): Withdraw {
         val withdraw = Withdraw(
             0, user, 100L, ZonedDateTime.now(), userUuid, bankAccount, null,
             null, null, null, null, null, type, coop
@@ -139,7 +155,8 @@ abstract class JpaServiceTestBase : TestBase() {
 
     protected fun createApprovedDeposit(
         txHash: String?,
-        type: DepositWithdrawType = DepositWithdrawType.USER
+        type: DepositWithdrawType = DepositWithdrawType.USER,
+        coop: String = COOP
     ): Deposit {
         val document = saveFile(userUuid)
         val deposit = Deposit(
@@ -149,7 +166,11 @@ abstract class JpaServiceTestBase : TestBase() {
         return depositRepository.save(deposit)
     }
 
-    protected fun createUnapprovedDeposit(owner: UUID, type: DepositWithdrawType = DepositWithdrawType.USER): Deposit {
+    protected fun createUnapprovedDeposit(
+        owner: UUID,
+        type: DepositWithdrawType = DepositWithdrawType.USER,
+        coop: String = COOP
+    ): Deposit {
         val deposit = Deposit(
             0, owner, "S34SDGFT", false, 10_000, ZonedDateTime.now(),
             userUuid, type, null, null, null, null, null, coop
@@ -164,7 +185,7 @@ abstract class JpaServiceTestBase : TestBase() {
         authorities: Set<String> = mutableSetOf(),
         enabled: Boolean = true,
         verified: Boolean = true,
-        coop: String = "ampnet"
+        coop: String = COOP
     ): UserPrincipal {
         return UserPrincipal(
             userUuid, email, name, authorities,

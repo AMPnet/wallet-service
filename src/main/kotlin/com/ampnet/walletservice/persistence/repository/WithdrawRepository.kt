@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
+import java.util.Optional
 import java.util.UUID
 
 interface WithdrawRepository : JpaRepository<Withdraw, Int> {
@@ -24,4 +25,6 @@ interface WithdrawRepository : JpaRepository<Withdraw, Int> {
     fun findAllBurned(type: DepositWithdrawType, coop: String, pageable: Pageable): Page<Withdraw>
 
     fun findByOwnerUuid(owner: UUID): List<Withdraw>
+
+    fun findByIdAndCoop(id: Int, coop: String): Optional<Withdraw>
 }

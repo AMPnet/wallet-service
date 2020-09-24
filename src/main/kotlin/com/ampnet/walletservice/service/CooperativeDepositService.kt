@@ -17,6 +17,6 @@ interface CooperativeDepositService {
     fun getUnsigned(type: DepositWithdrawType, coop: String, pageable: Pageable): Page<Deposit>
     fun findByReference(reference: String, coop: String): Deposit?
     fun generateMintTransaction(request: MintServiceRequest): TransactionDataAndInfo
-    fun confirmMintTransaction(signedTransaction: String, depositId: Int): Deposit
+    fun confirmMintTransaction(signedTransaction: String, depositId: Int, coop: String): Deposit
     fun countUsersWithApprovedDeposit(coop: String): Int
 }

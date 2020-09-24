@@ -90,7 +90,9 @@ class BroadcastTransactionServiceImpl(
 
     private fun confirmMintTransaction(transactionInfo: TransactionInfo, signedTransaction: String): String {
         val depositId = getIdFromCompanionData(transactionInfo)
-        val deposit = cooperativeDepositService.confirmMintTransaction(signedTransaction, depositId)
+        val deposit = cooperativeDepositService.confirmMintTransaction(
+            signedTransaction, depositId, transactionInfo.coop
+        )
         return deposit.txHash
             ?: throw ResourceNotFoundException(ErrorCode.TX_MISSING, "Missing txHash for mint transaction")
     }

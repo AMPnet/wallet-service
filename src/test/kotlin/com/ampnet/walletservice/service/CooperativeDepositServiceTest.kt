@@ -1,5 +1,6 @@
 package com.ampnet.walletservice.service
 
+import com.ampnet.walletservice.controller.COOP
 import com.ampnet.walletservice.exception.InvalidRequestException
 import com.ampnet.walletservice.exception.ResourceAlreadyExistsException
 import com.ampnet.walletservice.exception.ResourceNotFoundException
@@ -88,7 +89,7 @@ class CooperativeDepositServiceTest : JpaServiceTestBase() {
     fun mustThrowExceptionIfDepositIsMissingForConfirmMintTransaction() {
         verify("Service will throw exception if the deposit is missing") {
             assertThrows<ResourceNotFoundException> {
-                cooperativeDepositService.confirmMintTransaction(signedTransaction, 0)
+                cooperativeDepositService.confirmMintTransaction(signedTransaction, 0, COOP)
             }
         }
     }
@@ -101,7 +102,7 @@ class CooperativeDepositServiceTest : JpaServiceTestBase() {
 
         verify("Service will throw exception if the deposit already has tx hash") {
             assertThrows<ResourceAlreadyExistsException> {
-                cooperativeDepositService.confirmMintTransaction(signedTransaction, deposit.id)
+                cooperativeDepositService.confirmMintTransaction(signedTransaction, deposit.id, COOP)
             }
         }
     }
@@ -114,7 +115,7 @@ class CooperativeDepositServiceTest : JpaServiceTestBase() {
 
         verify("Service will throw exception if the deposit is not approved") {
             assertThrows<InvalidRequestException> {
-                cooperativeDepositService.confirmMintTransaction(signedTransaction, deposit.id)
+                cooperativeDepositService.confirmMintTransaction(signedTransaction, deposit.id, COOP)
             }
         }
     }
