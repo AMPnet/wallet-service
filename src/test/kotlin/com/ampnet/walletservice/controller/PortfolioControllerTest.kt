@@ -12,6 +12,8 @@ import com.ampnet.walletservice.grpc.blockchain.pojo.BlockchainTransaction
 import com.ampnet.walletservice.grpc.blockchain.pojo.Portfolio
 import com.ampnet.walletservice.grpc.blockchain.pojo.PortfolioData
 import com.ampnet.walletservice.security.WithMockCrowdfoundUser
+import com.ampnet.walletservice.service.impl.MAX_FRACTION_DIGITS
+import com.ampnet.walletservice.service.impl.MIN_FRACTION_DIGITS
 import com.ampnet.walletservice.service.pojo.PortfolioStats
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
@@ -20,6 +22,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import java.text.NumberFormat
 import java.time.ZonedDateTime
 import java.util.UUID
 
@@ -280,32 +283,29 @@ class PortfolioControllerTest : ControllerTestBase() {
                 response.transactions.first { it.type == TransactionType.DEPOSIT }
             assertThat(responseDeposit.from).isEqualTo(platformWalletName)
             assertThat(responseDeposit.to).isEqualTo("${user.firstName} ${user.lastName}")
-
             val responseApproveInvestment =
                 response.transactions.first { it.type == TransactionType.APPROVE_INVESTMENT }
             assertThat(responseApproveInvestment.from).isEqualTo("${user.firstName} ${user.lastName}")
             assertThat(responseApproveInvestment.to).isEqualTo(project.name)
-
-            val responseInvest =
-                response.transactions.first { it.type == TransactionType.INVEST }
+            assertThat(responseDeposit.description).isNull()
+            val responseInvest = response.transactions.first { it.type == TransactionType.INVEST }
             assertThat(responseInvest.from).isEqualTo("${user.firstName} ${user.lastName}")
             assertThat(responseInvest.to).isEqualTo(project.name)
-
-            val responseCancelInvestment =
-                response.transactions.first { it.type == TransactionType.CANCEL_INVESTMENT }
+            assertThat(responseInvest.description)
+                .isEqualTo(project.name + " | " + getPercentageInProject(project.expectedFunding, responseInvest.amount))
+            val responseCancelInvestment = response.transactions.first { it.type == TransactionType.CANCEL_INVESTMENT }
             assertThat(responseCancelInvestment.from).isEqualTo(project.name)
             assertThat(responseCancelInvestment.to).isEqualTo("${user.firstName} ${user.lastName}")
-
-            val responseSharePayout =
-                response.transactions.first { it.type == TransactionType.SHARE_PAYOUT }
+            assertThat(responseCancelInvestment.description)
+                .isEqualTo(project.name + " | " + getPercentageInProject(project.expectedFunding, responseCancelInvestment.amount))
+            val responseSharePayout = response.transactions.first { it.type == TransactionType.SHARE_PAYOUT }
             assertThat(responseSharePayout.from).isEqualTo(project.name)
             assertThat(responseSharePayout.to).isEqualTo("${user.firstName} ${user.lastName}")
-
-            val responseWithdraw =
-                response.transactions.first { it.type == TransactionType.WITHDRAW }
+            assertThat(responseSharePayout.description).isEqualTo(project.name)
+            val responseWithdraw = response.transactions.first { it.type == TransactionType.WITHDRAW }
             assertThat(responseWithdraw.from).isEqualTo("${user.firstName} ${user.lastName}")
             assertThat(responseWithdraw.to).isEqualTo(platformWalletName)
-            assertThat(responseWithdraw.state).isEqualTo(TransactionState.MINED)
+            assertThat(responseWithdraw.description).isNull()
         }
     }
 
@@ -316,6 +316,13 @@ class PortfolioControllerTest : ControllerTestBase() {
             TransactionType.INVEST,
             ZonedDateTime.now(), TransactionState.MINED
         )
+
+    private fun getPercentageInProject(projectFunding: Long, amount: Long): String {
+        return NumberFormat.getPercentInstance().apply {
+            minimumFractionDigits = MIN_FRACTION_DIGITS
+            maximumFractionDigits = MAX_FRACTION_DIGITS
+        }.format(amount.toDouble() / projectFunding)
+    }
 
     private class TestContext {
         val secondProject: UUID = UUID.randomUUID()
