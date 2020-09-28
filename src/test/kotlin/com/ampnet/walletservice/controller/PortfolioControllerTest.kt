@@ -109,6 +109,11 @@ class PortfolioControllerTest : ControllerTestBase() {
                     TransactionState.MINED
                 ),
                 BlockchainTransaction(
+                    "to_2", walletHash, 1000,
+                    TransactionType.CANCEL_INVESTMENT, now,
+                    TransactionState.MINED
+                ),
+                BlockchainTransaction(
                     "from", walletHash, 10,
                     TransactionType.SHARE_PAYOUT, now.minusDays(1),
                     TransactionState.MINED
@@ -117,6 +122,11 @@ class PortfolioControllerTest : ControllerTestBase() {
                     "from_2", walletHash, 10,
                     TransactionType.SHARE_PAYOUT, now,
                     TransactionState.MINED
+                ),
+                BlockchainTransaction(
+                    "to_2", walletHash, 1000,
+                    TransactionType.SHARE_PAYOUT, now,
+                    TransactionState.FAILED
                 )
             )
             Mockito.`when`(
@@ -130,7 +140,7 @@ class PortfolioControllerTest : ControllerTestBase() {
                 .andReturn()
 
             val stats: PortfolioStats = objectMapper.readValue(result.response.contentAsString)
-            assertThat(stats.investments).isEqualTo(2000)
+            assertThat(stats.investments).isEqualTo(1000)
             assertThat(stats.earnings).isEqualTo(20)
             assertThat(stats.dateOfFirstInvestment).isEqualTo(testContext.transactions.first().date)
         }

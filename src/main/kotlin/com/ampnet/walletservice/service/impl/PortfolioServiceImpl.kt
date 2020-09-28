@@ -1,5 +1,6 @@
 package com.ampnet.walletservice.service.impl
 
+import com.ampnet.crowdfunding.proto.TransactionState
 import com.ampnet.crowdfunding.proto.TransactionType
 import com.ampnet.projectservice.proto.ProjectResponse
 import com.ampnet.userservice.proto.UserResponse
@@ -42,12 +43,14 @@ class PortfolioServiceImpl(
     override fun getPortfolioStats(user: UUID): PortfolioStats {
         val userWallet = ServiceUtils.getWalletHash(user, walletRepository)
         val transactions = blockchainService.getTransactions(userWallet)
+            .filter { it.state == TransactionState.MINED }
         val investments = sumTransactionForType(transactions, TransactionType.INVEST)
+        val cancelInvestments = sumTransactionForType(transactions, TransactionType.CANCEL_INVESTMENT)
         val earnings = sumTransactionForType(transactions, TransactionType.SHARE_PAYOUT)
         val dateOfFirstInvestment = transactions
             .filter { it.type == TransactionType.INVEST }
             .minBy { it.date }?.date
-        return PortfolioStats(investments, earnings, dateOfFirstInvestment)
+        return PortfolioStats(investments - cancelInvestments, earnings, dateOfFirstInvestment)
     }
 
     @Transactional(readOnly = true)
