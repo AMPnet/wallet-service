@@ -68,7 +68,7 @@ class WalletServiceImpl(
         }
 
         logger.debug { "Creating wallet: $request for user: $user" }
-        val wallet = createWallet(user, request.publicKey, WalletType.USER, request.alias)
+        val wallet = createWallet(user, request.publicKey, WalletType.USER, request.email, request.providerId)
         mailService.sendNewWalletMail(WalletTypeRequest.Type.USER)
         return wallet
     }
@@ -181,14 +181,20 @@ class WalletServiceImpl(
         return PageImpl(projectsWithWallet, pageable, walletsPage.totalElements)
     }
 
-    private fun createWallet(owner: UUID, activationData: String, type: WalletType, alias: String? = null): Wallet {
+    private fun createWallet(
+        owner: UUID,
+        activationData: String,
+        type: WalletType,
+        email: String? = null,
+        providerId: String? = null
+    ): Wallet {
         if (walletRepository.findByActivationData(activationData).isPresent) {
             throw ResourceAlreadyExistsException(
                 ErrorCode.WALLET_HASH_EXISTS,
                 "Trying to create wallet: $type with existing activationData: $activationData"
             )
         }
-        val wallet = Wallet(owner, activationData, type, Currency.EUR, alias)
+        val wallet = Wallet(owner, activationData, type, Currency.EUR, email, providerId)
         return walletRepository.save(wallet)
     }
 

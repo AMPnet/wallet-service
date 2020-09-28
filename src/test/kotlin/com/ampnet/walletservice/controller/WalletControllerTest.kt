@@ -111,7 +111,7 @@ class WalletControllerTest : ControllerTestBase() {
     @WithMockCrowdfoundUser
     fun mustBeAbleToGetOwnWallet() {
         suppose("User wallet exists") {
-            testContext.wallet = createWalletForUser(userUuid, testContext.hash)
+            testContext.wallet = createWalletForUser(userUuid, testContext.hash, testContext.providerId)
         }
         suppose("User has some funds on wallet") {
             testContext.balance = 100_00
@@ -130,6 +130,7 @@ class WalletControllerTest : ControllerTestBase() {
             assertThat(walletResponse.hash).isEqualTo(testContext.hash)
             assertThat(walletResponse.currency).isEqualTo(testContext.wallet.currency)
             assertThat(walletResponse.type).isEqualTo(testContext.wallet.type)
+            assertThat(walletResponse.providerId).isEqualTo(testContext.providerId)
             assertThat(walletResponse.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
 
             assertThat(walletResponse.balance).isEqualTo(testContext.balance)
@@ -149,7 +150,7 @@ class WalletControllerTest : ControllerTestBase() {
     @WithMockCrowdfoundUser
     fun mustBeAbleToCreateWallet() {
         verify("User can create a wallet") {
-            val request = WalletCreateRequest(testContext.publicKey, testContext.alias)
+            val request = WalletCreateRequest(testContext.publicKey, testContext.email, testContext.providerId)
             val result = mockMvc.perform(
                 post(walletPath)
                     .content(objectMapper.writeValueAsString(request))
@@ -161,7 +162,8 @@ class WalletControllerTest : ControllerTestBase() {
             val walletResponse: WalletResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(walletResponse.uuid).isNotNull()
             assertThat(walletResponse.activationData).isEqualTo(testContext.publicKey)
-            assertThat(walletResponse.alias).isEqualTo(testContext.alias)
+            assertThat(walletResponse.email).isEqualTo(testContext.email)
+            assertThat(walletResponse.providerId).isEqualTo(testContext.providerId)
             assertThat(walletResponse.currency).isEqualTo(Currency.EUR)
             assertThat(walletResponse.type).isEqualTo(WalletType.USER)
             assertThat(walletResponse.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
@@ -175,7 +177,8 @@ class WalletControllerTest : ControllerTestBase() {
             assertThat(userWallet).isPresent
             val wallet = userWallet.get()
             assertThat(wallet.activationData).isEqualTo(testContext.publicKey)
-            assertThat(wallet.alias).isEqualTo(testContext.alias)
+            assertThat(wallet.email).isEqualTo(testContext.email)
+            assertThat(wallet.providerId).isEqualTo(testContext.providerId)
             assertThat(wallet.hash).isNull()
         }
         verify("Mail notification for created wallet") {
@@ -191,7 +194,7 @@ class WalletControllerTest : ControllerTestBase() {
         }
 
         verify("User cannot create additional wallet") {
-            val request = WalletCreateRequest(testContext.publicKey, testContext.alias)
+            val request = WalletCreateRequest(testContext.publicKey, testContext.email, testContext.providerId)
             mockMvc.perform(
                 post(walletPath)
                     .content(objectMapper.writeValueAsString(request))
@@ -205,7 +208,7 @@ class WalletControllerTest : ControllerTestBase() {
     @WithMockCrowdfoundUser(verified = false)
     fun mustNotBeAbleToCreateWalletWithUnVerifiedAccount() {
         verify("Unverified user cannot create a wallet") {
-            val request = WalletCreateRequest(testContext.publicKey, testContext.alias)
+            val request = WalletCreateRequest(testContext.publicKey, testContext.email, testContext.providerId)
             val result = mockMvc.perform(
                 post(walletPath)
                     .content(objectMapper.writeValueAsString(request))
@@ -299,6 +302,7 @@ class WalletControllerTest : ControllerTestBase() {
             assertThat(walletResponse.currency).isEqualTo(testContext.wallet.currency)
             assertThat(walletResponse.type).isEqualTo(testContext.wallet.type)
             assertThat(walletResponse.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
+            assertThat(walletResponse.providerId).isNull()
         }
     }
 
@@ -351,7 +355,8 @@ class WalletControllerTest : ControllerTestBase() {
         var hash = "th_foKr5RbgAVq84nZaF6bNfPSnjmFQ39VhQeWPetgGDwv1BNAnV"
         var hash2 = "th_2YjFd1mPzriyKfzojwuZxKJZaqNJGmTnUvqnNfwoZTV6n7NYxB"
         val publicKey = "ak_RYkcTuYcyxQ6fWZsL2G3Kj3K5WCRUEXsi76bPUNkEsoHc52Wp"
-        val alias = "wallet_alias_is_optional"
+        val email = "wallet_email_is_optional"
+        val providerId = "provider_id_is_optional"
         var balance: Long = -1
         lateinit var pairWalletCode: String
         lateinit var time: ZonedDateTime
