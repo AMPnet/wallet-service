@@ -127,7 +127,8 @@ abstract class ControllerTestBase : TestBase() {
         assert(response.errCode == expectedErrorCode)
     }
 
-    protected fun createWalletForUser(userUuid: UUID, hash: String) = createWallet(userUuid, hash, WalletType.USER)
+    protected fun createWalletForUser(userUuid: UUID, hash: String, providerId: String? = null) =
+        createWallet(userUuid, hash, WalletType.USER, providerId)
 
     protected fun createWalletForProject(project: UUID, address: String) =
         createWallet(project, address, WalletType.PROJECT)
@@ -135,15 +136,15 @@ abstract class ControllerTestBase : TestBase() {
     protected fun createWalletForOrganization(organization: UUID, hash: String) =
         createWallet(organization, hash, WalletType.ORG)
 
-    private fun createWallet(owner: UUID, hash: String, type: WalletType): Wallet {
-        val alias = if (type == WalletType.USER) {
-            "wallet_alias"
+    private fun createWallet(owner: UUID, hash: String, type: WalletType, providerId: String? = null): Wallet {
+        val email = if (type == WalletType.USER) {
+            "wallet_email"
         } else {
             null
         }
         val wallet = Wallet(
             UUID.randomUUID(), owner, hash, type, Currency.EUR,
-            ZonedDateTime.now(), hash, ZonedDateTime.now(), alias
+            ZonedDateTime.now(), hash, ZonedDateTime.now(), email, providerId
         )
         return walletRepository.save(wallet)
     }

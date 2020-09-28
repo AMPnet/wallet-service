@@ -43,7 +43,7 @@ class WalletServiceTest : JpaServiceTestBase() {
     @Test
     fun mustBeAbleToGetWalletForUserId() {
         suppose("User has a wallet") {
-            createWalletForUser(userUuid, defaultAddressHash)
+            createWalletForUser(userUuid, defaultAddressHash, providerId)
         }
 
         verify("Service must fetch wallet for user with id") {
@@ -51,6 +51,7 @@ class WalletServiceTest : JpaServiceTestBase() {
             assertThat(wallet.hash).isEqualTo(defaultAddressHash)
             assertThat(wallet.currency).isEqualTo(Currency.EUR)
             assertThat(wallet.type).isEqualTo(WalletType.USER)
+            assertThat(wallet.providerId).isEqualTo(providerId)
         }
     }
 
@@ -63,15 +64,16 @@ class WalletServiceTest : JpaServiceTestBase() {
         }
 
         verify("Service can create wallet for a user") {
-            val request = WalletCreateRequest(defaultPublicKey, "alias")
+            val request = WalletCreateRequest(defaultPublicKey, "email", "provider_id")
             val wallet = walletService.createUserWallet(userUuid, request)
             assertThat(wallet.activationData).isEqualTo(request.publicKey)
-            assertThat(wallet.alias).isEqualTo(request.alias)
+            assertThat(wallet.email).isEqualTo(request.email)
             assertThat(wallet.currency).isEqualTo(Currency.EUR)
             assertThat(wallet.type).isEqualTo(WalletType.USER)
             assertThat(wallet.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
             assertThat(wallet.hash).isNull()
             assertThat(wallet.activatedAt).isNull()
+            assertThat(wallet.providerId).isEqualTo(request.providerId)
         }
         verify("Wallet is assigned to the user") {
             val wallet = walletService.getWallet(userUuid) ?: fail("User must have a wallet")
@@ -102,11 +104,13 @@ class WalletServiceTest : JpaServiceTestBase() {
             assertThat(wallet.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
             assertThat(wallet.hash).isNull()
             assertThat(wallet.activatedAt).isNull()
+            assertThat(wallet.providerId).isNull()
         }
         verify("Wallet is assigned to the project") {
             val projectWallet = walletService.getWallet(projectUuid) ?: fail("Missing project wallet")
             assertThat(projectWallet.activationData).isEqualTo(defaultAddressHash)
             assertThat(projectWallet.hash).isNull()
+            assertThat(projectWallet.providerId).isNull()
         }
         verify("Mail notification for created wallet") {
             Mockito.verify(mockedMailService, Mockito.times(1)).sendNewWalletMail(WalletTypeRequest.Type.PROJECT)
@@ -121,7 +125,7 @@ class WalletServiceTest : JpaServiceTestBase() {
 
         verify("Service cannot create additional account") {
             val exception = assertThrows<ResourceAlreadyExistsException> {
-                walletService.createUserWallet(userUuid, WalletCreateRequest(defaultPublicKey, "alias"))
+                walletService.createUserWallet(userUuid, WalletCreateRequest(defaultPublicKey, "alias", "provider_id"))
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.WALLET_EXISTS)
         }
@@ -250,11 +254,13 @@ class WalletServiceTest : JpaServiceTestBase() {
             assertThat(wallet.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
             assertThat(wallet.hash).isNull()
             assertThat(wallet.activatedAt).isNull()
+            assertThat(wallet.providerId).isNull()
         }
         verify("Wallet is assigned to the organization") {
             val wallet = walletService.getWallet(organizationUuid) ?: fail("Missing organization wallet")
             assertThat(wallet.activationData).isEqualTo(defaultAddressHash)
             assertThat(wallet.hash).isNull()
+            assertThat(wallet.providerId).isNull()
         }
         verify("Mail notification for created wallet") {
             Mockito.verify(mockedMailService, Mockito.times(1)).sendNewWalletMail(WalletTypeRequest.Type.ORGANIZATION)

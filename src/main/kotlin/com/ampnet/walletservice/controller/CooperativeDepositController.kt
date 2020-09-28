@@ -61,7 +61,6 @@ class CooperativeDepositController(
     ): ResponseEntity<DepositResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to approve deposit: $id" }
-
         val documentRequest = DocumentSaveRequest(file, userPrincipal.uuid)
         val serviceRequest = ApproveDepositRequest(id, userPrincipal.uuid, amount, documentRequest)
         val deposit = cooperativeDepositService.approve(serviceRequest)
