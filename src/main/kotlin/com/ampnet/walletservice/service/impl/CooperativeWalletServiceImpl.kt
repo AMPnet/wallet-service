@@ -1,9 +1,9 @@
 package com.ampnet.walletservice.service.impl
 
+import com.ampnet.crowdfunding.proto.TransactionState
 import com.ampnet.userservice.proto.SetRoleRequest
 import com.ampnet.walletservice.config.ApplicationProperties
 import com.ampnet.walletservice.controller.pojo.request.WalletTransferRequest
-import com.ampnet.walletservice.enums.TransactionState
 import com.ampnet.walletservice.enums.TransferWalletType
 import com.ampnet.walletservice.enums.WalletType
 import com.ampnet.walletservice.exception.ErrorCode

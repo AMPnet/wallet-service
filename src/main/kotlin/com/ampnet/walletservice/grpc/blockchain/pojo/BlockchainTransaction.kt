@@ -1,5 +1,7 @@
 package com.ampnet.walletservice.grpc.blockchain.pojo
 
+import com.ampnet.crowdfunding.proto.TransactionState
+import com.ampnet.crowdfunding.proto.TransactionType
 import com.ampnet.crowdfunding.proto.TransactionsResponse
 import java.time.Instant
 import java.time.ZoneId
@@ -9,9 +11,9 @@ data class BlockchainTransaction(
     val fromTxHash: String,
     val toTxHash: String,
     val amount: Long,
-    val type: TransactionsResponse.Transaction.Type,
+    val type: TransactionType,
     val date: ZonedDateTime,
-    val state: String
+    val state: TransactionState
 ) {
     var from: String? = null
     var to: String? = null

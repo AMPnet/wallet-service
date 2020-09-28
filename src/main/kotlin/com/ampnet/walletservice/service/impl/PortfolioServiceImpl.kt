@@ -1,6 +1,6 @@
 package com.ampnet.walletservice.service.impl
 
-import com.ampnet.crowdfunding.proto.TransactionsResponse
+import com.ampnet.crowdfunding.proto.TransactionType
 import com.ampnet.projectservice.proto.ProjectResponse
 import com.ampnet.userservice.proto.UserResponse
 import com.ampnet.walletservice.grpc.blockchain.BlockchainService
@@ -42,10 +42,10 @@ class PortfolioServiceImpl(
     override fun getPortfolioStats(user: UUID): PortfolioStats {
         val userWallet = ServiceUtils.getWalletHash(user, walletRepository)
         val transactions = blockchainService.getTransactions(userWallet)
-        val investments = sumTransactionForType(transactions, TransactionsResponse.Transaction.Type.INVEST)
-        val earnings = sumTransactionForType(transactions, TransactionsResponse.Transaction.Type.SHARE_PAYOUT)
+        val investments = sumTransactionForType(transactions, TransactionType.INVEST)
+        val earnings = sumTransactionForType(transactions, TransactionType.SHARE_PAYOUT)
         val dateOfFirstInvestment = transactions
-            .filter { it.type == TransactionsResponse.Transaction.Type.INVEST }
+            .filter { it.type == TransactionType.INVEST }
             .minBy { it.date }?.date
         return PortfolioStats(investments, earnings, dateOfFirstInvestment)
     }
@@ -68,10 +68,7 @@ class PortfolioServiceImpl(
         )
     }
 
-    private fun sumTransactionForType(
-        transactions: List<BlockchainTransaction>,
-        type: TransactionsResponse.Transaction.Type
-    ): Long {
+    private fun sumTransactionForType(transactions: List<BlockchainTransaction>, type: TransactionType): Long {
         return transactions
             .filter { it.type == type }
             .map { it.amount }
@@ -107,7 +104,8 @@ class PortfolioServiceImpl(
             val ownerUuidFrom = walletsMap[transaction.fromTxHash]?.owner
             val ownerUuidTo = walletsMap[transaction.toTxHash]?.owner
             when (transaction.type) {
-                TransactionsResponse.Transaction.Type.INVEST -> {
+                TransactionType.INVEST,
+                TransactionType.APPROVE_INVESTMENT -> {
                     transaction.from = getUserNameWithUuid(ownerUuidFrom, users)
                     transaction.to = getProjectNameWithUuid(ownerUuidTo, projects)
                     transaction.description = transaction.to +
@@ -115,7 +113,7 @@ class PortfolioServiceImpl(
                             " | " + getPercentageInProject(it, transaction.amount)
                         }
                 }
-                TransactionsResponse.Transaction.Type.CANCEL_INVESTMENT -> {
+                TransactionType.CANCEL_INVESTMENT -> {
                     transaction.from = getProjectNameWithUuid(ownerUuidFrom, projects)
                     transaction.to = getUserNameWithUuid(ownerUuidTo, users)
                     transaction.description = transaction.from +
@@ -123,20 +121,20 @@ class PortfolioServiceImpl(
                             " | " + getPercentageInProject(it, transaction.amount)
                         }
                 }
-                TransactionsResponse.Transaction.Type.SHARE_PAYOUT -> {
+                TransactionType.SHARE_PAYOUT -> {
                     transaction.from = getProjectNameWithUuid(ownerUuidFrom, projects)
                     transaction.to = getUserNameWithUuid(ownerUuidTo, users)
                     transaction.description = transaction.from
                 }
-                TransactionsResponse.Transaction.Type.DEPOSIT -> {
+                TransactionType.DEPOSIT -> {
                     transaction.from = platformWalletName
                     transaction.to = getUserNameWithUuid(ownerUuidTo, users)
                 }
-                TransactionsResponse.Transaction.Type.WITHDRAW -> {
+                TransactionType.WITHDRAW -> {
                     transaction.from = getUserNameWithUuid(ownerUuidFrom, users)
                     transaction.to = platformWalletName
                 }
-                TransactionsResponse.Transaction.Type.UNRECOGNIZED -> {
+                else -> {
                     // skip
                 }
             }
