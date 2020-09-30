@@ -20,9 +20,9 @@ import com.ampnet.crowdfunding.proto.InvestmentsInProjectRequest
 import com.ampnet.crowdfunding.proto.PortfolioRequest
 import com.ampnet.crowdfunding.proto.PostTxRequest
 import com.ampnet.crowdfunding.proto.TransactionInfoRequest
+import com.ampnet.crowdfunding.proto.TransactionState
 import com.ampnet.crowdfunding.proto.TransactionsRequest
 import com.ampnet.walletservice.config.ApplicationProperties
-import com.ampnet.walletservice.enums.TransactionState
 import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.exception.GrpcException
 import com.ampnet.walletservice.grpc.blockchain.pojo.ApproveProjectBurnTransactionRequest
@@ -413,16 +413,11 @@ class BlockchainServiceImpl(
         }
     }
 
-    override fun getTransactionState(txHash: String): TransactionState? {
+    override fun getTransactionState(txHash: String): TransactionState {
         try {
             val request = TransactionInfoRequest.newBuilder().setTxHash(txHash).build()
             val response = serviceWithTimeout().getTransactionInfo(request)
-            return when (response.state) {
-                "MINED" -> TransactionState.MINED
-                "FAILED" -> TransactionState.FAILED
-                "PENDING" -> TransactionState.PENDING
-                else -> null
-            }
+            return response.state
         } catch (ex: StatusRuntimeException) {
             throw getInternalExceptionFromStatusException(ex, "Could not get transaction info for hash: $txHash")
         }

@@ -62,4 +62,4 @@ Set online storage URL: `com.ampnet.walletservice.file-storage.url`
 
 ### JWT
 
-Set singing key property to verify JWT: `com.ampnet.walletservice.jwt.signing-key`
+Set public key property to verify JWT: `com.ampnet.walletservice.jwt.public-key`

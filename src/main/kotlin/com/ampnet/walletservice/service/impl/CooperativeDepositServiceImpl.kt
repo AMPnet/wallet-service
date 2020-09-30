@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.ZonedDateTime
 
+@Suppress("ForbiddenComment")
 @Service
 class CooperativeDepositServiceImpl(
     private val walletRepository: WalletRepository,

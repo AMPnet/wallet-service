@@ -1,0 +1,2 @@
+ALTER TABLE wallet RENAME COLUMN alias TO email;
+ALTER TABLE wallet ADD COLUMN provider_id VARCHAR;

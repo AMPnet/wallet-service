@@ -71,7 +71,10 @@ class WalletServiceImpl(
         }
 
         logger.debug { "Creating wallet: $request for user: $user" }
-        val wallet = createWallet(user.uuid, request.publicKey, WalletType.USER, user.coop, request.alias)
+        val wallet = createWallet(
+            user.uuid, request.publicKey, WalletType.USER,
+            user.coop, request.email, request.providerId
+        )
         mailService.sendNewWalletMail(WalletTypeRequest.Type.USER)
         return wallet
     }
@@ -190,7 +193,8 @@ class WalletServiceImpl(
         activationData: String,
         type: WalletType,
         coop: String,
-        alias: String? = null
+        email: String? = null,
+        providerId: String? = null
     ): Wallet {
         if (walletRepository.findByActivationDataAndCoop(activationData, coop).isPresent) {
             throw ResourceAlreadyExistsException(
@@ -198,7 +202,7 @@ class WalletServiceImpl(
                 "Trying to create wallet: $type with existing activationData: $activationData"
             )
         }
-        val wallet = Wallet(owner, activationData, type, Currency.EUR, coop, alias)
+        val wallet = Wallet(owner, activationData, type, Currency.EUR, coop, email, providerId)
         return walletRepository.save(wallet)
     }
 

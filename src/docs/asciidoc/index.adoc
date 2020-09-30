@@ -84,7 +84,7 @@ include::{snippets}/WalletControllerTest/mustReturnNotFoundForMissingWallet/http
 ==== Create Wallet
 
 ===== Create wallet for active user
-TIP: `alias` data is optional.
+TIP: `email` and `provider id` data are optional.
 
 .Request
 include::{snippets}/WalletControllerTest/mustBeAbleToCreateWallet/http-request.adoc[]
@@ -224,6 +224,10 @@ include::{snippets}/PortfolioControllerTest/mustBeAbleToGetMyPortfolio/http-requ
 include::{snippets}/PortfolioControllerTest/mustBeAbleToGetMyPortfolio/http-response.adoc[]
 
 === Get stats
+Stats calculate only completed transactions in state: `TransactionState.MINED`. Value `investments` is sum of all
+investments(`TransactionType.INVEST`) minus canceled investments(`TransactionType.CANCEL_INVESTMENT`).
+Value `earnings` is sum of all received revenue share payouts(`TransactionType.SHARE_PAYOUT`).
+
 .Request
 include::{snippets}/PortfolioControllerTest/mustBeAbleToGetMyPortfolioStats/http-request.adoc[]
 .Response

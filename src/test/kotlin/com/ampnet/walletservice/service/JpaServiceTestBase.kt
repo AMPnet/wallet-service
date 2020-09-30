@@ -86,18 +86,21 @@ abstract class JpaServiceTestBase : TestBase() {
     protected val txHash = "tx-hash"
     protected val transactionData = TransactionData("data")
     protected val bankAccount = "AL35202111090000000001234567"
+    protected val providerId = "provider_id"
 
-    protected fun createWalletForUser(userUuid: UUID, hash: String) = createWallet(userUuid, hash, WalletType.USER)
+    protected fun createWalletForUser(userUuid: UUID, hash: String, providerId: String? = null) =
+        createWallet(userUuid, hash, WalletType.USER, providerId = providerId)
 
-    protected fun createWalletForProject(project: UUID, hash: String) = createWallet(project, hash, WalletType.PROJECT)
+    protected fun createWalletForProject(project: UUID, hash: String) =
+        createWallet(project, hash, WalletType.PROJECT)
 
     protected fun createWalletForOrganization(organization: UUID, hash: String) =
         createWallet(organization, hash, WalletType.ORG)
 
-    protected fun createWallet(owner: UUID, hash: String, type: WalletType, coop: String = COOP): Wallet {
+    protected fun createWallet(owner: UUID, hash: String, type: WalletType, coop: String = COOP, providerId: String? = null): Wallet {
         val wallet = Wallet(
             UUID.randomUUID(), owner, hash, type, Currency.EUR,
-            ZonedDateTime.now(), hash, ZonedDateTime.now(), null, coop
+            ZonedDateTime.now(), hash, ZonedDateTime.now(), coop, null, providerId
         )
         return walletRepository.save(wallet)
     }
