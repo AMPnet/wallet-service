@@ -1,3 +1,5 @@
 package com.ampnet.walletservice.controller.pojo.request
 
-data class WalletPairRequest(val publicKey: String)
+import javax.validation.constraints.Size
+
+data class WalletPairRequest(@field:Size(max = 128) val publicKey: String)
