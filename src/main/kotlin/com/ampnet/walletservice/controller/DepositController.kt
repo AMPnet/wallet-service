@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
-import javax.validation.Valid
 
 @RestController
 class DepositController(
@@ -24,7 +23,7 @@ class DepositController(
     companion object : KLogging()
 
     @PostMapping("/deposit")
-    fun createDeposit(@RequestBody @Valid request: AmountRequest): ResponseEntity<DepositResponse> {
+    fun createDeposit(@RequestBody request: AmountRequest): ResponseEntity<DepositResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to create deposit" }
         val serviceRequest = DepositCreateServiceRequest(
@@ -55,7 +54,7 @@ class DepositController(
     @PostMapping("/deposit/project/{projectUuid}")
     fun createProjectDeposit(
         @PathVariable projectUuid: UUID,
-        @RequestBody @Valid request: AmountRequest
+        @RequestBody request: AmountRequest
     ): ResponseEntity<DepositResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to create deposit" }
