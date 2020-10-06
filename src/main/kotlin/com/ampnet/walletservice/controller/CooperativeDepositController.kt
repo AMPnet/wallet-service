@@ -3,7 +3,7 @@ package com.ampnet.walletservice.controller
 import com.ampnet.walletservice.controller.pojo.request.CommentRequest
 import com.ampnet.walletservice.controller.pojo.response.DepositResponse
 import com.ampnet.walletservice.controller.pojo.response.DepositWithProjectListResponse
-import com.ampnet.walletservice.controller.pojo.response.DepositWithProjectResponse
+import com.ampnet.walletservice.controller.pojo.response.DepositWithProjectAndUserResponse
 import com.ampnet.walletservice.controller.pojo.response.DepositWithUserListResponse
 import com.ampnet.walletservice.controller.pojo.response.DepositWithUserResponse
 import com.ampnet.walletservice.controller.pojo.response.TransactionResponse
@@ -173,10 +173,14 @@ class CooperativeDepositController(
         val projects = projectService
             .getProjects(deposits.map { it.ownerUuid }.toSet())
             .associateBy { it.uuid }
-        val depositsWithProject = mutableListOf<DepositWithProjectResponse>()
+        val users = userService
+            .getUsers(deposits.map { it.createdBy }.toSet())
+            .associateBy { it.uuid }
+        val depositsWithProject = mutableListOf<DepositWithProjectAndUserResponse>()
         deposits.forEach { deposit ->
             val projectResponse = projects[deposit.ownerUuid.toString()]
-            depositsWithProject.add(DepositWithProjectResponse(deposit, projectResponse))
+            val createdBy = users[deposit.createdBy.toString()]
+            depositsWithProject.add(DepositWithProjectAndUserResponse(deposit, projectResponse, createdBy))
         }
         return DepositWithProjectListResponse(depositsWithProject, depositsPage.number, depositsPage.totalPages)
     }
