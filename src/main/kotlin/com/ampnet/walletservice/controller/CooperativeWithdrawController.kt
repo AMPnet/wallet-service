@@ -120,11 +120,15 @@ class CooperativeWithdrawController(
         val projects = projectService
             .getProjects(withdraws.map { it.ownerUuid }.toSet())
             .associateBy { it.uuid }
+        val users = userService
+            .getUsers(withdraws.map { it.createdBy }.toSet())
+            .associateBy { it.uuid }
         val withdrawWithProjectList = mutableListOf<WithdrawWithProjectResponse>()
         withdraws.forEach { withdraw ->
             val wallet = walletService.getWallet(withdraw.ownerUuid)?.hash.orEmpty()
             val projectResponse = projects[withdraw.ownerUuid.toString()]
-            withdrawWithProjectList.add(WithdrawWithProjectResponse(withdraw, projectResponse, wallet))
+            val createdBy = users[withdraw.createdBy.toString()]
+            withdrawWithProjectList.add(WithdrawWithProjectResponse(withdraw, projectResponse, wallet, createdBy))
         }
         return WithdrawWithProjectListResponse(withdrawWithProjectList, withdrawsPage.number, withdrawsPage.totalPages)
     }

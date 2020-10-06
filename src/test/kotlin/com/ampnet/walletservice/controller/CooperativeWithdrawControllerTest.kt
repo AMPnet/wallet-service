@@ -103,6 +103,10 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
             Mockito.`when`(projectService.getProjects(setOf(projectUuid)))
                 .thenReturn(listOf(createProjectResponse(projectUuid, userUuid)))
         }
+        suppose("User service will return user data") {
+            Mockito.`when`(userService.getUsers(setOf(userUuid)))
+                .thenReturn(listOf(createUserResponse(userUuid)))
+        }
 
         verify("Cooperative can get list of approved project withdraws") {
             val result = mockMvc.perform(
@@ -128,6 +132,7 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
             assertThat(withdraw.burnedAt).isNull()
             assertThat(withdraw.burnedBy).isNull()
             assertThat(withdraw.burnedTxHash).isNull()
+            assertThat(withdraw.user?.uuid).isEqualTo(userUuid)
         }
     }
 
@@ -198,6 +203,10 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
             Mockito.`when`(projectService.getProjects(setOf(projectUuid)))
                 .thenReturn(listOf(createProjectResponse(projectUuid, userUuid)))
         }
+        suppose("User service will return user data") {
+            Mockito.`when`(userService.getUsers(setOf(userUuid)))
+                .thenReturn(listOf(createUserResponse(userUuid)))
+        }
 
         verify("Cooperative can get list of burned project withdraws") {
             val result = mockMvc.perform(
@@ -224,6 +233,7 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
             assertThat(withdraw.burnedBy).isNotNull()
             assertThat(withdraw.burnedTxHash).isEqualTo(testContext.burnedTx)
             assertThat(withdraw.documentResponse).isNotNull()
+            assertThat(withdraw.user?.uuid).isEqualTo(userUuid)
         }
     }
 
@@ -315,10 +325,10 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
         }
     }
 
-    private fun createBurnedWithdraw(user: UUID, type: DepositWithdrawType = DepositWithdrawType.USER): Withdraw {
-        val document = saveFile("withdraw-doc", "doc-link", "type", 1, user)
+    private fun createBurnedWithdraw(owner: UUID, type: DepositWithdrawType = DepositWithdrawType.USER): Withdraw {
+        val document = saveFile("withdraw-doc", "doc-link", "type", 1, userUuid)
         val withdraw = Withdraw(
-            0, user, testContext.amount, ZonedDateTime.now(), user, testContext.bankAccount,
+            0, owner, testContext.amount, ZonedDateTime.now(), userUuid, testContext.bankAccount,
             testContext.approvedTx, ZonedDateTime.now(),
             testContext.burnedTx, ZonedDateTime.now(), UUID.randomUUID(), document, type
         )

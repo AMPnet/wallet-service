@@ -82,9 +82,15 @@ data class WithdrawWithProjectResponse(
     val createdAt: ZonedDateTime,
     val bankAccount: String,
     val projectWallet: String,
-    val documentResponse: DocumentResponse?
+    val documentResponse: DocumentResponse?,
+    val user: UserControllerResponse?
 ) {
-    constructor(withdraw: Withdraw, project: ProjectResponse?, projectWallet: String) : this(
+    constructor(
+        withdraw: Withdraw,
+        project: ProjectResponse?,
+        projectWallet: String,
+        userResponse: UserResponse?
+    ) : this(
         withdraw.id,
         project?.let { ProjectControllerResponse(it) },
         withdraw.amount,
@@ -96,7 +102,8 @@ data class WithdrawWithProjectResponse(
         withdraw.createdAt,
         withdraw.bankAccount,
         projectWallet,
-        withdraw.file?.let { DocumentResponse(it) }
+        withdraw.file?.let { DocumentResponse(it) },
+        userResponse?.let { UserControllerResponse(it) }
     )
 }
 

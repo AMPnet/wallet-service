@@ -55,18 +55,20 @@ data class DepositWithUserListResponse(
     val totalPages: Int
 )
 
-data class DepositWithProjectResponse(
+data class DepositWithProjectAndUserResponse(
     val deposit: DepositResponse,
-    val project: ProjectControllerResponse?
+    val project: ProjectControllerResponse?,
+    val user: UserControllerResponse?
 ) {
-    constructor(deposit: Deposit, project: ProjectResponse?) : this(
+    constructor(deposit: Deposit, project: ProjectResponse?, userResponse: UserResponse?) : this(
         DepositResponse(deposit),
-        project?.let { ProjectControllerResponse(it) }
+        project?.let { ProjectControllerResponse(it) },
+        userResponse?.let { UserControllerResponse(it) }
     )
 }
 
 data class DepositWithProjectListResponse(
-    val deposits: List<DepositWithProjectResponse>,
+    val deposits: List<DepositWithProjectAndUserResponse>,
     val page: Int,
     val totalPages: Int
 )

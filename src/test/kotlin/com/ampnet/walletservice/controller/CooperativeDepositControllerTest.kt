@@ -334,6 +334,10 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
             Mockito.`when`(projectService.getProjects(setOf(projectUuid)))
                 .thenReturn(listOf(createProjectResponse(projectUuid, userUuid)))
         }
+        suppose("User service will return user data") {
+            Mockito.`when`(userService.getUsers(setOf(userUuid)))
+                .thenReturn(listOf(createUserResponse(userUuid)))
+        }
 
         verify("Cooperative can get approved project deposits") {
             val result = mockMvc.perform(
@@ -349,7 +353,8 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
             assertThat(deposits.deposits).hasSize(1)
             val response = deposits.deposits[0]
             assertThat(response.deposit.approved).isTrue()
-            assertThat(response.project).isNotNull
+            assertThat(response.project?.uuid).isEqualTo(projectUuid.toString())
+            assertThat(response.user?.uuid).isEqualTo(userUuid)
         }
     }
 
@@ -358,12 +363,19 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
     fun mustBeAbleToGetUnsignedProjectDeposits() {
         suppose("Signed and unsigned deposits exist") {
             val unsigned = createApprovedDeposit(projectUuid, type = DepositWithdrawType.PROJECT)
-            val signed = createApprovedDeposit(projectUuid, type = DepositWithdrawType.PROJECT, txHash = "fdas")
+            val signed = createApprovedDeposit(
+                projectUuid, type = DepositWithdrawType.PROJECT,
+                txHash = "th_fSeuGUKpw9859xRSEwBsYyDR44dHwvgSXGLagctXZeUsxeJdb"
+            )
             testContext.deposits = listOf(unsigned, signed)
         }
         suppose("Project service will return project data") {
             Mockito.`when`(projectService.getProjects(setOf(projectUuid)))
                 .thenReturn(listOf(createProjectResponse(projectUuid, userUuid)))
+        }
+        suppose("User service will return user data") {
+            Mockito.`when`(userService.getUsers(setOf(userUuid)))
+                .thenReturn(listOf(createUserResponse(userUuid)))
         }
 
         verify("Cooperative can get unsigned project deposits") {
@@ -381,7 +393,8 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
             val response = deposits.deposits[0]
             assertThat(response.deposit.approved).isTrue()
             assertThat(response.deposit.txHash).isNotEmpty()
-            assertThat(response.project).isNotNull
+            assertThat(response.project?.uuid).isEqualTo(projectUuid.toString())
+            assertThat(response.user?.uuid).isEqualTo(userUuid)
         }
     }
 

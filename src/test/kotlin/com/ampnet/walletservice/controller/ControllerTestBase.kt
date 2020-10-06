@@ -190,15 +190,15 @@ abstract class ControllerTestBase : TestBase() {
         .build()
 
     protected fun createApprovedDeposit(
-        user: UUID,
+        owner: UUID,
         txHash: String? = null,
         amount: Long = 1000,
         type: DepositWithdrawType = DepositWithdrawType.USER
     ): Deposit {
-        val document = saveFile("doc", "document-link", "type", 1, user)
+        val document = saveFile("doc", "document-link", "type", 1, owner)
         val deposit = Deposit(
-            0, user, "S34SDGFT", true, amount,
-            ZonedDateTime.now(), user, type, txHash, user, ZonedDateTime.now(), document, null
+            0, owner, "S34SDGFT", true, amount,
+            ZonedDateTime.now(), userUuid, type, txHash, userUuid, ZonedDateTime.now(), document, null
         )
         return depositRepository.save(deposit)
     }
@@ -209,7 +209,7 @@ abstract class ControllerTestBase : TestBase() {
         type: DepositWithdrawType = DepositWithdrawType.USER
     ): Withdraw {
         val withdraw = Withdraw(
-            0, owner, amount, ZonedDateTime.now(), owner, "bank-account",
+            0, owner, amount, ZonedDateTime.now(), userUuid, "bank-account",
             "approved-tx", ZonedDateTime.now(),
             null, null, null, null, type
         )
@@ -230,10 +230,10 @@ abstract class ControllerTestBase : TestBase() {
         return withdrawRepository.save(withdraw)
     }
 
-    protected fun createUnapprovedDeposit(user: UUID, type: DepositWithdrawType = DepositWithdrawType.USER): Deposit {
+    protected fun createUnapprovedDeposit(owner: UUID, type: DepositWithdrawType = DepositWithdrawType.USER): Deposit {
         val deposit = Deposit(
-            0, user, "S34SDGFT", false, 10_000,
-            ZonedDateTime.now(), user, type, null, null, null, null, null
+            0, owner, "S34SDGFT", false, 10_000,
+            ZonedDateTime.now(), userUuid, type, null, null, null, null, null
         )
         return depositRepository.save(deposit)
     }
