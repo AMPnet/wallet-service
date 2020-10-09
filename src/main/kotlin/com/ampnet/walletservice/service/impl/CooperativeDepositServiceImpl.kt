@@ -46,7 +46,6 @@ class CooperativeDepositServiceImpl(
         val document = storageService.saveDocument(request.documentSaveRequest)
         logger.info { "Approving deposit: ${request.id} by user: ${request.user}" }
 
-        deposit.approved = true
         deposit.approvedByUserUuid = request.user
         deposit.approvedAt = ZonedDateTime.now()
         deposit.amount = request.amount
@@ -63,19 +62,18 @@ class CooperativeDepositServiceImpl(
         logger.info { "Declining deposit: $id by user: $user" }
         val declined = Declined(comment, user)
         deposit.declined = declinedRepository.save(declined)
-        deposit.approved = false
         mailService.sendDepositInfo(deposit.ownerUuid, false)
         return deposit
     }
 
     @Transactional(readOnly = true)
-    override fun getAllWithDocuments(approved: Boolean, type: DepositWithdrawType, pageable: Pageable): Page<Deposit> {
-        return depositRepository.findAllWithFile(approved, type, pageable)
+    override fun getApprovedWithDocuments(type: DepositWithdrawType, pageable: Pageable): Page<Deposit> {
+        return depositRepository.findAllApprovedWithFile(type, pageable)
     }
 
     @Transactional(readOnly = true)
-    override fun getUnsigned(type: DepositWithdrawType, pageable: Pageable): Page<Deposit> {
-        return depositRepository.findApprovedUnsignedWithFile(type, pageable)
+    override fun getUnapproved(type: DepositWithdrawType, pageable: Pageable): Page<Deposit> {
+        return depositRepository.findAllUnapproved(type, pageable)
     }
 
     @Transactional(readOnly = true)
@@ -112,7 +110,7 @@ class CooperativeDepositServiceImpl(
     }
 
     private fun validateDepositForMintTransaction(deposit: Deposit) {
-        if (deposit.approved.not()) {
+        if (deposit.approvedByUserUuid == null) {
             throw InvalidRequestException(
                 ErrorCode.WALLET_DEPOSIT_NOT_APPROVED,
                 "Deposit: ${deposit.id} is not approved"

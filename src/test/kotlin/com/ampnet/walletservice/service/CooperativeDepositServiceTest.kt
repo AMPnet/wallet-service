@@ -73,7 +73,7 @@ class CooperativeDepositServiceTest : JpaServiceTestBase() {
     @Test
     fun mustThrowExceptionIfDepositIsNotApprovedForMintTransaction() {
         suppose("Deposit is not approved") {
-            deposit = createUnapprovedDeposit(userUuid)
+            deposit = createUnsigned(userUuid)
         }
 
         verify("Service will throw exception if the deposit is not approved") {
@@ -109,7 +109,7 @@ class CooperativeDepositServiceTest : JpaServiceTestBase() {
     @Test
     fun mustThrowExceptionIfDepositIsNotApprovedForConfirmMintTransaction() {
         suppose("Deposit is not approved") {
-            deposit = createUnapprovedDeposit(userUuid)
+            deposit = createUnsigned(userUuid)
         }
 
         verify("Service will throw exception if the deposit is not approved") {

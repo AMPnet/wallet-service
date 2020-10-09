@@ -150,11 +150,11 @@ abstract class ControllerTestBase : TestBase() {
     }
 
     protected fun saveFile(
-        name: String,
-        link: String,
-        type: String,
-        size: Int,
-        createdByUserUuid: UUID
+        name: String = "name",
+        link: String = "link",
+        type: String = "type",
+        size: Int = 1000,
+        createdByUserUuid: UUID = userUuid
     ): File {
         val document = File::class.java.getDeclaredConstructor().newInstance()
         document.name = name
@@ -191,14 +191,14 @@ abstract class ControllerTestBase : TestBase() {
 
     protected fun createApprovedDeposit(
         owner: UUID,
-        txHash: String? = null,
         amount: Long = 1000,
         type: DepositWithdrawType = DepositWithdrawType.USER
     ): Deposit {
         val document = saveFile("doc", "document-link", "type", 1, owner)
         val deposit = Deposit(
-            0, owner, "S34SDGFT", true, amount,
-            ZonedDateTime.now(), userUuid, type, txHash, userUuid, ZonedDateTime.now(), document, null
+            0, owner, "S34SDGFT", amount,
+            ZonedDateTime.now(), userUuid, type, "th_ktDw9ytaQ9aSi78qgCAw2JhdzS8F7vGgzYvWeMdRtP6hJnQqG",
+            userUuid, ZonedDateTime.now(), document, null
         )
         return depositRepository.save(deposit)
     }
@@ -230,10 +230,18 @@ abstract class ControllerTestBase : TestBase() {
         return withdrawRepository.save(withdraw)
     }
 
-    protected fun createUnapprovedDeposit(owner: UUID, type: DepositWithdrawType = DepositWithdrawType.USER): Deposit {
+    protected fun createUnsignedDeposit(
+        owner: UUID,
+        type: DepositWithdrawType = DepositWithdrawType.USER,
+        withFile: Boolean = false,
+        amount: Long = 0
+    ): Deposit {
+        val file = if (withFile) saveFile() else null
+        val approvedBy = if (withFile) userUuid else null
+        val approvedAt = if (withFile) ZonedDateTime.now() else null
         val deposit = Deposit(
-            0, owner, "S34SDGFT", false, 10_000,
-            ZonedDateTime.now(), userUuid, type, null, null, null, null, null
+            0, owner, "S34SDGFT", amount,
+            ZonedDateTime.now(), userUuid, type, null, approvedBy, approvedAt, file, null
         )
         return depositRepository.save(deposit)
     }

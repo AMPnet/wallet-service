@@ -34,7 +34,7 @@ class DepositServiceTest : JpaServiceTestBase() {
             createWalletForUser(userUuid, "wallet-hash")
         }
         suppose("Unapproved and approved deposits exists") {
-            createUnapprovedDeposit(userUuid)
+            createUnsigned(userUuid)
             createApprovedDeposit(txHash)
         }
 
@@ -95,7 +95,7 @@ class DepositServiceTest : JpaServiceTestBase() {
     @Test
     fun mustThrowExceptionForDeletingOtherProjectWithdraw() {
         suppose("Project created withdraw") {
-            deposit = createUnapprovedDeposit(projectUuid, DepositWithdrawType.PROJECT)
+            deposit = createUnsigned(projectUuid, DepositWithdrawType.PROJECT)
         }
         suppose("Project service will return project") {
             Mockito.`when`(mockedProjectService.getProject(projectUuid))
