@@ -37,7 +37,7 @@ class UserServiceImpl(
             logger.debug { "Fetched users: $response" }
             return response
         } catch (ex: StatusRuntimeException) {
-            throw GrpcException(ErrorCode.INT_GRPC_USER, "Failed to fetch users. ${ex.localizedMessage}")
+            throw GrpcException(ErrorCode.INT_GRPC_USER, "Failed to fetch users.", ex)
         }
     }
 
@@ -53,7 +53,7 @@ class UserServiceImpl(
             logger.info { "Successfully change role for user: ${response.uuid}" }
             return response
         } catch (ex: StatusRuntimeException) {
-            throw GrpcException(ErrorCode.INT_GRPC_USER, "Failed to change role for user: $uuid")
+            throw GrpcException(ErrorCode.INT_GRPC_USER, "Failed to change role for user: $uuid", ex)
         }
     }
 
