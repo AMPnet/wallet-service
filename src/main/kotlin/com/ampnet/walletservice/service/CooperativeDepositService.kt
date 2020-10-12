@@ -12,8 +12,8 @@ import java.util.UUID
 interface CooperativeDepositService {
     fun approve(request: ApproveDepositRequest): Deposit
     fun decline(id: Int, user: UUID, comment: String): Deposit
-    fun getAllWithDocuments(approved: Boolean, type: DepositWithdrawType, pageable: Pageable): Page<Deposit>
-    fun getUnsigned(type: DepositWithdrawType, pageable: Pageable): Page<Deposit>
+    fun getApprovedWithDocuments(type: DepositWithdrawType, pageable: Pageable): Page<Deposit>
+    fun getUnapproved(type: DepositWithdrawType, pageable: Pageable): Page<Deposit>
     fun findByReference(reference: String): Deposit?
     fun generateMintTransaction(request: MintServiceRequest): TransactionDataAndInfo
     fun confirmMintTransaction(signedTransaction: String, depositId: Int): Deposit

@@ -29,9 +29,6 @@ data class Deposit(
     val reference: String,
 
     @Column(nullable = false)
-    var approved: Boolean,
-
-    @Column(nullable = false)
     var amount: Long,
 
     @Column(nullable = false)
@@ -62,7 +59,7 @@ data class Deposit(
     var declined: Declined?
 ) {
     constructor(ownerUuid: UUID, reference: String, amount: Long, createdBy: UUID, type: DepositWithdrawType) : this(
-        0, ownerUuid, reference, false, amount, ZonedDateTime.now(), createdBy, type,
+        0, ownerUuid, reference, amount, ZonedDateTime.now(), createdBy, type,
         null, null, null, null, null
     )
 }

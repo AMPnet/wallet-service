@@ -371,6 +371,7 @@ include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToSearchByReferen
 include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToSearchByReference/http-response.adoc[]
 
 ===== Unapproved
+Unapproved deposits are all deposits that are not minted - `txHash=null`.
 
 ====== Users
 .Request
@@ -385,6 +386,7 @@ include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToGetUnapprovedPr
 include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToGetUnapprovedProjectDeposits/http-response.adoc[]
 
 ===== Approved
+Completed deposits are deposits that are approved and minted - `txHash` is not null.
 
 ====== Users
 .Request
@@ -398,22 +400,10 @@ include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToGetApprovedProj
 .Response
 include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToGetApprovedProjectDeposits/http-response.adoc[]
 
-===== Unsigned
-
-====== Users
-.Request
-include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToGetUnsignedDeposits/http-request.adoc[]
-.Response
-include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToGetUnsignedDeposits/http-response.adoc[]
-
-====== Projects
-.Request
-include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToGetUnsignedProjectDeposits/http-request.adoc[]
-.Response
-include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToGetUnsignedProjectDeposits/http-response.adoc[]
-
 ==== Approve Deposit
-Must have Admin role - privilege: PWA_DEPOSIT
+Must have Admin role - privilege: PWA_DEPOSIT.
+User can approve the deposit multiple times because deposit is unapproved until he completes deposit process -
+generating and signing minting transaction.
 
 .Request
 include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToApproveDeposit/http-request.adoc[]

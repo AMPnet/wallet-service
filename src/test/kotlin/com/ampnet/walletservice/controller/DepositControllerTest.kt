@@ -38,7 +38,7 @@ class DepositControllerTest : ControllerTestBase() {
             createWalletForUser(userUuid, walletHash)
         }
         suppose("User has approved deposit") {
-            createApprovedDeposit(userUuid, "tx_hash")
+            createApprovedDeposit(userUuid)
         }
 
         verify("User can create new deposit") {
@@ -54,7 +54,7 @@ class DepositControllerTest : ControllerTestBase() {
             val deposit: DepositResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(deposit.owner).isEqualTo(userUuid)
             assertThat(deposit.amount).isEqualTo(testContext.amount)
-            assertThat(deposit.approved).isFalse()
+            assertThat(deposit.txHash).isNull()
             assertThat(deposit.createdBy).isEqualTo(userUuid)
             assertThat(deposit.type).isEqualTo(DepositWithdrawType.USER)
             assertThat(deposit.reference).isNotNull()
@@ -63,9 +63,9 @@ class DepositControllerTest : ControllerTestBase() {
         verify("User deposit is stored") {
             val deposits = depositRepository.findAll()
             assertThat(deposits).hasSize(2)
-            val deposit = deposits.first { it.approved.not() }
+            val deposit = deposits.first { it.txHash != null }
             assertThat(deposit.ownerUuid).isEqualTo(userUuid)
-            assertThat(deposit.approved).isFalse()
+            assertThat(deposit.txHash).isNotNull()
             assertThat(deposit.reference).isNotNull()
             assertThat(deposit.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
         }
@@ -95,7 +95,7 @@ class DepositControllerTest : ControllerTestBase() {
     @WithMockCrowdfoundUser
     fun mustBeAbleToDeleteDeposit() {
         suppose("Unapproved user deposit exists") {
-            val deposit = createUnapprovedDeposit(userUuid)
+            val deposit = createUnsignedDeposit(userUuid)
             testContext.deposits = listOf(deposit)
         }
 
@@ -113,7 +113,7 @@ class DepositControllerTest : ControllerTestBase() {
     @WithMockCrowdfoundUser
     fun mustNotBeAbleToDeleteOthersDeposit() {
         suppose("Unapproved user deposit exists") {
-            val deposit = createUnapprovedDeposit(UUID.randomUUID())
+            val deposit = createUnsignedDeposit(UUID.randomUUID())
             testContext.deposits = listOf(deposit)
         }
 
@@ -127,7 +127,7 @@ class DepositControllerTest : ControllerTestBase() {
     @WithMockCrowdfoundUser
     fun mustBeAbleToGetPendingDeposit() {
         suppose("User deposit exists") {
-            val deposit = createUnapprovedDeposit(userUuid)
+            val deposit = createUnsignedDeposit(userUuid)
             testContext.deposits = listOf(deposit)
         }
 
@@ -160,7 +160,7 @@ class DepositControllerTest : ControllerTestBase() {
             createWalletForProject(projectUuid, walletHash)
         }
         suppose("Project has approved deposit") {
-            createApprovedDeposit(projectUuid, "tx_hash")
+            createApprovedDeposit(projectUuid)
         }
         suppose("Project service will return project") {
             Mockito.`when`(projectService.getProject(projectUuid))
@@ -180,7 +180,7 @@ class DepositControllerTest : ControllerTestBase() {
             val deposit: DepositResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(deposit.owner).isEqualTo(projectUuid)
             assertThat(deposit.amount).isEqualTo(testContext.amount)
-            assertThat(deposit.approved).isFalse()
+            assertThat(deposit.txHash).isNull()
             assertThat(deposit.createdBy).isEqualTo(userUuid)
             assertThat(deposit.type).isEqualTo(DepositWithdrawType.PROJECT)
             assertThat(deposit.reference).isNotNull()
@@ -189,9 +189,9 @@ class DepositControllerTest : ControllerTestBase() {
         verify("Project deposit is stored") {
             val deposits = depositRepository.findAll()
             assertThat(deposits).hasSize(2)
-            val deposit = deposits.first { it.approved.not() }
+            val deposit = deposits.first { it.txHash == null }
             assertThat(deposit.ownerUuid).isEqualTo(projectUuid)
-            assertThat(deposit.approved).isFalse()
+            assertThat(deposit.txHash).isNull()
             assertThat(deposit.reference).isNotNull()
             assertThat(deposit.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
         }

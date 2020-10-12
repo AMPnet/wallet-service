@@ -273,7 +273,7 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
     @Test
     fun mustBeAbleToPostSignedMintTransaction() {
         suppose("Approved deposit exists") {
-            testContext.deposit = createApprovedDeposit(userUuid)
+            testContext.deposit = createUnsignedDeposit(userUuid, withFile = true)
         }
         suppose("TransactionInfo exists for mint transaction") {
             testContext.transactionInfo =

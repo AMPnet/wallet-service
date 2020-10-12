@@ -144,15 +144,15 @@ abstract class JpaServiceTestBase : TestBase() {
     ): Deposit {
         val document = saveFile(userUuid)
         val deposit = Deposit(
-            0, userUuid, "S34SDGFT", true, 10_000,
+            0, userUuid, "S34SDGFT", 10_000,
             ZonedDateTime.now(), userUuid, type, txHash, userUuid, ZonedDateTime.now(), document, null
         )
         return depositRepository.save(deposit)
     }
 
-    protected fun createUnapprovedDeposit(owner: UUID, type: DepositWithdrawType = DepositWithdrawType.USER): Deposit {
+    protected fun createUnsigned(owner: UUID, type: DepositWithdrawType = DepositWithdrawType.USER): Deposit {
         val deposit = Deposit(
-            0, owner, "S34SDGFT", false, 10_000,
+            0, owner, "S34SDGFT", 10_000,
             ZonedDateTime.now(), userUuid, type, null, null, null, null, null
         )
         return depositRepository.save(deposit)

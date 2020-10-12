@@ -63,7 +63,7 @@ class DepositServiceImpl(
 
     @Transactional(readOnly = true)
     override fun getPendingForUser(user: UUID): Deposit? {
-        return depositRepository.findByOwnerUuid(user).find { it.approved.not() }
+        return depositRepository.findByOwnerUuidUnsigned(user).firstOrNull()
     }
 
     private fun validateUserCanEditDeposit(deposit: Deposit, user: UUID) {
@@ -83,13 +83,9 @@ class DepositServiceImpl(
     }
 
     private fun validateOwnerDoesNotHavePendingDeposit(owner: UUID) {
-        val unapprovedDeposits = depositRepository
-            .findByOwnerUuid(owner)
-            .filter { it.approved.not() }
-        if (unapprovedDeposits.isEmpty().not()) {
+        getPendingForUser(owner)?.let {
             throw ResourceAlreadyExistsException(
-                ErrorCode.WALLET_DEPOSIT_EXISTS,
-                "Check your unapproved deposit: ${unapprovedDeposits.firstOrNull()?.id}"
+                ErrorCode.WALLET_DEPOSIT_EXISTS, "Check your unapproved deposit: ${it.id}"
             )
         }
     }
