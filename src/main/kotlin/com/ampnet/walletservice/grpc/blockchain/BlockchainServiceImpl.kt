@@ -39,6 +39,7 @@ import io.grpc.StatusRuntimeException
 import mu.KLogging
 import net.devh.boot.grpc.client.channelfactory.GrpcChannelFactory
 import org.springframework.stereotype.Service
+import java.lang.Thread.sleep
 import java.util.concurrent.TimeUnit
 
 @Service
@@ -127,21 +128,8 @@ class BlockchainServiceImpl(
         }
     }
 
-    override fun postTransaction(transaction: String): String {
-        logger.info { "Posting transaction" }
-        try {
-            val response = serviceWithTimeout()
-                .postTransaction(
-                    PostTxRequest.newBuilder()
-                        .setData(transaction)
-                        .build()
-                )
-            logger.info { "Successfully posted transaction: ${response.txHash}" }
-            return response.txHash
-        } catch (ex: StatusRuntimeException) {
-            throw getInternalExceptionFromStatusException(ex, "Could not post transaction: $transaction")
-        }
-    }
+    override fun postTransaction(transaction: String) =
+        postTransactionWithRetries(transaction, 0)
 
     override fun generateProjectInvestmentTransaction(request: ProjectInvestmentTxRequest): TransactionData {
         logger.info {
@@ -436,11 +424,40 @@ class BlockchainServiceImpl(
     private fun serviceWithTimeout() = serviceBlockingStub
         .withDeadlineAfter(applicationProperties.grpc.blockchainServiceTimeout, TimeUnit.MILLISECONDS)
 
+    private fun postTransactionWithRetries(transaction: String, retryCount: Int): String {
+        logger.info { "Posting transaction (#$retryCount)" }
+        if (retryCount > applicationProperties.grpc.blockchainServiceMaxRetries) {
+            logger.warn { "Retry posting transaction exceeded" }
+            throw GrpcException(ErrorCode.INT_GRPC_BLOCKCHAIN, "Retry exceeded", null)
+        }
+        try {
+            val response = serviceWithTimeout()
+                .postTransaction(
+                    PostTxRequest.newBuilder()
+                        .setData(transaction)
+                        .build()
+                )
+            logger.info { "Successfully posted transaction: ${response.txHash}" }
+            return response.txHash
+        } catch (ex: StatusRuntimeException) {
+            getErrorDescriptionFromExceptionStatus(ex)?.let { grpcErrorCode ->
+                // throw exception for known errors
+                val errorCode = ErrorCode.INT_GRPC_BLOCKCHAIN
+                errorCode.specificCode = grpcErrorCode.code
+                errorCode.message = grpcErrorCode.message
+                throw GrpcException(errorCode, "Couldn't post transaction", ex)
+            }
+            // retry posting transaction for unknown errors
+            sleep(applicationProperties.grpc.blockchainServiceRetryDelay)
+            return postTransactionWithRetries(transaction, retryCount + 1)
+        }
+    }
+
     private fun getInternalExceptionFromStatusException(
         ex: StatusRuntimeException,
         message: String
     ): GrpcException {
-        val grpcErrorCode = getErrorDescriptionFromExceptionStatus(ex)
+        val grpcErrorCode = getErrorDescriptionFromExceptionStatus(ex) ?: throw ex
         val errorCode = ErrorCode.INT_GRPC_BLOCKCHAIN
         errorCode.specificCode = grpcErrorCode.code
         errorCode.message = grpcErrorCode.message
@@ -449,10 +466,10 @@ class BlockchainServiceImpl(
 
     // Status defined in ampenet-blockchain service, for more info see:
     // ampnet-blockchain-service/src/main/kotlin/com/ampnet/crowdfunding/blockchain/enums/ErrorCode.kt
-    private fun getErrorDescriptionFromExceptionStatus(ex: StatusRuntimeException): GrpcErrorCode {
-        val description = ex.status.description?.split(" > ") ?: throw ex
+    private fun getErrorDescriptionFromExceptionStatus(ex: StatusRuntimeException): GrpcErrorCode? {
+        val description = ex.status.description?.split(" > ") ?: return null
         if (description.size != 2) {
-            throw ex
+            return null
         }
         return GrpcErrorCode(description[0], description[1])
     }
