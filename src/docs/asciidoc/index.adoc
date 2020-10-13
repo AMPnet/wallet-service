@@ -201,11 +201,19 @@ include::{snippets}/DepositControllerTest/mustBeAbleToCreateProjectDeposit/http-
 .Response
 include::{snippets}/DepositControllerTest/mustBeAbleToCreateProjectDeposit/http-response.adoc[]
 
-=== Get my pending Deposit
+=== Get pending deposit
+
+==== User
 .Request
 include::{snippets}/DepositControllerTest/mustBeAbleToGetPendingDeposit/http-request.adoc[]
 .Response
 include::{snippets}/DepositControllerTest/mustBeAbleToGetPendingDeposit/http-response.adoc[]
+
+==== Project
+.Request
+include::{snippets}/DepositControllerTest/mustBeAbleToGetPendingProjectDeposit/http-request.adoc[]
+.Response
+include::{snippets}/DepositControllerTest/mustBeAbleToGetPendingProjectDeposit/http-response.adoc[]
 
 === Delete
 .Request
