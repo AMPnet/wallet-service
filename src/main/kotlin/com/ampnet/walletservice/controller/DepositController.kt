@@ -64,4 +64,14 @@ class DepositController(
         val deposit = depositService.create(serviceRequest)
         return ResponseEntity.ok(DepositResponse(deposit))
     }
+
+    @GetMapping("/deposit/project/{projectUuid}")
+    fun getPendingProjectDeposit(@PathVariable projectUuid: UUID): ResponseEntity<DepositResponse> {
+        val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
+        logger.debug { "Received request to get pending deposit by user: ${userPrincipal.uuid}" }
+        depositService.getPendingForProject(projectUuid, userPrincipal.uuid)?.let {
+            return ResponseEntity.ok(DepositResponse(it))
+        }
+        return ResponseEntity.notFound().build()
+    }
 }

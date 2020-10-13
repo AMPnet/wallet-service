@@ -97,16 +97,12 @@ class DepositServiceTest : JpaServiceTestBase() {
         suppose("Project created withdraw") {
             deposit = createUnsigned(projectUuid, DepositWithdrawType.PROJECT)
         }
-        suppose("Project service will return project") {
-            Mockito.`when`(mockedProjectService.getProject(projectUuid))
-                .thenReturn(createProjectResponse(projectUuid, UUID.randomUUID()))
-        }
 
         verify("Service will throw exception when user tries to delete others project withdraw") {
             val exception = assertThrows<InvalidRequestException> {
-                depositService.delete(deposit.id, userUuid)
+                depositService.delete(deposit.id, UUID.randomUUID())
             }
-            assertThat(exception.errorCode).isEqualTo(ErrorCode.PRJ_MISSING_PRIVILEGE)
+            assertThat(exception.errorCode).isEqualTo(ErrorCode.USER_MISSING_PRIVILEGE)
         }
     }
 }
