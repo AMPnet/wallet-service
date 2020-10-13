@@ -74,20 +74,8 @@ class DepositServiceImpl(
     }
 
     private fun validateUserCanEditDeposit(deposit: Deposit, user: UUID) {
-        when (deposit.type) {
-            DepositWithdrawType.USER -> {
-                if (deposit.ownerUuid != user)
-                    throw InvalidRequestException(
-                        ErrorCode.USER_MISSING_PRIVILEGE, "Deposit does not belong to this user"
-                    )
-            }
-            DepositWithdrawType.PROJECT -> {
-                if (deposit.createdBy != user)
-                    throw InvalidRequestException(
-                        ErrorCode.USER_MISSING_PRIVILEGE, "Deposit does not belong to this user"
-                    )
-            }
-        }
+        if (deposit.createdBy != user)
+            throw InvalidRequestException(ErrorCode.USER_MISSING_PRIVILEGE, "Deposit does not belong to this user")
     }
 
     private fun validateOwnerDoesNotHavePendingDeposit(owner: UUID) {

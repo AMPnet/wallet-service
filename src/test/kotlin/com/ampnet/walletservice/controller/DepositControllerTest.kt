@@ -17,7 +17,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.time.ZonedDateTime
-import java.util.UUID
 
 class DepositControllerTest : ControllerTestBase() {
 
@@ -110,10 +109,10 @@ class DepositControllerTest : ControllerTestBase() {
     }
 
     @Test
-    @WithMockCrowdfoundUser
+    @WithMockCrowdfoundUser(uuid = "98986187-c870-4339-be4e-a597146f1428")
     fun mustNotBeAbleToDeleteOthersDeposit() {
         suppose("Unapproved user deposit exists") {
-            val deposit = createUnsignedDeposit(UUID.randomUUID())
+            val deposit = createUnsignedDeposit(userUuid)
             testContext.deposits = listOf(deposit)
         }
 
@@ -207,10 +206,6 @@ class DepositControllerTest : ControllerTestBase() {
         suppose("Project has pending deposit") {
             val deposit = createUnsignedDeposit(projectUuid, type = DepositWithdrawType.PROJECT)
             testContext.deposits = listOf(deposit)
-        }
-        suppose("Project service will return project") {
-            Mockito.`when`(projectService.getProject(projectUuid))
-                .thenReturn(createProjectResponse(projectUuid, userUuid))
         }
 
         verify("User can get pending project deposit") {
