@@ -66,18 +66,26 @@ class DepositServiceImpl(
         return depositRepository.findByOwnerUuidUnsigned(user).firstOrNull()
     }
 
+    @Transactional(readOnly = true)
+    override fun getPendingForProject(project: UUID, user: UUID): Deposit? {
+        val deposit = depositRepository.findByOwnerUuidUnsigned(project).firstOrNull() ?: return null
+        validateUserCanEditDeposit(deposit, user)
+        return deposit
+    }
+
     private fun validateUserCanEditDeposit(deposit: Deposit, user: UUID) {
         when (deposit.type) {
             DepositWithdrawType.USER -> {
-                if (deposit.ownerUuid != user) {
+                if (deposit.ownerUuid != user)
                     throw InvalidRequestException(
                         ErrorCode.USER_MISSING_PRIVILEGE, "Deposit does not belong to this user"
                     )
-                }
             }
             DepositWithdrawType.PROJECT -> {
-                val projectResponse = projectService.getProject(deposit.ownerUuid)
-                ServiceUtils.validateUserIsProjectOwner(user, projectResponse)
+                if (deposit.createdBy != user)
+                    throw InvalidRequestException(
+                        ErrorCode.USER_MISSING_PRIVILEGE, "Deposit does not belong to this user"
+                    )
             }
         }
     }

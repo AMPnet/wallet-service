@@ -8,4 +8,5 @@ interface DepositService {
     fun create(request: DepositCreateServiceRequest): Deposit
     fun delete(id: Int, user: UUID)
     fun getPendingForUser(user: UUID): Deposit?
+    fun getPendingForProject(project: UUID, user: UUID): Deposit?
 }
