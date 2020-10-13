@@ -53,7 +53,7 @@ class ProjectServiceImpl(
             logger.debug { "Fetched organizations: ${response.map { it.uuid }}" }
             return response
         } catch (ex: StatusRuntimeException) {
-            throw GrpcException(ErrorCode.INT_GRPC_PROJECT, "Failed to fetch organizations. ${ex.localizedMessage}")
+            throw GrpcException(ErrorCode.INT_GRPC_PROJECT, "Failed to fetch organizations.", ex)
         }
     }
 
@@ -70,7 +70,7 @@ class ProjectServiceImpl(
             logger.debug { "Fetched projects: ${response.map { it.uuid }}" }
             return response
         } catch (ex: StatusRuntimeException) {
-            throw GrpcException(ErrorCode.INT_GRPC_PROJECT, "Failed to fetch projects. ${ex.localizedMessage}")
+            throw GrpcException(ErrorCode.INT_GRPC_PROJECT, "Failed to fetch projects.", ex)
         }
     }
 
