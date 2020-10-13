@@ -428,7 +428,7 @@ class BlockchainServiceImpl(
         logger.info { "Posting transaction (#$retryCount)" }
         if (retryCount > applicationProperties.grpc.blockchainServiceMaxRetries) {
             logger.warn { "Retry posting transaction exceeded" }
-            throw GrpcException(ErrorCode.INT_GRPC_BLOCKCHAIN, "Retry exceeded", null)
+            throw GrpcException(ErrorCode.INT_GRPC_BLOCKCHAIN, "Retry exceeded")
         }
         try {
             val response = serviceWithTimeout()
@@ -445,7 +445,7 @@ class BlockchainServiceImpl(
                 val errorCode = ErrorCode.INT_GRPC_BLOCKCHAIN
                 errorCode.specificCode = grpcErrorCode.code
                 errorCode.message = grpcErrorCode.message
-                throw GrpcException(errorCode, "Couldn't post transaction", ex)
+                throw GrpcException(errorCode, "Couldn't post transaction")
             }
             // retry posting transaction for unknown errors
             sleep(applicationProperties.grpc.blockchainServiceRetryDelay)
@@ -468,9 +468,7 @@ class BlockchainServiceImpl(
     // ampnet-blockchain-service/src/main/kotlin/com/ampnet/crowdfunding/blockchain/enums/ErrorCode.kt
     private fun getErrorDescriptionFromExceptionStatus(ex: StatusRuntimeException): GrpcErrorCode? {
         val description = ex.status.description?.split(" > ") ?: return null
-        if (description.size != 2) {
-            return null
-        }
+        if (description.size != 2) return null
         return GrpcErrorCode(description[0], description[1])
     }
 
