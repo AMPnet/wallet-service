@@ -448,6 +448,7 @@ class BlockchainServiceImpl(
                 throw GrpcException(errorCode, "Couldn't post transaction")
             }
             // retry posting transaction for unknown errors
+            logger.warn("Failed to post transaction", ex)
             sleep(applicationProperties.grpc.blockchainServiceRetryDelay)
             return postTransactionWithRetries(transaction, retryCount + 1)
         }
