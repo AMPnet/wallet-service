@@ -2,9 +2,9 @@ package com.ampnet.walletservice.controller
 
 import com.ampnet.walletservice.controller.pojo.request.CommentRequest
 import com.ampnet.walletservice.controller.pojo.response.DepositResponse
+import com.ampnet.walletservice.controller.pojo.response.DepositWithProjectAndUserResponse
 import com.ampnet.walletservice.controller.pojo.response.DepositWithProjectListResponse
 import com.ampnet.walletservice.controller.pojo.response.DepositWithUserListResponse
-import com.ampnet.walletservice.controller.pojo.response.DepositWithUserResponse
 import com.ampnet.walletservice.controller.pojo.response.TransactionResponse
 import com.ampnet.walletservice.controller.pojo.response.UsersWithApprovedDeposit
 import com.ampnet.walletservice.enums.DepositWithdrawType
@@ -58,9 +58,41 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
                 .andExpect(status().isOk)
                 .andReturn()
 
-            val response: DepositWithUserResponse = objectMapper.readValue(result.response.contentAsString)
+            val response: DepositWithProjectAndUserResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(response.deposit.reference).isEqualTo(savedDeposit.reference)
             assertThat(response.user).isNotNull
+            assertThat(response.project).isNull()
+        }
+    }
+
+    @Test
+    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PRA_DEPOSIT])
+    fun mustBeAbleToSearchProjectByReference() {
+        suppose("Project deposit exists") {
+            val deposit = createUnsignedDeposit(projectUuid, DepositWithdrawType.PROJECT)
+            testContext.deposits = listOf(deposit)
+        }
+        suppose("User service will return user") {
+            Mockito.`when`(userService.getUsers(setOf(userUuid)))
+                .thenReturn(listOf(createUserResponse(userUuid)))
+        }
+        suppose("Project service will return project") {
+            Mockito.`when`(projectService.getProjects(setOf(projectUuid)))
+                .thenReturn(listOf(createProjectResponse(projectUuid)))
+        }
+
+        verify("Cooperative can search deposit by reference") {
+            val savedDeposit = testContext.deposits.first()
+            val result = mockMvc.perform(
+                get("$depositPath/search").param("reference", savedDeposit.reference)
+            )
+                .andExpect(status().isOk)
+                .andReturn()
+
+            val response: DepositWithProjectAndUserResponse = objectMapper.readValue(result.response.contentAsString)
+            assertThat(response.deposit.reference).isEqualTo(savedDeposit.reference)
+            assertThat(response.user).isNotNull
+            assertThat(response.project).isNotNull
         }
     }
 

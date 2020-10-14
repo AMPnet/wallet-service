@@ -31,8 +31,8 @@ class DepositServiceImpl(
 
     @Transactional
     override fun create(request: DepositCreateServiceRequest): Deposit {
-        validateOwnerDoesNotHavePendingDeposit(request.owner)
-        ServiceUtils.getWalletByUserUuid(request.owner, walletRepository)
+        validateOwnerHasWallet(request.owner)
+        validateOwnerDoesNotHavePendingDeposit(request)
         if (request.type == DepositWithdrawType.PROJECT) {
             val projectResponse = projectService.getProject(request.owner)
             ServiceUtils.validateUserIsProjectOwner(request.createdBy, projectResponse)
@@ -73,17 +73,26 @@ class DepositServiceImpl(
         return deposit
     }
 
+    private fun validateOwnerHasWallet(owner: UUID) {
+        walletRepository.findByOwner(owner).orElseThrow {
+            ResourceNotFoundException(ErrorCode.WALLET_MISSING, "Missing wallet for owner: $owner")
+        }
+    }
+
     private fun validateUserCanEditDeposit(deposit: Deposit, user: UUID) {
         if (deposit.createdBy != user)
             throw InvalidRequestException(ErrorCode.USER_MISSING_PRIVILEGE, "Deposit does not belong to this user")
     }
 
-    private fun validateOwnerDoesNotHavePendingDeposit(owner: UUID) {
-        getPendingForUser(owner)?.let {
-            throw ResourceAlreadyExistsException(
-                ErrorCode.WALLET_DEPOSIT_EXISTS, "Check your unapproved deposit: ${it.id}"
-            )
+    private fun validateOwnerDoesNotHavePendingDeposit(request: DepositCreateServiceRequest) {
+        val pendingDeposit = when (request.type) {
+            DepositWithdrawType.USER -> getPendingForUser(request.owner)
+            DepositWithdrawType.PROJECT -> getPendingForProject(request.owner, request.createdBy)
         }
+        if (pendingDeposit != null)
+            throw ResourceAlreadyExistsException(
+                ErrorCode.WALLET_DEPOSIT_EXISTS, "Check your unapproved deposit: ${pendingDeposit.id}"
+            )
     }
 
     private fun generateDepositReference(): String = (1..DEPOSIT_REFERENCE_LENGTH)

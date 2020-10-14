@@ -373,10 +373,13 @@ include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToGenerateBurnTr
 Must have Admin role - privilege: PRA_DEPOSIT
 
 ===== Search by reference
+Deposit type `PROJECT` will have both user and project response.
+For deposit type `USER`, project response will be null.
+
 .Request
-include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToSearchByReference/http-request.adoc[]
+include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToSearchProjectByReference/http-request.adoc[]
 .Response
-include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToSearchByReference/http-response.adoc[]
+include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToSearchProjectByReference/http-response.adoc[]
 
 ===== Unapproved
 Unapproved deposits are all deposits that are not minted - `txHash=null`.
