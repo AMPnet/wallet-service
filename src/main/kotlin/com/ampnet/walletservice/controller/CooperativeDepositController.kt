@@ -42,11 +42,20 @@ class CooperativeDepositController(
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_DEPOSIT)")
     fun getDepositByReference(
         @RequestParam("reference") reference: String
-    ): ResponseEntity<DepositWithUserResponse> {
+    ): ResponseEntity<DepositWithProjectAndUserResponse> {
         logger.debug { "Received request to get find deposit by reference: $reference" }
         cooperativeDepositService.findByReference(reference)?.let {
-            val user = userService.getUsers(setOf(it.ownerUuid)).firstOrNull()
-            val response = DepositWithUserResponse(it, user)
+            val response: DepositWithProjectAndUserResponse = when (it.type) {
+                DepositWithdrawType.USER -> {
+                    val user = userService.getUsers(setOf(it.ownerUuid)).firstOrNull()
+                    DepositWithProjectAndUserResponse(it, null, user)
+                }
+                DepositWithdrawType.PROJECT -> {
+                    val user = userService.getUsers(setOf(it.createdBy)).firstOrNull()
+                    val project = projectService.getProjects(setOf(it.ownerUuid)).firstOrNull()
+                    DepositWithProjectAndUserResponse(it, project, user)
+                }
+            }
             return ResponseEntity.ok(response)
         }
         return ResponseEntity.notFound().build()
