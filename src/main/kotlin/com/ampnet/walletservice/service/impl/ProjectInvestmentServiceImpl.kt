@@ -1,6 +1,7 @@
 package com.ampnet.walletservice.service.impl
 
 import com.ampnet.projectservice.proto.ProjectResponse
+import com.ampnet.walletservice.controller.ControllerUtils
 import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.exception.InvalidRequestException
 import com.ampnet.walletservice.exception.ResourceNotFoundException
@@ -16,6 +17,7 @@ import mu.KLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 import java.util.UUID
 
 @Service
@@ -82,17 +84,22 @@ class ProjectInvestmentServiceImpl(
             throw InvalidRequestException(ErrorCode.PRJ_NOT_ACTIVE, "Project is not active")
         }
         if (ZonedDateTime.now().toInstant().toEpochMilli() > project.endDate) {
-            throw InvalidRequestException(ErrorCode.PRJ_DATE_EXPIRED, "Project has expired at: ${project.endDate}")
+            val dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy.")
+            val endDate = ControllerUtils.epochMilliToZonedDateTime(project.endDate).format(dateFormatter)
+            throw InvalidRequestException(ErrorCode.PRJ_DATE_EXPIRED, "Project has expired at: $endDate")
         }
     }
 
     private fun verifyInvestmentAmountIsValid(project: ProjectResponse, amount: Long) {
         if (amount > project.maxPerUser) {
-            throw InvalidRequestException(ErrorCode.PRJ_MAX_PER_USER, "User can invest max ${project.maxPerUser}")
+            throw InvalidRequestException(
+                ErrorCode.PRJ_MAX_PER_USER,
+                "User can invest max ${project.maxPerUser.toEurAmount()}"
+            )
         }
         if (amount < project.minPerUser) {
             throw InvalidRequestException(
-                ErrorCode.PRJ_MIN_PER_USER, "User has to invest at least ${project.minPerUser}"
+                ErrorCode.PRJ_MIN_PER_USER, "User has to invest at least ${project.minPerUser.toEurAmount()}"
             )
         }
     }
@@ -108,7 +115,7 @@ class ProjectInvestmentServiceImpl(
         val currentFunds = blockchainService.getBalance(hash)
         if (currentFunds == expectedFunding) {
             throw InvalidRequestException(
-                ErrorCode.PRJ_MAX_FUNDS, "Project has reached expected funding: $currentFunds"
+                ErrorCode.PRJ_MAX_FUNDS, "Project has reached expected funding: ${currentFunds.toEurAmount()}"
             )
         }
     }
