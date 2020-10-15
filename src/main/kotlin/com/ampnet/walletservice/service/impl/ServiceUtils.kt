@@ -8,6 +8,7 @@ import com.ampnet.walletservice.persistence.model.Wallet
 import com.ampnet.walletservice.persistence.model.Withdraw
 import com.ampnet.walletservice.persistence.repository.WalletRepository
 import com.ampnet.walletservice.persistence.repository.WithdrawRepository
+import java.text.DecimalFormat
 import java.util.Optional
 import java.util.UUID
 
@@ -48,3 +49,6 @@ internal object ServiceUtils {
             throw ResourceNotFoundException(ErrorCode.WALLET_MISSING, "Missing wallet for user with uuid: $userUuid")
         }
 }
+
+const val FROM_CENTS_TO_EUROS = 100L
+fun Long.toEurAmount(): String = DecimalFormat("#,##0.00").format(this / FROM_CENTS_TO_EUROS)
