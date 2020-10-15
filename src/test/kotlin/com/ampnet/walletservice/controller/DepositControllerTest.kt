@@ -1,11 +1,11 @@
 package com.ampnet.walletservice.controller
 
 import com.ampnet.walletservice.controller.pojo.request.AmountRequest
-import com.ampnet.walletservice.controller.pojo.response.DepositResponse
 import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.persistence.model.Deposit
 import com.ampnet.walletservice.security.WithMockCrowdfoundUser
+import com.ampnet.walletservice.service.pojo.DepositServiceResponse
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -50,7 +50,7 @@ class DepositControllerTest : ControllerTestBase() {
                 .andExpect(status().isOk)
                 .andReturn()
 
-            val deposit: DepositResponse = objectMapper.readValue(result.response.contentAsString)
+            val deposit: DepositServiceResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(deposit.owner).isEqualTo(userUuid)
             assertThat(deposit.amount).isEqualTo(testContext.amount)
             assertThat(deposit.txHash).isNull()
@@ -58,15 +58,17 @@ class DepositControllerTest : ControllerTestBase() {
             assertThat(deposit.type).isEqualTo(DepositWithdrawType.USER)
             assertThat(deposit.reference).isNotNull()
             assertThat(deposit.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
+            assertThat(deposit.documentResponse).isNull()
         }
         verify("User deposit is stored") {
-            val deposits = depositRepository.findAll()
+            val deposits = depositRepository.findAllWithFile()
             assertThat(deposits).hasSize(2)
-            val deposit = deposits.first { it.txHash != null }
+            val deposit = deposits.first { it.txHash == null }
             assertThat(deposit.ownerUuid).isEqualTo(userUuid)
-            assertThat(deposit.txHash).isNotNull()
+            assertThat(deposit.txHash).isNull()
             assertThat(deposit.reference).isNotNull()
             assertThat(deposit.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
+            assertThat(deposit.file).isNull()
         }
     }
 
@@ -126,17 +128,18 @@ class DepositControllerTest : ControllerTestBase() {
     @WithMockCrowdfoundUser
     fun mustBeAbleToGetPendingDeposit() {
         suppose("User deposit exists") {
-            val deposit = createUnsignedDeposit(userUuid)
+            val deposit = createUnsignedDeposit(userUuid, withFile = true)
             testContext.deposits = listOf(deposit)
         }
 
-        verify("User can his get pending deposit") {
+        verify("User can get his pending deposit") {
             val result = mockMvc.perform(get(depositPath))
                 .andExpect(status().isOk)
                 .andReturn()
 
-            val deposit: DepositResponse = objectMapper.readValue(result.response.contentAsString)
+            val deposit: DepositServiceResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(deposit.owner).isEqualTo(userUuid)
+            assertThat(deposit.documentResponse).isNotNull
             val savedDeposit = testContext.deposits.first()
             assertThat(deposit.id).isEqualTo(savedDeposit.id)
         }
@@ -176,7 +179,7 @@ class DepositControllerTest : ControllerTestBase() {
                 .andExpect(status().isOk)
                 .andReturn()
 
-            val deposit: DepositResponse = objectMapper.readValue(result.response.contentAsString)
+            val deposit: DepositServiceResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(deposit.owner).isEqualTo(projectUuid)
             assertThat(deposit.amount).isEqualTo(testContext.amount)
             assertThat(deposit.txHash).isNull()
@@ -184,15 +187,17 @@ class DepositControllerTest : ControllerTestBase() {
             assertThat(deposit.type).isEqualTo(DepositWithdrawType.PROJECT)
             assertThat(deposit.reference).isNotNull()
             assertThat(deposit.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
+            assertThat(deposit.documentResponse).isNull()
         }
         verify("Project deposit is stored") {
-            val deposits = depositRepository.findAll()
+            val deposits = depositRepository.findAllWithFile()
             assertThat(deposits).hasSize(2)
             val deposit = deposits.first { it.txHash == null }
             assertThat(deposit.ownerUuid).isEqualTo(projectUuid)
             assertThat(deposit.txHash).isNull()
             assertThat(deposit.reference).isNotNull()
             assertThat(deposit.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
+            assertThat(deposit.file).isNull()
         }
     }
 
@@ -204,7 +209,7 @@ class DepositControllerTest : ControllerTestBase() {
             createWalletForProject(projectUuid, walletHash)
         }
         suppose("Project has pending deposit") {
-            val deposit = createUnsignedDeposit(projectUuid, type = DepositWithdrawType.PROJECT)
+            val deposit = createUnsignedDeposit(projectUuid, type = DepositWithdrawType.PROJECT, withFile = true)
             testContext.deposits = listOf(deposit)
         }
 
@@ -212,9 +217,10 @@ class DepositControllerTest : ControllerTestBase() {
             val result = mockMvc.perform(get("$depositPath/project/$projectUuid"))
                 .andExpect(status().isOk)
                 .andReturn()
-            val deposit: DepositResponse = objectMapper.readValue(result.response.contentAsString)
+            val deposit: DepositServiceResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(deposit.owner).isEqualTo(projectUuid)
             assertThat(deposit.createdBy).isEqualTo(userUuid)
+            assertThat(deposit.documentResponse).isNotNull
             val savedDeposit = testContext.deposits.first()
             assertThat(deposit.id).isEqualTo(savedDeposit.id)
         }

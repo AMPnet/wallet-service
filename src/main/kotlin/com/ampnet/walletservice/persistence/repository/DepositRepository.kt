@@ -39,4 +39,13 @@ interface DepositRepository : JpaRepository<Deposit, Int> {
             "WHERE deposit.txHash IS NOT NULL AND deposit.type = 'USER'"
     )
     fun countUsersWithApprovedDeposit(): Int
+
+    @Query(
+        "SELECT deposit FROM Deposit deposit LEFT JOIN FETCH deposit.file " +
+            "WHERE deposit.id = :depositId"
+    )
+    fun findWithFileById(depositId: Int): Optional<Deposit>
+
+    @Query("SELECT deposit FROM Deposit deposit LEFT JOIN FETCH deposit.file")
+    fun findAllWithFile(): List<Deposit>
 }
