@@ -1,15 +1,14 @@
 package com.ampnet.walletservice.controller
 
 import com.ampnet.walletservice.controller.pojo.response.TransactionResponse
-import com.ampnet.walletservice.controller.pojo.response.WithdrawResponse
-import com.ampnet.walletservice.controller.pojo.response.WithdrawWithProjectListResponse
-import com.ampnet.walletservice.controller.pojo.response.WithdrawWithUserListResponse
 import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.enums.PrivilegeType
 import com.ampnet.walletservice.enums.TransactionType
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionData
 import com.ampnet.walletservice.persistence.model.Withdraw
 import com.ampnet.walletservice.security.WithMockCrowdfoundUser
+import com.ampnet.walletservice.service.pojo.WithdrawListServiceResponse
+import com.ampnet.walletservice.service.pojo.WithdrawServiceResponse
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -19,7 +18,6 @@ import org.springframework.mock.web.MockMultipartFile
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.fileUpload
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.time.ZonedDateTime
 import java.util.UUID
@@ -38,7 +36,7 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
     @Test
     @WithMockCrowdfoundUser(privileges = [PrivilegeType.PRA_WITHDRAW])
     fun mustBeAbleToGetApprovedUserWithdraws() {
-        suppose("Approved and unapproved  user withdraws are created") {
+        suppose("Approved and unapproved user withdraws are created") {
             val approvedWithdraw = createApprovedWithdraw(userUuid)
             val secondApprovedWithdraw = createApprovedWithdraw(userUuid)
             val unapprovedWithdraw = createWithdraw(userUuid)
@@ -63,23 +61,28 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
                     .param("page", "0")
                     .param("sort", "approvedAt,desc")
             )
-                .andExpect(MockMvcResultMatchers.status().isOk)
+                .andExpect(status().isOk)
                 .andReturn()
 
-            val withdrawList: WithdrawWithUserListResponse = objectMapper.readValue(result.response.contentAsString)
+            val withdrawList: WithdrawListServiceResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(withdrawList.withdraws).hasSize(1)
-            val withdraw = withdrawList.withdraws.first()
+            val withdrawWithData = withdrawList.withdraws.first()
+            val withdraw = withdrawWithData.withdraw
+            val project = withdrawWithData.project
+            val user = withdrawWithData.user
+            assertThat(project).isNull()
             assertThat(withdraw.amount).isEqualTo(testContext.amount)
             assertThat(withdraw.id).isNotNull()
             assertThat(withdraw.bankAccount).isNotNull()
             assertThat(withdraw.approvedTxHash).isEqualTo(testContext.approvedTx)
             assertThat(withdraw.approvedAt).isBeforeOrEqualTo(ZonedDateTime.now())
-            assertThat(withdraw.user?.uuid).isEqualTo(userUuid)
-            assertThat(withdraw.userWallet).isEqualTo(walletHash)
+            assertThat(user?.uuid).isEqualTo(userUuid)
+            assertThat(withdrawWithData.walletHash).isEqualTo(walletHash)
             assertThat(withdraw.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
             assertThat(withdraw.burnedAt).isNull()
             assertThat(withdraw.burnedBy).isNull()
             assertThat(withdraw.burnedTxHash).isNull()
+            assertThat(withdraw.documentResponse).isNull()
         }
     }
 
@@ -118,21 +121,25 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
                 .andExpect(status().isOk)
                 .andReturn()
 
-            val withdrawList: WithdrawWithProjectListResponse = objectMapper.readValue(result.response.contentAsString)
+            val withdrawList: WithdrawListServiceResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(withdrawList.withdraws).hasSize(1)
-            val withdraw = withdrawList.withdraws.first()
+            val withdrawWithData = withdrawList.withdraws.first()
+            val withdraw = withdrawWithData.withdraw
+            val project = withdrawWithData.project
+            val user = withdrawWithData.user
             assertThat(withdraw.amount).isEqualTo(testContext.amount)
             assertThat(withdraw.id).isNotNull()
             assertThat(withdraw.bankAccount).isNotNull()
             assertThat(withdraw.approvedTxHash).isEqualTo(testContext.approvedTx)
             assertThat(withdraw.approvedAt).isBeforeOrEqualTo(ZonedDateTime.now())
-            assertThat(withdraw.project?.uuid).isEqualTo(projectUuid.toString())
-            assertThat(withdraw.projectWallet).isEqualTo(walletHash)
+            assertThat(project?.uuid).isEqualTo(projectUuid.toString())
+            assertThat(withdrawWithData.walletHash).isEqualTo(walletHash)
             assertThat(withdraw.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
             assertThat(withdraw.burnedAt).isNull()
             assertThat(withdraw.burnedBy).isNull()
             assertThat(withdraw.burnedTxHash).isNull()
-            assertThat(withdraw.user?.uuid).isEqualTo(userUuid)
+            assertThat(user?.uuid).isEqualTo(userUuid)
+            assertThat(withdraw.documentResponse).isNull()
         }
     }
 
@@ -166,21 +173,25 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
                 .andExpect(status().isOk)
                 .andReturn()
 
-            val withdrawList: WithdrawWithUserListResponse = objectMapper.readValue(result.response.contentAsString)
+            val withdrawList: WithdrawListServiceResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(withdrawList.withdraws).hasSize(1)
-            val withdraw = withdrawList.withdraws.first()
+            val withdrawWithData = withdrawList.withdraws.first()
+            val withdraw = withdrawWithData.withdraw
+            val project = withdrawWithData.project
+            val user = withdrawWithData.user
+            assertThat(project).isNull()
             assertThat(withdraw.amount).isEqualTo(testContext.amount)
             assertThat(withdraw.id).isNotNull()
             assertThat(withdraw.bankAccount).isEqualTo(testContext.bankAccount)
             assertThat(withdraw.approvedTxHash).isEqualTo(testContext.approvedTx)
             assertThat(withdraw.approvedAt).isBeforeOrEqualTo(ZonedDateTime.now())
-            assertThat(withdraw.user?.uuid).isEqualTo(userUuid)
-            assertThat(withdraw.userWallet).isEqualTo(walletHash)
+            assertThat(user?.uuid).isEqualTo(userUuid)
+            assertThat(withdrawWithData.walletHash).isEqualTo(walletHash)
             assertThat(withdraw.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
             assertThat(withdraw.burnedAt).isNotNull()
             assertThat(withdraw.burnedBy).isNotNull()
             assertThat(withdraw.burnedTxHash).isEqualTo(testContext.burnedTx)
-            assertThat(withdraw.documentResponse).isNotNull()
+            assertThat(withdraw.documentResponse).isNull()
         }
     }
 
@@ -218,22 +229,25 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
                 .andExpect(status().isOk)
                 .andReturn()
 
-            val withdrawList: WithdrawWithProjectListResponse = objectMapper.readValue(result.response.contentAsString)
+            val withdrawList: WithdrawListServiceResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(withdrawList.withdraws).hasSize(1)
-            val withdraw = withdrawList.withdraws.first()
+            val withdrawWithData = withdrawList.withdraws.first()
+            val withdraw = withdrawWithData.withdraw
+            val project = withdrawWithData.project
+            val user = withdrawWithData.user
             assertThat(withdraw.amount).isEqualTo(testContext.amount)
             assertThat(withdraw.id).isNotNull()
             assertThat(withdraw.bankAccount).isEqualTo(testContext.bankAccount)
             assertThat(withdraw.approvedTxHash).isEqualTo(testContext.approvedTx)
             assertThat(withdraw.approvedAt).isBeforeOrEqualTo(ZonedDateTime.now())
-            assertThat(withdraw.project?.uuid).isEqualTo(projectUuid.toString())
-            assertThat(withdraw.projectWallet).isEqualTo(walletHash)
+            assertThat(project?.uuid).isEqualTo(projectUuid.toString())
+            assertThat(withdrawWithData.walletHash).isEqualTo(walletHash)
             assertThat(withdraw.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
             assertThat(withdraw.burnedAt).isNotNull()
             assertThat(withdraw.burnedBy).isNotNull()
             assertThat(withdraw.burnedTxHash).isEqualTo(testContext.burnedTx)
-            assertThat(withdraw.documentResponse).isNotNull()
-            assertThat(withdraw.user?.uuid).isEqualTo(userUuid)
+            assertThat(withdraw.documentResponse).isNull()
+            assertThat(user?.uuid).isEqualTo(userUuid)
         }
     }
 
@@ -319,7 +333,7 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
                 .andExpect(status().isOk)
                 .andReturn()
 
-            val withdrawResponse: WithdrawResponse = objectMapper.readValue(result.response.contentAsString)
+            val withdrawResponse: WithdrawServiceResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(withdrawResponse.id).isEqualTo(testContext.withdraw.id)
             assertThat(withdrawResponse.documentResponse?.link).isEqualTo(testContext.documentLink)
         }

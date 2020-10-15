@@ -6,13 +6,19 @@ import com.ampnet.walletservice.exception.InvalidRequestException
 import com.ampnet.walletservice.grpc.blockchain.BlockchainService
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionDataAndInfo
 import com.ampnet.walletservice.grpc.mail.MailService
+import com.ampnet.walletservice.grpc.projectservice.ProjectService
+import com.ampnet.walletservice.grpc.userservice.UserService
 import com.ampnet.walletservice.persistence.model.Withdraw
 import com.ampnet.walletservice.persistence.repository.WalletRepository
 import com.ampnet.walletservice.persistence.repository.WithdrawRepository
 import com.ampnet.walletservice.service.CooperativeWithdrawService
 import com.ampnet.walletservice.service.StorageService
 import com.ampnet.walletservice.service.TransactionInfoService
+import com.ampnet.walletservice.service.WalletService
 import com.ampnet.walletservice.service.pojo.DocumentSaveRequest
+import com.ampnet.walletservice.service.pojo.WithdrawListServiceResponse
+import com.ampnet.walletservice.service.pojo.WithdrawServiceResponse
+import com.ampnet.walletservice.service.pojo.WithdrawWithDataServiceResponse
 import mu.KLogging
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -28,19 +34,30 @@ class CooperativeWithdrawServiceImpl(
     private val blockchainService: BlockchainService,
     private val transactionInfoService: TransactionInfoService,
     private val storageService: StorageService,
-    private val mailService: MailService
+    private val mailService: MailService,
+    private val userService: UserService,
+    private val projectService: ProjectService,
+    private val walletService: WalletService
 ) : CooperativeWithdrawService {
 
     companion object : KLogging()
 
     @Transactional(readOnly = true)
-    override fun getAllApproved(type: DepositWithdrawType, pageable: Pageable): Page<Withdraw> {
-        return withdrawRepository.findAllApproved(type, pageable)
+    override fun getAllApproved(type: DepositWithdrawType, pageable: Pageable): WithdrawListServiceResponse {
+        val withdrawsPage = withdrawRepository.findAllApproved(type, pageable)
+        return when (type) {
+            DepositWithdrawType.USER -> getWithdrawWithUserListServiceResponse(withdrawsPage)
+            DepositWithdrawType.PROJECT -> getWithdrawWithProjectListServiceResponse(withdrawsPage)
+        }
     }
 
     @Transactional(readOnly = true)
-    override fun getAllBurned(type: DepositWithdrawType, pageable: Pageable): Page<Withdraw> {
-        return withdrawRepository.findAllBurned(type, pageable)
+    override fun getAllBurned(type: DepositWithdrawType, pageable: Pageable): WithdrawListServiceResponse {
+        val withdrawsPage = withdrawRepository.findAllBurned(type, pageable)
+        return when (type) {
+            DepositWithdrawType.USER -> getWithdrawWithUserListServiceResponse(withdrawsPage)
+            DepositWithdrawType.PROJECT -> getWithdrawWithProjectListServiceResponse(withdrawsPage)
+        }
     }
 
     @Transactional
@@ -70,13 +87,13 @@ class CooperativeWithdrawServiceImpl(
     }
 
     @Transactional
-    override fun addDocument(withdrawId: Int, request: DocumentSaveRequest): Withdraw {
+    override fun addDocument(withdrawId: Int, request: DocumentSaveRequest): WithdrawServiceResponse {
         val withdraw = ServiceUtils.getWithdraw(withdrawId, withdrawRepository)
         logger.info { "Adding document for withdraw: $withdraw" }
         val document = storageService.saveDocument(request)
         withdraw.file = document
         logger.info { "Document added" }
-        return withdraw
+        return WithdrawServiceResponse(withdraw, true)
     }
 
     private fun validateWithdrawForBurn(withdraw: Withdraw) {
@@ -86,5 +103,41 @@ class CooperativeWithdrawServiceImpl(
         if (withdraw.burnedTxHash != null) {
             throw InvalidRequestException(ErrorCode.WALLET_WITHDRAW_BURNED, "Burned txHash: ${withdraw.burnedTxHash}")
         }
+    }
+
+    private fun getWithdrawWithUserListServiceResponse(withdrawsPage: Page<Withdraw>): WithdrawListServiceResponse {
+        val withdraws = withdrawsPage.toList()
+        val users = userService
+            .getUsers(withdraws.map { it.ownerUuid }.toSet())
+            .associateBy { it.uuid }
+        val withdrawWithUserList = mutableListOf<WithdrawWithDataServiceResponse>()
+        withdraws.forEach { withdraw ->
+            val walletHash = walletService.getWallet(withdraw.ownerUuid)?.hash.orEmpty()
+            val userResponse = users[withdraw.ownerUuid.toString()]
+            withdrawWithUserList.add(
+                WithdrawWithDataServiceResponse(withdraw, userResponse, null, walletHash)
+            )
+        }
+        return WithdrawListServiceResponse(withdrawWithUserList, withdrawsPage.number, withdrawsPage.totalPages)
+    }
+
+    private fun getWithdrawWithProjectListServiceResponse(withdrawsPage: Page<Withdraw>): WithdrawListServiceResponse {
+        val withdraws = withdrawsPage.toList()
+        val projects = projectService
+            .getProjects(withdraws.map { it.ownerUuid }.toSet())
+            .associateBy { it.uuid }
+        val users = userService
+            .getUsers(withdraws.map { it.createdBy }.toSet())
+            .associateBy { it.uuid }
+        val withdrawWithProjectList = mutableListOf<WithdrawWithDataServiceResponse>()
+        withdraws.forEach { withdraw ->
+            val walletHash = walletService.getWallet(withdraw.ownerUuid)?.hash.orEmpty()
+            val projectResponse = projects[withdraw.ownerUuid.toString()]
+            val createdBy = users[withdraw.createdBy.toString()]
+            withdrawWithProjectList.add(
+                WithdrawWithDataServiceResponse(withdraw, createdBy, projectResponse, walletHash)
+            )
+        }
+        return WithdrawListServiceResponse(withdrawWithProjectList, withdrawsPage.number, withdrawsPage.totalPages)
     }
 }

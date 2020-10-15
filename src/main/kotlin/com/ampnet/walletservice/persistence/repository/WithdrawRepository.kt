@@ -22,4 +22,7 @@ interface WithdrawRepository : JpaRepository<Withdraw, Int> {
     fun findAllBurned(type: DepositWithdrawType, pageable: Pageable): Page<Withdraw>
 
     fun findByOwnerUuid(owner: UUID): List<Withdraw>
+
+    @Query("SELECT withdraw FROM Withdraw withdraw LEFT JOIN FETCH withdraw.file")
+    fun findAllWithFile(): List<Withdraw>
 }

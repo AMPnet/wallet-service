@@ -75,6 +75,7 @@ abstract class JpaServiceTestBase : TestBase() {
     protected val mockedMailService: MailService = Mockito.mock(MailServiceImpl::class.java)
     protected val mockedProjectService: ProjectService = Mockito.mock(ProjectServiceImpl::class.java)
     protected val mockedUserService: UserService = Mockito.mock(UserService::class.java)
+    protected val mockedWalletService: WalletService = Mockito.mock(WalletService::class.java)
     protected val userUuid: UUID = UUID.randomUUID()
     protected val organizationUuid: UUID = UUID.randomUUID()
     protected val projectUuid: UUID = UUID.randomUUID()

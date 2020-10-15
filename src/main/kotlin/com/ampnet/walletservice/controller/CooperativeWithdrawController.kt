@@ -1,20 +1,12 @@
 package com.ampnet.walletservice.controller
 
 import com.ampnet.walletservice.controller.pojo.response.TransactionResponse
-import com.ampnet.walletservice.controller.pojo.response.WithdrawResponse
-import com.ampnet.walletservice.controller.pojo.response.WithdrawWithProjectListResponse
-import com.ampnet.walletservice.controller.pojo.response.WithdrawWithProjectResponse
-import com.ampnet.walletservice.controller.pojo.response.WithdrawWithUserListResponse
-import com.ampnet.walletservice.controller.pojo.response.WithdrawWithUserResponse
 import com.ampnet.walletservice.enums.DepositWithdrawType
-import com.ampnet.walletservice.grpc.projectservice.ProjectService
-import com.ampnet.walletservice.grpc.userservice.UserService
-import com.ampnet.walletservice.persistence.model.Withdraw
 import com.ampnet.walletservice.service.CooperativeWithdrawService
-import com.ampnet.walletservice.service.WalletService
 import com.ampnet.walletservice.service.pojo.DocumentSaveRequest
+import com.ampnet.walletservice.service.pojo.WithdrawListServiceResponse
+import com.ampnet.walletservice.service.pojo.WithdrawServiceResponse
 import mu.KLogging
-import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
@@ -27,56 +19,49 @@ import org.springframework.web.multipart.MultipartFile
 
 @RestController
 class CooperativeWithdrawController(
-    private val cooperativeWithdrawService: CooperativeWithdrawService,
-    private val userService: UserService,
-    private val walletService: WalletService,
-    private val projectService: ProjectService
+    private val cooperativeWithdrawService: CooperativeWithdrawService
 ) {
 
     companion object : KLogging()
 
     @GetMapping("/cooperative/withdraw/approved")
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_WITHDRAW)")
-    fun getApprovedUserWithdraws(pageable: Pageable): ResponseEntity<WithdrawWithUserListResponse> {
+    fun getApprovedUserWithdraws(pageable: Pageable): ResponseEntity<WithdrawListServiceResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to get all approved withdraws by user: ${userPrincipal.uuid}" }
-        val response = generateUserResponseWithWithdraws(
+        val withdrawWithUserListResponse =
             cooperativeWithdrawService.getAllApproved(DepositWithdrawType.USER, pageable)
-        )
-        return ResponseEntity.ok(response)
+        return ResponseEntity.ok(withdrawWithUserListResponse)
     }
 
     @GetMapping("/cooperative/withdraw/approved/project")
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_WITHDRAW)")
-    fun getApprovedProjectWithdraws(pageable: Pageable): ResponseEntity<WithdrawWithProjectListResponse> {
+    fun getApprovedProjectWithdraws(pageable: Pageable): ResponseEntity<WithdrawListServiceResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to get all approved withdraws by user: ${userPrincipal.uuid}" }
-        val response = generateProjectResponseWithWithdraws(
+        val withdrawWithProjectListResponse =
             cooperativeWithdrawService.getAllApproved(DepositWithdrawType.PROJECT, pageable)
-        )
-        return ResponseEntity.ok(response)
+        return ResponseEntity.ok(withdrawWithProjectListResponse)
     }
 
     @GetMapping("/cooperative/withdraw/burned")
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_WITHDRAW)")
-    fun getBurnedUserWithdraws(pageable: Pageable): ResponseEntity<WithdrawWithUserListResponse> {
+    fun getBurnedUserWithdraws(pageable: Pageable): ResponseEntity<WithdrawListServiceResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to get all burned withdraws by user: ${userPrincipal.uuid}" }
-        val response = generateUserResponseWithWithdraws(
+        val withdrawWithUserListResponse =
             cooperativeWithdrawService.getAllBurned(DepositWithdrawType.USER, pageable)
-        )
-        return ResponseEntity.ok(response)
+        return ResponseEntity.ok(withdrawWithUserListResponse)
     }
 
     @GetMapping("/cooperative/withdraw/burned/project")
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_WITHDRAW)")
-    fun getBurnedProjectWithdraws(pageable: Pageable): ResponseEntity<WithdrawWithProjectListResponse> {
+    fun getBurnedProjectWithdraws(pageable: Pageable): ResponseEntity<WithdrawListServiceResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to get all burned withdraws by user: ${userPrincipal.uuid}" }
-        val response = generateProjectResponseWithWithdraws(
+        val withdrawWithProjectListResponse =
             cooperativeWithdrawService.getAllBurned(DepositWithdrawType.PROJECT, pageable)
-        )
-        return ResponseEntity.ok(response)
+        return ResponseEntity.ok(withdrawWithProjectListResponse)
     }
 
     @PostMapping("/cooperative/withdraw/{id}/transaction/burn")
@@ -93,43 +78,11 @@ class CooperativeWithdrawController(
     fun addDocument(
         @PathVariable("id") id: Int,
         @RequestParam("file") file: MultipartFile
-    ): ResponseEntity<WithdrawResponse> {
+    ): ResponseEntity<WithdrawServiceResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Adding document for withdraw" }
         val documentRequest = DocumentSaveRequest(file, userPrincipal.uuid)
         val withdraw = cooperativeWithdrawService.addDocument(id, documentRequest)
-        return ResponseEntity.ok(WithdrawResponse(withdraw))
-    }
-
-    private fun generateUserResponseWithWithdraws(withdrawsPage: Page<Withdraw>): WithdrawWithUserListResponse {
-        val withdraws = withdrawsPage.toList()
-        val users = userService
-            .getUsers(withdraws.map { it.ownerUuid }.toSet())
-            .associateBy { it.uuid }
-        val withdrawWithUserList = mutableListOf<WithdrawWithUserResponse>()
-        withdraws.forEach { withdraw ->
-            val wallet = walletService.getWallet(withdraw.ownerUuid)?.hash.orEmpty()
-            val userResponse = users[withdraw.ownerUuid.toString()]
-            withdrawWithUserList.add(WithdrawWithUserResponse(withdraw, userResponse, wallet))
-        }
-        return WithdrawWithUserListResponse(withdrawWithUserList, withdrawsPage.number, withdrawsPage.totalPages)
-    }
-
-    private fun generateProjectResponseWithWithdraws(withdrawsPage: Page<Withdraw>): WithdrawWithProjectListResponse {
-        val withdraws = withdrawsPage.toList()
-        val projects = projectService
-            .getProjects(withdraws.map { it.ownerUuid }.toSet())
-            .associateBy { it.uuid }
-        val users = userService
-            .getUsers(withdraws.map { it.createdBy }.toSet())
-            .associateBy { it.uuid }
-        val withdrawWithProjectList = mutableListOf<WithdrawWithProjectResponse>()
-        withdraws.forEach { withdraw ->
-            val wallet = walletService.getWallet(withdraw.ownerUuid)?.hash.orEmpty()
-            val projectResponse = projects[withdraw.ownerUuid.toString()]
-            val createdBy = users[withdraw.createdBy.toString()]
-            withdrawWithProjectList.add(WithdrawWithProjectResponse(withdraw, projectResponse, wallet, createdBy))
-        }
-        return WithdrawWithProjectListResponse(withdrawWithProjectList, withdrawsPage.number, withdrawsPage.totalPages)
+        return ResponseEntity.ok(withdraw)
     }
 }

@@ -17,6 +17,7 @@ import com.ampnet.walletservice.service.BankAccountService
 import com.ampnet.walletservice.service.TransactionInfoService
 import com.ampnet.walletservice.service.WithdrawService
 import com.ampnet.walletservice.service.pojo.WithdrawCreateServiceRequest
+import com.ampnet.walletservice.service.pojo.WithdrawServiceResponse
 import mu.KLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -37,19 +38,25 @@ class WithdrawServiceImpl(
     companion object : KLogging()
 
     @Transactional(readOnly = true)
-    override fun getPendingForOwner(user: UUID): Withdraw? {
-        return withdrawRepository.findByOwnerUuid(user).find { it.approvedTxHash == null }
+    override fun getPendingForOwner(user: UUID): WithdrawServiceResponse? {
+        val withdraw = withdrawRepository.findByOwnerUuid(user).find { it.approvedTxHash == null }
+        return withdraw?.let {
+            WithdrawServiceResponse(it)
+        }
     }
 
     @Transactional(readOnly = true)
-    override fun getPendingForProject(project: UUID, user: UUID): Withdraw? {
+    override fun getPendingForProject(project: UUID, user: UUID): WithdrawServiceResponse? {
         val projectResponse = projectService.getProject(project)
         ServiceUtils.validateUserIsProjectOwner(user, projectResponse)
-        return withdrawRepository.findByOwnerUuid(project).find { it.approvedTxHash == null }
+        val withdraw = withdrawRepository.findByOwnerUuid(project).find { it.approvedTxHash == null }
+        return withdraw?.let {
+            WithdrawServiceResponse(it)
+        }
     }
 
     @Transactional
-    override fun createWithdraw(request: WithdrawCreateServiceRequest): Withdraw {
+    override fun createWithdraw(request: WithdrawCreateServiceRequest): WithdrawServiceResponse {
         bankAccountService.validateIban(request.bankAccount)
         validateOwnerDoesNotHavePendingWithdraw(request.owner)
         checkIfOwnerHasEnoughFunds(request.owner, request.amount)
@@ -68,7 +75,7 @@ class WithdrawServiceImpl(
             "Created Withdraw, type = ${request.type} for owner: ${request.owner} with amount: ${request.amount} " +
                 "by user: ${request.createBy}"
         }
-        return withdraw
+        return WithdrawServiceResponse(withdraw)
     }
 
     @Transactional
