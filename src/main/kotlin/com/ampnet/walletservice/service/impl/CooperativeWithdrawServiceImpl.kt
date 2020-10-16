@@ -15,10 +15,10 @@ import com.ampnet.walletservice.service.CooperativeWithdrawService
 import com.ampnet.walletservice.service.StorageService
 import com.ampnet.walletservice.service.TransactionInfoService
 import com.ampnet.walletservice.service.WalletService
-import com.ampnet.walletservice.service.pojo.DocumentSaveRequest
-import com.ampnet.walletservice.service.pojo.WithdrawListServiceResponse
-import com.ampnet.walletservice.service.pojo.WithdrawServiceResponse
-import com.ampnet.walletservice.service.pojo.WithdrawWithDataServiceResponse
+import com.ampnet.walletservice.service.pojo.request.DocumentSaveRequest
+import com.ampnet.walletservice.service.pojo.response.WithdrawListServiceResponse
+import com.ampnet.walletservice.service.pojo.response.WithdrawServiceResponse
+import com.ampnet.walletservice.service.pojo.response.WithdrawWithDataServiceResponse
 import mu.KLogging
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -110,13 +110,10 @@ class CooperativeWithdrawServiceImpl(
         val users = userService
             .getUsers(withdraws.map { it.ownerUuid }.toSet())
             .associateBy { it.uuid }
-        val withdrawWithUserList = mutableListOf<WithdrawWithDataServiceResponse>()
-        withdraws.forEach { withdraw ->
+        val withdrawWithUserList = withdraws.map { withdraw ->
             val walletHash = walletService.getWallet(withdraw.ownerUuid)?.hash.orEmpty()
-            val userResponse = users[withdraw.ownerUuid.toString()]
-            withdrawWithUserList.add(
-                WithdrawWithDataServiceResponse(withdraw, userResponse, null, walletHash)
-            )
+            val userResponse = users[withdraw.ownerUuid]
+            WithdrawWithDataServiceResponse(withdraw, userResponse, null, walletHash)
         }
         return WithdrawListServiceResponse(withdrawWithUserList, withdrawsPage.number, withdrawsPage.totalPages)
     }
@@ -129,14 +126,11 @@ class CooperativeWithdrawServiceImpl(
         val users = userService
             .getUsers(withdraws.map { it.createdBy }.toSet())
             .associateBy { it.uuid }
-        val withdrawWithProjectList = mutableListOf<WithdrawWithDataServiceResponse>()
-        withdraws.forEach { withdraw ->
+        val withdrawWithProjectList = withdraws.map { withdraw ->
             val walletHash = walletService.getWallet(withdraw.ownerUuid)?.hash.orEmpty()
-            val projectResponse = projects[withdraw.ownerUuid.toString()]
-            val createdBy = users[withdraw.createdBy.toString()]
-            withdrawWithProjectList.add(
-                WithdrawWithDataServiceResponse(withdraw, createdBy, projectResponse, walletHash)
-            )
+            val projectResponse = projects[withdraw.ownerUuid]
+            val createdBy = users[withdraw.createdBy]
+            WithdrawWithDataServiceResponse(withdraw, createdBy, projectResponse, walletHash)
         }
         return WithdrawListServiceResponse(withdrawWithProjectList, withdrawsPage.number, withdrawsPage.totalPages)
     }

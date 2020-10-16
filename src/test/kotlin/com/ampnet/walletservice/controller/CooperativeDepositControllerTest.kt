@@ -10,9 +10,9 @@ import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionData
 import com.ampnet.walletservice.persistence.model.Deposit
 import com.ampnet.walletservice.security.WithMockCrowdfoundUser
-import com.ampnet.walletservice.service.pojo.DepositListServiceResponse
-import com.ampnet.walletservice.service.pojo.DepositServiceResponse
-import com.ampnet.walletservice.service.pojo.DepositWithDataServiceResponse
+import com.ampnet.walletservice.service.pojo.response.DepositListServiceResponse
+import com.ampnet.walletservice.service.pojo.response.DepositServiceResponse
+import com.ampnet.walletservice.service.pojo.response.DepositWithDataServiceResponse
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -378,7 +378,7 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
             assertThat(deposits.deposits).hasSize(1)
             val response = deposits.deposits[0]
             assertThat(response.deposit.txHash).isNotNull()
-            assertThat(response.project?.uuid).isEqualTo(projectUuid.toString())
+            assertThat(response.project?.uuid).isEqualTo(projectUuid)
             assertThat(response.user?.uuid).isEqualTo(userUuid)
             assertThat(response.deposit.documentResponse).isNotNull
         }

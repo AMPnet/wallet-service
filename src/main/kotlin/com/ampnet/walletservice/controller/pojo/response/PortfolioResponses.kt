@@ -2,22 +2,23 @@ package com.ampnet.walletservice.controller.pojo.response
 
 import com.ampnet.projectservice.proto.ProjectResponse
 import com.ampnet.walletservice.grpc.blockchain.pojo.BlockchainTransaction
-import com.ampnet.walletservice.service.pojo.ProjectWithInvestment
+import com.ampnet.walletservice.service.pojo.response.ProjectServiceResponse
+import com.ampnet.walletservice.service.pojo.response.ProjectWithInvestment
 
-data class ProjectWithInvestmentResponse(val project: ProjectControllerResponse, val investment: Long) {
+data class ProjectWithInvestmentResponse(val project: ProjectServiceResponse, val investment: Long) {
     constructor(projectWithInvestment: ProjectWithInvestment) : this(
-        ProjectControllerResponse(projectWithInvestment.project),
+        projectWithInvestment.project,
         projectWithInvestment.investment
     )
 }
 
 data class PortfolioResponse(val portfolio: List<ProjectWithInvestmentResponse>)
 data class ProjectWithInvestments(
-    val project: ProjectControllerResponse,
+    val project: ProjectServiceResponse,
     val transactions: List<BlockchainTransaction>
 ) {
     constructor(project: ProjectResponse, transactions: List<BlockchainTransaction>) : this(
-        ProjectControllerResponse(project),
+        ProjectServiceResponse(project),
         transactions
     )
 }

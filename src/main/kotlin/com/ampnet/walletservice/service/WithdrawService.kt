@@ -2,8 +2,8 @@ package com.ampnet.walletservice.service
 
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionDataAndInfo
 import com.ampnet.walletservice.persistence.model.Withdraw
-import com.ampnet.walletservice.service.pojo.WithdrawCreateServiceRequest
-import com.ampnet.walletservice.service.pojo.WithdrawServiceResponse
+import com.ampnet.walletservice.service.pojo.request.WithdrawCreateServiceRequest
+import com.ampnet.walletservice.service.pojo.response.WithdrawServiceResponse
 import java.util.UUID
 
 interface WithdrawService {

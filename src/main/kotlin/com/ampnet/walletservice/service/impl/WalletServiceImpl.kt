@@ -19,7 +19,7 @@ import com.ampnet.walletservice.persistence.repository.PairWalletCodeRepository
 import com.ampnet.walletservice.persistence.repository.WalletRepository
 import com.ampnet.walletservice.service.TransactionInfoService
 import com.ampnet.walletservice.service.WalletService
-import com.ampnet.walletservice.service.pojo.ProjectWithWallet
+import com.ampnet.walletservice.service.pojo.response.ProjectWithWallet
 import mu.KotlinLogging
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
@@ -82,9 +82,7 @@ class WalletServiceImpl(
         val projectResponse = projectService.getProject(project)
         ServiceUtils.validateUserIsProjectOwner(user, projectResponse)
 
-        val organization = UUID.fromString(projectResponse.organizationUuid)
-        val organizationWalletHash = ServiceUtils.getWalletHash(organization, walletRepository)
-
+        val organizationWalletHash = ServiceUtils.getWalletHash(projectResponse.organizationUuid, walletRepository)
         val request = GenerateProjectWalletRequest(
             userWalletHash,
             organizationWalletHash,
@@ -162,16 +160,15 @@ class WalletServiceImpl(
             return PageImpl(emptyList(), pageable, walletsPage.totalElements)
         }
 
-        val now = ZonedDateTime.now().toInstant().toEpochMilli()
+        val now = ZonedDateTime.now()
         val projectWalletHashes = projectWallets.values.mapNotNull { it.hash }
         val projectsInfo = blockchainService.getProjectsInfo(projectWalletHashes)
             .toList()
             .associateBy { it.txHash }
         val projectsWithWallet = projectService.getProjects(projectWallets.keys)
-            .filter { it.active && it.endDate > now }
+            .filter { it.active && it.endDate.isAfter(now) }
             .mapNotNull { project ->
-                val uuid = UUID.fromString(project.uuid)
-                projectWallets[uuid]?.let { wallet ->
+                projectWallets[project.uuid]?.let { wallet ->
                     val projectInfo = projectsInfo[wallet.hash]
                     val balance = projectInfo?.balance
                     val payoutInProcess = projectInfo?.payoutInProcess

@@ -113,7 +113,7 @@ class PublicControllerTest : ControllerTestBase() {
                 objectMapper.readValue(result.response.contentAsString)
             assertThat(projectsResponse.projects).hasSize(1)
             val projectWithWallet = projectsResponse.projects.first()
-            assertThat(projectWithWallet.project.uuid).isEqualTo(projectUuid.toString())
+            assertThat(projectWithWallet.project.uuid).isEqualTo(projectUuid)
             assertThat(projectWithWallet.wallet.uuid).isEqualTo(testContext.wallet.uuid)
             assertThat(projectWithWallet.wallet.balance).isEqualTo(testContext.projectBalance)
             assertThat(projectsResponse.page).isEqualTo(0)

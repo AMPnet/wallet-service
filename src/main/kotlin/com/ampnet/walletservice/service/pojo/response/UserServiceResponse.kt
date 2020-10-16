@@ -1,4 +1,4 @@
-package com.ampnet.walletservice.service.pojo
+package com.ampnet.walletservice.service.pojo.response
 
 import com.ampnet.userservice.proto.UserResponse
 import java.util.UUID

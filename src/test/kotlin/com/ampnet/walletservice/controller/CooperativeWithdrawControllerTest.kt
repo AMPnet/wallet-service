@@ -7,8 +7,8 @@ import com.ampnet.walletservice.enums.TransactionType
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionData
 import com.ampnet.walletservice.persistence.model.Withdraw
 import com.ampnet.walletservice.security.WithMockCrowdfoundUser
-import com.ampnet.walletservice.service.pojo.WithdrawListServiceResponse
-import com.ampnet.walletservice.service.pojo.WithdrawServiceResponse
+import com.ampnet.walletservice.service.pojo.response.WithdrawListServiceResponse
+import com.ampnet.walletservice.service.pojo.response.WithdrawServiceResponse
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -132,7 +132,7 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
             assertThat(withdraw.bankAccount).isNotNull()
             assertThat(withdraw.approvedTxHash).isEqualTo(testContext.approvedTx)
             assertThat(withdraw.approvedAt).isBeforeOrEqualTo(ZonedDateTime.now())
-            assertThat(project?.uuid).isEqualTo(projectUuid.toString())
+            assertThat(project?.uuid).isEqualTo(projectUuid)
             assertThat(withdrawWithData.walletHash).isEqualTo(walletHash)
             assertThat(withdraw.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
             assertThat(withdraw.burnedAt).isNull()
@@ -240,7 +240,7 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
             assertThat(withdraw.bankAccount).isEqualTo(testContext.bankAccount)
             assertThat(withdraw.approvedTxHash).isEqualTo(testContext.approvedTx)
             assertThat(withdraw.approvedAt).isBeforeOrEqualTo(ZonedDateTime.now())
-            assertThat(project?.uuid).isEqualTo(projectUuid.toString())
+            assertThat(project?.uuid).isEqualTo(projectUuid)
             assertThat(withdrawWithData.walletHash).isEqualTo(walletHash)
             assertThat(withdraw.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
             assertThat(withdraw.burnedAt).isNotNull()

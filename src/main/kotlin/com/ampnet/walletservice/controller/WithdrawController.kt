@@ -4,8 +4,8 @@ import com.ampnet.walletservice.controller.pojo.request.WithdrawCreateRequest
 import com.ampnet.walletservice.controller.pojo.response.TransactionResponse
 import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.service.WithdrawService
-import com.ampnet.walletservice.service.pojo.WithdrawCreateServiceRequest
-import com.ampnet.walletservice.service.pojo.WithdrawServiceResponse
+import com.ampnet.walletservice.service.pojo.request.WithdrawCreateServiceRequest
+import com.ampnet.walletservice.service.pojo.response.WithdrawServiceResponse
 import mu.KLogging
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping

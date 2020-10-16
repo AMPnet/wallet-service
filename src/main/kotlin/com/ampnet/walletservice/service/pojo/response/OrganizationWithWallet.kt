@@ -1,4 +1,4 @@
-package com.ampnet.walletservice.service.pojo
+package com.ampnet.walletservice.service.pojo.response
 
 import com.ampnet.projectservice.proto.OrganizationResponse
 import com.ampnet.walletservice.persistence.model.Wallet

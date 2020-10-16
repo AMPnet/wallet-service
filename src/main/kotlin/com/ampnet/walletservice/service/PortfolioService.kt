@@ -1,8 +1,8 @@
 package com.ampnet.walletservice.service
 
 import com.ampnet.walletservice.grpc.blockchain.pojo.BlockchainTransaction
-import com.ampnet.walletservice.service.pojo.PortfolioStats
-import com.ampnet.walletservice.service.pojo.ProjectWithInvestment
+import com.ampnet.walletservice.service.pojo.response.PortfolioStats
+import com.ampnet.walletservice.service.pojo.response.ProjectWithInvestment
 import java.util.UUID
 
 interface PortfolioService {

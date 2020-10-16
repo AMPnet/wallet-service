@@ -7,7 +7,7 @@ import com.ampnet.walletservice.persistence.model.Deposit
 import com.ampnet.walletservice.service.impl.CooperativeDepositServiceImpl
 import com.ampnet.walletservice.service.impl.StorageServiceImpl
 import com.ampnet.walletservice.service.impl.TransactionInfoServiceImpl
-import com.ampnet.walletservice.service.pojo.MintServiceRequest
+import com.ampnet.walletservice.service.pojo.request.MintServiceRequest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows

@@ -1,7 +1,5 @@
-package com.ampnet.walletservice.service.pojo
+package com.ampnet.walletservice.service.pojo.response
 
-import com.ampnet.projectservice.proto.ProjectResponse
-import com.ampnet.userservice.proto.UserResponse
 import com.ampnet.walletservice.persistence.model.Withdraw
 import java.time.ZonedDateTime
 import java.util.UUID
@@ -30,8 +28,7 @@ data class WithdrawServiceResponse(
         withdraw.burnedAt,
         withdraw.bankAccount,
         withdraw.createdAt,
-        if (withDocument) withdraw.file?.let { DocumentServiceResponse(it) }
-        else null
+        if (withDocument) withdraw.file?.let { DocumentServiceResponse(it) } else null
     )
 }
 
@@ -43,14 +40,14 @@ data class WithdrawWithDataServiceResponse(
 ) {
     constructor(
         withdraw: Withdraw,
-        user: UserResponse?,
-        project: ProjectResponse?,
+        user: UserServiceResponse?,
+        project: ProjectServiceResponse?,
         walletHash: String,
         withDocument: Boolean = false
     ) : this(
         WithdrawServiceResponse(withdraw, withDocument),
-        user?.let { UserServiceResponse(it) },
-        project?.let { ProjectServiceResponse(it) },
+        user,
+        project,
         walletHash
     )
 }

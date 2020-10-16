@@ -9,7 +9,7 @@ import com.ampnet.walletservice.grpc.blockchain.pojo.ApproveProjectBurnTransacti
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionData
 import com.ampnet.walletservice.persistence.model.Withdraw
 import com.ampnet.walletservice.security.WithMockCrowdfoundUser
-import com.ampnet.walletservice.service.pojo.WithdrawServiceResponse
+import com.ampnet.walletservice.service.pojo.response.WithdrawServiceResponse
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
