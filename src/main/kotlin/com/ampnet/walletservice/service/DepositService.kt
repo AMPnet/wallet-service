@@ -1,7 +1,7 @@
 package com.ampnet.walletservice.service
 
-import com.ampnet.walletservice.service.pojo.DepositCreateServiceRequest
-import com.ampnet.walletservice.service.pojo.DepositServiceResponse
+import com.ampnet.walletservice.service.pojo.request.DepositCreateServiceRequest
+import com.ampnet.walletservice.service.pojo.response.DepositServiceResponse
 import java.util.UUID
 
 interface DepositService {

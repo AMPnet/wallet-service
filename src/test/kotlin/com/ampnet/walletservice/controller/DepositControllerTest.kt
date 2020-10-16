@@ -5,7 +5,7 @@ import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.persistence.model.Deposit
 import com.ampnet.walletservice.security.WithMockCrowdfoundUser
-import com.ampnet.walletservice.service.pojo.DepositServiceResponse
+import com.ampnet.walletservice.service.pojo.response.DepositServiceResponse
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach

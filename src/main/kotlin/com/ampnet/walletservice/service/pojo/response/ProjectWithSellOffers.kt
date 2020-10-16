@@ -1,9 +1,8 @@
-package com.ampnet.walletservice.service.pojo
+package com.ampnet.walletservice.service.pojo.response
 
-import com.ampnet.projectservice.proto.ProjectResponse
 import com.ampnet.walletservice.grpc.blockchain.pojo.SellOfferData
 
 data class ProjectWithSellOffers(
-    val project: ProjectResponse,
+    val project: ProjectServiceResponse,
     val sellOffers: List<SellOfferData>
 )

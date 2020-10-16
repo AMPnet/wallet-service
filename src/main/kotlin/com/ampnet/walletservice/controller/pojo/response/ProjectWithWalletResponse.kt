@@ -1,15 +1,16 @@
 package com.ampnet.walletservice.controller.pojo.response
 
-import com.ampnet.walletservice.service.pojo.ProjectWithWallet
+import com.ampnet.walletservice.service.pojo.response.ProjectServiceResponse
+import com.ampnet.walletservice.service.pojo.response.ProjectWithWallet
 import org.springframework.data.domain.Page
 
 data class ProjectWithWalletResponse(
-    val project: ProjectControllerResponse,
+    val project: ProjectServiceResponse,
     val wallet: WalletResponse,
     val payoutInProcess: Boolean?
 ) {
     constructor(projectWithWallet: ProjectWithWallet) : this(
-        ProjectControllerResponse(projectWithWallet.project),
+        projectWithWallet.project,
         WalletResponse(projectWithWallet.wallet, projectWithWallet.balance),
         projectWithWallet.payoutInProcess
     )

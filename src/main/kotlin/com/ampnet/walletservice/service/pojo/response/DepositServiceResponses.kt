@@ -1,7 +1,5 @@
-package com.ampnet.walletservice.service.pojo
+package com.ampnet.walletservice.service.pojo.response
 
-import com.ampnet.projectservice.proto.ProjectResponse
-import com.ampnet.userservice.proto.UserResponse
 import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.persistence.model.Deposit
 import java.time.ZonedDateTime
@@ -33,8 +31,7 @@ data class DepositServiceResponse(
         deposit.txHash,
         deposit.declined?.createdAt,
         deposit.declined?.comment,
-        if (withDocument) deposit.file?.let { DocumentServiceResponse(it) }
-        else null
+        if (withDocument) deposit.file?.let { DocumentServiceResponse(it) } else null
     )
 }
 
@@ -45,13 +42,13 @@ data class DepositWithDataServiceResponse(
 ) {
     constructor(
         deposit: Deposit,
-        userResponse: UserResponse?,
-        projectResponse: ProjectResponse?,
+        userResponse: UserServiceResponse?,
+        projectResponse: ProjectServiceResponse?,
         withDocument: Boolean = false
-    ) : this (
+    ) : this(
         DepositServiceResponse(deposit, withDocument),
-        userResponse?.let { UserServiceResponse(it) },
-        projectResponse?.let { ProjectServiceResponse(it) }
+        userResponse,
+        projectResponse
     )
 }
 

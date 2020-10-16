@@ -3,9 +3,9 @@ package com.ampnet.walletservice.service
 import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionDataAndInfo
 import com.ampnet.walletservice.persistence.model.Withdraw
-import com.ampnet.walletservice.service.pojo.DocumentSaveRequest
-import com.ampnet.walletservice.service.pojo.WithdrawListServiceResponse
-import com.ampnet.walletservice.service.pojo.WithdrawServiceResponse
+import com.ampnet.walletservice.service.pojo.request.DocumentSaveRequest
+import com.ampnet.walletservice.service.pojo.response.WithdrawListServiceResponse
+import com.ampnet.walletservice.service.pojo.response.WithdrawServiceResponse
 import org.springframework.data.domain.Pageable
 import java.util.UUID
 

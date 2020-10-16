@@ -12,7 +12,7 @@ import com.ampnet.walletservice.persistence.repository.RevenuePayoutRepository
 import com.ampnet.walletservice.persistence.repository.WalletRepository
 import com.ampnet.walletservice.service.RevenueService
 import com.ampnet.walletservice.service.TransactionInfoService
-import com.ampnet.walletservice.service.pojo.RevenuePayoutTxInfo
+import com.ampnet.walletservice.service.pojo.request.RevenuePayoutTxInfoRequest
 import mu.KLogging
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -45,7 +45,7 @@ class RevenueServiceImpl(
         revenuePayoutRepository.save(revenuePayout)
         val request = RevenuePayoutTxRequest(userWallet, projectWallet, amount)
         val data = blockchainService.generateRevenuePayout(request)
-        val txInfoRequest = RevenuePayoutTxInfo(projectResponse.name, amount, user, revenuePayout.id)
+        val txInfoRequest = RevenuePayoutTxInfoRequest(projectResponse.name, amount, user, revenuePayout.id)
         val info = transactionInfoService.createRevenuePayoutTransaction(txInfoRequest)
         logger.info { "Successfully generate revenue payout: $revenuePayout" }
         return TransactionDataAndInfo(data, info)

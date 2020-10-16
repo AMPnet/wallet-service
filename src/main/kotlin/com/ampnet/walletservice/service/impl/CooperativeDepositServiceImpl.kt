@@ -18,11 +18,11 @@ import com.ampnet.walletservice.persistence.repository.WalletRepository
 import com.ampnet.walletservice.service.CooperativeDepositService
 import com.ampnet.walletservice.service.StorageService
 import com.ampnet.walletservice.service.TransactionInfoService
-import com.ampnet.walletservice.service.pojo.ApproveDepositRequest
-import com.ampnet.walletservice.service.pojo.DepositListServiceResponse
-import com.ampnet.walletservice.service.pojo.DepositServiceResponse
-import com.ampnet.walletservice.service.pojo.DepositWithDataServiceResponse
-import com.ampnet.walletservice.service.pojo.MintServiceRequest
+import com.ampnet.walletservice.service.pojo.request.ApproveDepositRequest
+import com.ampnet.walletservice.service.pojo.request.MintServiceRequest
+import com.ampnet.walletservice.service.pojo.response.DepositListServiceResponse
+import com.ampnet.walletservice.service.pojo.response.DepositServiceResponse
+import com.ampnet.walletservice.service.pojo.response.DepositWithDataServiceResponse
 import mu.KLogging
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -93,12 +93,10 @@ class CooperativeDepositServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun findByReference(reference: String): DepositWithDataServiceResponse? {
-        val deposit = ServiceUtils.wrapOptional(depositRepository.findByReference(reference))
-        return deposit?.let {
+    override fun findByReference(reference: String): DepositWithDataServiceResponse? =
+        ServiceUtils.wrapOptional(depositRepository.findByReference(reference))?.let {
             getDepositWithData(it)
         }
-    }
 
     @Transactional
     override fun generateMintTransaction(request: MintServiceRequest): TransactionDataAndInfo {
@@ -124,9 +122,7 @@ class CooperativeDepositServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun countUsersWithApprovedDeposit(): Int {
-        return depositRepository.countUsersWithApprovedDeposit()
-    }
+    override fun countUsersWithApprovedDeposit(): Int = depositRepository.countUsersWithApprovedDeposit()
 
     private fun validateDepositForMintTransaction(deposit: Deposit) {
         if (deposit.approvedByUserUuid == null) {
@@ -140,11 +136,10 @@ class CooperativeDepositServiceImpl(
         }
     }
 
-    private fun getDepositForId(depositId: Int): Deposit {
-        return depositRepository.findById(depositId).orElseThrow {
+    private fun getDepositForId(depositId: Int): Deposit =
+        depositRepository.findById(depositId).orElseThrow {
             throw ResourceNotFoundException(ErrorCode.WALLET_DEPOSIT_MISSING, "Missing deposit: $depositId")
         }
-    }
 
     private fun getDepositWithUserListServiceResponse(
         depositsPage: Page<Deposit>,
@@ -154,10 +149,9 @@ class CooperativeDepositServiceImpl(
         val users = userService
             .getUsers(deposits.map { it.ownerUuid }.toSet())
             .associateBy { it.uuid }
-        val depositsWithUser = mutableListOf<DepositWithDataServiceResponse>()
-        deposits.forEach { deposit ->
-            val user = users[deposit.ownerUuid.toString()]
-            depositsWithUser.add(DepositWithDataServiceResponse(deposit, user, null, withDocuments))
+        val depositsWithUser = deposits.map { deposit ->
+            val user = users[deposit.ownerUuid]
+            DepositWithDataServiceResponse(deposit, user, null, withDocuments)
         }
         return DepositListServiceResponse(depositsWithUser, depositsPage.number, depositsPage.totalPages)
     }
@@ -173,11 +167,10 @@ class CooperativeDepositServiceImpl(
         val users = userService
             .getUsers(deposits.map { it.createdBy }.toSet())
             .associateBy { it.uuid }
-        val depositsWithProject = mutableListOf<DepositWithDataServiceResponse>()
-        deposits.forEach { deposit ->
-            val projectResponse = projects[deposit.ownerUuid.toString()]
-            val createdBy = users[deposit.createdBy.toString()]
-            depositsWithProject.add(DepositWithDataServiceResponse(deposit, createdBy, projectResponse, withDocuments))
+        val depositsWithProject = deposits.map { deposit ->
+            val projectResponse = projects[deposit.ownerUuid]
+            val createdBy = users[deposit.createdBy]
+            DepositWithDataServiceResponse(deposit, createdBy, projectResponse, withDocuments)
         }
         return DepositListServiceResponse(depositsWithProject, depositsPage.number, depositsPage.totalPages)
     }

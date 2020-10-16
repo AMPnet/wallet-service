@@ -4,10 +4,9 @@ import com.ampnet.walletservice.grpc.blockchain.BlockchainService
 import com.ampnet.walletservice.grpc.projectservice.ProjectService
 import com.ampnet.walletservice.persistence.repository.WalletRepository
 import com.ampnet.walletservice.service.SellOfferService
-import com.ampnet.walletservice.service.pojo.ProjectWithSellOffers
+import com.ampnet.walletservice.service.pojo.response.ProjectWithSellOffers
 import mu.KLogging
 import org.springframework.stereotype.Service
-import java.util.UUID
 
 @Service
 class SellOfferServiceImpl(
@@ -29,8 +28,7 @@ class SellOfferServiceImpl(
         val projects = projectService.getProjects(projectWallets.keys)
 
         return projects.mapNotNull { project ->
-            val projectUuid = UUID.fromString(project.uuid)
-            projectWallets[projectUuid]?.let { wallet ->
+            projectWallets[project.uuid]?.let { wallet ->
                 val offersForProject = activeOffers.filter { it.projectWalletHash == wallet.hash }
                 ProjectWithSellOffers(project, offersForProject)
             }

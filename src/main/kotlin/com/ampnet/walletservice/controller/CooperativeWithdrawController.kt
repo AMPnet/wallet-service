@@ -3,9 +3,9 @@ package com.ampnet.walletservice.controller
 import com.ampnet.walletservice.controller.pojo.response.TransactionResponse
 import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.service.CooperativeWithdrawService
-import com.ampnet.walletservice.service.pojo.DocumentSaveRequest
-import com.ampnet.walletservice.service.pojo.WithdrawListServiceResponse
-import com.ampnet.walletservice.service.pojo.WithdrawServiceResponse
+import com.ampnet.walletservice.service.pojo.request.DocumentSaveRequest
+import com.ampnet.walletservice.service.pojo.response.WithdrawListServiceResponse
+import com.ampnet.walletservice.service.pojo.response.WithdrawServiceResponse
 import mu.KLogging
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity

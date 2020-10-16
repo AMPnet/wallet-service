@@ -16,8 +16,8 @@ import com.ampnet.walletservice.persistence.repository.WithdrawRepository
 import com.ampnet.walletservice.service.BankAccountService
 import com.ampnet.walletservice.service.TransactionInfoService
 import com.ampnet.walletservice.service.WithdrawService
-import com.ampnet.walletservice.service.pojo.WithdrawCreateServiceRequest
-import com.ampnet.walletservice.service.pojo.WithdrawServiceResponse
+import com.ampnet.walletservice.service.pojo.request.WithdrawCreateServiceRequest
+import com.ampnet.walletservice.service.pojo.response.WithdrawServiceResponse
 import mu.KLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -38,19 +38,16 @@ class WithdrawServiceImpl(
     companion object : KLogging()
 
     @Transactional(readOnly = true)
-    override fun getPendingForOwner(user: UUID): WithdrawServiceResponse? {
-        val withdraw = withdrawRepository.findByOwnerUuid(user).find { it.approvedTxHash == null }
-        return withdraw?.let {
+    override fun getPendingForOwner(user: UUID): WithdrawServiceResponse? =
+        withdrawRepository.findByOwnerUuid(user).find { it.approvedTxHash == null }?.let {
             WithdrawServiceResponse(it)
         }
-    }
 
     @Transactional(readOnly = true)
     override fun getPendingForProject(project: UUID, user: UUID): WithdrawServiceResponse? {
         val projectResponse = projectService.getProject(project)
         ServiceUtils.validateUserIsProjectOwner(user, projectResponse)
-        val withdraw = withdrawRepository.findByOwnerUuid(project).find { it.approvedTxHash == null }
-        return withdraw?.let {
+        return withdrawRepository.findByOwnerUuid(project).find { it.approvedTxHash == null }?.let {
             WithdrawServiceResponse(it)
         }
     }
@@ -159,7 +156,7 @@ class WithdrawServiceImpl(
         }
     }
 
-    fun validateWithdrawIsNotApproved(withdraw: Withdraw) {
+    private fun validateWithdrawIsNotApproved(withdraw: Withdraw) {
         if (withdraw.approvedTxHash != null) {
             throw InvalidRequestException(
                 ErrorCode.WALLET_WITHDRAW_APPROVED, "Approved txHash: ${withdraw.approvedTxHash}"

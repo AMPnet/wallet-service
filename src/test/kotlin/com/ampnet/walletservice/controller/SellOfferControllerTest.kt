@@ -76,13 +76,13 @@ class SellOfferControllerTest : ControllerTestBase() {
             val response: ProjectsWithSellOffersResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(response.projects).hasSize(2)
             val projectWithSellOffer = response.projects
-                .first { it.project.uuid == testContext.projectWallet.owner.toString() }
+                .first { it.project.uuid == testContext.projectWallet.owner }
             assertThat(projectWithSellOffer.sellOffers).hasSize(2)
             assertThat(projectWithSellOffer.sellOffers.map { it.price }).contains(1, 11)
             assertThat(projectWithSellOffer.sellOffers[0].counterOffers).hasSize(1)
 
             val secondProjectWithWallet = response.projects
-                .first { it.project.uuid == testContext.secondProjectWallet.owner.toString() }
+                .first { it.project.uuid == testContext.secondProjectWallet.owner }
             assertThat(secondProjectWithWallet.sellOffers).hasSize(2)
             assertThat(secondProjectWithWallet.sellOffers.map { it.price }).contains(2, 22)
         }

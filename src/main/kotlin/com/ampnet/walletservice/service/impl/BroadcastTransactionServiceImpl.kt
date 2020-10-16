@@ -16,7 +16,7 @@ import com.ampnet.walletservice.service.RevenueService
 import com.ampnet.walletservice.service.TransactionInfoService
 import com.ampnet.walletservice.service.WalletService
 import com.ampnet.walletservice.service.WithdrawService
-import com.ampnet.walletservice.service.pojo.TransferOwnershipRequest
+import com.ampnet.walletservice.service.pojo.request.TransferOwnershipRequest
 import mu.KLogging
 import org.springframework.stereotype.Service
 import java.util.UUID

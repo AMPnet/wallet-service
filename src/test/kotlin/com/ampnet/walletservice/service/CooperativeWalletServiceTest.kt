@@ -7,7 +7,7 @@ import com.ampnet.walletservice.enums.TransferWalletType
 import com.ampnet.walletservice.enums.WalletType
 import com.ampnet.walletservice.service.impl.CooperativeWalletServiceImpl
 import com.ampnet.walletservice.service.impl.TransactionInfoServiceImpl
-import com.ampnet.walletservice.service.pojo.TransferOwnershipRequest
+import com.ampnet.walletservice.service.pojo.request.TransferOwnershipRequest
 import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito

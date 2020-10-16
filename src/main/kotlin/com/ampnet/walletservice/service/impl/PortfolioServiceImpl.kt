@@ -2,8 +2,6 @@ package com.ampnet.walletservice.service.impl
 
 import com.ampnet.crowdfunding.proto.TransactionState
 import com.ampnet.crowdfunding.proto.TransactionType
-import com.ampnet.projectservice.proto.ProjectResponse
-import com.ampnet.userservice.proto.UserResponse
 import com.ampnet.walletservice.grpc.blockchain.BlockchainService
 import com.ampnet.walletservice.grpc.blockchain.pojo.BlockchainTransaction
 import com.ampnet.walletservice.grpc.blockchain.pojo.PortfolioData
@@ -12,8 +10,10 @@ import com.ampnet.walletservice.grpc.userservice.UserService
 import com.ampnet.walletservice.persistence.model.Wallet
 import com.ampnet.walletservice.persistence.repository.WalletRepository
 import com.ampnet.walletservice.service.PortfolioService
-import com.ampnet.walletservice.service.pojo.PortfolioStats
-import com.ampnet.walletservice.service.pojo.ProjectWithInvestment
+import com.ampnet.walletservice.service.pojo.response.PortfolioStats
+import com.ampnet.walletservice.service.pojo.response.ProjectServiceResponse
+import com.ampnet.walletservice.service.pojo.response.ProjectWithInvestment
+import com.ampnet.walletservice.service.pojo.response.UserServiceResponse
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.text.NumberFormat
@@ -86,7 +86,7 @@ class PortfolioServiceImpl(
                 .associateBy { it.uuid }
             wallets.mapNotNull { wallet ->
                 portfolio[wallet.hash]?.let { portfolio ->
-                    projects[wallet.owner.toString()]?.let { project ->
+                    projects[wallet.owner]?.let { project ->
                         ProjectWithInvestment(project, portfolio.amount)
                     }
                 }
@@ -154,19 +154,16 @@ class PortfolioServiceImpl(
         return walletHashes
     }
 
-    private fun getUserNameWithUuid(ownerUuid: UUID?, users: Map<String, UserResponse>): String? {
-        return users[ownerUuid?.toString()]?.let { user ->
+    private fun getUserNameWithUuid(ownerUuid: UUID?, users: Map<UUID, UserServiceResponse>): String? =
+        users[ownerUuid]?.let { user ->
             "${user.firstName} ${user.lastName}"
         }
-    }
 
-    private fun getProjectNameWithUuid(ownerUuid: UUID?, projects: Map<String, ProjectResponse>): String? {
-        return projects[ownerUuid?.toString()]?.name
-    }
+    private fun getProjectNameWithUuid(ownerUuid: UUID?, projects: Map<UUID, ProjectServiceResponse>): String? =
+        projects[ownerUuid]?.name
 
-    private fun getExpectedProjectFunding(ownerUuid: UUID?, projects: Map<String, ProjectResponse>): Long? {
-        return projects[ownerUuid.toString()]?.expectedFunding
-    }
+    private fun getExpectedProjectFunding(ownerUuid: UUID?, projects: Map<UUID, ProjectServiceResponse>): Long? =
+        projects[ownerUuid]?.expectedFunding
 
     private fun getPercentageInProject(projectFunding: Long, amount: Long): String {
         return NumberFormat.getPercentInstance().apply {

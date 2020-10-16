@@ -3,11 +3,11 @@ package com.ampnet.walletservice.service
 import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionDataAndInfo
 import com.ampnet.walletservice.persistence.model.Deposit
-import com.ampnet.walletservice.service.pojo.ApproveDepositRequest
-import com.ampnet.walletservice.service.pojo.DepositListServiceResponse
-import com.ampnet.walletservice.service.pojo.DepositServiceResponse
-import com.ampnet.walletservice.service.pojo.DepositWithDataServiceResponse
-import com.ampnet.walletservice.service.pojo.MintServiceRequest
+import com.ampnet.walletservice.service.pojo.request.ApproveDepositRequest
+import com.ampnet.walletservice.service.pojo.request.MintServiceRequest
+import com.ampnet.walletservice.service.pojo.response.DepositListServiceResponse
+import com.ampnet.walletservice.service.pojo.response.DepositServiceResponse
+import com.ampnet.walletservice.service.pojo.response.DepositWithDataServiceResponse
 import org.springframework.data.domain.Pageable
 import java.util.UUID
 
