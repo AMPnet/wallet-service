@@ -124,6 +124,12 @@ class CooperativeDepositServiceImpl(
     @Transactional(readOnly = true)
     override fun countUsersWithApprovedDeposit(): Int = depositRepository.countUsersWithApprovedDeposit()
 
+    @Transactional(readOnly = true)
+    override fun getById(id: Int): DepositWithDataServiceResponse? =
+        ServiceUtils.wrapOptional(depositRepository.findById(id))?.let {
+            getDepositWithData(it)
+        }
+
     private fun validateDepositForMintTransaction(deposit: Deposit) {
         if (deposit.approvedByUserUuid == null) {
             throw InvalidRequestException(

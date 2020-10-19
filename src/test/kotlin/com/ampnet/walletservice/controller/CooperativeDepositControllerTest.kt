@@ -454,6 +454,34 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
         }
     }
 
+    @Test
+    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PRA_DEPOSIT])
+    fun mustBeAbleToGetDepositById() {
+        suppose("User deposit exists") {
+            val deposit = createUnsignedDeposit(userUuid)
+            testContext.deposits = listOf(deposit)
+        }
+        suppose("User service will return user") {
+            Mockito.`when`(userService.getUsers(setOf(userUuid))).thenReturn(listOf(createUserResponse(userUuid)))
+        }
+
+        verify("Cooperative can get deposit by id") {
+            val savedDeposit = testContext.deposits.first()
+            val depositId = savedDeposit.id
+            val result = mockMvc.perform(
+                get("$depositPath/$depositId")
+            )
+                .andExpect(status().isOk)
+                .andReturn()
+
+            val response: DepositWithDataServiceResponse = objectMapper.readValue(result.response.contentAsString)
+            assertThat(response.deposit.reference).isEqualTo(savedDeposit.reference)
+            assertThat(response.deposit.id).isEqualTo(savedDeposit.id)
+            assertThat(response.user).isNotNull
+            assertThat(response.project).isNull()
+        }
+    }
+
     private class TestContext {
         val amount = 30_000L
         var deposits = listOf<Deposit>()

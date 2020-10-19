@@ -20,4 +20,5 @@ interface CooperativeDepositService {
     fun generateMintTransaction(request: MintServiceRequest): TransactionDataAndInfo
     fun confirmMintTransaction(signedTransaction: String, depositId: Int): Deposit
     fun countUsersWithApprovedDeposit(): Int
+    fun getById(id: Int): DepositWithDataServiceResponse?
 }

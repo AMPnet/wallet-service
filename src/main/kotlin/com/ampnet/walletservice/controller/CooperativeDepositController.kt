@@ -64,7 +64,7 @@ class CooperativeDepositController(
         @RequestBody request: CommentRequest
     ): ResponseEntity<DepositServiceResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
-        logger.info { "Received request to delcine deposit: $id by user: ${userPrincipal.uuid}" }
+        logger.info { "Received request to decline deposit: $id by user: ${userPrincipal.uuid}" }
         val deposit = cooperativeDepositService.decline(id, userPrincipal.uuid, request.comment)
         return ResponseEntity.ok(deposit)
     }
@@ -121,5 +121,15 @@ class CooperativeDepositController(
         logger.debug { "Received request to count users with approved deposit" }
         val counted = cooperativeDepositService.countUsersWithApprovedDeposit()
         return ResponseEntity.ok(UsersWithApprovedDeposit(counted))
+    }
+
+    @GetMapping("/cooperative/deposit/{id}")
+    @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_DEPOSIT)")
+    fun getDepositById(@PathVariable("id") id: Int): ResponseEntity<DepositWithDataServiceResponse> {
+        logger.debug { "Received request to get deposit by id: $id" }
+        cooperativeDepositService.getById(id)?.let { depositWithData ->
+            return ResponseEntity.ok(depositWithData)
+        }
+        return ResponseEntity.notFound().build()
     }
 }

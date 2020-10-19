@@ -381,6 +381,15 @@ include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToSearchProjectBy
 .Response
 include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToSearchProjectByReference/http-response.adoc[]
 
+===== Get by id
+Deposit type `PROJECT` will have both user and project response.
+For deposit type `USER`, project response will be null.
+
+.Request
+include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToGetDepositById/http-request.adoc[]
+.Response
+include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToGetDepositById/http-response.adoc[]
+
 ===== Unapproved
 Unapproved deposits are all deposits that are not minted - `txHash=null`.
 
