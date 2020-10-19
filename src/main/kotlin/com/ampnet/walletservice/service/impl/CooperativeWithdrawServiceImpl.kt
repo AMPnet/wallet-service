@@ -96,6 +96,11 @@ class CooperativeWithdrawServiceImpl(
         return WithdrawServiceResponse(withdraw, true)
     }
 
+    override fun getById(id: Int): WithdrawWithDataServiceResponse? =
+        ServiceUtils.wrapOptional(withdrawRepository.findById(id))?.let {
+            getWithdrawWithData(it)
+        }
+
     private fun validateWithdrawForBurn(withdraw: Withdraw) {
         if (withdraw.approvedTxHash == null) {
             throw InvalidRequestException(ErrorCode.WALLET_WITHDRAW_NOT_APPROVED, "Withdraw must be approved")
@@ -133,5 +138,21 @@ class CooperativeWithdrawServiceImpl(
             WithdrawWithDataServiceResponse(withdraw, createdBy, projectResponse, walletHash)
         }
         return WithdrawListServiceResponse(withdrawWithProjectList, withdrawsPage.number, withdrawsPage.totalPages)
+    }
+
+    private fun getWithdrawWithData(withdraw: Withdraw): WithdrawWithDataServiceResponse {
+        return when (withdraw.type) {
+            DepositWithdrawType.USER -> {
+                val user = userService.getUsers(setOf(withdraw.ownerUuid)).firstOrNull()
+                val walletHash = walletService.getWallet(withdraw.ownerUuid)?.hash.orEmpty()
+                WithdrawWithDataServiceResponse(withdraw, user, null, walletHash)
+            }
+            DepositWithdrawType.PROJECT -> {
+                val user = userService.getUsers(setOf(withdraw.createdBy)).firstOrNull()
+                val project = projectService.getProjects(setOf(withdraw.ownerUuid)).firstOrNull()
+                val walletHash = walletService.getWallet(withdraw.ownerUuid)?.hash.orEmpty()
+                WithdrawWithDataServiceResponse(withdraw, user, project, walletHash)
+            }
+        }
     }
 }

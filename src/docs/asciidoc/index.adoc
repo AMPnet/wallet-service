@@ -336,6 +336,15 @@ include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToGetApprovedPro
 .Response
 include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToGetApprovedProjectWithdraws/http-response.adoc[]
 
+===== Get withdraw by id
+Withdraw type `PROJECT` will have both user and project response.
+For withdraw type `USER`, project response will be null.
+
+.Request
+include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToGetWithdrawById/http-request.adoc[]
+.Response
+include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToGetWithdrawById/http-response.adoc[]
+
 ==== Burned Withdraws
 Must have Admin role - privilege: `PrivilegeType.PRA_WITHDRAW`
 

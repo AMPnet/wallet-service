@@ -6,6 +6,7 @@ import com.ampnet.walletservice.service.CooperativeWithdrawService
 import com.ampnet.walletservice.service.pojo.request.DocumentSaveRequest
 import com.ampnet.walletservice.service.pojo.response.WithdrawListServiceResponse
 import com.ampnet.walletservice.service.pojo.response.WithdrawServiceResponse
+import com.ampnet.walletservice.service.pojo.response.WithdrawWithDataServiceResponse
 import mu.KLogging
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
@@ -84,5 +85,15 @@ class CooperativeWithdrawController(
         val documentRequest = DocumentSaveRequest(file, userPrincipal.uuid)
         val withdraw = cooperativeWithdrawService.addDocument(id, documentRequest)
         return ResponseEntity.ok(withdraw)
+    }
+
+    @GetMapping("/cooperative/withdraw/approved/{id}")
+    @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_WITHDRAW)")
+    fun getWithdrawById(@PathVariable("id") id: Int): ResponseEntity<WithdrawWithDataServiceResponse> {
+        logger.debug { "Received request to get withdraw by id: $id" }
+        cooperativeWithdrawService.getById(id)?.let { withdrawWithData ->
+            return ResponseEntity.ok(withdrawWithData)
+        }
+        return ResponseEntity.notFound().build()
     }
 }
