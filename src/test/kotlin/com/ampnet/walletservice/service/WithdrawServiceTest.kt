@@ -8,7 +8,7 @@ import com.ampnet.walletservice.persistence.model.Withdraw
 import com.ampnet.walletservice.service.impl.BankAccountServiceImpl
 import com.ampnet.walletservice.service.impl.TransactionInfoServiceImpl
 import com.ampnet.walletservice.service.impl.WithdrawServiceImpl
-import com.ampnet.walletservice.service.pojo.WithdrawCreateServiceRequest
+import com.ampnet.walletservice.service.pojo.request.WithdrawCreateServiceRequest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test

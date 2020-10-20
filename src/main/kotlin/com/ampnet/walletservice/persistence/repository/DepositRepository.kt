@@ -11,12 +11,20 @@ import java.util.UUID
 
 interface DepositRepository : JpaRepository<Deposit, Int> {
     @Query(
-        "SELECT deposit FROM Deposit deposit LEFT JOIN FETCH deposit.file LEFT JOIN FETCH deposit.declined " +
+        "SELECT deposit FROM Deposit deposit LEFT JOIN FETCH deposit.file " +
             "WHERE deposit.type = :type AND deposit.txHash IS NOT NULL",
         countQuery = "SELECT COUNT(deposit) FROM Deposit deposit " +
             "WHERE deposit.type = :type AND deposit.txHash IS NOT NULL"
     )
-    fun findAllApprovedWithFile(type: DepositWithdrawType, pageable: Pageable): Page<Deposit>
+    fun findAllApprovedWithFileByType(type: DepositWithdrawType, pageable: Pageable): Page<Deposit>
+
+    @Query(
+        "SELECT deposit FROM Deposit deposit LEFT JOIN FETCH deposit.file " +
+            "WHERE deposit.txHash IS NOT NULL",
+        countQuery = "SELECT COUNT(deposit) FROM Deposit deposit " +
+            "WHERE deposit.txHash IS NOT NULL"
+    )
+    fun findAllApprovedWithFile(pageable: Pageable): Page<Deposit>
 
     @Query(
         "SELECT deposit FROM Deposit deposit " +
@@ -24,7 +32,15 @@ interface DepositRepository : JpaRepository<Deposit, Int> {
         countQuery = "SELECT COUNT(deposit) FROM Deposit deposit " +
             "WHERE deposit.type = :type AND deposit.txHash IS NULL AND deposit.declined is NULL"
     )
-    fun findAllUnapproved(type: DepositWithdrawType, pageable: Pageable): Page<Deposit>
+    fun findAllUnapprovedByType(type: DepositWithdrawType, pageable: Pageable): Page<Deposit>
+
+    @Query(
+        "SELECT deposit FROM Deposit deposit " +
+            "WHERE deposit.txHash IS NULL AND deposit.declined is NULL",
+        countQuery = "SELECT COUNT(deposit) FROM Deposit deposit " +
+            "WHERE deposit.txHash IS NULL AND deposit.declined is NULL"
+    )
+    fun findAllUnapproved(pageable: Pageable): Page<Deposit>
 
     fun findByReference(reference: String): Optional<Deposit>
 
@@ -39,4 +55,13 @@ interface DepositRepository : JpaRepository<Deposit, Int> {
             "WHERE deposit.txHash IS NOT NULL AND deposit.type = 'USER'"
     )
     fun countUsersWithApprovedDeposit(): Int
+
+    @Query(
+        "SELECT deposit FROM Deposit deposit LEFT JOIN FETCH deposit.file " +
+            "WHERE deposit.id = :depositId"
+    )
+    fun findWithFileById(depositId: Int): Optional<Deposit>
+
+    @Query("SELECT deposit FROM Deposit deposit LEFT JOIN FETCH deposit.file")
+    fun findAllWithFile(): List<Deposit>
 }

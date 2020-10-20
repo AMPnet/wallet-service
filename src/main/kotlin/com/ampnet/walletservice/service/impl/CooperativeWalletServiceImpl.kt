@@ -17,10 +17,10 @@ import com.ampnet.walletservice.persistence.model.Wallet
 import com.ampnet.walletservice.persistence.repository.WalletRepository
 import com.ampnet.walletservice.service.CooperativeWalletService
 import com.ampnet.walletservice.service.TransactionInfoService
-import com.ampnet.walletservice.service.pojo.OrganizationWithWallet
-import com.ampnet.walletservice.service.pojo.ProjectWithWallet
-import com.ampnet.walletservice.service.pojo.TransferOwnershipRequest
-import com.ampnet.walletservice.service.pojo.UserWithWallet
+import com.ampnet.walletservice.service.pojo.request.TransferOwnershipRequest
+import com.ampnet.walletservice.service.pojo.response.OrganizationWithWallet
+import com.ampnet.walletservice.service.pojo.response.ProjectWithWallet
+import com.ampnet.walletservice.service.pojo.response.UserWithWallet
 import mu.KLogging
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
@@ -66,7 +66,7 @@ class CooperativeWalletServiceImpl(
         val wallets = walletsPage.toList().associateBy { it.owner }
         val users = userService.getUsers(wallets.keys)
         val usersWithWallet = users.mapNotNull { user ->
-            wallets[UUID.fromString(user.uuid)]?.let { wallet ->
+            wallets[user.uuid]?.let { wallet ->
                 UserWithWallet(user, wallet)
             }
         }
@@ -92,7 +92,7 @@ class CooperativeWalletServiceImpl(
         val wallets = walletsPage.toList().associateBy { it.owner }
         val projects = projectService.getProjects(wallets.keys)
         val projectsWithWallet = projects.mapNotNull { project ->
-            wallets[UUID.fromString(project.uuid)]?.let { wallet ->
+            wallets[project.uuid]?.let { wallet ->
                 ProjectWithWallet(project, wallet)
             }
         }

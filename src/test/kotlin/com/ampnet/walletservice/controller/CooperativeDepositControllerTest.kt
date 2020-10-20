@@ -1,10 +1,6 @@
 package com.ampnet.walletservice.controller
 
 import com.ampnet.walletservice.controller.pojo.request.CommentRequest
-import com.ampnet.walletservice.controller.pojo.response.DepositResponse
-import com.ampnet.walletservice.controller.pojo.response.DepositWithProjectAndUserResponse
-import com.ampnet.walletservice.controller.pojo.response.DepositWithProjectListResponse
-import com.ampnet.walletservice.controller.pojo.response.DepositWithUserListResponse
 import com.ampnet.walletservice.controller.pojo.response.TransactionResponse
 import com.ampnet.walletservice.controller.pojo.response.UsersWithApprovedDeposit
 import com.ampnet.walletservice.enums.DepositWithdrawType
@@ -14,6 +10,9 @@ import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionData
 import com.ampnet.walletservice.persistence.model.Deposit
 import com.ampnet.walletservice.security.WithMockCrowdfoundUser
+import com.ampnet.walletservice.service.pojo.response.DepositListServiceResponse
+import com.ampnet.walletservice.service.pojo.response.DepositServiceResponse
+import com.ampnet.walletservice.service.pojo.response.DepositWithDataServiceResponse
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -58,7 +57,7 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
                 .andExpect(status().isOk)
                 .andReturn()
 
-            val response: DepositWithProjectAndUserResponse = objectMapper.readValue(result.response.contentAsString)
+            val response: DepositWithDataServiceResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(response.deposit.reference).isEqualTo(savedDeposit.reference)
             assertThat(response.user).isNotNull
             assertThat(response.project).isNull()
@@ -89,7 +88,7 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
                 .andExpect(status().isOk)
                 .andReturn()
 
-            val response: DepositWithProjectAndUserResponse = objectMapper.readValue(result.response.contentAsString)
+            val response: DepositWithDataServiceResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(response.deposit.reference).isEqualTo(savedDeposit.reference)
             assertThat(response.user).isNotNull
             assertThat(response.project).isNotNull
@@ -131,11 +130,12 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
                 .andExpect(status().isOk)
                 .andReturn()
 
-            val depositResponse: DepositResponse = objectMapper.readValue(result.response.contentAsString)
+            val depositResponse: DepositServiceResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(depositResponse.id).isEqualTo(depositId)
             assertThat(depositResponse.txHash).isNull()
             assertThat(depositResponse.declinedComment).isEqualTo(request.comment)
             assertThat(depositResponse.declinedAt).isBeforeOrEqualTo(ZonedDateTime.now())
+            assertThat(depositResponse.documentResponse).isNull()
         }
         verify("User deposit is declined") {
             val optionalDeposit = depositRepository.findById(testContext.deposits.first().id)
@@ -183,7 +183,7 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
                 .andExpect(status().isOk)
                 .andReturn()
 
-            val depositResponse: DepositResponse = objectMapper.readValue(result.response.contentAsString)
+            val depositResponse: DepositServiceResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(depositResponse.id).isEqualTo(depositId)
             assertThat(depositResponse.approvedAt).isNotNull()
             assertThat(depositResponse.documentResponse?.link).isEqualTo(testContext.documentLink)
@@ -191,7 +191,7 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
             assertThat(depositResponse.declinedAt).isNull()
         }
         verify("User deposit is approved") {
-            val optionalDeposit = depositRepository.findById(testContext.deposits.first().id)
+            val optionalDeposit = depositRepository.findWithFileById(testContext.deposits.first().id)
             assertThat(optionalDeposit).isPresent
             val approvedDeposit = optionalDeposit.get()
             assertThat(approvedDeposit.amount).isEqualTo(testContext.amount)
@@ -246,6 +246,7 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
         verify("Cooperative can get unapproved user deposits") {
             val result = mockMvc.perform(
                 get("$depositPath/unapproved")
+                    .param("type", DepositWithdrawType.USER.name)
                     .param("size", "20")
                     .param("page", "0")
                     .param("sort", "createdAt,desc")
@@ -253,16 +254,20 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
                 .andExpect(status().isOk)
                 .andReturn()
 
-            val deposits: DepositWithUserListResponse = objectMapper.readValue(result.response.contentAsString)
+            val deposits: DepositListServiceResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(deposits.deposits).hasSize(2)
             val firstDeposit = deposits.deposits[0]
             assertThat(firstDeposit.deposit.id).isIn(testContext.deposits.map { it.id })
             assertThat(firstDeposit.deposit.txHash).isNull()
             assertThat(firstDeposit.user).isNotNull
+            assertThat(firstDeposit.project).isNull()
+            assertThat(firstDeposit.deposit.documentResponse).isNull()
             val secondDeposit = deposits.deposits[1]
             assertThat(secondDeposit.deposit.id).isIn(testContext.deposits.map { it.id })
             assertThat(secondDeposit.deposit.txHash).isNull()
             assertThat(secondDeposit.user).isNotNull
+            assertThat(secondDeposit.project).isNull()
+            assertThat(secondDeposit.deposit.documentResponse).isNull()
         }
     }
 
@@ -276,13 +281,18 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
             testContext.deposits = listOf(unapproved, unsigned)
         }
         suppose("User service will return user") {
+            Mockito.`when`(userService.getUsers(setOf(userUuid)))
+                .thenReturn(listOf(createUserResponse(userUuid)))
+        }
+        suppose("Project service will return project") {
             Mockito.`when`(projectService.getProjects(setOf(projectUuid)))
                 .thenReturn(listOf(createProjectResponse(projectUuid, userUuid)))
         }
 
-        verify("Cooperative can get unapproved user deposits") {
+        verify("Cooperative can get unapproved project deposits") {
             val result = mockMvc.perform(
-                get("$depositPath/unapproved/project")
+                get("$depositPath/unapproved")
+                    .param("type", DepositWithdrawType.PROJECT.name)
                     .param("size", "20")
                     .param("page", "0")
                     .param("sort", "createdAt,desc")
@@ -290,16 +300,55 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
                 .andExpect(status().isOk)
                 .andReturn()
 
-            val deposits: DepositWithProjectListResponse = objectMapper.readValue(result.response.contentAsString)
+            val deposits: DepositListServiceResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(deposits.deposits).hasSize(2)
             val firstDeposit = deposits.deposits[0]
             assertThat(firstDeposit.deposit.id).isIn(testContext.deposits.map { it.id })
             assertThat(firstDeposit.deposit.txHash).isNull()
             assertThat(firstDeposit.project).isNotNull
+            assertThat(firstDeposit.user).isNotNull
+            assertThat(firstDeposit.deposit.documentResponse).isNull()
             val secondDeposit = deposits.deposits[1]
             assertThat(secondDeposit.deposit.id).isIn(testContext.deposits.map { it.id })
             assertThat(secondDeposit.deposit.txHash).isNull()
             assertThat(secondDeposit.project).isNotNull
+            assertThat(secondDeposit.user).isNotNull
+            assertThat(secondDeposit.deposit.documentResponse).isNull()
+        }
+    }
+
+    @Test
+    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PRA_DEPOSIT])
+    fun mustBeAbleToGetAllUnapprovedDeposits() {
+        suppose("Approved, unsigned and signed user and project deposits exist") {
+            createUnsignedDeposit(projectUuid, type = DepositWithdrawType.PROJECT)
+            createUnsignedDeposit(projectUuid, type = DepositWithdrawType.PROJECT, withFile = true)
+            createUnsignedDeposit(userUuid)
+            createUnsignedDeposit(userUuid, withFile = true)
+            createApprovedDeposit(userUuid)
+            createApprovedDeposit(projectUuid, type = DepositWithdrawType.PROJECT)
+        }
+        suppose("User service will return user") {
+            Mockito.`when`(userService.getUsers(setOf(userUuid)))
+                .thenReturn(listOf(createUserResponse(userUuid)))
+        }
+        suppose("Project service will return project") {
+            Mockito.`when`(projectService.getProjects(setOf(projectUuid)))
+                .thenReturn(listOf(createProjectResponse(projectUuid, userUuid)))
+        }
+
+        verify("Cooperative can get unapproved user and project deposits for unspecified type") {
+            val result = mockMvc.perform(
+                get("$depositPath/unapproved")
+                    .param("size", "20")
+                    .param("page", "0")
+                    .param("sort", "createdAt,desc")
+            )
+                .andExpect(status().isOk)
+                .andReturn()
+
+            val deposits: DepositListServiceResponse = objectMapper.readValue(result.response.contentAsString)
+            assertThat(deposits.deposits).hasSize(4)
         }
     }
 
@@ -315,9 +364,10 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
             Mockito.`when`(userService.getUsers(setOf(userUuid))).thenReturn(listOf(createUserResponse(userUuid)))
         }
 
-        verify("Cooperative can get approved deposits") {
+        verify("Cooperative can get approved user deposits") {
             val result = mockMvc.perform(
                 get("$depositPath/approved")
+                    .param("type", DepositWithdrawType.USER.name)
                     .param("size", "20")
                     .param("page", "0")
                     .param("sort", "approvedAt,desc")
@@ -325,11 +375,13 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
                 .andExpect(status().isOk)
                 .andReturn()
 
-            val deposits: DepositWithUserListResponse = objectMapper.readValue(result.response.contentAsString)
+            val deposits: DepositListServiceResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(deposits.deposits).hasSize(1)
             val response = deposits.deposits[0]
             assertThat(response.deposit.txHash).isNotNull()
             assertThat(response.user).isNotNull
+            assertThat(response.project).isNull()
+            assertThat(response.deposit.documentResponse).isNotNull
         }
     }
 
@@ -352,7 +404,8 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
 
         verify("Cooperative can get approved project deposits") {
             val result = mockMvc.perform(
-                get("$depositPath/approved/project")
+                get("$depositPath/approved")
+                    .param("type", DepositWithdrawType.PROJECT.name)
                     .param("size", "20")
                     .param("page", "0")
                     .param("sort", "approvedAt,desc")
@@ -360,12 +413,47 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
                 .andExpect(status().isOk)
                 .andReturn()
 
-            val deposits: DepositWithProjectListResponse = objectMapper.readValue(result.response.contentAsString)
+            val deposits: DepositListServiceResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(deposits.deposits).hasSize(1)
             val response = deposits.deposits[0]
             assertThat(response.deposit.txHash).isNotNull()
-            assertThat(response.project?.uuid).isEqualTo(projectUuid.toString())
+            assertThat(response.project?.uuid).isEqualTo(projectUuid)
             assertThat(response.user?.uuid).isEqualTo(userUuid)
+            assertThat(response.deposit.documentResponse).isNotNull
+        }
+    }
+
+    @Test
+    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PRA_DEPOSIT])
+    fun mustBeAbleToGetAllApprovedDeposits() {
+        suppose("Approved and unapproved project and user deposits exist") {
+            val unapprovedProject = createUnsignedDeposit(projectUuid, type = DepositWithdrawType.PROJECT)
+            val approvedProject = createApprovedDeposit(projectUuid, type = DepositWithdrawType.PROJECT)
+            val unapprovedUser = createUnsignedDeposit(userUuid)
+            val approvedUser = createApprovedDeposit(userUuid)
+            testContext.deposits = listOf(unapprovedProject, approvedProject, unapprovedUser, approvedUser)
+        }
+        suppose("Project service will return project data") {
+            Mockito.`when`(projectService.getProjects(setOf(projectUuid)))
+                .thenReturn(listOf(createProjectResponse(projectUuid, userUuid)))
+        }
+        suppose("User service will return user data") {
+            Mockito.`when`(userService.getUsers(setOf(userUuid)))
+                .thenReturn(listOf(createUserResponse(userUuid)))
+        }
+
+        verify("Cooperative can get approved project and user deposits for unspecified type") {
+            val result = mockMvc.perform(
+                get("$depositPath/approved")
+                    .param("size", "20")
+                    .param("page", "0")
+                    .param("sort", "approvedAt,desc")
+            )
+                .andExpect(status().isOk)
+                .andReturn()
+
+            val deposits: DepositListServiceResponse = objectMapper.readValue(result.response.contentAsString)
+            assertThat(deposits.deposits).hasSize(2)
         }
     }
 
@@ -436,6 +524,34 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
 
             val counted: UsersWithApprovedDeposit = objectMapper.readValue(result.response.contentAsString)
             assertThat(counted.usersWithApprovedDeposit).isEqualTo(2)
+        }
+    }
+
+    @Test
+    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PRA_DEPOSIT])
+    fun mustBeAbleToGetDepositById() {
+        suppose("User deposit exists") {
+            val deposit = createUnsignedDeposit(userUuid)
+            testContext.deposits = listOf(deposit)
+        }
+        suppose("User service will return user") {
+            Mockito.`when`(userService.getUsers(setOf(userUuid))).thenReturn(listOf(createUserResponse(userUuid)))
+        }
+
+        verify("Cooperative can get deposit by id") {
+            val savedDeposit = testContext.deposits.first()
+            val depositId = savedDeposit.id
+            val result = mockMvc.perform(
+                get("$depositPath/$depositId")
+            )
+                .andExpect(status().isOk)
+                .andReturn()
+
+            val response: DepositWithDataServiceResponse = objectMapper.readValue(result.response.contentAsString)
+            assertThat(response.deposit.reference).isEqualTo(savedDeposit.reference)
+            assertThat(response.deposit.id).isEqualTo(savedDeposit.id)
+            assertThat(response.user).isNotNull
+            assertThat(response.project).isNull()
         }
     }
 

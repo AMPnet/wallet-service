@@ -11,7 +11,7 @@ import javax.persistence.Table
 
 @Entity
 @Table(name = "declined")
-data class Declined(
+class Declined(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Int,

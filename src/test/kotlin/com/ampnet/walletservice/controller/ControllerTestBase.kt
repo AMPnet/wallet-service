@@ -1,7 +1,5 @@
 package com.ampnet.walletservice.controller
 
-import com.ampnet.projectservice.proto.ProjectResponse
-import com.ampnet.userservice.proto.UserResponse
 import com.ampnet.walletservice.TestBase
 import com.ampnet.walletservice.config.DatabaseCleanerService
 import com.ampnet.walletservice.enums.Currency
@@ -25,6 +23,8 @@ import com.ampnet.walletservice.persistence.repository.TransactionInfoRepository
 import com.ampnet.walletservice.persistence.repository.WalletRepository
 import com.ampnet.walletservice.persistence.repository.WithdrawRepository
 import com.ampnet.walletservice.service.CloudStorageService
+import com.ampnet.walletservice.service.pojo.response.ProjectServiceResponse
+import com.ampnet.walletservice.service.pojo.response.UserServiceResponse
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
@@ -181,13 +181,7 @@ abstract class ControllerTestBase : TestBase() {
         first: String = "First",
         last: String = "Last",
         enabled: Boolean = true
-    ): UserResponse = UserResponse.newBuilder()
-        .setUuid(uuid.toString())
-        .setEmail(email)
-        .setFirstName(first)
-        .setLastName(last)
-        .setEnabled(enabled)
-        .build()
+    ): UserServiceResponse = UserServiceResponse(uuid, email, first, last, enabled)
 
     protected fun createApprovedDeposit(
         owner: UUID,
@@ -249,21 +243,15 @@ abstract class ControllerTestBase : TestBase() {
     protected fun createProjectResponse(
         uuid: UUID,
         name: String = "project",
-        createdByUser: String = "user",
+        createdByUser: UUID = UUID.randomUUID(),
         currency: String = "EUR",
         organizationUuid: UUID = UUID.randomUUID(),
         imageUrl: String = "image_url",
         description: String = "Description",
         expectedFunding: Long = 100000000L
-    ): ProjectResponse = ProjectResponse
-        .newBuilder()
-        .setUuid(uuid.toString())
-        .setName(name)
-        .setCreatedByUser(createdByUser)
-        .setCurrency(currency)
-        .setOrganizationUuid(organizationUuid.toString())
-        .setImageUrl(imageUrl)
-        .setDescription(description)
-        .setExpectedFunding(expectedFunding)
-        .build()
+    ): ProjectServiceResponse = ProjectServiceResponse(
+        uuid, name, description,
+        ZonedDateTime.now().minusDays(1), ZonedDateTime.now().plusDays(100),
+        expectedFunding, currency, 1L, expectedFunding, true, imageUrl, createdByUser, organizationUuid
+    )
 }

@@ -1,10 +1,10 @@
 package com.ampnet.walletservice.controller
 
 import com.ampnet.walletservice.controller.pojo.request.AmountRequest
-import com.ampnet.walletservice.controller.pojo.response.DepositResponse
 import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.service.DepositService
-import com.ampnet.walletservice.service.pojo.DepositCreateServiceRequest
+import com.ampnet.walletservice.service.pojo.request.DepositCreateServiceRequest
+import com.ampnet.walletservice.service.pojo.response.DepositServiceResponse
 import mu.KLogging
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -23,14 +23,28 @@ class DepositController(
     companion object : KLogging()
 
     @PostMapping("/deposit")
-    fun createDeposit(@RequestBody request: AmountRequest): ResponseEntity<DepositResponse> {
+    fun createDeposit(@RequestBody request: AmountRequest): ResponseEntity<DepositServiceResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to create deposit" }
         val serviceRequest = DepositCreateServiceRequest(
             userPrincipal.uuid, userPrincipal.uuid, request.amount, DepositWithdrawType.USER
         )
         val deposit = depositService.create(serviceRequest)
-        return ResponseEntity.ok(DepositResponse(deposit))
+        return ResponseEntity.ok(deposit)
+    }
+
+    @PostMapping("/deposit/project/{projectUuid}")
+    fun createProjectDeposit(
+        @PathVariable projectUuid: UUID,
+        @RequestBody request: AmountRequest
+    ): ResponseEntity<DepositServiceResponse> {
+        val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
+        logger.debug { "Received request to create deposit" }
+        val serviceRequest = DepositCreateServiceRequest(
+            projectUuid, userPrincipal.uuid, request.amount, DepositWithdrawType.PROJECT
+        )
+        val deposit = depositService.create(serviceRequest)
+        return ResponseEntity.ok(deposit)
     }
 
     @DeleteMapping("/deposit/{id}")
@@ -42,35 +56,21 @@ class DepositController(
     }
 
     @GetMapping("/deposit")
-    fun getPendingDeposit(): ResponseEntity<DepositResponse> {
+    fun getPendingDeposit(): ResponseEntity<DepositServiceResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to get pending deposit by user: ${userPrincipal.uuid}" }
         depositService.getPendingForUser(userPrincipal.uuid)?.let {
-            return ResponseEntity.ok(DepositResponse(it))
+            return ResponseEntity.ok(it)
         }
         return ResponseEntity.notFound().build()
     }
 
-    @PostMapping("/deposit/project/{projectUuid}")
-    fun createProjectDeposit(
-        @PathVariable projectUuid: UUID,
-        @RequestBody request: AmountRequest
-    ): ResponseEntity<DepositResponse> {
-        val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
-        logger.debug { "Received request to create deposit" }
-        val serviceRequest = DepositCreateServiceRequest(
-            projectUuid, userPrincipal.uuid, request.amount, DepositWithdrawType.PROJECT
-        )
-        val deposit = depositService.create(serviceRequest)
-        return ResponseEntity.ok(DepositResponse(deposit))
-    }
-
     @GetMapping("/deposit/project/{projectUuid}")
-    fun getPendingProjectDeposit(@PathVariable projectUuid: UUID): ResponseEntity<DepositResponse> {
+    fun getPendingProjectDeposit(@PathVariable projectUuid: UUID): ResponseEntity<DepositServiceResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to get pending deposit by user: ${userPrincipal.uuid}" }
         depositService.getPendingForProject(projectUuid, userPrincipal.uuid)?.let {
-            return ResponseEntity.ok(DepositResponse(it))
+            return ResponseEntity.ok(it)
         }
         return ResponseEntity.notFound().build()
     }

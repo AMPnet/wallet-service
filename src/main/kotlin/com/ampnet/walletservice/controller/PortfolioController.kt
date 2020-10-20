@@ -6,7 +6,7 @@ import com.ampnet.walletservice.controller.pojo.response.ProjectWithInvestmentRe
 import com.ampnet.walletservice.controller.pojo.response.ProjectWithInvestments
 import com.ampnet.walletservice.grpc.projectservice.ProjectService
 import com.ampnet.walletservice.service.PortfolioService
-import com.ampnet.walletservice.service.pojo.PortfolioStats
+import com.ampnet.walletservice.service.pojo.response.PortfolioStats
 import mu.KLogging
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping

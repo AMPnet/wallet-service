@@ -15,6 +15,7 @@ import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionData
 import com.ampnet.walletservice.persistence.model.PairWalletCode
 import com.ampnet.walletservice.persistence.model.Wallet
 import com.ampnet.walletservice.security.WithMockCrowdfoundUser
+import com.ampnet.walletservice.service.pojo.response.ProjectServiceResponse
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -231,23 +232,22 @@ class WalletControllerTest : ControllerTestBase() {
         suppose("Organization has a wallet") {
             createWalletForOrganization(organizationUuid, testContext.hash2)
         }
+        suppose("Project service will return project") {
+            testContext.projectServiceResponse = getProjectResponse(projectUuid, userUuid, organizationUuid)
+            Mockito.`when`(
+                projectService.getProject(projectUuid)
+            ).thenReturn(testContext.projectServiceResponse)
+        }
         suppose("Blockchain service successfully generates transaction to create project wallet") {
             val orgWalletHash = getWalletHash(organizationUuid)
             val userWalletHash = getWalletHash(userUuid)
             testContext.transactionData = TransactionData(signedTransaction)
-            testContext.time = ZonedDateTime.now().plusDays(30)
             val request = GenerateProjectWalletRequest(
-                userWalletHash, orgWalletHash, 100000, 100, 10000000,
-                testContext.time.toInstant().toEpochMilli()
+                userWalletHash, orgWalletHash, testContext.projectServiceResponse
             )
             Mockito.`when`(
                 blockchainService.generateProjectWalletTransaction(request)
             ).thenReturn(testContext.transactionData)
-        }
-        suppose("Project service will return project") {
-            Mockito.`when`(
-                projectService.getProject(projectUuid)
-            ).thenReturn(getProjectResponse(projectUuid, userUuid, organizationUuid, endDate = testContext.time))
         }
 
         verify("User can get transaction to create project wallet") {
@@ -359,6 +359,6 @@ class WalletControllerTest : ControllerTestBase() {
         val providerId = "provider_id_is_optional"
         var balance: Long = -1
         lateinit var pairWalletCode: String
-        lateinit var time: ZonedDateTime
+        lateinit var projectServiceResponse: ProjectServiceResponse
     }
 }

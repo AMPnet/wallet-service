@@ -7,7 +7,7 @@ import com.ampnet.walletservice.exception.ResourceAlreadyExistsException
 import com.ampnet.walletservice.exception.ResourceNotFoundException
 import com.ampnet.walletservice.persistence.model.Deposit
 import com.ampnet.walletservice.service.impl.DepositServiceImpl
-import com.ampnet.walletservice.service.pojo.DepositCreateServiceRequest
+import com.ampnet.walletservice.service.pojo.request.DepositCreateServiceRequest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test

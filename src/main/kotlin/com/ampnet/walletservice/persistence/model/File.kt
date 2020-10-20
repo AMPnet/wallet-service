@@ -11,7 +11,7 @@ import javax.persistence.Table
 
 @Entity
 @Table(name = "file")
-data class File(
+class File(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Int,

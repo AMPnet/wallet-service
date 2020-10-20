@@ -1,6 +1,6 @@
 package com.ampnet.walletservice.controller.pojo.response
 
-import com.ampnet.walletservice.service.pojo.OrganizationWithWallet
+import com.ampnet.walletservice.service.pojo.response.OrganizationWithWallet
 import org.springframework.data.domain.Page
 
 data class OrganizationWithWalletResponse(

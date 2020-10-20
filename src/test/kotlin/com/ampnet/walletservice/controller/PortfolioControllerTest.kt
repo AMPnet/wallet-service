@@ -2,8 +2,6 @@ package com.ampnet.walletservice.controller
 
 import com.ampnet.crowdfunding.proto.TransactionState
 import com.ampnet.crowdfunding.proto.TransactionType
-import com.ampnet.projectservice.proto.ProjectResponse
-import com.ampnet.userservice.proto.UserResponse
 import com.ampnet.walletservice.controller.pojo.response.BlockchainTransactionsResponse
 import com.ampnet.walletservice.controller.pojo.response.PortfolioResponse
 import com.ampnet.walletservice.controller.pojo.response.ProjectWithInvestments
@@ -14,7 +12,9 @@ import com.ampnet.walletservice.grpc.blockchain.pojo.PortfolioData
 import com.ampnet.walletservice.security.WithMockCrowdfoundUser
 import com.ampnet.walletservice.service.impl.MAX_FRACTION_DIGITS
 import com.ampnet.walletservice.service.impl.MIN_FRACTION_DIGITS
-import com.ampnet.walletservice.service.pojo.PortfolioStats
+import com.ampnet.walletservice.service.pojo.response.PortfolioStats
+import com.ampnet.walletservice.service.pojo.response.ProjectServiceResponse
+import com.ampnet.walletservice.service.pojo.response.UserServiceResponse
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -79,11 +79,11 @@ class PortfolioControllerTest : ControllerTestBase() {
             val portfolioResponse: PortfolioResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(portfolioResponse.portfolio).hasSize(2)
             val project = portfolioResponse.portfolio.first()
-            assertThat(project.project.uuid).isEqualTo(projectUuid.toString())
+            assertThat(project.project.uuid).isEqualTo(projectUuid)
             assertThat(project.investment).isEqualTo(testContext.portfolio.data.first().amount)
 
             val secondProject = portfolioResponse.portfolio[1]
-            assertThat(secondProject.project.uuid).isEqualTo(testContext.secondProject.toString())
+            assertThat(secondProject.project.uuid).isEqualTo(testContext.secondProject)
             assertThat(secondProject.investment).isEqualTo(testContext.portfolio.data[1].amount)
         }
     }
@@ -202,7 +202,7 @@ class PortfolioControllerTest : ControllerTestBase() {
                 .andReturn()
 
             val projectWithInvestments: ProjectWithInvestments = objectMapper.readValue(result.response.contentAsString)
-            assertThat(projectWithInvestments.project.uuid).isEqualTo(projectUuid.toString())
+            assertThat(projectWithInvestments.project.uuid).isEqualTo(projectUuid)
             assertThat(projectWithInvestments.transactions.map { it.amount }).hasSize(2)
                 .containsAll(testContext.transactions.map { it.amount })
         }
@@ -338,7 +338,7 @@ class PortfolioControllerTest : ControllerTestBase() {
         val secondProject: UUID = UUID.randomUUID()
         lateinit var portfolio: Portfolio
         lateinit var transactions: List<BlockchainTransaction>
-        lateinit var users: List<UserResponse>
-        lateinit var projects: List<ProjectResponse>
+        lateinit var users: List<UserServiceResponse>
+        lateinit var projects: List<ProjectServiceResponse>
     }
 }

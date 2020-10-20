@@ -11,6 +11,7 @@ import com.ampnet.walletservice.grpc.mail.MailService
 import com.ampnet.walletservice.grpc.mail.MailServiceImpl
 import com.ampnet.walletservice.grpc.projectservice.ProjectService
 import com.ampnet.walletservice.grpc.projectservice.ProjectServiceImpl
+import com.ampnet.walletservice.grpc.userservice.UserService
 import com.ampnet.walletservice.persistence.model.Deposit
 import com.ampnet.walletservice.persistence.model.File
 import com.ampnet.walletservice.persistence.model.Wallet
@@ -73,6 +74,8 @@ abstract class JpaServiceTestBase : TestBase() {
     protected val mockedCloudStorageService: CloudStorageServiceImpl = Mockito.mock(CloudStorageServiceImpl::class.java)
     protected val mockedMailService: MailService = Mockito.mock(MailServiceImpl::class.java)
     protected val mockedProjectService: ProjectService = Mockito.mock(ProjectServiceImpl::class.java)
+    protected val mockedUserService: UserService = Mockito.mock(UserService::class.java)
+    protected val mockedWalletService: WalletService = Mockito.mock(WalletService::class.java)
     protected val userUuid: UUID = UUID.randomUUID()
     protected val organizationUuid: UUID = UUID.randomUUID()
     protected val projectUuid: UUID = UUID.randomUUID()

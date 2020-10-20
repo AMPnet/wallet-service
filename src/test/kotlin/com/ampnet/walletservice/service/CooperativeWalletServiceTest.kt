@@ -5,15 +5,13 @@ import com.ampnet.userservice.proto.SetRoleRequest
 import com.ampnet.walletservice.config.ApplicationProperties
 import com.ampnet.walletservice.enums.TransferWalletType
 import com.ampnet.walletservice.enums.WalletType
-import com.ampnet.walletservice.grpc.userservice.UserService
 import com.ampnet.walletservice.service.impl.CooperativeWalletServiceImpl
 import com.ampnet.walletservice.service.impl.TransactionInfoServiceImpl
-import com.ampnet.walletservice.service.pojo.TransferOwnershipRequest
+import com.ampnet.walletservice.service.pojo.request.TransferOwnershipRequest
 import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.context.annotation.Import
 import java.util.UUID
 import java.util.concurrent.TimeUnit
@@ -28,8 +26,6 @@ class CooperativeWalletServiceTest : JpaServiceTestBase() {
     @Autowired
     private lateinit var applicationProperties: ApplicationProperties
 
-    @MockBean
-    private lateinit var mockedUserService: UserService
     private val service: CooperativeWalletService by lazy {
         databaseCleanerService.deleteAllWallets()
         createWallet(userUuid, walletAddress, WalletType.USER)

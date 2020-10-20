@@ -2,12 +2,12 @@ package com.ampnet.walletservice.grpc.projectservice
 
 import com.ampnet.projectservice.proto.GetByUuids
 import com.ampnet.projectservice.proto.OrganizationResponse
-import com.ampnet.projectservice.proto.ProjectResponse
 import com.ampnet.projectservice.proto.ProjectServiceGrpc
 import com.ampnet.walletservice.config.ApplicationProperties
 import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.exception.GrpcException
 import com.ampnet.walletservice.exception.ResourceNotFoundException
+import com.ampnet.walletservice.service.pojo.response.ProjectServiceResponse
 import io.grpc.StatusRuntimeException
 import mu.KLogging
 import net.devh.boot.grpc.client.channelfactory.GrpcChannelFactory
@@ -35,7 +35,7 @@ class ProjectServiceImpl(
     }
 
     @Throws(ResourceNotFoundException::class)
-    override fun getProject(uuid: UUID): ProjectResponse {
+    override fun getProject(uuid: UUID): ProjectServiceResponse {
         return getProjects(listOf(uuid)).firstOrNull()
             ?: throw ResourceNotFoundException(ErrorCode.PRJ_MISSING, "Missing project: $uuid")
     }
@@ -57,7 +57,7 @@ class ProjectServiceImpl(
         }
     }
 
-    override fun getProjects(uuids: Iterable<UUID>): List<ProjectResponse> {
+    override fun getProjects(uuids: Iterable<UUID>): List<ProjectServiceResponse> {
         logger.debug { "Fetching projects: $uuids" }
         if (uuids.none()) {
             return emptyList()
@@ -68,7 +68,7 @@ class ProjectServiceImpl(
                 .build()
             val response = serviceWithTimeout().getProjects(request).projectsList
             logger.debug { "Fetched projects: ${response.map { it.uuid }}" }
-            return response
+            return response.map { ProjectServiceResponse(it) }
         } catch (ex: StatusRuntimeException) {
             throw GrpcException(ErrorCode.INT_GRPC_PROJECT, "Failed to fetch projects. ${ex.localizedMessage}")
         }

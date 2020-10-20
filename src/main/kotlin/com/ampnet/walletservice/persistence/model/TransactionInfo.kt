@@ -13,7 +13,7 @@ import javax.persistence.Table
 
 @Entity
 @Table(name = "transaction_info")
-data class TransactionInfo(
+class TransactionInfo(
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

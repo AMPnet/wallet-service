@@ -10,7 +10,7 @@ import javax.persistence.Table
 
 @Entity
 @Table(name = "pair_wallet_code")
-data class PairWalletCode(
+class PairWalletCode(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Int,

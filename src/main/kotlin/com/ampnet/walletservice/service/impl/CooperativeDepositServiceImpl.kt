@@ -8,6 +8,8 @@ import com.ampnet.walletservice.exception.ResourceNotFoundException
 import com.ampnet.walletservice.grpc.blockchain.BlockchainService
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionDataAndInfo
 import com.ampnet.walletservice.grpc.mail.MailService
+import com.ampnet.walletservice.grpc.projectservice.ProjectService
+import com.ampnet.walletservice.grpc.userservice.UserService
 import com.ampnet.walletservice.persistence.model.Declined
 import com.ampnet.walletservice.persistence.model.Deposit
 import com.ampnet.walletservice.persistence.repository.DeclinedRepository
@@ -16,8 +18,11 @@ import com.ampnet.walletservice.persistence.repository.WalletRepository
 import com.ampnet.walletservice.service.CooperativeDepositService
 import com.ampnet.walletservice.service.StorageService
 import com.ampnet.walletservice.service.TransactionInfoService
-import com.ampnet.walletservice.service.pojo.ApproveDepositRequest
-import com.ampnet.walletservice.service.pojo.MintServiceRequest
+import com.ampnet.walletservice.service.pojo.request.ApproveDepositRequest
+import com.ampnet.walletservice.service.pojo.request.MintServiceRequest
+import com.ampnet.walletservice.service.pojo.response.DepositListServiceResponse
+import com.ampnet.walletservice.service.pojo.response.DepositServiceResponse
+import com.ampnet.walletservice.service.pojo.response.DepositWithDataServiceResponse
 import mu.KLogging
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -27,6 +32,7 @@ import java.time.ZonedDateTime
 import java.util.UUID
 
 @Service
+@Suppress("TooManyFunctions")
 class CooperativeDepositServiceImpl(
     private val walletRepository: WalletRepository,
     private val depositRepository: DepositRepository,
@@ -34,13 +40,15 @@ class CooperativeDepositServiceImpl(
     private val blockchainService: BlockchainService,
     private val transactionInfoService: TransactionInfoService,
     private val storageService: StorageService,
-    private val mailService: MailService
+    private val mailService: MailService,
+    private val userService: UserService,
+    private val projectService: ProjectService
 ) : CooperativeDepositService {
 
     companion object : KLogging()
 
     @Transactional
-    override fun approve(request: ApproveDepositRequest): Deposit {
+    override fun approve(request: ApproveDepositRequest): DepositServiceResponse {
         val deposit = getDepositForId(request.id)
         // TODO: think about document reading restrictions
         val document = storageService.saveDocument(request.documentSaveRequest)
@@ -50,11 +58,12 @@ class CooperativeDepositServiceImpl(
         deposit.approvedAt = ZonedDateTime.now()
         deposit.amount = request.amount
         deposit.file = document
-        return deposit
+
+        return DepositServiceResponse(deposit, true)
     }
 
     @Transactional
-    override fun decline(id: Int, user: UUID, comment: String): Deposit {
+    override fun decline(id: Int, user: UUID, comment: String): DepositServiceResponse {
         val deposit = getDepositForId(id)
         if (deposit.txHash != null) {
             throw InvalidRequestException(ErrorCode.WALLET_DEPOSIT_MINTED, "Cannot decline minted deposit")
@@ -63,23 +72,58 @@ class CooperativeDepositServiceImpl(
         val declined = Declined(comment, user)
         deposit.declined = declinedRepository.save(declined)
         mailService.sendDepositInfo(deposit.ownerUuid, false)
-        return deposit
+        return DepositServiceResponse(deposit, true)
     }
 
     @Transactional(readOnly = true)
-    override fun getApprovedWithDocuments(type: DepositWithdrawType, pageable: Pageable): Page<Deposit> {
-        return depositRepository.findAllApprovedWithFile(type, pageable)
-    }
+    override fun getApprovedWithDocuments(type: DepositWithdrawType?, pageable: Pageable): DepositListServiceResponse =
+        when (type) {
+            DepositWithdrawType.USER -> {
+                val userDeposits = depositRepository.findAllApprovedWithFileByType(type, pageable)
+                getDepositWithUserListServiceResponse(userDeposits, true)
+            }
+            DepositWithdrawType.PROJECT -> {
+                val projectDeposits = depositRepository.findAllApprovedWithFileByType(type, pageable)
+                getDepositWithProjectListServiceResponse(projectDeposits, true)
+            }
+            else -> {
+                val depositsPage = depositRepository.findAllApprovedWithFile(pageable)
+                val depositsList = depositsPage.toList()
+                val userDeposits = depositsList.filter { it.type == DepositWithdrawType.USER }
+                val projectDeposits = depositsList.filter { it.type == DepositWithdrawType.PROJECT }
+                val allDeposits =
+                    getDepositsWithUser(userDeposits, true) + getDepositsWithProject(projectDeposits, true)
+                DepositListServiceResponse(allDeposits, depositsPage.number, depositsPage.totalPages)
+            }
+        }
 
     @Transactional(readOnly = true)
-    override fun getUnapproved(type: DepositWithdrawType, pageable: Pageable): Page<Deposit> {
-        return depositRepository.findAllUnapproved(type, pageable)
-    }
+    override fun getUnapproved(type: DepositWithdrawType?, pageable: Pageable): DepositListServiceResponse =
+        when (type) {
+            DepositWithdrawType.USER -> {
+                val depositsPage = depositRepository.findAllUnapprovedByType(type, pageable)
+                getDepositWithUserListServiceResponse(depositsPage)
+            }
+            DepositWithdrawType.PROJECT -> {
+                val depositsPage = depositRepository.findAllUnapprovedByType(type, pageable)
+                getDepositWithProjectListServiceResponse(depositsPage)
+            }
+            else -> {
+                val depositsPage = depositRepository.findAllUnapproved(pageable)
+                val depositsList = depositsPage.toList()
+                val userDeposits = depositsList.filter { it.type == DepositWithdrawType.USER }
+                val projectDeposits = depositsList.filter { it.type == DepositWithdrawType.PROJECT }
+                val allDeposits =
+                    getDepositsWithUser(userDeposits) + getDepositsWithProject(projectDeposits)
+                DepositListServiceResponse(allDeposits, depositsPage.number, depositsPage.totalPages)
+            }
+        }
 
     @Transactional(readOnly = true)
-    override fun findByReference(reference: String): Deposit? {
-        return ServiceUtils.wrapOptional(depositRepository.findByReference(reference))
-    }
+    override fun findByReference(reference: String): DepositWithDataServiceResponse? =
+        ServiceUtils.wrapOptional(depositRepository.findByReference(reference))?.let {
+            getDepositWithData(it)
+        }
 
     @Transactional
     override fun generateMintTransaction(request: MintServiceRequest): TransactionDataAndInfo {
@@ -105,9 +149,13 @@ class CooperativeDepositServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun countUsersWithApprovedDeposit(): Int {
-        return depositRepository.countUsersWithApprovedDeposit()
-    }
+    override fun countUsersWithApprovedDeposit(): Int = depositRepository.countUsersWithApprovedDeposit()
+
+    @Transactional(readOnly = true)
+    override fun getById(id: Int): DepositWithDataServiceResponse? =
+        ServiceUtils.wrapOptional(depositRepository.findById(id))?.let {
+            getDepositWithData(it)
+        }
 
     private fun validateDepositForMintTransaction(deposit: Deposit) {
         if (deposit.approvedByUserUuid == null) {
@@ -121,9 +169,68 @@ class CooperativeDepositServiceImpl(
         }
     }
 
-    private fun getDepositForId(depositId: Int): Deposit {
-        return depositRepository.findById(depositId).orElseThrow {
+    private fun getDepositForId(depositId: Int): Deposit =
+        depositRepository.findById(depositId).orElseThrow {
             throw ResourceNotFoundException(ErrorCode.WALLET_DEPOSIT_MISSING, "Missing deposit: $depositId")
+        }
+
+    private fun getDepositWithUserListServiceResponse(
+        depositsPage: Page<Deposit>,
+        withDocuments: Boolean = false
+    ): DepositListServiceResponse {
+        val depositsWithUser = getDepositsWithUser(depositsPage.toList(), withDocuments)
+        return DepositListServiceResponse(depositsWithUser, depositsPage.number, depositsPage.totalPages)
+    }
+
+    private fun getDepositsWithUser(
+        deposits: List<Deposit>,
+        withDocuments: Boolean = false
+    ): List<DepositWithDataServiceResponse> {
+        val users = userService
+            .getUsers(deposits.map { it.ownerUuid }.toSet())
+            .associateBy { it.uuid }
+        return deposits.map { deposit ->
+            val user = users[deposit.ownerUuid]
+            DepositWithDataServiceResponse(deposit, user, null, withDocuments)
+        }
+    }
+
+    private fun getDepositsWithProject(
+        deposits: List<Deposit>,
+        withDocuments: Boolean = false
+    ): List<DepositWithDataServiceResponse> {
+        val projects = projectService
+            .getProjects(deposits.map { it.ownerUuid }.toSet())
+            .associateBy { it.uuid }
+        val users = userService
+            .getUsers(deposits.map { it.createdBy }.toSet())
+            .associateBy { it.uuid }
+        return deposits.map { deposit ->
+            val projectResponse = projects[deposit.ownerUuid]
+            val createdBy = users[deposit.createdBy]
+            DepositWithDataServiceResponse(deposit, createdBy, projectResponse, withDocuments)
+        }
+    }
+
+    private fun getDepositWithProjectListServiceResponse(
+        depositsPage: Page<Deposit>,
+        withDocuments: Boolean = false
+    ): DepositListServiceResponse {
+        val depositsWithProject = getDepositsWithProject(depositsPage.toList(), withDocuments)
+        return DepositListServiceResponse(depositsWithProject, depositsPage.number, depositsPage.totalPages)
+    }
+
+    private fun getDepositWithData(deposit: Deposit): DepositWithDataServiceResponse {
+        return when (deposit.type) {
+            DepositWithdrawType.USER -> {
+                val user = userService.getUsers(setOf(deposit.ownerUuid)).firstOrNull()
+                DepositWithDataServiceResponse(deposit, user, null)
+            }
+            DepositWithdrawType.PROJECT -> {
+                val user = userService.getUsers(setOf(deposit.createdBy)).firstOrNull()
+                val project = projectService.getProjects(setOf(deposit.ownerUuid)).firstOrNull()
+                DepositWithDataServiceResponse(deposit, user, project)
+            }
         }
     }
 }
