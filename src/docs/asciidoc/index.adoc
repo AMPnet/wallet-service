@@ -416,6 +416,7 @@ include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToGetUnapprovedPr
 
 ===== Approved
 Completed deposits are deposits that are approved and minted - `txHash` is not null.
+`Type` parameter can be `USER` or `PROJECT`. If `type` is empty all approved deposits will be returned.
 
 ====== Users
 .Request
@@ -423,11 +424,6 @@ include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToGetApprovedDepo
 .Response
 include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToGetApprovedDeposits/http-response.adoc[]
 
-====== Projects
-.Request
-include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToGetApprovedProjectDeposits/http-request.adoc[]
-.Response
-include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToGetApprovedProjectDeposits/http-response.adoc[]
 
 ==== Approve Deposit
 Must have Admin role - privilege: PWA_DEPOSIT.

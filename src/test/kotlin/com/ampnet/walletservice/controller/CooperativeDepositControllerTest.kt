@@ -330,6 +330,7 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
         verify("Cooperative can get approved user deposits") {
             val result = mockMvc.perform(
                 get("$depositPath/approved")
+                    .param("type", DepositWithdrawType.USER.name)
                     .param("size", "20")
                     .param("page", "0")
                     .param("sort", "approvedAt,desc")
@@ -366,7 +367,8 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
 
         verify("Cooperative can get approved project deposits") {
             val result = mockMvc.perform(
-                get("$depositPath/approved/project")
+                get("$depositPath/approved")
+                    .param("type", DepositWithdrawType.PROJECT.name)
                     .param("size", "20")
                     .param("page", "0")
                     .param("sort", "approvedAt,desc")
@@ -381,6 +383,41 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
             assertThat(response.project?.uuid).isEqualTo(projectUuid)
             assertThat(response.user?.uuid).isEqualTo(userUuid)
             assertThat(response.deposit.documentResponse).isNotNull
+        }
+    }
+
+    @Test
+    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PRA_DEPOSIT])
+    fun mustBeAbleToGetAllApprovedDeposits() {
+        suppose("Approved and unapproved project and user deposits exist") {
+            val unapprovedProject = createUnsignedDeposit(projectUuid, type = DepositWithdrawType.PROJECT)
+            val approvedProject = createApprovedDeposit(projectUuid, type = DepositWithdrawType.PROJECT)
+            val unapprovedUser = createUnsignedDeposit(userUuid)
+            val approvedUser = createApprovedDeposit(userUuid)
+            testContext.deposits = listOf(unapprovedProject, approvedProject, unapprovedUser, approvedUser)
+        }
+        suppose("Project service will return project data") {
+            Mockito.`when`(projectService.getProjects(setOf(projectUuid)))
+                .thenReturn(listOf(createProjectResponse(projectUuid, userUuid)))
+        }
+        suppose("User service will return user data") {
+            Mockito.`when`(userService.getUsers(setOf(userUuid)))
+                .thenReturn(listOf(createUserResponse(userUuid)))
+        }
+
+        verify("Cooperative can get approved project and user deposits for null type specified") {
+            val result = mockMvc.perform(
+                get("$depositPath/approved")
+                    .param("type", null)
+                    .param("size", "20")
+                    .param("page", "0")
+                    .param("sort", "approvedAt,desc")
+            )
+                .andExpect(status().isOk)
+                .andReturn()
+
+            val deposits: DepositListServiceResponse = objectMapper.readValue(result.response.contentAsString)
+            assertThat(deposits.deposits).hasSize(2)
         }
     }
 

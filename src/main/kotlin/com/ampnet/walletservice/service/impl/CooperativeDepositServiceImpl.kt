@@ -75,11 +75,21 @@ class CooperativeDepositServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun getApprovedWithDocuments(type: DepositWithdrawType, pageable: Pageable): DepositListServiceResponse {
-        val depositsPage = depositRepository.findAllApprovedWithFile(type, pageable)
-        return when (type) {
-            DepositWithdrawType.USER -> getDepositWithUserListServiceResponse(depositsPage, true)
-            DepositWithdrawType.PROJECT -> getDepositWithProjectListServiceResponse(depositsPage, true)
+    override fun getApprovedWithDocuments(type: DepositWithdrawType?, pageable: Pageable): DepositListServiceResponse {
+        var depositsPage: Page<Deposit>
+        type?.let {
+            depositsPage = depositRepository.findAllApprovedWithFileByType(type, pageable)
+            return when (type) {
+                DepositWithdrawType.USER -> getDepositWithUserListServiceResponse(depositsPage, true)
+                DepositWithdrawType.PROJECT -> getDepositWithProjectListServiceResponse(depositsPage, true)
+            }
+        } ?: run {
+            depositsPage = depositRepository.findAllApprovedWithFile(pageable)
+            val userDeposits = depositsPage.toList().filter { it.type == DepositWithdrawType.USER }
+            val projectDeposits = depositsPage.toList().filter { it.type == DepositWithdrawType.PROJECT }
+            val allDeposits =
+                getDepositsWithUser(userDeposits, true) + getDepositsWithProject(projectDeposits, true)
+            return DepositListServiceResponse(allDeposits, depositsPage.number, depositsPage.totalPages)
         }
     }
 
@@ -151,33 +161,45 @@ class CooperativeDepositServiceImpl(
         depositsPage: Page<Deposit>,
         withDocuments: Boolean = false
     ): DepositListServiceResponse {
-        val deposits = depositsPage.toList()
-        val users = userService
-            .getUsers(deposits.map { it.ownerUuid }.toSet())
-            .associateBy { it.uuid }
-        val depositsWithUser = deposits.map { deposit ->
-            val user = users[deposit.ownerUuid]
-            DepositWithDataServiceResponse(deposit, user, null, withDocuments)
-        }
+        val depositsWithUser = getDepositsWithUser(depositsPage.toList(), withDocuments)
         return DepositListServiceResponse(depositsWithUser, depositsPage.number, depositsPage.totalPages)
     }
 
-    private fun getDepositWithProjectListServiceResponse(
-        depositsPage: Page<Deposit>,
+    private fun getDepositsWithUser(
+        deposits: List<Deposit>,
         withDocuments: Boolean = false
-    ): DepositListServiceResponse {
-        val deposits = depositsPage.toList()
+    ): List<DepositWithDataServiceResponse> {
+        val users = userService
+            .getUsers(deposits.map { it.ownerUuid }.toSet())
+            .associateBy { it.uuid }
+        return deposits.map { deposit ->
+            val user = users[deposit.ownerUuid]
+            DepositWithDataServiceResponse(deposit, user, null, withDocuments)
+        }
+    }
+
+    private fun getDepositsWithProject(
+        deposits: List<Deposit>,
+        withDocuments: Boolean = false
+    ): List<DepositWithDataServiceResponse> {
         val projects = projectService
             .getProjects(deposits.map { it.ownerUuid }.toSet())
             .associateBy { it.uuid }
         val users = userService
             .getUsers(deposits.map { it.createdBy }.toSet())
             .associateBy { it.uuid }
-        val depositsWithProject = deposits.map { deposit ->
+        return deposits.map { deposit ->
             val projectResponse = projects[deposit.ownerUuid]
             val createdBy = users[deposit.createdBy]
             DepositWithDataServiceResponse(deposit, createdBy, projectResponse, withDocuments)
         }
+    }
+
+    private fun getDepositWithProjectListServiceResponse(
+        depositsPage: Page<Deposit>,
+        withDocuments: Boolean = false
+    ): DepositListServiceResponse {
+        val depositsWithProject = getDepositsWithProject(depositsPage.toList(), withDocuments)
         return DepositListServiceResponse(depositsWithProject, depositsPage.number, depositsPage.totalPages)
     }
 
