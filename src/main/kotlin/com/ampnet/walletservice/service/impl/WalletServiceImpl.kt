@@ -1,6 +1,5 @@
 package com.ampnet.walletservice.service.impl
 
-import com.ampnet.mailservice.proto.WalletTypeRequest
 import com.ampnet.walletservice.controller.pojo.request.WalletCreateRequest
 import com.ampnet.walletservice.enums.Currency
 import com.ampnet.walletservice.enums.WalletType
@@ -28,6 +27,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.ZonedDateTime
 import java.util.UUID
+import com.ampnet.mailservice.proto.WalletType as WalletTypeProto
 
 @Service
 class WalletServiceImpl(
@@ -69,7 +69,7 @@ class WalletServiceImpl(
 
         logger.debug { "Creating wallet: $request for user: $user" }
         val wallet = createWallet(user, request.publicKey, WalletType.USER, request.email, request.providerId)
-        mailService.sendNewWalletMail(WalletTypeRequest.Type.USER)
+        mailService.sendNewWalletMail(WalletTypeProto.USER)
         return wallet
     }
 
@@ -101,7 +101,7 @@ class WalletServiceImpl(
         val txHash = blockchainService.postTransaction(signedTransaction)
         val wallet = createWallet(project, txHash, WalletType.PROJECT)
         logger.debug { "Created wallet for project: $project" }
-        mailService.sendNewWalletMail(WalletTypeRequest.Type.PROJECT)
+        mailService.sendNewWalletMail(WalletTypeProto.PROJECT)
         return wallet
     }
 
@@ -131,7 +131,7 @@ class WalletServiceImpl(
         val txHash = blockchainService.postTransaction(signedTransaction)
         val wallet = createWallet(organization, txHash, WalletType.ORG)
         logger.debug { "Created wallet for organization: $organization" }
-        mailService.sendNewWalletMail(WalletTypeRequest.Type.ORGANIZATION)
+        mailService.sendNewWalletMail(WalletTypeProto.ORGANIZATION)
         return wallet
     }
 
