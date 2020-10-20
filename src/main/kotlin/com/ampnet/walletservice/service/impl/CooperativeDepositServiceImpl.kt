@@ -85,8 +85,8 @@ class CooperativeDepositServiceImpl(
             }
         } ?: run {
             depositsPage = depositRepository.findAllApprovedWithFile(pageable)
-            val userDeposits = depositsPage.toList().filter { it.type == DepositWithdrawType.USER }
-            val projectDeposits = depositsPage.toList().filter { it.type == DepositWithdrawType.PROJECT }
+            val userDeposits = filterByTpe(depositsPage, DepositWithdrawType.USER)
+            val projectDeposits = filterByTpe(depositsPage, DepositWithdrawType.PROJECT)
             val allDeposits =
                 getDepositsWithUser(userDeposits, true) + getDepositsWithProject(projectDeposits, true)
             return DepositListServiceResponse(allDeposits, depositsPage.number, depositsPage.totalPages)
@@ -94,11 +94,21 @@ class CooperativeDepositServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun getUnapproved(type: DepositWithdrawType, pageable: Pageable): DepositListServiceResponse {
-        val depositsPage = depositRepository.findAllUnapproved(type, pageable)
-        return when (type) {
-            DepositWithdrawType.USER -> getDepositWithUserListServiceResponse(depositsPage)
-            DepositWithdrawType.PROJECT -> getDepositWithProjectListServiceResponse(depositsPage)
+    override fun getUnapproved(type: DepositWithdrawType?, pageable: Pageable): DepositListServiceResponse {
+        var depositsPage: Page<Deposit>
+        type?.let {
+            depositsPage = depositRepository.findAllUnapprovedByType(type, pageable)
+            return when (type) {
+                DepositWithdrawType.USER -> getDepositWithUserListServiceResponse(depositsPage)
+                DepositWithdrawType.PROJECT -> getDepositWithProjectListServiceResponse(depositsPage)
+            }
+        } ?: run {
+            depositsPage = depositRepository.findAllUnapproved(pageable)
+            val userDeposits = filterByTpe(depositsPage, DepositWithdrawType.USER)
+            val projectDeposits = filterByTpe(depositsPage, DepositWithdrawType.PROJECT)
+            val allDeposits =
+                getDepositsWithUser(userDeposits) + getDepositsWithProject(projectDeposits)
+            return DepositListServiceResponse(allDeposits, depositsPage.number, depositsPage.totalPages)
         }
     }
 
@@ -216,4 +226,7 @@ class CooperativeDepositServiceImpl(
             }
         }
     }
+
+    private fun filterByTpe(depositsPage: Page<Deposit>, type: DepositWithdrawType): List<Deposit> =
+        depositsPage.toList().filter { it.type == type }
 }

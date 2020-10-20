@@ -71,20 +71,14 @@ class CooperativeDepositController(
 
     @GetMapping("/cooperative/deposit/unapproved")
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_DEPOSIT)")
-    fun getUnapprovedDeposits(pageable: Pageable): ResponseEntity<DepositListServiceResponse> {
-        logger.debug { "Received request to get unapproved user deposits" }
+    fun getUnapprovedDeposits(
+        @RequestParam("type") type: DepositWithdrawType?,
+        pageable: Pageable
+    ): ResponseEntity<DepositListServiceResponse> {
+        logger.debug { "Received request to get unapproved deposits" }
         val depositWithUserListServiceResponse = cooperativeDepositService
-            .getUnapproved(DepositWithdrawType.USER, pageable)
+            .getUnapproved(type, pageable)
         return ResponseEntity.ok(depositWithUserListServiceResponse)
-    }
-
-    @GetMapping("/cooperative/deposit/unapproved/project")
-    @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_DEPOSIT)")
-    fun getUnapprovedProjectDeposits(pageable: Pageable): ResponseEntity<DepositListServiceResponse> {
-        logger.debug { "Received request to get unapproved project deposits" }
-        val depositWithUserAndProjectListServiceResponse = cooperativeDepositService
-            .getUnapproved(DepositWithdrawType.PROJECT, pageable)
-        return ResponseEntity.ok(depositWithUserAndProjectListServiceResponse)
     }
 
     @GetMapping("/cooperative/deposit/approved")

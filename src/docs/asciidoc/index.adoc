@@ -401,24 +401,17 @@ include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToGetDepositById/
 
 ===== Unapproved
 Unapproved deposits are all deposits that are not minted - `txHash=null`.
+`Type` parameter can be `USER` or `PROJECT`. If `type` is empty all unapproved deposits will be returned.
 
-====== Users
 .Request
 include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToGetUnapprovedDeposits/http-request.adoc[]
 .Response
 include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToGetUnapprovedDeposits/http-response.adoc[]
 
-====== Projects
-.Request
-include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToGetUnapprovedProjectDeposits/http-request.adoc[]
-.Response
-include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToGetUnapprovedProjectDeposits/http-response.adoc[]
-
 ===== Approved
 Completed deposits are deposits that are approved and minted - `txHash` is not null.
 `Type` parameter can be `USER` or `PROJECT`. If `type` is empty all approved deposits will be returned.
 
-====== Users
 .Request
 include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToGetApprovedDeposits/http-request.adoc[]
 .Response

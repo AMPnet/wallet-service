@@ -32,7 +32,15 @@ interface DepositRepository : JpaRepository<Deposit, Int> {
         countQuery = "SELECT COUNT(deposit) FROM Deposit deposit " +
             "WHERE deposit.type = :type AND deposit.txHash IS NULL AND deposit.declined is NULL"
     )
-    fun findAllUnapproved(type: DepositWithdrawType, pageable: Pageable): Page<Deposit>
+    fun findAllUnapprovedByType(type: DepositWithdrawType, pageable: Pageable): Page<Deposit>
+
+    @Query(
+        "SELECT deposit FROM Deposit deposit " +
+            "WHERE deposit.txHash IS NULL AND deposit.declined is NULL",
+        countQuery = "SELECT COUNT(deposit) FROM Deposit deposit " +
+            "WHERE deposit.txHash IS NULL AND deposit.declined is NULL"
+    )
+    fun findAllUnapproved(pageable: Pageable): Page<Deposit>
 
     fun findByReference(reference: String): Optional<Deposit>
 
