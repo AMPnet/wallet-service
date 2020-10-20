@@ -53,14 +53,7 @@ class CooperativeWithdrawServiceImpl(
                 val projectWithdraws = withdrawRepository.findAllApprovedByType(type, pageable)
                 getWithdrawWithProjectListServiceResponse(projectWithdraws)
             }
-            else -> {
-                val withdrawsPage = withdrawRepository.findAllApproved(pageable)
-                val userWithdraws = withdrawsPage.toList().filter { it.type == DepositWithdrawType.USER }
-                val projectWithdraws = withdrawsPage.toList().filter { it.type == DepositWithdrawType.PROJECT }
-                val allDeposits =
-                    getWithdrawsWithUser(userWithdraws) + getWithdrawsWithProject(projectWithdraws)
-                WithdrawListServiceResponse(allDeposits, withdrawsPage.number, withdrawsPage.totalPages)
-            }
+            else -> generateWithdrawListResponse(withdrawRepository.findAllApproved(pageable))
         }
 
     @Transactional(readOnly = true)
@@ -74,14 +67,7 @@ class CooperativeWithdrawServiceImpl(
                 val projectWithdraws = withdrawRepository.findAllBurnedByType(type, pageable)
                 getWithdrawWithProjectListServiceResponse(projectWithdraws)
             }
-            else -> {
-                val withdrawsPage = withdrawRepository.findAllBurned(pageable)
-                val userWithdraws = withdrawsPage.toList().filter { it.type == DepositWithdrawType.USER }
-                val projectWithdraws = withdrawsPage.toList().filter { it.type == DepositWithdrawType.PROJECT }
-                val allDeposits =
-                    getWithdrawsWithUser(userWithdraws) + getWithdrawsWithProject(projectWithdraws)
-                WithdrawListServiceResponse(allDeposits, withdrawsPage.number, withdrawsPage.totalPages)
-            }
+            else -> generateWithdrawListResponse(withdrawRepository.findAllBurned(pageable))
         }
 
     @Transactional
@@ -184,5 +170,14 @@ class CooperativeWithdrawServiceImpl(
                 WithdrawWithDataServiceResponse(withdraw, user, project, walletHash)
             }
         }
+    }
+
+    private fun generateWithdrawListResponse(withdraws: Page<Withdraw>): WithdrawListServiceResponse {
+        val withdrawsList = withdraws.toList()
+        val userWithdraws = withdrawsList.filter { it.type == DepositWithdrawType.USER }
+        val projectWithdraws = withdrawsList.filter { it.type == DepositWithdrawType.PROJECT }
+        val allWithdraws =
+            getWithdrawsWithUser(userWithdraws) + getWithdrawsWithProject(projectWithdraws)
+        return WithdrawListServiceResponse(allWithdraws, withdraws.number, withdraws.totalPages)
     }
 }
