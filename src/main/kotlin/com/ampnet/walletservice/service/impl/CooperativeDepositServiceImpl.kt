@@ -32,6 +32,7 @@ import java.time.ZonedDateTime
 import java.util.UUID
 
 @Service
+@Suppress("TooManyFunctions")
 class CooperativeDepositServiceImpl(
     private val walletRepository: WalletRepository,
     private val depositRepository: DepositRepository,

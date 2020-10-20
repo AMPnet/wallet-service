@@ -174,7 +174,6 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
         verify("Cooperative can get list of all approved withdraws for unspecified type") {
             val result = mockMvc.perform(
                 get("$withdrawPath/approved")
-                    .param("type", null)
                     .param("size", "10")
                     .param("page", "0")
                     .param("sort", "approvedAt,desc")
@@ -210,6 +209,7 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
         verify("Cooperative can get list of burned user withdraws") {
             val result = mockMvc.perform(
                 get("$withdrawPath/burned")
+                    .param("type", DepositWithdrawType.USER.name)
                     .param("size", "20")
                     .param("page", "0")
                     .param("sort", "burnedAt,desc")
@@ -265,7 +265,8 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
 
         verify("Cooperative can get list of burned project withdraws") {
             val result = mockMvc.perform(
-                get("$withdrawPath/burned/project")
+                get("$withdrawPath/burned")
+                    .param("type", DepositWithdrawType.PROJECT.name)
                     .param("size", "20")
                     .param("page", "0")
                     .param("sort", "burnedAt,desc")
@@ -292,6 +293,46 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
             assertThat(withdraw.burnedTxHash).isEqualTo(testContext.burnedTx)
             assertThat(withdraw.documentResponse).isNull()
             assertThat(user?.uuid).isEqualTo(userUuid)
+        }
+    }
+
+    @Test
+    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PRA_WITHDRAW])
+    fun mustBeAbleToGetAllBurnedWithdraws() {
+        suppose("Approved and burned project withdraws are created") {
+            createApprovedWithdraw(projectUuid, type = DepositWithdrawType.PROJECT)
+            createBurnedWithdraw(projectUuid, type = DepositWithdrawType.PROJECT)
+            createApprovedWithdraw(userUuid)
+            createBurnedWithdraw(userUuid)
+        }
+        suppose("Some user has burned withdraw") {
+            createBurnedWithdraw(UUID.randomUUID(), type = DepositWithdrawType.USER)
+        }
+        suppose("Project has a wallet") {
+            databaseCleanerService.deleteAllWallets()
+            createWalletForProject(projectUuid, walletHash)
+        }
+        suppose("Project service will return project") {
+            Mockito.`when`(projectService.getProjects(setOf(projectUuid)))
+                .thenReturn(listOf(createProjectResponse(projectUuid, userUuid)))
+        }
+        suppose("User service will return user data") {
+            Mockito.`when`(userService.getUsers(setOf(userUuid)))
+                .thenReturn(listOf(createUserResponse(userUuid)))
+        }
+
+        verify("Cooperative can get list of burned withdraws for unspecified type") {
+            val result = mockMvc.perform(
+                get("$withdrawPath/burned")
+                    .param("size", "20")
+                    .param("page", "0")
+                    .param("sort", "burnedAt,desc")
+            )
+                .andExpect(status().isOk)
+                .andReturn()
+
+            val withdrawList: WithdrawListServiceResponse = objectMapper.readValue(result.response.contentAsString)
+            assertThat(withdrawList.withdraws).hasSize(3)
         }
     }
 

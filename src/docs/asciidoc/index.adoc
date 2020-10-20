@@ -321,44 +321,33 @@ include::{snippets}/CooperativeWalletControllerTest/mustBeAbleToTransferPlatform
 
 === Withdraw
 
-==== Approved Withdraws
-Must have Admin role - privilege: `PrivilegeType.PRA_WITHDRAW`
-
-===== User
-.Request
-include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToGetApprovedUserWithdraws/http-request.adoc[]
-.Response
-include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToGetApprovedUserWithdraws/http-response.adoc[]
-
-===== Project
-.Request
-include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToGetApprovedProjectWithdraws/http-request.adoc[]
-.Response
-include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToGetApprovedProjectWithdraws/http-response.adoc[]
-
-===== Get withdraw by id
+==== Get Withdraws
+Must have Admin role - privilege: `PrivilegeType.PRA_WITHDRAW`.
 Withdraw type `PROJECT` will have both user and project response.
 For withdraw type `USER`, project response will be null.
+
+===== Approved
+`type` parameter can be `USER` or `PROJECT`. If `type` is empty all approved withdraws will be returned.
+
+.Request
+include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToGetApprovedWithdraws/http-request.adoc[]
+.Response
+include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToGetApprovedWithdraws/http-response.adoc[]
+
+===== Get withdraw by id
 
 .Request
 include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToGetWithdrawById/http-request.adoc[]
 .Response
 include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToGetWithdrawById/http-response.adoc[]
 
-==== Burned Withdraws
-Must have Admin role - privilege: `PrivilegeType.PRA_WITHDRAW`
+===== Burned Withdraws
+`type` parameter can be `USER` or `PROJECT`. If `type` is empty all burned withdraws will be returned.
 
-===== User
 .Request
-include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToGetBurnedUserWithdraws/http-request.adoc[]
+include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToGetBurnedWithdraws/http-request.adoc[]
 .Response
-include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToGetBurnedUserWithdraws/http-response.adoc[]
-
-===== Project
-.Request
-include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToGetBurnedProjectWithdraws/http-request.adoc[]
-.Response
-include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToGetBurnedProjectWithdraws/http-response.adoc[]
+include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToGetBurnedWithdraws/http-response.adoc[]
 
 ==== Upload Document
 Must have Admin role - privilege: `PrivilegeType.PRA_WITHDRAW`
