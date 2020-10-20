@@ -27,22 +27,15 @@ class CooperativeWithdrawController(
 
     @GetMapping("/cooperative/withdraw/approved")
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_WITHDRAW)")
-    fun getApprovedUserWithdraws(pageable: Pageable): ResponseEntity<WithdrawListServiceResponse> {
+    fun getApprovedWithdraws(
+        @RequestParam("type") type: DepositWithdrawType?,
+        pageable: Pageable
+    ): ResponseEntity<WithdrawListServiceResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to get all approved withdraws by user: ${userPrincipal.uuid}" }
         val withdrawWithUserListResponse =
-            cooperativeWithdrawService.getAllApproved(DepositWithdrawType.USER, pageable)
+            cooperativeWithdrawService.getAllApproved(type, pageable)
         return ResponseEntity.ok(withdrawWithUserListResponse)
-    }
-
-    @GetMapping("/cooperative/withdraw/approved/project")
-    @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_WITHDRAW)")
-    fun getApprovedProjectWithdraws(pageable: Pageable): ResponseEntity<WithdrawListServiceResponse> {
-        val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
-        logger.debug { "Received request to get all approved withdraws by user: ${userPrincipal.uuid}" }
-        val withdrawWithProjectListResponse =
-            cooperativeWithdrawService.getAllApproved(DepositWithdrawType.PROJECT, pageable)
-        return ResponseEntity.ok(withdrawWithProjectListResponse)
     }
 
     @GetMapping("/cooperative/withdraw/burned")

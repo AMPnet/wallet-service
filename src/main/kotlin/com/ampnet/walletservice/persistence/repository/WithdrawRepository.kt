@@ -13,7 +13,13 @@ interface WithdrawRepository : JpaRepository<Withdraw, Int> {
         "SELECT withdraw FROM Withdraw withdraw " +
             "WHERE withdraw.approvedTxHash IS NOT NULL AND withdraw.burnedTxHash IS NULL AND withdraw.type = :type"
     )
-    fun findAllApproved(type: DepositWithdrawType, pageable: Pageable): Page<Withdraw>
+    fun findAllApprovedByType(type: DepositWithdrawType, pageable: Pageable): Page<Withdraw>
+
+    @Query(
+        "SELECT withdraw FROM Withdraw withdraw " +
+            "WHERE withdraw.approvedTxHash IS NOT NULL AND withdraw.burnedTxHash IS NULL"
+    )
+    fun findAllApproved(pageable: Pageable): Page<Withdraw>
 
     @Query(
         "SELECT withdraw FROM Withdraw withdraw " +

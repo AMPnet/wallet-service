@@ -11,7 +11,7 @@ import org.springframework.data.domain.Pageable
 import java.util.UUID
 
 interface CooperativeWithdrawService {
-    fun getAllApproved(type: DepositWithdrawType, pageable: Pageable): WithdrawListServiceResponse
+    fun getAllApproved(type: DepositWithdrawType?, pageable: Pageable): WithdrawListServiceResponse
     fun getAllBurned(type: DepositWithdrawType, pageable: Pageable): WithdrawListServiceResponse
     fun generateBurnTransaction(withdrawId: Int, user: UUID): TransactionDataAndInfo
     fun burn(signedTransaction: String, withdrawId: Int): Withdraw
