@@ -337,10 +337,9 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
                 .thenReturn(listOf(createProjectResponse(projectUuid, userUuid)))
         }
 
-        verify("Cooperative can get unapproved user and project deposits for null type specified") {
+        verify("Cooperative can get unapproved user and project deposits for unspecified type") {
             val result = mockMvc.perform(
                 get("$depositPath/unapproved")
-                    .param("type", null)
                     .param("size", "20")
                     .param("page", "0")
                     .param("sort", "createdAt,desc")
@@ -443,10 +442,9 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
                 .thenReturn(listOf(createUserResponse(userUuid)))
         }
 
-        verify("Cooperative can get approved project and user deposits for null type specified") {
+        verify("Cooperative can get approved project and user deposits for unspecified type") {
             val result = mockMvc.perform(
                 get("$depositPath/approved")
-                    .param("type", null)
                     .param("size", "20")
                     .param("page", "0")
                     .param("sort", "approvedAt,desc")

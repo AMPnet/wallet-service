@@ -11,7 +11,7 @@ import java.util.UUID
 
 interface DepositRepository : JpaRepository<Deposit, Int> {
     @Query(
-        "SELECT deposit FROM Deposit deposit LEFT JOIN FETCH deposit.file LEFT JOIN FETCH deposit.declined " +
+        "SELECT deposit FROM Deposit deposit LEFT JOIN FETCH deposit.file " +
             "WHERE deposit.type = :type AND deposit.txHash IS NOT NULL",
         countQuery = "SELECT COUNT(deposit) FROM Deposit deposit " +
             "WHERE deposit.type = :type AND deposit.txHash IS NOT NULL"
@@ -19,7 +19,7 @@ interface DepositRepository : JpaRepository<Deposit, Int> {
     fun findAllApprovedWithFileByType(type: DepositWithdrawType, pageable: Pageable): Page<Deposit>
 
     @Query(
-        "SELECT deposit FROM Deposit deposit LEFT JOIN FETCH deposit.file LEFT JOIN FETCH deposit.declined " +
+        "SELECT deposit FROM Deposit deposit LEFT JOIN FETCH deposit.file " +
             "WHERE deposit.txHash IS NOT NULL",
         countQuery = "SELECT COUNT(deposit) FROM Deposit deposit " +
             "WHERE deposit.txHash IS NOT NULL"

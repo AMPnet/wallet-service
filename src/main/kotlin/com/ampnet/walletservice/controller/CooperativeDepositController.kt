@@ -24,9 +24,7 @@ import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
 
 @RestController
-class CooperativeDepositController(
-    private val cooperativeDepositService: CooperativeDepositService
-) {
+class CooperativeDepositController(private val cooperativeDepositService: CooperativeDepositService) {
 
     companion object : KLogging()
 

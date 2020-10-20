@@ -75,42 +75,48 @@ class CooperativeDepositServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun getApprovedWithDocuments(type: DepositWithdrawType?, pageable: Pageable): DepositListServiceResponse {
-        var depositsPage: Page<Deposit>
-        type?.let {
-            depositsPage = depositRepository.findAllApprovedWithFileByType(type, pageable)
-            return when (type) {
-                DepositWithdrawType.USER -> getDepositWithUserListServiceResponse(depositsPage, true)
-                DepositWithdrawType.PROJECT -> getDepositWithProjectListServiceResponse(depositsPage, true)
+    override fun getApprovedWithDocuments(type: DepositWithdrawType?, pageable: Pageable): DepositListServiceResponse =
+        when (type) {
+            DepositWithdrawType.USER -> {
+                val userDeposits = depositRepository.findAllApprovedWithFileByType(type, pageable)
+                getDepositWithUserListServiceResponse(userDeposits, true)
             }
-        } ?: run {
-            depositsPage = depositRepository.findAllApprovedWithFile(pageable)
-            val userDeposits = filterByTpe(depositsPage, DepositWithdrawType.USER)
-            val projectDeposits = filterByTpe(depositsPage, DepositWithdrawType.PROJECT)
-            val allDeposits =
-                getDepositsWithUser(userDeposits, true) + getDepositsWithProject(projectDeposits, true)
-            return DepositListServiceResponse(allDeposits, depositsPage.number, depositsPage.totalPages)
+            DepositWithdrawType.PROJECT -> {
+                val projectDeposits = depositRepository.findAllApprovedWithFileByType(type, pageable)
+                getDepositWithProjectListServiceResponse(projectDeposits, true)
+            }
+            else -> {
+                val depositsPage = depositRepository.findAllApprovedWithFile(pageable)
+                val depositsList = depositsPage.toList()
+                val userDeposits = depositsList.filter { it.type == DepositWithdrawType.USER }
+                val projectDeposits = depositsList.filter { it.type == DepositWithdrawType.PROJECT }
+                val allDeposits =
+                    getDepositsWithUser(userDeposits, true) + getDepositsWithProject(projectDeposits, true)
+                DepositListServiceResponse(allDeposits, depositsPage.number, depositsPage.totalPages)
+            }
         }
-    }
 
     @Transactional(readOnly = true)
-    override fun getUnapproved(type: DepositWithdrawType?, pageable: Pageable): DepositListServiceResponse {
-        var depositsPage: Page<Deposit>
-        type?.let {
-            depositsPage = depositRepository.findAllUnapprovedByType(type, pageable)
-            return when (type) {
-                DepositWithdrawType.USER -> getDepositWithUserListServiceResponse(depositsPage)
-                DepositWithdrawType.PROJECT -> getDepositWithProjectListServiceResponse(depositsPage)
+    override fun getUnapproved(type: DepositWithdrawType?, pageable: Pageable): DepositListServiceResponse =
+        when (type) {
+            DepositWithdrawType.USER -> {
+                val depositsPage = depositRepository.findAllUnapprovedByType(type, pageable)
+                getDepositWithUserListServiceResponse(depositsPage)
             }
-        } ?: run {
-            depositsPage = depositRepository.findAllUnapproved(pageable)
-            val userDeposits = filterByTpe(depositsPage, DepositWithdrawType.USER)
-            val projectDeposits = filterByTpe(depositsPage, DepositWithdrawType.PROJECT)
-            val allDeposits =
-                getDepositsWithUser(userDeposits) + getDepositsWithProject(projectDeposits)
-            return DepositListServiceResponse(allDeposits, depositsPage.number, depositsPage.totalPages)
+            DepositWithdrawType.PROJECT -> {
+                val depositsPage = depositRepository.findAllUnapprovedByType(type, pageable)
+                getDepositWithProjectListServiceResponse(depositsPage)
+            }
+            else -> {
+                val depositsPage = depositRepository.findAllUnapproved(pageable)
+                val depositsList = depositsPage.toList()
+                val userDeposits = depositsList.filter { it.type == DepositWithdrawType.USER }
+                val projectDeposits = depositsList.filter { it.type == DepositWithdrawType.PROJECT }
+                val allDeposits =
+                    getDepositsWithUser(userDeposits) + getDepositsWithProject(projectDeposits)
+                DepositListServiceResponse(allDeposits, depositsPage.number, depositsPage.totalPages)
+            }
         }
-    }
 
     @Transactional(readOnly = true)
     override fun findByReference(reference: String): DepositWithDataServiceResponse? =
@@ -226,7 +232,4 @@ class CooperativeDepositServiceImpl(
             }
         }
     }
-
-    private fun filterByTpe(depositsPage: Page<Deposit>, type: DepositWithdrawType): List<Deposit> =
-        depositsPage.toList().filter { it.type == type }
 }

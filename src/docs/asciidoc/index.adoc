@@ -379,12 +379,11 @@ include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToGenerateBurnTr
 === Deposit
 
 ==== Get Deposits
-Must have Admin role - privilege: PRA_DEPOSIT
-
-===== Search by reference
+Must have Admin role - privilege: PRA_DEPOSIT.
 Deposit type `PROJECT` will have both user and project response.
 For deposit type `USER`, project response will be null.
 
+===== Search by reference
 .Request
 include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToSearchProjectByReference/http-request.adoc[]
 .Response
@@ -400,8 +399,8 @@ include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToGetDepositById/
 include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToGetDepositById/http-response.adoc[]
 
 ===== Unapproved
-Unapproved deposits are all deposits that are not minted - `txHash=null`.
-`Type` parameter can be `USER` or `PROJECT`. If `type` is empty all unapproved deposits will be returned.
+Unapproved deposits are all deposits that are not minted - `txHash` is null.
+`type` parameter can be `USER` or `PROJECT`. If `type` is empty all unapproved deposits will be returned.
 
 .Request
 include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToGetUnapprovedDeposits/http-request.adoc[]
@@ -410,13 +409,12 @@ include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToGetUnapprovedDe
 
 ===== Approved
 Completed deposits are deposits that are approved and minted - `txHash` is not null.
-`Type` parameter can be `USER` or `PROJECT`. If `type` is empty all approved deposits will be returned.
+`type` parameter can be `USER` or `PROJECT`. If `type` is empty all approved deposits will be returned.
 
 .Request
 include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToGetApprovedDeposits/http-request.adoc[]
 .Response
 include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToGetApprovedDeposits/http-response.adoc[]
-
 
 ==== Approve Deposit
 Must have Admin role - privilege: PWA_DEPOSIT.
