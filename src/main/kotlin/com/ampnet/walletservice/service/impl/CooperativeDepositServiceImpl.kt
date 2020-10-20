@@ -32,6 +32,7 @@ import java.time.ZonedDateTime
 import java.util.UUID
 
 @Service
+@Suppress("TooManyFunctions")
 class CooperativeDepositServiceImpl(
     private val walletRepository: WalletRepository,
     private val depositRepository: DepositRepository,
@@ -75,22 +76,48 @@ class CooperativeDepositServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun getApprovedWithDocuments(type: DepositWithdrawType, pageable: Pageable): DepositListServiceResponse {
-        val depositsPage = depositRepository.findAllApprovedWithFile(type, pageable)
-        return when (type) {
-            DepositWithdrawType.USER -> getDepositWithUserListServiceResponse(depositsPage, true)
-            DepositWithdrawType.PROJECT -> getDepositWithProjectListServiceResponse(depositsPage, true)
+    override fun getApprovedWithDocuments(type: DepositWithdrawType?, pageable: Pageable): DepositListServiceResponse =
+        when (type) {
+            DepositWithdrawType.USER -> {
+                val userDeposits = depositRepository.findAllApprovedWithFileByType(type, pageable)
+                getDepositWithUserListServiceResponse(userDeposits, true)
+            }
+            DepositWithdrawType.PROJECT -> {
+                val projectDeposits = depositRepository.findAllApprovedWithFileByType(type, pageable)
+                getDepositWithProjectListServiceResponse(projectDeposits, true)
+            }
+            else -> {
+                val depositsPage = depositRepository.findAllApprovedWithFile(pageable)
+                val depositsList = depositsPage.toList()
+                val userDeposits = depositsList.filter { it.type == DepositWithdrawType.USER }
+                val projectDeposits = depositsList.filter { it.type == DepositWithdrawType.PROJECT }
+                val allDeposits =
+                    getDepositsWithUser(userDeposits, true) + getDepositsWithProject(projectDeposits, true)
+                DepositListServiceResponse(allDeposits, depositsPage.number, depositsPage.totalPages)
+            }
         }
-    }
 
     @Transactional(readOnly = true)
-    override fun getUnapproved(type: DepositWithdrawType, pageable: Pageable): DepositListServiceResponse {
-        val depositsPage = depositRepository.findAllUnapproved(type, pageable)
-        return when (type) {
-            DepositWithdrawType.USER -> getDepositWithUserListServiceResponse(depositsPage)
-            DepositWithdrawType.PROJECT -> getDepositWithProjectListServiceResponse(depositsPage)
+    override fun getUnapproved(type: DepositWithdrawType?, pageable: Pageable): DepositListServiceResponse =
+        when (type) {
+            DepositWithdrawType.USER -> {
+                val depositsPage = depositRepository.findAllUnapprovedByType(type, pageable)
+                getDepositWithUserListServiceResponse(depositsPage)
+            }
+            DepositWithdrawType.PROJECT -> {
+                val depositsPage = depositRepository.findAllUnapprovedByType(type, pageable)
+                getDepositWithProjectListServiceResponse(depositsPage)
+            }
+            else -> {
+                val depositsPage = depositRepository.findAllUnapproved(pageable)
+                val depositsList = depositsPage.toList()
+                val userDeposits = depositsList.filter { it.type == DepositWithdrawType.USER }
+                val projectDeposits = depositsList.filter { it.type == DepositWithdrawType.PROJECT }
+                val allDeposits =
+                    getDepositsWithUser(userDeposits) + getDepositsWithProject(projectDeposits)
+                DepositListServiceResponse(allDeposits, depositsPage.number, depositsPage.totalPages)
+            }
         }
-    }
 
     @Transactional(readOnly = true)
     override fun findByReference(reference: String): DepositWithDataServiceResponse? =
@@ -124,6 +151,12 @@ class CooperativeDepositServiceImpl(
     @Transactional(readOnly = true)
     override fun countUsersWithApprovedDeposit(): Int = depositRepository.countUsersWithApprovedDeposit()
 
+    @Transactional(readOnly = true)
+    override fun getById(id: Int): DepositWithDataServiceResponse? =
+        ServiceUtils.wrapOptional(depositRepository.findById(id))?.let {
+            getDepositWithData(it)
+        }
+
     private fun validateDepositForMintTransaction(deposit: Deposit) {
         if (deposit.approvedByUserUuid == null) {
             throw InvalidRequestException(
@@ -145,33 +178,45 @@ class CooperativeDepositServiceImpl(
         depositsPage: Page<Deposit>,
         withDocuments: Boolean = false
     ): DepositListServiceResponse {
-        val deposits = depositsPage.toList()
-        val users = userService
-            .getUsers(deposits.map { it.ownerUuid }.toSet())
-            .associateBy { it.uuid }
-        val depositsWithUser = deposits.map { deposit ->
-            val user = users[deposit.ownerUuid]
-            DepositWithDataServiceResponse(deposit, user, null, withDocuments)
-        }
+        val depositsWithUser = getDepositsWithUser(depositsPage.toList(), withDocuments)
         return DepositListServiceResponse(depositsWithUser, depositsPage.number, depositsPage.totalPages)
     }
 
-    private fun getDepositWithProjectListServiceResponse(
-        depositsPage: Page<Deposit>,
+    private fun getDepositsWithUser(
+        deposits: List<Deposit>,
         withDocuments: Boolean = false
-    ): DepositListServiceResponse {
-        val deposits = depositsPage.toList()
+    ): List<DepositWithDataServiceResponse> {
+        val users = userService
+            .getUsers(deposits.map { it.ownerUuid }.toSet())
+            .associateBy { it.uuid }
+        return deposits.map { deposit ->
+            val user = users[deposit.ownerUuid]
+            DepositWithDataServiceResponse(deposit, user, null, withDocuments)
+        }
+    }
+
+    private fun getDepositsWithProject(
+        deposits: List<Deposit>,
+        withDocuments: Boolean = false
+    ): List<DepositWithDataServiceResponse> {
         val projects = projectService
             .getProjects(deposits.map { it.ownerUuid }.toSet())
             .associateBy { it.uuid }
         val users = userService
             .getUsers(deposits.map { it.createdBy }.toSet())
             .associateBy { it.uuid }
-        val depositsWithProject = deposits.map { deposit ->
+        return deposits.map { deposit ->
             val projectResponse = projects[deposit.ownerUuid]
             val createdBy = users[deposit.createdBy]
             DepositWithDataServiceResponse(deposit, createdBy, projectResponse, withDocuments)
         }
+    }
+
+    private fun getDepositWithProjectListServiceResponse(
+        depositsPage: Page<Deposit>,
+        withDocuments: Boolean = false
+    ): DepositListServiceResponse {
+        val depositsWithProject = getDepositsWithProject(depositsPage.toList(), withDocuments)
         return DepositListServiceResponse(depositsWithProject, depositsPage.number, depositsPage.totalPages)
     }
 

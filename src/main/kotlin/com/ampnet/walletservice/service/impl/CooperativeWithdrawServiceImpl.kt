@@ -43,22 +43,32 @@ class CooperativeWithdrawServiceImpl(
     companion object : KLogging()
 
     @Transactional(readOnly = true)
-    override fun getAllApproved(type: DepositWithdrawType, pageable: Pageable): WithdrawListServiceResponse {
-        val withdrawsPage = withdrawRepository.findAllApproved(type, pageable)
-        return when (type) {
-            DepositWithdrawType.USER -> getWithdrawWithUserListServiceResponse(withdrawsPage)
-            DepositWithdrawType.PROJECT -> getWithdrawWithProjectListServiceResponse(withdrawsPage)
+    override fun getAllApproved(type: DepositWithdrawType?, pageable: Pageable): WithdrawListServiceResponse =
+        when (type) {
+            DepositWithdrawType.USER -> {
+                val userWithdraws = withdrawRepository.findAllApprovedByType(type, pageable)
+                getWithdrawWithUserListServiceResponse(userWithdraws)
+            }
+            DepositWithdrawType.PROJECT -> {
+                val projectWithdraws = withdrawRepository.findAllApprovedByType(type, pageable)
+                getWithdrawWithProjectListServiceResponse(projectWithdraws)
+            }
+            else -> generateWithdrawListResponse(withdrawRepository.findAllApproved(pageable))
         }
-    }
 
     @Transactional(readOnly = true)
-    override fun getAllBurned(type: DepositWithdrawType, pageable: Pageable): WithdrawListServiceResponse {
-        val withdrawsPage = withdrawRepository.findAllBurned(type, pageable)
-        return when (type) {
-            DepositWithdrawType.USER -> getWithdrawWithUserListServiceResponse(withdrawsPage)
-            DepositWithdrawType.PROJECT -> getWithdrawWithProjectListServiceResponse(withdrawsPage)
+    override fun getAllBurned(type: DepositWithdrawType?, pageable: Pageable): WithdrawListServiceResponse =
+        when (type) {
+            DepositWithdrawType.USER -> {
+                val userWithdraws = withdrawRepository.findAllBurnedByType(type, pageable)
+                getWithdrawWithUserListServiceResponse(userWithdraws)
+            }
+            DepositWithdrawType.PROJECT -> {
+                val projectWithdraws = withdrawRepository.findAllBurnedByType(type, pageable)
+                getWithdrawWithProjectListServiceResponse(projectWithdraws)
+            }
+            else -> generateWithdrawListResponse(withdrawRepository.findAllBurned(pageable))
         }
-    }
 
     @Transactional
     override fun generateBurnTransaction(withdrawId: Int, user: UUID): TransactionDataAndInfo {
@@ -96,6 +106,11 @@ class CooperativeWithdrawServiceImpl(
         return WithdrawServiceResponse(withdraw, true)
     }
 
+    override fun getById(id: Int): WithdrawWithDataServiceResponse? =
+        ServiceUtils.wrapOptional(withdrawRepository.findById(id))?.let {
+            getWithdrawWithData(it)
+        }
+
     private fun validateWithdrawForBurn(withdraw: Withdraw) {
         if (withdraw.approvedTxHash == null) {
             throw InvalidRequestException(ErrorCode.WALLET_WITHDRAW_NOT_APPROVED, "Withdraw must be approved")
@@ -106,32 +121,63 @@ class CooperativeWithdrawServiceImpl(
     }
 
     private fun getWithdrawWithUserListServiceResponse(withdrawsPage: Page<Withdraw>): WithdrawListServiceResponse {
-        val withdraws = withdrawsPage.toList()
+        val withdrawWithUserList = getWithdrawsWithUser(withdrawsPage.toList())
+        return WithdrawListServiceResponse(withdrawWithUserList, withdrawsPage.number, withdrawsPage.totalPages)
+    }
+
+    private fun getWithdrawsWithUser(withdraws: List<Withdraw>): List<WithdrawWithDataServiceResponse> {
         val users = userService
             .getUsers(withdraws.map { it.ownerUuid }.toSet())
             .associateBy { it.uuid }
-        val withdrawWithUserList = withdraws.map { withdraw ->
+        return withdraws.map { withdraw ->
             val walletHash = walletService.getWallet(withdraw.ownerUuid)?.hash.orEmpty()
             val userResponse = users[withdraw.ownerUuid]
             WithdrawWithDataServiceResponse(withdraw, userResponse, null, walletHash)
         }
-        return WithdrawListServiceResponse(withdrawWithUserList, withdrawsPage.number, withdrawsPage.totalPages)
     }
 
     private fun getWithdrawWithProjectListServiceResponse(withdrawsPage: Page<Withdraw>): WithdrawListServiceResponse {
-        val withdraws = withdrawsPage.toList()
+        val withdrawWithProjectList = getWithdrawsWithProject(withdrawsPage.toList())
+        return WithdrawListServiceResponse(withdrawWithProjectList, withdrawsPage.number, withdrawsPage.totalPages)
+    }
+
+    private fun getWithdrawsWithProject(withdraws: List<Withdraw>): List<WithdrawWithDataServiceResponse> {
         val projects = projectService
             .getProjects(withdraws.map { it.ownerUuid }.toSet())
             .associateBy { it.uuid }
         val users = userService
             .getUsers(withdraws.map { it.createdBy }.toSet())
             .associateBy { it.uuid }
-        val withdrawWithProjectList = withdraws.map { withdraw ->
+        return withdraws.map { withdraw ->
             val walletHash = walletService.getWallet(withdraw.ownerUuid)?.hash.orEmpty()
             val projectResponse = projects[withdraw.ownerUuid]
             val createdBy = users[withdraw.createdBy]
             WithdrawWithDataServiceResponse(withdraw, createdBy, projectResponse, walletHash)
         }
-        return WithdrawListServiceResponse(withdrawWithProjectList, withdrawsPage.number, withdrawsPage.totalPages)
+    }
+
+    private fun getWithdrawWithData(withdraw: Withdraw): WithdrawWithDataServiceResponse {
+        return when (withdraw.type) {
+            DepositWithdrawType.USER -> {
+                val user = userService.getUsers(setOf(withdraw.ownerUuid)).firstOrNull()
+                val walletHash = walletService.getWallet(withdraw.ownerUuid)?.hash.orEmpty()
+                WithdrawWithDataServiceResponse(withdraw, user, null, walletHash)
+            }
+            DepositWithdrawType.PROJECT -> {
+                val user = userService.getUsers(setOf(withdraw.createdBy)).firstOrNull()
+                val project = projectService.getProjects(setOf(withdraw.ownerUuid)).firstOrNull()
+                val walletHash = walletService.getWallet(withdraw.ownerUuid)?.hash.orEmpty()
+                WithdrawWithDataServiceResponse(withdraw, user, project, walletHash)
+            }
+        }
+    }
+
+    private fun generateWithdrawListResponse(withdraws: Page<Withdraw>): WithdrawListServiceResponse {
+        val withdrawsList = withdraws.toList()
+        val userWithdraws = withdrawsList.filter { it.type == DepositWithdrawType.USER }
+        val projectWithdraws = withdrawsList.filter { it.type == DepositWithdrawType.PROJECT }
+        val allWithdraws =
+            getWithdrawsWithUser(userWithdraws) + getWithdrawsWithProject(projectWithdraws)
+        return WithdrawListServiceResponse(allWithdraws, withdraws.number, withdraws.totalPages)
     }
 }

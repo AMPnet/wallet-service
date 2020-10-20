@@ -24,9 +24,7 @@ import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
 
 @RestController
-class CooperativeDepositController(
-    private val cooperativeDepositService: CooperativeDepositService
-) {
+class CooperativeDepositController(private val cooperativeDepositService: CooperativeDepositService) {
 
     companion object : KLogging()
 
@@ -64,44 +62,32 @@ class CooperativeDepositController(
         @RequestBody request: CommentRequest
     ): ResponseEntity<DepositServiceResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
-        logger.info { "Received request to delcine deposit: $id by user: ${userPrincipal.uuid}" }
+        logger.info { "Received request to decline deposit: $id by user: ${userPrincipal.uuid}" }
         val deposit = cooperativeDepositService.decline(id, userPrincipal.uuid, request.comment)
         return ResponseEntity.ok(deposit)
     }
 
     @GetMapping("/cooperative/deposit/unapproved")
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_DEPOSIT)")
-    fun getUnapprovedDeposits(pageable: Pageable): ResponseEntity<DepositListServiceResponse> {
-        logger.debug { "Received request to get unapproved user deposits" }
+    fun getUnapprovedDeposits(
+        @RequestParam("type") type: DepositWithdrawType?,
+        pageable: Pageable
+    ): ResponseEntity<DepositListServiceResponse> {
+        logger.debug { "Received request to get unapproved deposits" }
         val depositWithUserListServiceResponse = cooperativeDepositService
-            .getUnapproved(DepositWithdrawType.USER, pageable)
+            .getUnapproved(type, pageable)
         return ResponseEntity.ok(depositWithUserListServiceResponse)
-    }
-
-    @GetMapping("/cooperative/deposit/unapproved/project")
-    @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_DEPOSIT)")
-    fun getUnapprovedProjectDeposits(pageable: Pageable): ResponseEntity<DepositListServiceResponse> {
-        logger.debug { "Received request to get unapproved project deposits" }
-        val depositWithUserAndProjectListServiceResponse = cooperativeDepositService
-            .getUnapproved(DepositWithdrawType.PROJECT, pageable)
-        return ResponseEntity.ok(depositWithUserAndProjectListServiceResponse)
     }
 
     @GetMapping("/cooperative/deposit/approved")
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_DEPOSIT)")
-    fun getApprovedDeposits(pageable: Pageable): ResponseEntity<DepositListServiceResponse> {
+    fun getApprovedDeposits(
+        @RequestParam("type") type: DepositWithdrawType?,
+        pageable: Pageable
+    ): ResponseEntity<DepositListServiceResponse> {
         logger.debug { "Received request to get approved deposits" }
         val deposits = cooperativeDepositService
-            .getApprovedWithDocuments(DepositWithdrawType.USER, pageable)
-        return ResponseEntity.ok(deposits)
-    }
-
-    @GetMapping("/cooperative/deposit/approved/project")
-    @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_DEPOSIT)")
-    fun getApprovedProjectDeposits(pageable: Pageable): ResponseEntity<DepositListServiceResponse> {
-        logger.debug { "Received request to get approved deposits" }
-        val deposits = cooperativeDepositService
-            .getApprovedWithDocuments(DepositWithdrawType.PROJECT, pageable)
+            .getApprovedWithDocuments(type, pageable)
         return ResponseEntity.ok(deposits)
     }
 
@@ -121,5 +107,15 @@ class CooperativeDepositController(
         logger.debug { "Received request to count users with approved deposit" }
         val counted = cooperativeDepositService.countUsersWithApprovedDeposit()
         return ResponseEntity.ok(UsersWithApprovedDeposit(counted))
+    }
+
+    @GetMapping("/cooperative/deposit/{id}")
+    @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_DEPOSIT)")
+    fun getDepositById(@PathVariable("id") id: Int): ResponseEntity<DepositWithDataServiceResponse> {
+        logger.debug { "Received request to get deposit by id: $id" }
+        cooperativeDepositService.getById(id)?.let { depositWithData ->
+            return ResponseEntity.ok(depositWithData)
+        }
+        return ResponseEntity.notFound().build()
     }
 }
