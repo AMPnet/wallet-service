@@ -40,7 +40,7 @@ message WalletTypeRequest {
 
 message ActivatedWalletRequest {
     WalletType type = 1;
-    string owner = 2;
+    string wallet_owner = 2;
 }
 
 message Empty {

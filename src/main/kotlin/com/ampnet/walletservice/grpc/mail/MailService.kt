@@ -8,5 +8,5 @@ interface MailService {
     fun sendWithdrawRequest(user: UUID, amount: Long)
     fun sendWithdrawInfo(user: UUID, burned: Boolean)
     fun sendNewWalletMail(walletType: WalletType)
-    fun sendWalletActivated(walletType: WalletType, owner: String)
+    fun sendWalletActivated(walletType: WalletType, walletOwner: String)
 }
