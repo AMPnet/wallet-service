@@ -10,8 +10,7 @@ import com.ampnet.walletservice.grpc.blockchain.pojo.BlockchainTransaction
 import com.ampnet.walletservice.grpc.blockchain.pojo.Portfolio
 import com.ampnet.walletservice.grpc.blockchain.pojo.PortfolioData
 import com.ampnet.walletservice.security.WithMockCrowdfoundUser
-import com.ampnet.walletservice.service.impl.MAX_FRACTION_DIGITS
-import com.ampnet.walletservice.service.impl.MIN_FRACTION_DIGITS
+import com.ampnet.walletservice.service.impl.toBigDecimal
 import com.ampnet.walletservice.service.pojo.response.PortfolioStats
 import com.ampnet.walletservice.service.pojo.response.ProjectServiceResponse
 import com.ampnet.walletservice.service.pojo.response.UserServiceResponse
@@ -22,7 +21,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
-import java.text.NumberFormat
+import java.math.RoundingMode
 import java.time.ZonedDateTime
 import java.util.UUID
 
@@ -302,13 +301,13 @@ class PortfolioControllerTest : ControllerTestBase() {
             assertThat(responseInvest.from).isEqualTo("${user.firstName} ${user.lastName}")
             assertThat(responseInvest.to).isEqualTo(project.name)
             assertThat(responseInvest.description).isEqualTo(project.name)
-            assertThat(responseInvest.percentageInProject).isEqualTo(getPercentageInProject(project.expectedFunding, responseInvest.amount))
+            assertThat(responseInvest.share).isEqualTo(getShare(project.expectedFunding, responseInvest.amount))
             val responseCancelInvestment = response.transactions.first { it.type == TransactionType.CANCEL_INVESTMENT }
             assertThat(responseCancelInvestment.from).isEqualTo(project.name)
             assertThat(responseCancelInvestment.to).isEqualTo("${user.firstName} ${user.lastName}")
             assertThat(responseCancelInvestment.description).isEqualTo(project.name)
-            assertThat(responseCancelInvestment.percentageInProject)
-                .isEqualTo(getPercentageInProject(project.expectedFunding, responseCancelInvestment.amount))
+            assertThat(responseCancelInvestment.share)
+                .isEqualTo(getShare(project.expectedFunding, responseCancelInvestment.amount))
             val responseSharePayout = response.transactions.first { it.type == TransactionType.SHARE_PAYOUT }
             assertThat(responseSharePayout.from).isEqualTo(project.name)
             assertThat(responseSharePayout.to).isEqualTo("${user.firstName} ${user.lastName}")
@@ -328,11 +327,10 @@ class PortfolioControllerTest : ControllerTestBase() {
             ZonedDateTime.now(), TransactionState.MINED
         )
 
-    private fun getPercentageInProject(projectFunding: Long, amount: Long): String {
-        return NumberFormat.getPercentInstance().apply {
-            minimumFractionDigits = MIN_FRACTION_DIGITS
-            maximumFractionDigits = MAX_FRACTION_DIGITS
-        }.format(amount.toDouble() / projectFunding)
+    private fun getShare(projectFunding: Long, amount: Long): String {
+        return amount.toBigDecimal().divide(
+            projectFunding.toBigDecimal(), 10, RoundingMode.HALF_UP
+        ).toPlainString()
     }
 
     private class TestContext {

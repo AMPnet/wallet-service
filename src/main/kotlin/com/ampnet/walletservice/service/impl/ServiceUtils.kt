@@ -8,6 +8,7 @@ import com.ampnet.walletservice.persistence.model.Withdraw
 import com.ampnet.walletservice.persistence.repository.WalletRepository
 import com.ampnet.walletservice.persistence.repository.WithdrawRepository
 import com.ampnet.walletservice.service.pojo.response.ProjectServiceResponse
+import java.math.BigDecimal
 import java.text.DecimalFormat
 import java.util.Optional
 import java.util.UUID
@@ -52,3 +53,4 @@ internal object ServiceUtils {
 
 const val FROM_CENTS_TO_EUROS = 100L
 fun Long.toEurAmount(): String = DecimalFormat("#,##0.00").format(this / FROM_CENTS_TO_EUROS)
+fun Long.toBigDecimal(): BigDecimal = BigDecimal.valueOf(this)
