@@ -1,6 +1,6 @@
 package com.ampnet.walletservice.grpc.blockchain.pojo
 
-import com.ampnet.projectservice.proto.ProjectResponse
+import com.ampnet.walletservice.service.pojo.response.ProjectServiceResponse
 
 data class GenerateProjectWalletRequest(
     val userWalletHash: String,
@@ -10,12 +10,12 @@ data class GenerateProjectWalletRequest(
     val investmentCap: Long,
     val endDateInMillis: Long
 ) {
-    constructor(userWalletHash: String, organizationWalletHash: String, projectResponse: ProjectResponse) : this(
+    constructor(userWalletHash: String, organizationWalletHash: String, projectResponse: ProjectServiceResponse) : this(
         userWalletHash,
         organizationWalletHash,
         projectResponse.maxPerUser,
         projectResponse.minPerUser,
         projectResponse.expectedFunding,
-        projectResponse.endDate
+        projectResponse.endDate.toInstant().toEpochMilli()
     )
 }

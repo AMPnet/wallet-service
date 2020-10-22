@@ -35,15 +35,21 @@ message ResetPasswordRequest {
 }
 
 message WalletTypeRequest {
-    enum Type {
-        USER = 0;
-        PROJECT = 1;
-        ORGANIZATION = 2;
-    }
-    Type type = 1;
+    WalletType type = 1;
+}
+
+message ActivatedWalletRequest {
+    WalletType type = 1;
+    string wallet_owner = 2;
 }
 
 message Empty {
+}
+
+enum WalletType {
+    USER = 0;
+    PROJECT = 1;
+    ORGANIZATION = 2;
 }
 
 service MailService {
@@ -54,5 +60,5 @@ service MailService {
     rpc SendDepositInfo(DepositInfoRequest) returns (Empty);
     rpc SendResetPassword(ResetPasswordRequest) returns (Empty);
     rpc SendNewWalletMail(WalletTypeRequest) returns (Empty);
+    rpc SendWalletActivated(ActivatedWalletRequest) returns (Empty);
 }
-

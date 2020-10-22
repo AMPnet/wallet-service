@@ -3,7 +3,7 @@ package com.ampnet.walletservice.controller
 import com.ampnet.walletservice.controller.pojo.request.AmountRequest
 import com.ampnet.walletservice.controller.pojo.response.TransactionResponse
 import com.ampnet.walletservice.service.ProjectInvestmentService
-import com.ampnet.walletservice.service.pojo.ProjectInvestmentRequest
+import com.ampnet.walletservice.service.pojo.request.ProjectInvestmentRequest
 import mu.KLogging
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PathVariable

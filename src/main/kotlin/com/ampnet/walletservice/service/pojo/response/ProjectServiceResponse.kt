@@ -1,11 +1,12 @@
-package com.ampnet.walletservice.controller.pojo.response
+package com.ampnet.walletservice.service.pojo.response
 
 import com.ampnet.projectservice.proto.ProjectResponse
 import com.ampnet.walletservice.controller.ControllerUtils
 import java.time.ZonedDateTime
+import java.util.UUID
 
-data class ProjectControllerResponse(
-    val uuid: String,
+data class ProjectServiceResponse(
+    val uuid: UUID,
     val name: String,
     val description: String,
     val startDate: ZonedDateTime,
@@ -15,10 +16,12 @@ data class ProjectControllerResponse(
     val minPerUser: Long,
     val maxPerUser: Long,
     val active: Boolean,
-    val imageUrl: String
+    val imageUrl: String,
+    val createByUuid: UUID,
+    val organizationUuid: UUID
 ) {
     constructor(project: ProjectResponse) : this(
-        project.uuid,
+        UUID.fromString(project.uuid),
         project.name,
         project.description,
         ControllerUtils.epochMilliToZonedDateTime(project.startDate),
@@ -28,6 +31,8 @@ data class ProjectControllerResponse(
         project.minPerUser,
         project.maxPerUser,
         project.active,
-        project.imageUrl
+        project.imageUrl,
+        UUID.fromString(project.createdByUser),
+        UUID.fromString(project.organizationUuid)
     )
 }

@@ -25,8 +25,14 @@ plugins {
     jacoco
 }
 
+allOpen {
+    annotation("javax.persistence.Entity")
+    annotation("javax.persistence.MappedSuperclass")
+    annotation("javax.persistence.Embeddable")
+}
+
 group = "com.ampnet"
-version = "0.7.3"
+version = "0.8.3"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 repositories {

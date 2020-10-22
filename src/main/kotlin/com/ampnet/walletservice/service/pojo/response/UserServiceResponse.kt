@@ -1,9 +1,9 @@
-package com.ampnet.walletservice.controller.pojo.response
+package com.ampnet.walletservice.service.pojo.response
 
 import com.ampnet.userservice.proto.UserResponse
 import java.util.UUID
 
-data class UserControllerResponse(
+class UserServiceResponse(
     val uuid: UUID,
     val email: String,
     val firstName: String,

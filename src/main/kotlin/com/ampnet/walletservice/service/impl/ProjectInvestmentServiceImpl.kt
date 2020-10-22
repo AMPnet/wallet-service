@@ -1,6 +1,5 @@
 package com.ampnet.walletservice.service.impl
 
-import com.ampnet.projectservice.proto.ProjectResponse
 import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.exception.InvalidRequestException
 import com.ampnet.walletservice.exception.ResourceNotFoundException
@@ -11,11 +10,13 @@ import com.ampnet.walletservice.grpc.projectservice.ProjectService
 import com.ampnet.walletservice.persistence.repository.WalletRepository
 import com.ampnet.walletservice.service.ProjectInvestmentService
 import com.ampnet.walletservice.service.TransactionInfoService
-import com.ampnet.walletservice.service.pojo.ProjectInvestmentRequest
+import com.ampnet.walletservice.service.pojo.request.ProjectInvestmentRequest
+import com.ampnet.walletservice.service.pojo.response.ProjectServiceResponse
 import mu.KLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 import java.util.UUID
 
 @Service
@@ -77,22 +78,27 @@ class ProjectInvestmentServiceImpl(
     override fun cancelInvestmentsInProject(signedTransaction: String): String =
         blockchainService.postTransaction(signedTransaction)
 
-    private fun verifyProjectIsStillActive(project: ProjectResponse) {
+    private fun verifyProjectIsStillActive(project: ProjectServiceResponse) {
         if (project.active.not()) {
             throw InvalidRequestException(ErrorCode.PRJ_NOT_ACTIVE, "Project is not active")
         }
-        if (ZonedDateTime.now().toInstant().toEpochMilli() > project.endDate) {
-            throw InvalidRequestException(ErrorCode.PRJ_DATE_EXPIRED, "Project has expired at: ${project.endDate}")
+        if (project.endDate.isBefore(ZonedDateTime.now())) {
+            val dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy.")
+            val endDate = project.endDate.format(dateFormatter)
+            throw InvalidRequestException(ErrorCode.PRJ_DATE_EXPIRED, "Project has expired at: $endDate")
         }
     }
 
-    private fun verifyInvestmentAmountIsValid(project: ProjectResponse, amount: Long) {
+    private fun verifyInvestmentAmountIsValid(project: ProjectServiceResponse, amount: Long) {
         if (amount > project.maxPerUser) {
-            throw InvalidRequestException(ErrorCode.PRJ_MAX_PER_USER, "User can invest max ${project.maxPerUser}")
+            throw InvalidRequestException(
+                ErrorCode.PRJ_MAX_PER_USER,
+                "User can invest max ${project.maxPerUser.toEurAmount()}"
+            )
         }
         if (amount < project.minPerUser) {
             throw InvalidRequestException(
-                ErrorCode.PRJ_MIN_PER_USER, "User has to invest at least ${project.minPerUser}"
+                ErrorCode.PRJ_MIN_PER_USER, "User has to invest at least ${project.minPerUser.toEurAmount()}"
             )
         }
     }
@@ -108,7 +114,7 @@ class ProjectInvestmentServiceImpl(
         val currentFunds = blockchainService.getBalance(hash)
         if (currentFunds == expectedFunding) {
             throw InvalidRequestException(
-                ErrorCode.PRJ_MAX_FUNDS, "Project has reached expected funding: $currentFunds"
+                ErrorCode.PRJ_MAX_FUNDS, "Project has reached expected funding: ${currentFunds.toEurAmount()}"
             )
         }
     }

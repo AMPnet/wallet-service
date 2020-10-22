@@ -7,7 +7,7 @@ import com.ampnet.walletservice.persistence.model.Deposit
 import com.ampnet.walletservice.service.impl.CooperativeDepositServiceImpl
 import com.ampnet.walletservice.service.impl.StorageServiceImpl
 import com.ampnet.walletservice.service.impl.TransactionInfoServiceImpl
-import com.ampnet.walletservice.service.pojo.MintServiceRequest
+import com.ampnet.walletservice.service.pojo.request.MintServiceRequest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -18,8 +18,9 @@ class CooperativeDepositServiceTest : JpaServiceTestBase() {
         val storageServiceImpl = StorageServiceImpl(documentRepository, mockedCloudStorageService)
         val transactionInfoService = TransactionInfoServiceImpl(transactionInfoRepository)
         CooperativeDepositServiceImpl(
-            walletRepository, depositRepository, declinedRepository, mockedBlockchainService,
-            transactionInfoService, storageServiceImpl, mockedMailService
+            walletRepository, depositRepository, declinedRepository,
+            mockedBlockchainService, transactionInfoService, storageServiceImpl,
+            mockedMailService, mockedUserService, mockedProjectService
         )
     }
     private lateinit var deposit: Deposit

@@ -1,4 +1,4 @@
-package com.ampnet.walletservice.service.pojo
+package com.ampnet.walletservice.service.pojo.request
 
 import org.springframework.web.multipart.MultipartFile
 import java.util.UUID

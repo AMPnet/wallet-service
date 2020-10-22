@@ -10,7 +10,8 @@ import com.ampnet.walletservice.persistence.model.Deposit
 import com.ampnet.walletservice.persistence.repository.DepositRepository
 import com.ampnet.walletservice.persistence.repository.WalletRepository
 import com.ampnet.walletservice.service.DepositService
-import com.ampnet.walletservice.service.pojo.DepositCreateServiceRequest
+import com.ampnet.walletservice.service.pojo.request.DepositCreateServiceRequest
+import com.ampnet.walletservice.service.pojo.response.DepositServiceResponse
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -30,7 +31,7 @@ class DepositServiceImpl(
     }
 
     @Transactional
-    override fun create(request: DepositCreateServiceRequest): Deposit {
+    override fun create(request: DepositCreateServiceRequest): DepositServiceResponse {
         validateOwnerHasWallet(request.owner)
         validateOwnerDoesNotHavePendingDeposit(request)
         if (request.type == DepositWithdrawType.PROJECT) {
@@ -45,7 +46,7 @@ class DepositServiceImpl(
         logger.debug {
             "Created Deposit for owner: ${request.owner} with amount: ${request.amount} by user: ${request.createdBy}"
         }
-        return deposit
+        return DepositServiceResponse(deposit)
     }
 
     @Transactional
@@ -62,15 +63,18 @@ class DepositServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun getPendingForUser(user: UUID): Deposit? {
-        return depositRepository.findByOwnerUuidUnsigned(user).firstOrNull()
+    override fun getPendingForUser(user: UUID): DepositServiceResponse? {
+        val deposit = depositRepository.findByOwnerUuidUnsigned(user).firstOrNull()
+        return deposit?.let { DepositServiceResponse(it, true) }
     }
 
     @Transactional(readOnly = true)
-    override fun getPendingForProject(project: UUID, user: UUID): Deposit? {
-        val deposit = depositRepository.findByOwnerUuidUnsigned(project).firstOrNull() ?: return null
-        validateUserCanEditDeposit(deposit, user)
-        return deposit
+    override fun getPendingForProject(project: UUID, user: UUID): DepositServiceResponse? {
+        val deposit = depositRepository.findByOwnerUuidUnsigned(project).firstOrNull()
+        return deposit?.let {
+            validateUserCanEditDeposit(it, user)
+            DepositServiceResponse(it, true)
+        }
     }
 
     private fun validateOwnerHasWallet(owner: UUID) {

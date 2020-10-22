@@ -17,7 +17,8 @@ import javax.persistence.Table
 
 @Entity
 @Table(name = "deposit")
-data class Deposit(
+@Suppress("LongParameterList")
+class Deposit(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Int,

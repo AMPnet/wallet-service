@@ -1,6 +1,5 @@
 package com.ampnet.walletservice.service.impl
 
-import com.ampnet.projectservice.proto.ProjectResponse
 import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.exception.InvalidRequestException
 import com.ampnet.walletservice.exception.ResourceNotFoundException
@@ -8,6 +7,8 @@ import com.ampnet.walletservice.persistence.model.Wallet
 import com.ampnet.walletservice.persistence.model.Withdraw
 import com.ampnet.walletservice.persistence.repository.WalletRepository
 import com.ampnet.walletservice.persistence.repository.WithdrawRepository
+import com.ampnet.walletservice.service.pojo.response.ProjectServiceResponse
+import java.text.DecimalFormat
 import java.util.Optional
 import java.util.UUID
 
@@ -32,11 +33,11 @@ internal object ServiceUtils {
     }
 
     @Throws(InvalidRequestException::class)
-    fun validateUserIsProjectOwner(user: UUID, projectResponse: ProjectResponse) {
-        if (projectResponse.createdByUser != user.toString()) {
+    fun validateUserIsProjectOwner(user: UUID, project: ProjectServiceResponse) {
+        if (project.createByUuid != user) {
             throw InvalidRequestException(
                 ErrorCode.PRJ_MISSING_PRIVILEGE,
-                "User: $user did not create this project: ${projectResponse.uuid} " +
+                "User: $user did not create this project: ${project.uuid} " +
                     "and cannot create a Withdraw for project"
             )
         }
@@ -48,3 +49,6 @@ internal object ServiceUtils {
             throw ResourceNotFoundException(ErrorCode.WALLET_MISSING, "Missing wallet for user with uuid: $userUuid")
         }
 }
+
+const val FROM_CENTS_TO_EUROS = 100L
+fun Long.toEurAmount(): String = DecimalFormat("#,##0.00").format(this / FROM_CENTS_TO_EUROS)
