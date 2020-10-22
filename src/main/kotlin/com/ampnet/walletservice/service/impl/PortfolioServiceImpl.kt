@@ -16,11 +16,10 @@ import com.ampnet.walletservice.service.pojo.response.ProjectWithInvestment
 import com.ampnet.walletservice.service.pojo.response.UserServiceResponse
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.text.NumberFormat
+import java.math.RoundingMode
 import java.util.UUID
 
-const val MIN_FRACTION_DIGITS = 1
-const val MAX_FRACTION_DIGITS = 10
+const val SCALE = 10
 
 @Service
 class PortfolioServiceImpl(
@@ -111,18 +110,18 @@ class PortfolioServiceImpl(
                 TransactionType.APPROVE_INVESTMENT -> {
                     transaction.from = getUserNameWithUuid(ownerUuidFrom, users)
                     transaction.to = getProjectNameWithUuid(ownerUuidTo, projects)
-                    transaction.description = transaction.to +
-                        getExpectedProjectFunding(ownerUuidTo, projects)?.let {
-                            " | " + getPercentageInProject(it, transaction.amount)
-                        }
+                    transaction.description = transaction.to
+                    transaction.share = getExpectedProjectFunding(ownerUuidTo, projects)?.let {
+                        getShare(it, transaction.amount)
+                    }
                 }
                 TransactionType.CANCEL_INVESTMENT -> {
                     transaction.from = getProjectNameWithUuid(ownerUuidFrom, projects)
                     transaction.to = getUserNameWithUuid(ownerUuidTo, users)
-                    transaction.description = transaction.from +
-                        getExpectedProjectFunding(ownerUuidFrom, projects)?.let {
-                            " | " + getPercentageInProject(it, transaction.amount)
-                        }
+                    transaction.description = transaction.from
+                    transaction.share = getExpectedProjectFunding(ownerUuidFrom, projects)?.let {
+                        getShare(it, transaction.amount)
+                    }
                 }
                 TransactionType.SHARE_PAYOUT -> {
                     transaction.from = getProjectNameWithUuid(ownerUuidFrom, projects)
@@ -165,10 +164,9 @@ class PortfolioServiceImpl(
     private fun getExpectedProjectFunding(ownerUuid: UUID?, projects: Map<UUID, ProjectServiceResponse>): Long? =
         projects[ownerUuid]?.expectedFunding
 
-    private fun getPercentageInProject(projectFunding: Long, amount: Long): String {
-        return NumberFormat.getPercentInstance().apply {
-            minimumFractionDigits = MIN_FRACTION_DIGITS
-            maximumFractionDigits = MAX_FRACTION_DIGITS
-        }.format(amount.toDouble() / projectFunding)
+    private fun getShare(projectFunding: Long, amount: Long): String {
+        return amount.toBigDecimal().divide(
+            projectFunding.toBigDecimal(), SCALE, RoundingMode.HALF_UP
+        ).toPlainString()
     }
 }
