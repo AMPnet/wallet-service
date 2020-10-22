@@ -1,4 +1,4 @@
-package com.ampnet.walletservice.service.pojo
+package com.ampnet.walletservice.service.pojo.request
 
 import com.ampnet.walletservice.enums.TransferWalletType
 import java.util.UUID

@@ -17,7 +17,8 @@ import javax.persistence.Table
 
 @Entity
 @Table(name = "deposit")
-data class Deposit(
+@Suppress("LongParameterList")
+class Deposit(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Int,
@@ -27,9 +28,6 @@ data class Deposit(
 
     @Column(nullable = false)
     val reference: String,
-
-    @Column(nullable = false)
-    var approved: Boolean,
 
     @Column(nullable = false)
     var amount: Long,
@@ -72,7 +70,7 @@ data class Deposit(
         type: DepositWithdrawType,
         coop: String
     ) : this(
-        0, ownerUuid, reference, false, amount, ZonedDateTime.now(), createdBy, type,
+        0, ownerUuid, reference, amount, ZonedDateTime.now(), createdBy, type,
         null, null, null, null, null, coop
     )
 }

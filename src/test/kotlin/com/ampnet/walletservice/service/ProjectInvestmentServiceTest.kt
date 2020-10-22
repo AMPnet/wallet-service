@@ -6,7 +6,7 @@ import com.ampnet.walletservice.exception.ResourceNotFoundException
 import com.ampnet.walletservice.grpc.blockchain.pojo.ProjectInvestmentTxRequest
 import com.ampnet.walletservice.service.impl.ProjectInvestmentServiceImpl
 import com.ampnet.walletservice.service.impl.TransactionInfoServiceImpl
-import com.ampnet.walletservice.service.pojo.ProjectInvestmentRequest
+import com.ampnet.walletservice.service.pojo.request.ProjectInvestmentRequest
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
 import org.junit.jupiter.api.BeforeEach

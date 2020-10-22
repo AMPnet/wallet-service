@@ -6,15 +6,13 @@ import com.ampnet.walletservice.controller.COOP
 import com.ampnet.walletservice.enums.TransferWalletType
 import com.ampnet.walletservice.enums.WalletType
 import com.ampnet.walletservice.exception.InvalidRequestException
-import com.ampnet.walletservice.grpc.userservice.UserService
 import com.ampnet.walletservice.service.impl.CooperativeWalletServiceImpl
 import com.ampnet.walletservice.service.impl.TransactionInfoServiceImpl
-import com.ampnet.walletservice.service.pojo.TransferOwnershipRequest
+import com.ampnet.walletservice.service.pojo.request.TransferOwnershipRequest
 import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
-import org.springframework.boot.test.mock.mockito.MockBean
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 
@@ -24,8 +22,6 @@ class CooperativeWalletServiceTest : JpaServiceTestBase() {
     private val secondWalletAddress = "ak_2rTBMSCJgbeQoSt3MzSk93kAaYKjuTFyyfcMbhp62e2JJCTiSS"
     private val secondUser: UUID = UUID.randomUUID()
 
-    @MockBean
-    private lateinit var mockedUserService: UserService
     private val service: CooperativeWalletService by lazy {
         databaseCleanerService.deleteAllWallets()
         createWallet(userUuid, walletAddress, WalletType.USER)
@@ -33,7 +29,8 @@ class CooperativeWalletServiceTest : JpaServiceTestBase() {
         val transactionInfoService = TransactionInfoServiceImpl(transactionInfoRepository)
         CooperativeWalletServiceImpl(
             walletRepository, mockedUserService, mockedBlockchainService,
-            transactionInfoService, mockedProjectService, applicationProperties
+            transactionInfoService, mockedProjectService, mockedMailService,
+            applicationProperties
         )
     }
 

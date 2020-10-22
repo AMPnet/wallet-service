@@ -7,7 +7,7 @@ import com.ampnet.walletservice.exception.ResourceAlreadyExistsException
 import com.ampnet.walletservice.exception.ResourceNotFoundException
 import com.ampnet.walletservice.persistence.model.Deposit
 import com.ampnet.walletservice.service.impl.DepositServiceImpl
-import com.ampnet.walletservice.service.pojo.DepositCreateServiceRequest
+import com.ampnet.walletservice.service.pojo.request.DepositCreateServiceRequest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -34,7 +34,7 @@ class DepositServiceTest : JpaServiceTestBase() {
             createWalletForUser(userUuid, "wallet-hash")
         }
         suppose("Unapproved and approved deposits exists") {
-            createUnapprovedDeposit(userUuid)
+            createUnsigned(userUuid)
             createApprovedDeposit(txHash)
         }
 
@@ -97,18 +97,57 @@ class DepositServiceTest : JpaServiceTestBase() {
     @Test
     fun mustThrowExceptionForDeletingOtherProjectWithdraw() {
         suppose("Project created withdraw") {
-            deposit = createUnapprovedDeposit(projectUuid, DepositWithdrawType.PROJECT)
-        }
-        suppose("Project service will return project") {
-            Mockito.`when`(mockedProjectService.getProject(projectUuid))
-                .thenReturn(createProjectResponse(projectUuid, UUID.randomUUID()))
+            deposit = createUnsigned(projectUuid, DepositWithdrawType.PROJECT)
         }
 
         verify("Service will throw exception when user tries to delete others project withdraw") {
             val exception = assertThrows<InvalidRequestException> {
-                depositService.delete(deposit.id, userUuid)
+                depositService.delete(deposit.id, UUID.randomUUID())
             }
-            assertThat(exception.errorCode).isEqualTo(ErrorCode.PRJ_MISSING_PRIVILEGE)
+            assertThat(exception.errorCode).isEqualTo(ErrorCode.USER_MISSING_PRIVILEGE)
+        }
+    }
+
+    @Test
+    fun mustThrowExceptionIfUnapprovedProjectDepositExistsForCreatingDeposit() {
+        suppose("User has a wallet") {
+            databaseCleanerService.deleteAllWallets()
+            createWalletForUser(userUuid, "wallet-hash")
+        }
+        suppose("Project has a wallet") {
+            createWalletForProject(projectUuid, "project-wallet-hash")
+        }
+        suppose("Unapproved and approved deposits exists") {
+            createUnsigned(projectUuid, DepositWithdrawType.PROJECT)
+            createApprovedDeposit(txHash, DepositWithdrawType.PROJECT)
+        }
+
+        verify("Service will throw exception for existing unapproved deposit") {
+            val exception = assertThrows<ResourceAlreadyExistsException> {
+                val serviceRequest = DepositCreateServiceRequest(
+                    projectUuid, createUserPrincipal(userUuid), 100L, DepositWithdrawType.PROJECT
+                )
+                depositService.create(serviceRequest)
+            }
+            assertThat(exception.errorCode).isEqualTo(ErrorCode.WALLET_DEPOSIT_EXISTS)
+        }
+    }
+
+    @Test
+    fun mustThrowExceptionIfProjectIsMissingWalletForCreatingDeposit() {
+        suppose("User has a wallet") {
+            databaseCleanerService.deleteAllWallets()
+            createWalletForUser(userUuid, "wallet-hash")
+        }
+
+        verify("Service will throw exception for existing unapproved deposit") {
+            val exception = assertThrows<ResourceNotFoundException> {
+                val serviceRequest = DepositCreateServiceRequest(
+                    projectUuid, createUserPrincipal(userUuid), 100L, DepositWithdrawType.PROJECT
+                )
+                depositService.create(serviceRequest)
+            }
+            assertThat(exception.errorCode).isEqualTo(ErrorCode.WALLET_MISSING)
         }
     }
 }

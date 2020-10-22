@@ -14,6 +14,7 @@ import com.ampnet.walletservice.grpc.mail.MailService
 import com.ampnet.walletservice.grpc.mail.MailServiceImpl
 import com.ampnet.walletservice.grpc.projectservice.ProjectService
 import com.ampnet.walletservice.grpc.projectservice.ProjectServiceImpl
+import com.ampnet.walletservice.grpc.userservice.UserService
 import com.ampnet.walletservice.persistence.model.Deposit
 import com.ampnet.walletservice.persistence.model.File
 import com.ampnet.walletservice.persistence.model.Wallet
@@ -79,6 +80,8 @@ abstract class JpaServiceTestBase : TestBase() {
     protected val mockedCloudStorageService: CloudStorageServiceImpl = Mockito.mock(CloudStorageServiceImpl::class.java)
     protected val mockedMailService: MailService = Mockito.mock(MailServiceImpl::class.java)
     protected val mockedProjectService: ProjectService = Mockito.mock(ProjectServiceImpl::class.java)
+    protected val mockedUserService: UserService = Mockito.mock(UserService::class.java)
+    protected val mockedWalletService: WalletService = Mockito.mock(WalletService::class.java)
     protected val userUuid: UUID = UUID.randomUUID()
     protected val organizationUuid: UUID = UUID.randomUUID()
     protected val projectUuid: UUID = UUID.randomUUID()
@@ -97,7 +100,13 @@ abstract class JpaServiceTestBase : TestBase() {
     protected fun createWalletForOrganization(organization: UUID, hash: String) =
         createWallet(organization, hash, WalletType.ORG)
 
-    protected fun createWallet(owner: UUID, hash: String, type: WalletType, coop: String = COOP, providerId: String? = null): Wallet {
+    protected fun createWallet(
+        owner: UUID,
+        hash: String,
+        type: WalletType,
+        coop: String = COOP,
+        providerId: String? = null
+    ): Wallet {
         val wallet = Wallet(
             UUID.randomUUID(), owner, hash, type, Currency.EUR,
             ZonedDateTime.now(), hash, ZonedDateTime.now(), coop, null, providerId
@@ -163,20 +172,20 @@ abstract class JpaServiceTestBase : TestBase() {
     ): Deposit {
         val document = saveFile(userUuid)
         val deposit = Deposit(
-            0, userUuid, "S34SDGFT", true, 10_000, ZonedDateTime.now(), userUuid,
-            type, txHash, userUuid, ZonedDateTime.now(), document, null, coop
+            0, userUuid, "S34SDGFT", 10_000,
+            ZonedDateTime.now(), userUuid, type, txHash, userUuid, ZonedDateTime.now(), document, null, coop
         )
         return depositRepository.save(deposit)
     }
 
-    protected fun createUnapprovedDeposit(
+    protected fun createUnsigned(
         owner: UUID,
         type: DepositWithdrawType = DepositWithdrawType.USER,
         coop: String = COOP
     ): Deposit {
         val deposit = Deposit(
-            0, owner, "S34SDGFT", false, 10_000, ZonedDateTime.now(),
-            userUuid, type, null, null, null, null, null, coop
+            0, owner, "S34SDGFT", 10_000,
+            ZonedDateTime.now(), userUuid, type, null, null, null, null, null, coop
         )
         return depositRepository.save(deposit)
     }

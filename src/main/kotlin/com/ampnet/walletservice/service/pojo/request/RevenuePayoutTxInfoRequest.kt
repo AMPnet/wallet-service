@@ -1,8 +1,8 @@
-package com.ampnet.walletservice.service.pojo
+package com.ampnet.walletservice.service.pojo.request
 
 import com.ampnet.core.jwt.UserPrincipal
 
-data class RevenuePayoutTxInfo(
+data class RevenuePayoutTxInfoRequest(
     val projectName: String,
     val amount: Long,
     val user: UserPrincipal,

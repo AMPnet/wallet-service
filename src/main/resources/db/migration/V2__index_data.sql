@@ -1,9 +1,9 @@
-CREATE INDEX idx_file_link ON file(link);
-
-CREATE INDEX idx_wallet_activation_data ON wallet(activation_data);
+CREATE INDEX idx_wallet_activation_data_coop ON wallet(activation_data, coop);
 CREATE INDEX idx_pair_wallet_code_public_key ON pair_wallet_code(public_key);
 
-CREATE INDEX idx_deposit_reference ON deposit(reference);
+CREATE INDEX idx_bank_account_coop ON bank_account(coop);
+
+CREATE INDEX idx_deposit_reference_coop ON deposit(reference, coop);
 CREATE INDEX idx_deposit_owner_uuid ON deposit(owner_uuid);
 CREATE INDEX idx_withdraw_owner_uuid ON withdraw(owner_uuid);
 

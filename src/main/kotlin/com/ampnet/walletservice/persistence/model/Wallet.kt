@@ -13,7 +13,8 @@ import javax.persistence.Table
 
 @Entity
 @Table(name = "wallet")
-data class Wallet(
+@Suppress("LongParameterList")
+class Wallet(
     @Id
     val uuid: UUID,
 

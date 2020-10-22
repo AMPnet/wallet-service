@@ -2,7 +2,7 @@ package com.ampnet.walletservice.service
 
 import com.ampnet.core.jwt.UserPrincipal
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionDataAndInfo
-import com.ampnet.walletservice.service.pojo.ProjectInvestmentRequest
+import com.ampnet.walletservice.service.pojo.request.ProjectInvestmentRequest
 import java.util.UUID
 
 interface ProjectInvestmentService {

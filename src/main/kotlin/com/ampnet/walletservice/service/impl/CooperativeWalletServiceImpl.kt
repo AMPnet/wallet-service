@@ -12,16 +12,17 @@ import com.ampnet.walletservice.exception.InvalidRequestException
 import com.ampnet.walletservice.exception.ResourceNotFoundException
 import com.ampnet.walletservice.grpc.blockchain.BlockchainService
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionDataAndInfo
+import com.ampnet.walletservice.grpc.mail.MailService
 import com.ampnet.walletservice.grpc.projectservice.ProjectService
 import com.ampnet.walletservice.grpc.userservice.UserService
 import com.ampnet.walletservice.persistence.model.Wallet
 import com.ampnet.walletservice.persistence.repository.WalletRepository
 import com.ampnet.walletservice.service.CooperativeWalletService
 import com.ampnet.walletservice.service.TransactionInfoService
-import com.ampnet.walletservice.service.pojo.OrganizationWithWallet
-import com.ampnet.walletservice.service.pojo.ProjectWithWallet
-import com.ampnet.walletservice.service.pojo.TransferOwnershipRequest
-import com.ampnet.walletservice.service.pojo.UserWithWallet
+import com.ampnet.walletservice.service.pojo.request.TransferOwnershipRequest
+import com.ampnet.walletservice.service.pojo.response.OrganizationWithWallet
+import com.ampnet.walletservice.service.pojo.response.ProjectWithWallet
+import com.ampnet.walletservice.service.pojo.response.UserWithWallet
 import mu.KLogging
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
@@ -32,6 +33,7 @@ import java.lang.Thread.sleep
 import java.time.ZonedDateTime
 import java.util.UUID
 import kotlin.concurrent.thread
+import com.ampnet.mailservice.proto.WalletType as WalletTypeProto
 
 @Service
 class CooperativeWalletServiceImpl(
@@ -40,6 +42,7 @@ class CooperativeWalletServiceImpl(
     private val blockchainService: BlockchainService,
     private val transactionInfoService: TransactionInfoService,
     private val projectService: ProjectService,
+    private val mailService: MailService,
     private val applicationProperties: ApplicationProperties
 ) : CooperativeWalletService {
 
@@ -58,6 +61,7 @@ class CooperativeWalletServiceImpl(
         val wallet = getWalletByUuid(walletUuid)
         wallet.hash = blockchainService.postTransaction(signedTransaction)
         wallet.activatedAt = ZonedDateTime.now()
+        sendWalletActivatedMail(wallet)
         return wallet
     }
 
@@ -67,7 +71,7 @@ class CooperativeWalletServiceImpl(
         val wallets = walletsPage.toList().associateBy { it.owner }
         val users = userService.getUsers(wallets.keys)
         val usersWithWallet = users.mapNotNull { user ->
-            wallets[UUID.fromString(user.uuid)]?.let { wallet ->
+            wallets[user.uuid]?.let { wallet ->
                 UserWithWallet(user, wallet)
             }
         }
@@ -93,7 +97,7 @@ class CooperativeWalletServiceImpl(
         val wallets = walletsPage.toList().associateBy { it.owner }
         val projects = projectService.getProjects(wallets.keys)
         val projectsWithWallet = projects.mapNotNull { project ->
-            wallets[UUID.fromString(project.uuid)]?.let { wallet ->
+            wallets[project.uuid]?.let { wallet ->
                 ProjectWithWallet(project, wallet)
             }
         }
@@ -160,4 +164,13 @@ class CooperativeWalletServiceImpl(
         walletRepository.findByActivationDataAndCoop(address, coop).orElseThrow {
             throw InvalidRequestException(ErrorCode.WALLET_MISSING, "Wallet: $address is unknown for coop: $coop")
         }
+
+    private fun sendWalletActivatedMail(wallet: Wallet) {
+        val walletOwner = wallet.owner.toString()
+        when (wallet.type) {
+            WalletType.USER -> mailService.sendWalletActivated(WalletTypeProto.USER, walletOwner)
+            WalletType.PROJECT -> mailService.sendWalletActivated(WalletTypeProto.PROJECT, walletOwner)
+            WalletType.ORG -> mailService.sendWalletActivated(WalletTypeProto.ORGANIZATION, walletOwner)
+        }
+    }
 }

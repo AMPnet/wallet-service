@@ -8,7 +8,7 @@ import com.ampnet.walletservice.persistence.model.Deposit
 import com.ampnet.walletservice.service.impl.CooperativeDepositServiceImpl
 import com.ampnet.walletservice.service.impl.StorageServiceImpl
 import com.ampnet.walletservice.service.impl.TransactionInfoServiceImpl
-import com.ampnet.walletservice.service.pojo.MintServiceRequest
+import com.ampnet.walletservice.service.pojo.request.MintServiceRequest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -19,8 +19,9 @@ class CooperativeDepositServiceTest : JpaServiceTestBase() {
         val storageServiceImpl = StorageServiceImpl(documentRepository, mockedCloudStorageService)
         val transactionInfoService = TransactionInfoServiceImpl(transactionInfoRepository)
         CooperativeDepositServiceImpl(
-            walletRepository, depositRepository, declinedRepository, mockedBlockchainService,
-            transactionInfoService, storageServiceImpl, mockedMailService
+            walletRepository, depositRepository, declinedRepository,
+            mockedBlockchainService, transactionInfoService, storageServiceImpl,
+            mockedMailService, mockedUserService, mockedProjectService
         )
     }
     private lateinit var deposit: Deposit
@@ -74,7 +75,7 @@ class CooperativeDepositServiceTest : JpaServiceTestBase() {
     @Test
     fun mustThrowExceptionIfDepositIsNotApprovedForMintTransaction() {
         suppose("Deposit is not approved") {
-            deposit = createUnapprovedDeposit(userUuid)
+            deposit = createUnsigned(userUuid)
         }
 
         verify("Service will throw exception if the deposit is not approved") {
@@ -89,7 +90,7 @@ class CooperativeDepositServiceTest : JpaServiceTestBase() {
     fun mustThrowExceptionIfDepositIsMissingForConfirmMintTransaction() {
         verify("Service will throw exception if the deposit is missing") {
             assertThrows<ResourceNotFoundException> {
-                cooperativeDepositService.confirmMintTransaction(signedTransaction, 0, COOP)
+                cooperativeDepositService.confirmMintTransaction(COOP, signedTransaction, 0)
             }
         }
     }
@@ -102,7 +103,7 @@ class CooperativeDepositServiceTest : JpaServiceTestBase() {
 
         verify("Service will throw exception if the deposit already has tx hash") {
             assertThrows<ResourceAlreadyExistsException> {
-                cooperativeDepositService.confirmMintTransaction(signedTransaction, deposit.id, COOP)
+                cooperativeDepositService.confirmMintTransaction(COOP, signedTransaction, deposit.id)
             }
         }
     }
@@ -110,12 +111,12 @@ class CooperativeDepositServiceTest : JpaServiceTestBase() {
     @Test
     fun mustThrowExceptionIfDepositIsNotApprovedForConfirmMintTransaction() {
         suppose("Deposit is not approved") {
-            deposit = createUnapprovedDeposit(userUuid)
+            deposit = createUnsigned(userUuid)
         }
 
         verify("Service will throw exception if the deposit is not approved") {
             assertThrows<InvalidRequestException> {
-                cooperativeDepositService.confirmMintTransaction(signedTransaction, deposit.id, COOP)
+                cooperativeDepositService.confirmMintTransaction(COOP, signedTransaction, deposit.id)
             }
         }
     }

@@ -9,7 +9,8 @@ CREATE TABLE wallet (
     currency VARCHAR(3) NOT NULL,
     created_at TIMESTAMP NOT NULL,
     coop VARCHAR(64) NOT NULL,
-    alias VARCHAR(128),
+    email VARCHAR(128),
+    provider_id VARCHAR,
     CONSTRAINT uc_wallet_in_coop UNIQUE(activation_data, coop)
 );
 CREATE TABLE pair_wallet_code(
@@ -56,7 +57,6 @@ CREATE TABLE deposit(
     coop VARCHAR(64) NOT NULL,
     type VARCHAR(8) NOT NULL,
     created_by UUID NOT NULL,
-    approved BOOLEAN NOT NULL,
     approved_by_user_uuid UUID,
     approved_at TIMESTAMP,
     declined_id INT REFERENCES declined(id),

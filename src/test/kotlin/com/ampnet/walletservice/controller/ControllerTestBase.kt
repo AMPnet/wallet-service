@@ -1,7 +1,5 @@
 package com.ampnet.walletservice.controller
 
-import com.ampnet.projectservice.proto.ProjectResponse
-import com.ampnet.userservice.proto.UserResponse
 import com.ampnet.walletservice.TestBase
 import com.ampnet.walletservice.config.DatabaseCleanerService
 import com.ampnet.walletservice.enums.Currency
@@ -27,6 +25,8 @@ import com.ampnet.walletservice.persistence.repository.TransactionInfoRepository
 import com.ampnet.walletservice.persistence.repository.WalletRepository
 import com.ampnet.walletservice.persistence.repository.WithdrawRepository
 import com.ampnet.walletservice.service.CloudStorageService
+import com.ampnet.walletservice.service.pojo.response.ProjectServiceResponse
+import com.ampnet.walletservice.service.pojo.response.UserServiceResponse
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
@@ -144,7 +144,13 @@ abstract class ControllerTestBase : TestBase() {
     protected fun createWalletForOrganization(organization: UUID, hash: String, coop: String = COOP) =
         createWallet(organization, hash, WalletType.ORG, coop)
 
-    private fun createWallet(owner: UUID, hash: String, type: WalletType, coop: String, providerId: String? = null): Wallet {
+    private fun createWallet(
+        owner: UUID,
+        hash: String,
+        type: WalletType,
+        coop: String,
+        providerId: String? = null
+    ): Wallet {
         val email = if (type == WalletType.USER) {
             "wallet_email"
         } else {
@@ -158,11 +164,11 @@ abstract class ControllerTestBase : TestBase() {
     }
 
     protected fun saveFile(
-        name: String,
-        link: String,
-        type: String,
-        size: Int,
-        createdByUserUuid: UUID
+        name: String = "name",
+        link: String = "link",
+        type: String = "type",
+        size: Int = 1000,
+        createdByUserUuid: UUID = userUuid
     ): File {
         val document = File::class.java.getDeclaredConstructor().newInstance()
         document.name = name
@@ -189,25 +195,19 @@ abstract class ControllerTestBase : TestBase() {
         first: String = "First",
         last: String = "Last",
         enabled: Boolean = true
-    ): UserResponse = UserResponse.newBuilder()
-        .setUuid(uuid.toString())
-        .setEmail(email)
-        .setFirstName(first)
-        .setLastName(last)
-        .setEnabled(enabled)
-        .build()
+    ): UserServiceResponse = UserServiceResponse(uuid, email, first, last, enabled)
 
     protected fun createApprovedDeposit(
-        user: UUID,
-        txHash: String? = null,
+        owner: UUID,
         amount: Long = 1000,
         type: DepositWithdrawType = DepositWithdrawType.USER,
         coop: String = COOP
     ): Deposit {
-        val document = saveFile("doc", "document-link", "type", 1, user)
+        val document = saveFile("doc", "document-link", "type", 1, owner)
         val deposit = Deposit(
-            0, user, "S34SDGFT", true, amount, ZonedDateTime.now(), user,
-            type, txHash, user, ZonedDateTime.now(), document, null, coop
+            0, owner, "S34SDGFT", amount,
+            ZonedDateTime.now(), userUuid, type, "th_ktDw9ytaQ9aSi78qgCAw2JhdzS8F7vGgzYvWeMdRtP6hJnQqG",
+            userUuid, ZonedDateTime.now(), document, null, coop
         )
         return depositRepository.save(deposit)
     }
@@ -219,9 +219,9 @@ abstract class ControllerTestBase : TestBase() {
         coop: String = COOP
     ): Withdraw {
         val withdraw = Withdraw(
-            0, owner, amount, ZonedDateTime.now(), owner, "bank-account",
-            "approved-tx", ZonedDateTime.now(), null,
-            null, null, null, type, coop
+            0, owner, amount, ZonedDateTime.now(), userUuid, "bank-account",
+            "approved-tx", ZonedDateTime.now(),
+            null, null, null, null, type, coop
         )
         return withdrawRepository.save(withdraw)
     }
@@ -230,24 +230,30 @@ abstract class ControllerTestBase : TestBase() {
         owner: UUID,
         amount: Long = 1000,
         type: DepositWithdrawType = DepositWithdrawType.USER,
-        userUuid: UUID? = null
+        userUuid: UUID? = null,
+        coop: String = COOP
     ): Withdraw {
         val user = userUuid ?: owner
         val withdraw = Withdraw(
             0, owner, amount, ZonedDateTime.now(), user, "bank-account", null,
-            null, null, null, null, null, type, COOP
+            null, null, null, null, null, type, coop
         )
         return withdrawRepository.save(withdraw)
     }
 
-    protected fun createUnapprovedDeposit(
-        user: UUID,
+    protected fun createUnsignedDeposit(
+        owner: UUID,
         type: DepositWithdrawType = DepositWithdrawType.USER,
+        withFile: Boolean = false,
+        amount: Long = 0,
         coop: String = COOP
     ): Deposit {
+        val file = if (withFile) saveFile() else null
+        val approvedBy = if (withFile) userUuid else null
+        val approvedAt = if (withFile) ZonedDateTime.now() else null
         val deposit = Deposit(
-            0, user, "S34SDGFT", false, 10_000, ZonedDateTime.now(), user,
-            type, null, null, null, null, null, coop
+            0, owner, "S34SDGFT", amount,
+            ZonedDateTime.now(), userUuid, type, null, approvedBy, approvedAt, file, null, coop
         )
         return depositRepository.save(deposit)
     }
@@ -255,23 +261,17 @@ abstract class ControllerTestBase : TestBase() {
     protected fun createProjectResponse(
         uuid: UUID,
         name: String = "project",
-        createdByUser: String = "user",
+        createdByUser: UUID = UUID.randomUUID(),
         currency: String = "EUR",
         organizationUuid: UUID = UUID.randomUUID(),
         imageUrl: String = "image_url",
         description: String = "Description",
         expectedFunding: Long = 100000000L
-    ): ProjectResponse = ProjectResponse
-        .newBuilder()
-        .setUuid(uuid.toString())
-        .setName(name)
-        .setCreatedByUser(createdByUser)
-        .setCurrency(currency)
-        .setOrganizationUuid(organizationUuid.toString())
-        .setImageUrl(imageUrl)
-        .setDescription(description)
-        .setExpectedFunding(expectedFunding)
-        .build()
+    ): ProjectServiceResponse = ProjectServiceResponse(
+        uuid, name, description,
+        ZonedDateTime.now().minusDays(1), ZonedDateTime.now().plusDays(100),
+        expectedFunding, currency, 1L, expectedFunding, true, imageUrl, createdByUser, organizationUuid
+    )
 
     protected fun createBankAccount(
         iban: String,
@@ -280,9 +280,7 @@ abstract class ControllerTestBase : TestBase() {
         alias: String,
         coop: String = COOP
     ): BankAccount {
-        val bankAccount = BankAccount(
-            iban, bankCode, createdBy, alias, coop
-        )
+        val bankAccount = BankAccount(iban, bankCode, createdBy, alias, coop)
         return bankAccountRepository.save(bankAccount)
     }
 }

@@ -1,9 +1,9 @@
-package com.ampnet.walletservice.controller.pojo.response
+package com.ampnet.walletservice.service.pojo.response
 
 import com.ampnet.walletservice.persistence.model.File
 import java.time.ZonedDateTime
 
-data class DocumentResponse(
+data class DocumentServiceResponse(
     val id: Int,
     val link: String,
     val name: String,

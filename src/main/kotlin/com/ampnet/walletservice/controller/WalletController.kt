@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
+import javax.validation.Valid
 
 @RestController
 class WalletController(
@@ -52,7 +53,7 @@ class WalletController(
     }
 
     @PostMapping("/wallet")
-    fun createWallet(@RequestBody request: WalletCreateRequest): ResponseEntity<WalletResponse> {
+    fun createWallet(@RequestBody @Valid request: WalletCreateRequest): ResponseEntity<WalletResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request from user: ${userPrincipal.uuid} to create wallet: $request" }
         val wallet = walletService.createUserWallet(userPrincipal, request)

@@ -1,15 +1,12 @@
 package com.ampnet.walletservice.controller.pojo.response
 
-import com.ampnet.walletservice.service.pojo.UserWithWallet
+import com.ampnet.walletservice.service.pojo.response.UserServiceResponse
+import com.ampnet.walletservice.service.pojo.response.UserWithWallet
 import org.springframework.data.domain.Page
 
-data class UserWithWalletResponse(
-    val user: UserControllerResponse,
-    val wallet: WalletResponse
-) {
+data class UserWithWalletResponse(val user: UserServiceResponse, val wallet: WalletResponse) {
     constructor(userWithWallet: UserWithWallet) : this(
-        UserControllerResponse(userWithWallet.userResponse),
-        WalletResponse(userWithWallet.wallet)
+        userWithWallet.userResponse, WalletResponse(userWithWallet.wallet)
     )
 }
 

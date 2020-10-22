@@ -16,7 +16,7 @@ import com.ampnet.walletservice.service.RevenueService
 import com.ampnet.walletservice.service.TransactionInfoService
 import com.ampnet.walletservice.service.WalletService
 import com.ampnet.walletservice.service.WithdrawService
-import com.ampnet.walletservice.service.pojo.TransferOwnershipRequest
+import com.ampnet.walletservice.service.pojo.request.TransferOwnershipRequest
 import mu.KLogging
 import org.springframework.stereotype.Service
 import java.util.UUID
@@ -91,7 +91,7 @@ class BroadcastTransactionServiceImpl(
     private fun confirmMintTransaction(transactionInfo: TransactionInfo, signedTransaction: String): String {
         val depositId = getIdFromCompanionData(transactionInfo)
         val deposit = cooperativeDepositService.confirmMintTransaction(
-            signedTransaction, depositId, transactionInfo.coop
+            transactionInfo.coop, signedTransaction, depositId
         )
         return deposit.txHash
             ?: throw ResourceNotFoundException(ErrorCode.TX_MISSING, "Missing txHash for mint transaction")

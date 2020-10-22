@@ -5,7 +5,7 @@ import com.ampnet.walletservice.controller.pojo.request.WalletCreateRequest
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionDataAndInfo
 import com.ampnet.walletservice.persistence.model.PairWalletCode
 import com.ampnet.walletservice.persistence.model.Wallet
-import com.ampnet.walletservice.service.pojo.ProjectWithWallet
+import com.ampnet.walletservice.service.pojo.response.ProjectWithWallet
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import java.util.UUID

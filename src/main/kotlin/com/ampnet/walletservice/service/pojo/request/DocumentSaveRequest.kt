@@ -1,4 +1,4 @@
-package com.ampnet.walletservice.service.pojo
+package com.ampnet.walletservice.service.pojo.request
 
 import com.ampnet.core.jwt.UserPrincipal
 import org.springframework.web.multipart.MultipartFile

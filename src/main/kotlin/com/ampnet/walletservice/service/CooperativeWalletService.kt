@@ -4,10 +4,10 @@ import com.ampnet.core.jwt.UserPrincipal
 import com.ampnet.walletservice.controller.pojo.request.WalletTransferRequest
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionDataAndInfo
 import com.ampnet.walletservice.persistence.model.Wallet
-import com.ampnet.walletservice.service.pojo.OrganizationWithWallet
-import com.ampnet.walletservice.service.pojo.ProjectWithWallet
-import com.ampnet.walletservice.service.pojo.TransferOwnershipRequest
-import com.ampnet.walletservice.service.pojo.UserWithWallet
+import com.ampnet.walletservice.service.pojo.request.TransferOwnershipRequest
+import com.ampnet.walletservice.service.pojo.response.OrganizationWithWallet
+import com.ampnet.walletservice.service.pojo.response.ProjectWithWallet
+import com.ampnet.walletservice.service.pojo.response.UserWithWallet
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import java.util.UUID

@@ -17,7 +17,8 @@ import javax.persistence.Table
 
 @Entity
 @Table(name = "withdraw")
-data class Withdraw(
+@Suppress("LongParameterList")
+class Withdraw(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Int,

@@ -239,7 +239,7 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
             assertThat(projectListResponse.projects).hasSize(2)
             projectListResponse.projects.forEach { assertThat(it.wallet.coop).isEqualTo(COOP) }
             assertThat(projectListResponse.projects.map { it.project.uuid })
-                .containsAll(testContext.projects.map { it.toString() })
+                .containsAll(testContext.projects)
             assertThat(projectListResponse.projects.map { it.wallet.activationData })
                 .doesNotContain(testContext.wallet.hash)
             assertThat(projectListResponse.projects.map { it.wallet.activationData })

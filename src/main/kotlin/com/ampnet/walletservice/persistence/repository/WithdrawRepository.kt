@@ -15,16 +15,32 @@ interface WithdrawRepository : JpaRepository<Withdraw, Int> {
             "WHERE withdraw.approvedTxHash IS NOT NULL AND withdraw.burnedTxHash IS NULL " +
             "AND withdraw.type = :type AND withdraw.coop = :coop"
     )
-    fun findAllApproved(type: DepositWithdrawType, coop: String, pageable: Pageable): Page<Withdraw>
+    fun findAllApprovedByType(coop: String, type: DepositWithdrawType, pageable: Pageable): Page<Withdraw>
+
+    @Query(
+        "SELECT withdraw FROM Withdraw withdraw " +
+            "WHERE withdraw.approvedTxHash IS NOT NULL AND withdraw.burnedTxHash IS NULL AND withdraw.coop = :coop"
+    )
+    fun findAllApproved(coop: String, pageable: Pageable): Page<Withdraw>
 
     @Query(
         "SELECT withdraw FROM Withdraw withdraw " +
             "WHERE withdraw.approvedTxHash IS NOT NULL AND withdraw.burnedTxHash IS NOT NULL " +
             "AND withdraw.type = :type AND withdraw.coop = :coop"
     )
-    fun findAllBurned(type: DepositWithdrawType, coop: String, pageable: Pageable): Page<Withdraw>
+    fun findAllBurnedByType(coop: String, type: DepositWithdrawType, pageable: Pageable): Page<Withdraw>
+
+    @Query(
+        "SELECT withdraw FROM Withdraw withdraw " +
+            "WHERE withdraw.approvedTxHash IS NOT NULL AND withdraw.burnedTxHash IS NOT NULL AND withdraw.coop = :coop"
+    )
+    fun findAllBurned(coop: String, pageable: Pageable): Page<Withdraw>
 
     fun findByOwnerUuid(owner: UUID): List<Withdraw>
 
     fun findByIdAndCoop(id: Int, coop: String): Optional<Withdraw>
+
+    @Query("SELECT withdraw FROM Withdraw withdraw LEFT JOIN FETCH withdraw.file " +
+        "WHERE withdraw.coop = :coop")
+    fun findAllWithFile(coop: String): List<Withdraw>
 }

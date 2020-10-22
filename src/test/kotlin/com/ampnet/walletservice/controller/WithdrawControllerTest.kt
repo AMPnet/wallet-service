@@ -2,7 +2,6 @@ package com.ampnet.walletservice.controller
 
 import com.ampnet.walletservice.controller.pojo.request.WithdrawCreateRequest
 import com.ampnet.walletservice.controller.pojo.response.TransactionResponse
-import com.ampnet.walletservice.controller.pojo.response.WithdrawResponse
 import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.enums.TransactionType
 import com.ampnet.walletservice.exception.ErrorCode
@@ -10,6 +9,7 @@ import com.ampnet.walletservice.grpc.blockchain.pojo.ApproveProjectBurnTransacti
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionData
 import com.ampnet.walletservice.persistence.model.Withdraw
 import com.ampnet.walletservice.security.WithMockCrowdfoundUser
+import com.ampnet.walletservice.service.pojo.response.WithdrawServiceResponse
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -55,7 +55,7 @@ class WithdrawControllerTest : ControllerTestBase() {
                 .andExpect(status().isOk)
                 .andReturn()
 
-            val withdrawResponse: WithdrawResponse = objectMapper.readValue(result.response.contentAsString)
+            val withdrawResponse: WithdrawServiceResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(withdrawResponse.owner).isEqualTo(userUuid)
             assertThat(withdrawResponse.amount).isEqualTo(testContext.amount)
             assertThat(withdrawResponse.bankAccount).isEqualTo(testContext.bankAccount)
@@ -70,7 +70,7 @@ class WithdrawControllerTest : ControllerTestBase() {
             assertThat(withdrawResponse.coop).isEqualTo(COOP)
         }
         verify("Withdraw is created") {
-            val withdraws = withdrawRepository.findAll()
+            val withdraws = withdrawRepository.findAllWithFile(COOP)
             assertThat(withdraws).hasSize(1)
             val withdraw = withdraws.first()
             assertThat(withdraw.ownerUuid).isEqualTo(userUuid)
@@ -118,7 +118,7 @@ class WithdrawControllerTest : ControllerTestBase() {
                 .andExpect(status().isOk)
                 .andReturn()
 
-            val withdrawResponse: WithdrawResponse = objectMapper.readValue(result.response.contentAsString)
+            val withdrawResponse: WithdrawServiceResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(withdrawResponse.owner).isEqualTo(projectUuid)
             assertThat(withdrawResponse.amount).isEqualTo(testContext.amount)
             assertThat(withdrawResponse.bankAccount).isEqualTo(testContext.bankAccount)
@@ -133,7 +133,7 @@ class WithdrawControllerTest : ControllerTestBase() {
             assertThat(withdrawResponse.coop).isEqualTo(COOP)
         }
         verify("Withdraw is created") {
-            val withdraws = withdrawRepository.findAll()
+            val withdraws = withdrawRepository.findAllWithFile(COOP)
             assertThat(withdraws).hasSize(1)
             val withdraw = withdraws.first()
             assertThat(withdraw.ownerUuid).isEqualTo(projectUuid)
@@ -187,9 +187,10 @@ class WithdrawControllerTest : ControllerTestBase() {
                 .andExpect(status().isOk)
                 .andReturn()
 
-            val withdrawResponse: WithdrawResponse = objectMapper.readValue(result.response.contentAsString)
+            val withdrawResponse: WithdrawServiceResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(withdrawResponse.owner).isEqualTo(userUuid)
             assertThat(withdrawResponse.coop).isEqualTo(COOP)
+            assertThat(withdrawResponse.documentResponse).isNull()
         }
     }
 
@@ -209,9 +210,10 @@ class WithdrawControllerTest : ControllerTestBase() {
                 .andExpect(status().isOk)
                 .andReturn()
 
-            val withdrawResponse: WithdrawResponse = objectMapper.readValue(result.response.contentAsString)
+            val withdrawResponse: WithdrawServiceResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(withdrawResponse.owner).isEqualTo(projectUuid)
             assertThat(withdrawResponse.coop).isEqualTo(COOP)
+            assertThat(withdrawResponse.documentResponse).isNull()
         }
     }
 

@@ -116,7 +116,7 @@ class PublicControllerTest : ControllerTestBase() {
             assertThat(projectsResponse.projects).hasSize(1)
             projectsResponse.projects.forEach { assertThat(it.wallet.coop).isEqualTo(COOP) }
             val projectWithWallet = projectsResponse.projects.first()
-            assertThat(projectWithWallet.project.uuid).isEqualTo(projectUuid.toString())
+            assertThat(projectWithWallet.project.uuid).isEqualTo(projectUuid)
             assertThat(projectWithWallet.wallet.uuid).isEqualTo(testContext.wallet.uuid)
             assertThat(projectWithWallet.wallet.balance).isEqualTo(testContext.projectBalance)
             assertThat(projectsResponse.page).isEqualTo(0)

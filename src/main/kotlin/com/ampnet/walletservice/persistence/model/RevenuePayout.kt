@@ -11,7 +11,7 @@ import javax.persistence.Table
 
 @Entity
 @Table(name = "revenue_payout")
-data class RevenuePayout(
+class RevenuePayout(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Int,

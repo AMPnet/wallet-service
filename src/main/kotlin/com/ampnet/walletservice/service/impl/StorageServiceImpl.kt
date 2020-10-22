@@ -4,7 +4,7 @@ import com.ampnet.walletservice.persistence.model.File
 import com.ampnet.walletservice.persistence.repository.DocumentRepository
 import com.ampnet.walletservice.service.CloudStorageService
 import com.ampnet.walletservice.service.StorageService
-import com.ampnet.walletservice.service.pojo.DocumentSaveRequest
+import com.ampnet.walletservice.service.pojo.request.DocumentSaveRequest
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 import java.time.ZonedDateTime

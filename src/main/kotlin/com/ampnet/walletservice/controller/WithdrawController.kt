@@ -2,10 +2,10 @@ package com.ampnet.walletservice.controller
 
 import com.ampnet.walletservice.controller.pojo.request.WithdrawCreateRequest
 import com.ampnet.walletservice.controller.pojo.response.TransactionResponse
-import com.ampnet.walletservice.controller.pojo.response.WithdrawResponse
 import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.service.WithdrawService
-import com.ampnet.walletservice.service.pojo.WithdrawCreateServiceRequest
+import com.ampnet.walletservice.service.pojo.request.WithdrawCreateServiceRequest
+import com.ampnet.walletservice.service.pojo.response.WithdrawServiceResponse
 import mu.KLogging
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -25,32 +25,32 @@ class WithdrawController(
     companion object : KLogging()
 
     @GetMapping("/withdraw")
-    fun getMyWithdraw(): ResponseEntity<WithdrawResponse> {
+    fun getMyWithdraw(): ResponseEntity<WithdrawServiceResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to get my Withdraw by user: ${userPrincipal.uuid}" }
         withdrawService.getPendingForOwner(userPrincipal.uuid)?.let {
-            return ResponseEntity.ok(WithdrawResponse(it))
+            return ResponseEntity.ok(it)
         }
         return ResponseEntity.notFound().build()
     }
 
     @PostMapping("/withdraw")
-    fun createWithdraw(@RequestBody @Valid request: WithdrawCreateRequest): ResponseEntity<WithdrawResponse> {
+    fun createWithdraw(@RequestBody @Valid request: WithdrawCreateRequest): ResponseEntity<WithdrawServiceResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to create Withdraw:$request by user: ${userPrincipal.uuid}" }
         val serviceRequest = WithdrawCreateServiceRequest(
             userPrincipal.uuid, request.bankAccount, request.amount, userPrincipal, DepositWithdrawType.USER
         )
         val withdraw = withdrawService.createWithdraw(serviceRequest)
-        return ResponseEntity.ok(WithdrawResponse(withdraw))
+        return ResponseEntity.ok(withdraw)
     }
 
     @GetMapping("/withdraw/project/{projectUuid}")
-    fun getProjectWithdraw(@PathVariable projectUuid: UUID): ResponseEntity<WithdrawResponse> {
+    fun getProjectWithdraw(@PathVariable projectUuid: UUID): ResponseEntity<WithdrawServiceResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to get my Withdraw by user: ${userPrincipal.uuid}" }
         withdrawService.getPendingForProject(projectUuid, userPrincipal.uuid)?.let {
-            return ResponseEntity.ok(WithdrawResponse(it))
+            return ResponseEntity.ok(it)
         }
         return ResponseEntity.notFound().build()
     }
@@ -59,14 +59,14 @@ class WithdrawController(
     fun createProjectWithdraw(
         @PathVariable projectUuid: UUID,
         @RequestBody @Valid request: WithdrawCreateRequest
-    ): ResponseEntity<WithdrawResponse> {
+    ): ResponseEntity<WithdrawServiceResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.info { "Received request to create project withdraw:$request by user: ${userPrincipal.uuid}" }
         val serviceRequest = WithdrawCreateServiceRequest(
             projectUuid, request.bankAccount, request.amount, userPrincipal, DepositWithdrawType.PROJECT
         )
         val withdraw = withdrawService.createWithdraw(serviceRequest)
-        return ResponseEntity.ok(WithdrawResponse(withdraw))
+        return ResponseEntity.ok(withdraw)
     }
 
     @DeleteMapping("/withdraw/{id}")

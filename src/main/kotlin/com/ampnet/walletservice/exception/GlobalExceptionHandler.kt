@@ -4,6 +4,7 @@ import mu.KLogging
 import org.springframework.core.NestedExceptionUtils
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.http.HttpStatus
+import org.springframework.validation.FieldError
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.ResponseStatus
@@ -60,18 +61,25 @@ class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException::class)
     fun handleValidationExceptions(exception: MethodArgumentNotValidException): ErrorResponse {
-        val errors = StringBuilder()
-        exception.bindingResult.allErrors.forEach {
-            it.defaultMessage?.let { message ->
-                errors.append(message).append(". ")
-            }
+        val errors = mutableMapOf<String, String>()
+        val sb = StringBuilder()
+        exception.bindingResult.allErrors.forEach { error ->
+            val filed = (error as FieldError).field
+            val errorMessage = error.defaultMessage ?: "Unknown"
+            errors[filed] = errorMessage
+            sb.append("$filed $errorMessage. ")
         }
-        return generateErrorResponse(ErrorCode.INT_REQUEST_VALIDATION, errors.toString())
+        logger.info { "MethodArgumentNotValidException: $sb" }
+        return generateErrorResponse(ErrorCode.INT_REQUEST, sb.toString(), errors)
     }
 
-    private fun generateErrorResponse(errorCode: ErrorCode, systemMessage: String?): ErrorResponse {
+    private fun generateErrorResponse(
+        errorCode: ErrorCode,
+        systemMessage: String?,
+        errors: Map<String, String> = emptyMap()
+    ): ErrorResponse {
         val errorMessage = systemMessage ?: "Error not defined"
         val errCode = errorCode.categoryCode + errorCode.specificCode
-        return ErrorResponse(errorCode.message, errCode, errorMessage)
+        return ErrorResponse(errorCode.message, errCode, errorMessage, errors)
     }
 }

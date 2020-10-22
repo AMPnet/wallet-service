@@ -1,7 +1,6 @@
 package com.ampnet.walletservice.service.impl
 
 import com.ampnet.core.jwt.UserPrincipal
-import com.ampnet.mailservice.proto.WalletTypeRequest
 import com.ampnet.walletservice.config.ApplicationProperties
 import com.ampnet.walletservice.controller.pojo.request.WalletCreateRequest
 import com.ampnet.walletservice.enums.Currency
@@ -21,7 +20,7 @@ import com.ampnet.walletservice.persistence.repository.PairWalletCodeRepository
 import com.ampnet.walletservice.persistence.repository.WalletRepository
 import com.ampnet.walletservice.service.TransactionInfoService
 import com.ampnet.walletservice.service.WalletService
-import com.ampnet.walletservice.service.pojo.ProjectWithWallet
+import com.ampnet.walletservice.service.pojo.response.ProjectWithWallet
 import mu.KotlinLogging
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
@@ -30,6 +29,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.ZonedDateTime
 import java.util.UUID
+import com.ampnet.mailservice.proto.WalletType as WalletTypeProto
 
 @Service
 class WalletServiceImpl(
@@ -75,7 +75,7 @@ class WalletServiceImpl(
             user.uuid, request.publicKey, WalletType.USER,
             user.coop, request.email, request.providerId
         )
-        mailService.sendNewWalletMail(WalletTypeRequest.Type.USER)
+        mailService.sendNewWalletMail(WalletTypeProto.USER)
         return wallet
     }
 
@@ -88,10 +88,12 @@ class WalletServiceImpl(
         val projectResponse = projectService.getProject(project)
         ServiceUtils.validateUserIsProjectOwner(user.uuid, projectResponse)
 
-        val organization = UUID.fromString(projectResponse.organizationUuid)
-        val organizationWalletHash = ServiceUtils.getWalletHash(organization, walletRepository)
-
-        val request = GenerateProjectWalletRequest(userWalletHash, organizationWalletHash, projectResponse)
+        val organizationWalletHash = ServiceUtils.getWalletHash(projectResponse.organizationUuid, walletRepository)
+        val request = GenerateProjectWalletRequest(
+            userWalletHash,
+            organizationWalletHash,
+            projectResponse
+        )
         val data = blockchainService.generateProjectWalletTransaction(request)
         val info = transactionInfoService.createProjectTransaction(project, projectResponse.name, user)
         return TransactionDataAndInfo(data, info)
@@ -105,7 +107,7 @@ class WalletServiceImpl(
         val txHash = blockchainService.postTransaction(signedTransaction)
         val wallet = createWallet(project, txHash, WalletType.PROJECT, coop)
         logger.debug { "Created wallet for project: $project" }
-        mailService.sendNewWalletMail(WalletTypeRequest.Type.PROJECT)
+        mailService.sendNewWalletMail(WalletTypeProto.PROJECT)
         return wallet
     }
 
@@ -138,7 +140,7 @@ class WalletServiceImpl(
         val txHash = blockchainService.postTransaction(signedTransaction)
         val wallet = createWallet(organization, txHash, WalletType.ORG, coop)
         logger.debug { "Created wallet for organization: $organization" }
-        mailService.sendNewWalletMail(WalletTypeRequest.Type.ORGANIZATION)
+        mailService.sendNewWalletMail(WalletTypeProto.ORGANIZATION)
         return wallet
     }
 
@@ -169,16 +171,15 @@ class WalletServiceImpl(
             return PageImpl(emptyList(), pageable, walletsPage.totalElements)
         }
 
-        val now = ZonedDateTime.now().toInstant().toEpochMilli()
+        val now = ZonedDateTime.now()
         val projectWalletHashes = projectWallets.values.mapNotNull { it.hash }
         val projectsInfo = blockchainService.getProjectsInfo(projectWalletHashes)
             .toList()
             .associateBy { it.txHash }
         val projectsWithWallet = projectService.getProjects(projectWallets.keys)
-            .filter { it.active && it.endDate > now }
+            .filter { it.active && it.endDate.isAfter(now) }
             .mapNotNull { project ->
-                val uuid = UUID.fromString(project.uuid)
-                projectWallets[uuid]?.let { wallet ->
+                projectWallets[project.uuid]?.let { wallet ->
                     val projectInfo = projectsInfo[wallet.hash]
                     val balance = projectInfo?.balance
                     val payoutInProcess = projectInfo?.payoutInProcess

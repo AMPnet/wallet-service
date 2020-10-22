@@ -18,7 +18,8 @@ class CooperativeWithdrawServiceTest : JpaServiceTestBase() {
         val transactionInfoService = TransactionInfoServiceImpl(transactionInfoRepository)
         CooperativeWithdrawServiceImpl(
             walletRepository, withdrawRepository, mockedBlockchainService,
-            transactionInfoService, storageServiceImpl, mockedMailService
+            transactionInfoService, storageServiceImpl, mockedMailService,
+            mockedUserService, mockedProjectService, mockedWalletService
         )
     }
     private lateinit var withdraw: Withdraw

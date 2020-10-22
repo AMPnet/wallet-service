@@ -8,9 +8,9 @@ import com.ampnet.walletservice.enums.WalletType
 import com.ampnet.walletservice.persistence.model.TransactionInfo
 import com.ampnet.walletservice.persistence.repository.TransactionInfoRepository
 import com.ampnet.walletservice.service.TransactionInfoService
-import com.ampnet.walletservice.service.pojo.CreateTransactionRequest
-import com.ampnet.walletservice.service.pojo.MintServiceRequest
-import com.ampnet.walletservice.service.pojo.RevenuePayoutTxInfo
+import com.ampnet.walletservice.service.pojo.request.CreateTransactionRequest
+import com.ampnet.walletservice.service.pojo.request.MintServiceRequest
+import com.ampnet.walletservice.service.pojo.request.RevenuePayoutTxInfoRequest
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
@@ -93,7 +93,7 @@ class TransactionInfoServiceImpl(
     }
 
     @Transactional
-    override fun createRevenuePayoutTransaction(request: RevenuePayoutTxInfo): TransactionInfo {
+    override fun createRevenuePayoutTransaction(request: RevenuePayoutTxInfoRequest): TransactionInfo {
         val type = TransactionType.REVENUE_PAYOUT
         val description = type.description.format(amountInDecimal(request.amount), request.projectName)
         val transactionRequest = CreateTransactionRequest(

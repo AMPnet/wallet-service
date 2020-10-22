@@ -1,10 +1,9 @@
-package com.ampnet.walletservice.service.pojo
+package com.ampnet.walletservice.service.pojo.response
 
-import com.ampnet.projectservice.proto.ProjectResponse
 import com.ampnet.walletservice.persistence.model.Wallet
 
 data class ProjectWithWallet(
-    val project: ProjectResponse,
+    val project: ProjectServiceResponse,
     val wallet: Wallet,
     val balance: Long? = null,
     val payoutInProcess: Boolean? = null

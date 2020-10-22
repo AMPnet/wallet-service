@@ -4,8 +4,8 @@ import com.ampnet.core.jwt.UserPrincipal
 import com.ampnet.walletservice.controller.pojo.request.WalletTransferRequest
 import com.ampnet.walletservice.enums.WalletType
 import com.ampnet.walletservice.persistence.model.TransactionInfo
-import com.ampnet.walletservice.service.pojo.MintServiceRequest
-import com.ampnet.walletservice.service.pojo.RevenuePayoutTxInfo
+import com.ampnet.walletservice.service.pojo.request.MintServiceRequest
+import com.ampnet.walletservice.service.pojo.request.RevenuePayoutTxInfoRequest
 import java.util.UUID
 
 interface TransactionInfoService {
@@ -17,8 +17,8 @@ interface TransactionInfoService {
     fun createMintTransaction(request: MintServiceRequest, receivingWallet: String): TransactionInfo
     fun createApprovalTransaction(amount: Long, user: UserPrincipal, withdrawId: Int): TransactionInfo
     fun createBurnTransaction(amount: Long, user: UserPrincipal, withdrawId: Int): TransactionInfo
-    fun createRevenuePayoutTransaction(request: RevenuePayoutTxInfo): TransactionInfo
     fun createTransferOwnership(owner: UserPrincipal, request: WalletTransferRequest): TransactionInfo
+    fun createRevenuePayoutTransaction(request: RevenuePayoutTxInfoRequest): TransactionInfo
     fun deleteTransaction(id: Int)
     fun findTransactionInfo(id: Int): TransactionInfo?
 }
