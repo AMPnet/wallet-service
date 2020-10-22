@@ -1,8 +1,10 @@
 package com.ampnet.walletservice.grpc.mail
 
+import com.ampnet.mailservice.proto.ActivatedWalletRequest
 import com.ampnet.mailservice.proto.DepositInfoRequest
 import com.ampnet.mailservice.proto.Empty
 import com.ampnet.mailservice.proto.MailServiceGrpc
+import com.ampnet.mailservice.proto.WalletType
 import com.ampnet.mailservice.proto.WalletTypeRequest
 import com.ampnet.mailservice.proto.WithdrawInfoRequest
 import com.ampnet.mailservice.proto.WithdrawRequest
@@ -67,7 +69,7 @@ class MailServiceImpl(
         }
     }
 
-    override fun sendNewWalletMail(walletType: WalletTypeRequest.Type) {
+    override fun sendNewWalletMail(walletType: WalletType) {
         logger.debug { "Sending new $walletType wallet mail" }
         try {
             val request = WalletTypeRequest.newBuilder()
@@ -76,6 +78,19 @@ class MailServiceImpl(
             serviceWithTimeout()?.sendNewWalletMail(request, createSteamObserver("new $walletType wallet mail"))
         } catch (ex: StatusRuntimeException) {
             logger.warn("Failed to send new $walletType wallet mail.", ex)
+        }
+    }
+
+    override fun sendWalletActivated(walletType: WalletType, walletOwner: String) {
+        logger.debug { "Sending ${walletType.name} wallet approved mail" }
+        try {
+            val request = ActivatedWalletRequest.newBuilder()
+                .setType(walletType)
+                .setWalletOwner(walletOwner)
+                .build()
+            serviceWithTimeout()?.sendWalletActivated(request, createSteamObserver("$walletType wallet is approved for owner $walletOwner"))
+        } catch (ex: StatusRuntimeException) {
+            logger.warn("Failed to send ${walletType.name} wallet approved mail.", ex)
         }
     }
 

@@ -1,6 +1,5 @@
 package com.ampnet.walletservice.service
 
-import com.ampnet.mailservice.proto.WalletTypeRequest
 import com.ampnet.walletservice.controller.pojo.request.WalletCreateRequest
 import com.ampnet.walletservice.enums.Currency
 import com.ampnet.walletservice.enums.WalletType
@@ -18,6 +17,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
 import java.time.ZonedDateTime
+import com.ampnet.mailservice.proto.WalletType as WalletTypeProto
 
 class WalletServiceTest : JpaServiceTestBase() {
 
@@ -84,7 +84,7 @@ class WalletServiceTest : JpaServiceTestBase() {
             assertThat(optionalPairWalletCode).isNotPresent
         }
         verify("Mail notification for created wallet") {
-            Mockito.verify(mockedMailService, Mockito.times(1)).sendNewWalletMail(WalletTypeRequest.Type.USER)
+            Mockito.verify(mockedMailService, Mockito.times(1)).sendNewWalletMail(WalletTypeProto.USER)
         }
     }
 
@@ -113,7 +113,7 @@ class WalletServiceTest : JpaServiceTestBase() {
             assertThat(projectWallet.providerId).isNull()
         }
         verify("Mail notification for created wallet") {
-            Mockito.verify(mockedMailService, Mockito.times(1)).sendNewWalletMail(WalletTypeRequest.Type.PROJECT)
+            Mockito.verify(mockedMailService, Mockito.times(1)).sendNewWalletMail(WalletTypeProto.PROJECT)
         }
     }
 
@@ -263,7 +263,7 @@ class WalletServiceTest : JpaServiceTestBase() {
             assertThat(wallet.providerId).isNull()
         }
         verify("Mail notification for created wallet") {
-            Mockito.verify(mockedMailService, Mockito.times(1)).sendNewWalletMail(WalletTypeRequest.Type.ORGANIZATION)
+            Mockito.verify(mockedMailService, Mockito.times(1)).sendNewWalletMail(WalletTypeProto.ORGANIZATION)
         }
     }
 

@@ -33,7 +33,8 @@ class CooperativeWalletServiceTest : JpaServiceTestBase() {
         val transactionInfoService = TransactionInfoServiceImpl(transactionInfoRepository)
         CooperativeWalletServiceImpl(
             walletRepository, mockedUserService, mockedBlockchainService,
-            transactionInfoService, mockedProjectService, applicationProperties
+            transactionInfoService, mockedProjectService, mockedMailService,
+            applicationProperties
         )
     }
 
