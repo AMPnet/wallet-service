@@ -18,6 +18,7 @@ data class BlockchainTransaction(
     var from: String? = null
     var to: String? = null
     var description: String? = null
+    var percentageInProject: String? = null
 
     constructor(transaction: TransactionsResponse.Transaction) : this(
         transaction.fromTxHash,

@@ -111,18 +111,18 @@ class PortfolioServiceImpl(
                 TransactionType.APPROVE_INVESTMENT -> {
                     transaction.from = getUserNameWithUuid(ownerUuidFrom, users)
                     transaction.to = getProjectNameWithUuid(ownerUuidTo, projects)
-                    transaction.description = transaction.to +
-                        getExpectedProjectFunding(ownerUuidTo, projects)?.let {
-                            " | " + getPercentageInProject(it, transaction.amount)
-                        }
+                    transaction.description = transaction.to
+                    transaction.percentageInProject = getExpectedProjectFunding(ownerUuidTo, projects)?.let {
+                        getPercentageInProject(it, transaction.amount)
+                    }
                 }
                 TransactionType.CANCEL_INVESTMENT -> {
                     transaction.from = getProjectNameWithUuid(ownerUuidFrom, projects)
                     transaction.to = getUserNameWithUuid(ownerUuidTo, users)
-                    transaction.description = transaction.from +
-                        getExpectedProjectFunding(ownerUuidFrom, projects)?.let {
-                            " | " + getPercentageInProject(it, transaction.amount)
-                        }
+                    transaction.description = transaction.from
+                    transaction.percentageInProject = getExpectedProjectFunding(ownerUuidFrom, projects)?.let {
+                        getPercentageInProject(it, transaction.amount)
+                    }
                 }
                 TransactionType.SHARE_PAYOUT -> {
                     transaction.from = getProjectNameWithUuid(ownerUuidFrom, projects)

@@ -301,13 +301,14 @@ class PortfolioControllerTest : ControllerTestBase() {
             val responseInvest = response.transactions.first { it.type == TransactionType.INVEST }
             assertThat(responseInvest.from).isEqualTo("${user.firstName} ${user.lastName}")
             assertThat(responseInvest.to).isEqualTo(project.name)
-            assertThat(responseInvest.description)
-                .isEqualTo(project.name + " | " + getPercentageInProject(project.expectedFunding, responseInvest.amount))
+            assertThat(responseInvest.description).isEqualTo(project.name)
+            assertThat(responseInvest.percentageInProject).isEqualTo(getPercentageInProject(project.expectedFunding, responseInvest.amount))
             val responseCancelInvestment = response.transactions.first { it.type == TransactionType.CANCEL_INVESTMENT }
             assertThat(responseCancelInvestment.from).isEqualTo(project.name)
             assertThat(responseCancelInvestment.to).isEqualTo("${user.firstName} ${user.lastName}")
-            assertThat(responseCancelInvestment.description)
-                .isEqualTo(project.name + " | " + getPercentageInProject(project.expectedFunding, responseCancelInvestment.amount))
+            assertThat(responseCancelInvestment.description).isEqualTo(project.name)
+            assertThat(responseCancelInvestment.percentageInProject)
+                .isEqualTo(getPercentageInProject(project.expectedFunding, responseCancelInvestment.amount))
             val responseSharePayout = response.transactions.first { it.type == TransactionType.SHARE_PAYOUT }
             assertThat(responseSharePayout.from).isEqualTo(project.name)
             assertThat(responseSharePayout.to).isEqualTo("${user.firstName} ${user.lastName}")
