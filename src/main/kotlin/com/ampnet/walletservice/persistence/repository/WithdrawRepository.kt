@@ -40,7 +40,9 @@ interface WithdrawRepository : JpaRepository<Withdraw, Int> {
 
     fun findByIdAndCoop(id: Int, coop: String): Optional<Withdraw>
 
-    @Query("SELECT withdraw FROM Withdraw withdraw LEFT JOIN FETCH withdraw.file " +
-        "WHERE withdraw.coop = :coop")
+    @Query(
+        "SELECT withdraw FROM Withdraw withdraw LEFT JOIN FETCH withdraw.file " +
+            "WHERE withdraw.coop = :coop"
+    )
     fun findAllWithFile(coop: String): List<Withdraw>
 }

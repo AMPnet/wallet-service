@@ -26,6 +26,7 @@ import java.time.ZonedDateTime
 import java.util.UUID
 
 @Service
+@Suppress("TooManyFunctions")
 class WithdrawServiceImpl(
     private val walletRepository: WalletRepository,
     private val withdrawRepository: WithdrawRepository,

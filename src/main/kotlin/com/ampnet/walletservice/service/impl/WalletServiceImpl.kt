@@ -32,6 +32,7 @@ import java.util.UUID
 import com.ampnet.mailservice.proto.WalletType as WalletTypeProto
 
 @Service
+@Suppress("TooManyFunctions")
 class WalletServiceImpl(
     private val walletRepository: WalletRepository,
     private val pairWalletCodeRepository: PairWalletCodeRepository,

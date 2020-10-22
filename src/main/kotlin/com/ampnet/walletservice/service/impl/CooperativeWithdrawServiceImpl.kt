@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.time.ZonedDateTime
 
 @Service
+@Suppress("TooManyFunctions")
 class CooperativeWithdrawServiceImpl(
     private val walletRepository: WalletRepository,
     private val withdrawRepository: WithdrawRepository,
@@ -43,7 +44,11 @@ class CooperativeWithdrawServiceImpl(
     companion object : KLogging()
 
     @Transactional(readOnly = true)
-    override fun getAllApproved(coop: String, type: DepositWithdrawType?, pageable: Pageable): WithdrawListServiceResponse =
+    override fun getAllApproved(
+        coop: String,
+        type: DepositWithdrawType?,
+        pageable: Pageable
+    ): WithdrawListServiceResponse =
         when (type) {
             DepositWithdrawType.USER -> {
                 val userWithdraws = withdrawRepository.findAllApprovedByType(coop, type, pageable)
@@ -57,7 +62,11 @@ class CooperativeWithdrawServiceImpl(
         }
 
     @Transactional(readOnly = true)
-    override fun getAllBurned(coop: String, type: DepositWithdrawType?, pageable: Pageable): WithdrawListServiceResponse =
+    override fun getAllBurned(
+        coop: String,
+        type: DepositWithdrawType?,
+        pageable: Pageable
+    ): WithdrawListServiceResponse =
         when (type) {
             DepositWithdrawType.USER -> {
                 val userWithdraws = withdrawRepository.findAllBurnedByType(coop, type, pageable)

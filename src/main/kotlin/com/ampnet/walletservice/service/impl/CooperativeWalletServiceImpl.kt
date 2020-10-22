@@ -36,6 +36,7 @@ import kotlin.concurrent.thread
 import com.ampnet.mailservice.proto.WalletType as WalletTypeProto
 
 @Service
+@Suppress("TooManyFunctions")
 class CooperativeWalletServiceImpl(
     private val walletRepository: WalletRepository,
     private val userService: UserService,

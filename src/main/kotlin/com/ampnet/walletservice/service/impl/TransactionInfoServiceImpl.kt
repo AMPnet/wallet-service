@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
 @Service
+@Suppress("TooManyFunctions")
 class TransactionInfoServiceImpl(
     private val transactionInfoRepository: TransactionInfoRepository
 ) : TransactionInfoService {

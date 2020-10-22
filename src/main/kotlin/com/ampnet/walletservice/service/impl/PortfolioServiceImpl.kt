@@ -23,6 +23,7 @@ const val MIN_FRACTION_DIGITS = 1
 const val MAX_FRACTION_DIGITS = 10
 
 @Service
+@Suppress("TooManyFunctions")
 class PortfolioServiceImpl(
     private val walletRepository: WalletRepository,
     private val blockchainService: BlockchainService,

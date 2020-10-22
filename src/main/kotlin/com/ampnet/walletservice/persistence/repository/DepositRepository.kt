@@ -28,9 +28,11 @@ interface DepositRepository : JpaRepository<Deposit, Int> {
 
     @Query(
         "SELECT deposit FROM Deposit deposit " +
-            "WHERE deposit.type = :type AND deposit.txHash IS NULL AND deposit.declined is NULL AND deposit.coop = :coop",
+            "WHERE deposit.type = :type AND deposit.txHash IS NULL AND deposit.declined is NULL " +
+            "AND deposit.coop = :coop",
         countQuery = "SELECT COUNT(deposit) FROM Deposit deposit " +
-            "WHERE deposit.type = :type AND deposit.txHash IS NULL AND deposit.declined is NULL AND deposit.coop = :coop"
+            "WHERE deposit.type = :type AND deposit.txHash IS NULL AND deposit.declined is NULL " +
+            "AND deposit.coop = :coop"
     )
     fun findAllUnapprovedByType(coop: String, type: DepositWithdrawType, pageable: Pageable): Page<Deposit>
 
@@ -63,7 +65,9 @@ interface DepositRepository : JpaRepository<Deposit, Int> {
     )
     fun findWithFileById(coop: String, depositId: Int): Optional<Deposit>
 
-    @Query("SELECT deposit FROM Deposit deposit LEFT JOIN FETCH deposit.file " +
-        "WHERE deposit.coop = :coop")
+    @Query(
+        "SELECT deposit FROM Deposit deposit LEFT JOIN FETCH deposit.file " +
+            "WHERE deposit.coop = :coop"
+    )
     fun findAllWithFile(coop: String): List<Deposit>
 }

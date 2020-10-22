@@ -53,7 +53,8 @@ class BankAccountControllerTest : ControllerTestBase() {
 
             val bankAccounts: BankAccountsResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(bankAccounts.bankAccounts).hasSize(2)
-            val bankAccount = bankAccounts.bankAccounts.first()
+            assertThat(bankAccounts.bankAccounts.filter { it.coop != COOP }).hasSize(0)
+            val bankAccount = bankAccounts.bankAccounts.first { it.iban == iban }
             assertThat(bankAccount.iban).isEqualTo(iban)
             assertThat(bankAccount.bankCode).isEqualTo(bankAccount.bankCode)
             assertThat(bankAccount.alias).isEqualTo(alias)

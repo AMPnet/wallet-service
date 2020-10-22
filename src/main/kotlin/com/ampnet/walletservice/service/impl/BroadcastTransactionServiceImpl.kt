@@ -23,6 +23,7 @@ import java.util.UUID
 import javax.transaction.Transactional
 
 @Service
+@Suppress("TooManyFunctions")
 class BroadcastTransactionServiceImpl(
     private val walletService: WalletService,
     private val withdrawService: WithdrawService,
