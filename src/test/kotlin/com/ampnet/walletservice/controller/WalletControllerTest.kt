@@ -185,7 +185,7 @@ class WalletControllerTest : ControllerTestBase() {
             assertThat(wallet.coop).isEqualTo(COOP)
         }
         verify("Mail notification for created wallet") {
-            Mockito.verify(mailService, Mockito.times(1)).sendNewWalletMail(WalletTypeProto.USER)
+            Mockito.verify(mailService, Mockito.times(1)).sendNewWalletMail(WalletTypeProto.USER, COOP)
         }
     }
 
