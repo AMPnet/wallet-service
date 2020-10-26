@@ -1,11 +1,11 @@
 package com.ampnet.walletservice.service.pojo.request
 
+import com.ampnet.core.jwt.UserPrincipal
 import com.ampnet.walletservice.enums.TransactionType
-import java.util.UUID
 
 data class CreateTransactionRequest(
     val type: TransactionType,
     val description: String,
-    val userUuid: UUID,
+    val user: UserPrincipal,
     val companionData: String? = null
 )

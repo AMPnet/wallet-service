@@ -10,6 +10,7 @@ class ApplicationProperties {
     val fileStorage: FileStorageProperties = FileStorageProperties()
     val grpc: GrpcProperties = GrpcProperties()
     val mail: MailProperties = MailProperties()
+    val coop: CoopProperties = CoopProperties()
 }
 
 class JwtProperties {
@@ -35,4 +36,8 @@ class GrpcProperties {
 
 class MailProperties {
     var sendNotification = true
+}
+
+class CoopProperties {
+    lateinit var default: String
 }

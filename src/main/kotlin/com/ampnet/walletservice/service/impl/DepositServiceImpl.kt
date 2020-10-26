@@ -36,11 +36,12 @@ class DepositServiceImpl(
         validateOwnerDoesNotHavePendingDeposit(request)
         if (request.type == DepositWithdrawType.PROJECT) {
             val projectResponse = projectService.getProject(request.owner)
-            ServiceUtils.validateUserIsProjectOwner(request.createdBy, projectResponse)
+            ServiceUtils.validateUserIsProjectOwner(request.createdBy.uuid, projectResponse)
         }
 
         val deposit = Deposit(
-            request.owner, generateDepositReference(), request.amount, request.createdBy, request.type
+            request.owner, generateDepositReference(), request.amount,
+            request.createdBy.uuid, request.type, request.createdBy.coop
         )
         depositRepository.save(deposit)
         logger.debug {
@@ -91,7 +92,7 @@ class DepositServiceImpl(
     private fun validateOwnerDoesNotHavePendingDeposit(request: DepositCreateServiceRequest) {
         val pendingDeposit = when (request.type) {
             DepositWithdrawType.USER -> getPendingForUser(request.owner)
-            DepositWithdrawType.PROJECT -> getPendingForProject(request.owner, request.createdBy)
+            DepositWithdrawType.PROJECT -> getPendingForProject(request.owner, request.createdBy.uuid)
         }
         if (pendingDeposit != null)
             throw ResourceAlreadyExistsException(

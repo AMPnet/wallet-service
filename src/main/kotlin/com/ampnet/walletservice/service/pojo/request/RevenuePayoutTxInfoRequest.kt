@@ -1,10 +1,10 @@
 package com.ampnet.walletservice.service.pojo.request
 
-import java.util.UUID
+import com.ampnet.core.jwt.UserPrincipal
 
 data class RevenuePayoutTxInfoRequest(
     val projectName: String,
     val amount: Long,
-    val userUuid: UUID,
+    val user: UserPrincipal,
     val revenuePayoutId: Int
 )

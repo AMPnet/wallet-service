@@ -16,9 +16,7 @@ import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
 @RestController
-class DepositController(
-    private val depositService: DepositService
-) {
+class DepositController(private val depositService: DepositService) {
 
     companion object : KLogging()
 
@@ -27,7 +25,7 @@ class DepositController(
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to create deposit" }
         val serviceRequest = DepositCreateServiceRequest(
-            userPrincipal.uuid, userPrincipal.uuid, request.amount, DepositWithdrawType.USER
+            userPrincipal.uuid, userPrincipal, request.amount, DepositWithdrawType.USER
         )
         val deposit = depositService.create(serviceRequest)
         return ResponseEntity.ok(deposit)
@@ -41,7 +39,7 @@ class DepositController(
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to create deposit" }
         val serviceRequest = DepositCreateServiceRequest(
-            projectUuid, userPrincipal.uuid, request.amount, DepositWithdrawType.PROJECT
+            projectUuid, userPrincipal, request.amount, DepositWithdrawType.PROJECT
         )
         val deposit = depositService.create(serviceRequest)
         return ResponseEntity.ok(deposit)

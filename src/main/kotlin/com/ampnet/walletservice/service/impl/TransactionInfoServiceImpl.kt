@@ -1,5 +1,6 @@
 package com.ampnet.walletservice.service.impl
 
+import com.ampnet.core.jwt.UserPrincipal
 import com.ampnet.walletservice.controller.pojo.request.WalletTransferRequest
 import com.ampnet.walletservice.enums.TransactionType
 import com.ampnet.walletservice.enums.TransferWalletType
@@ -15,47 +16,56 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
 @Service
+@Suppress("TooManyFunctions")
 class TransactionInfoServiceImpl(
     private val transactionInfoRepository: TransactionInfoRepository
 ) : TransactionInfoService {
 
     @Transactional
-    override fun activateWalletTransaction(walletUuid: UUID, walletType: WalletType, userUuid: UUID): TransactionInfo {
+    override fun activateWalletTransaction(
+        walletUuid: UUID,
+        walletType: WalletType,
+        user: UserPrincipal
+    ): TransactionInfo {
         val type = TransactionType.WALLET_ACTIVATE
         val description = type.description.format(type.name)
-        val request = CreateTransactionRequest(type, description, userUuid, walletUuid.toString())
+        val request = CreateTransactionRequest(type, description, user, walletUuid.toString())
         return createTransaction(request)
     }
 
     @Transactional
-    override fun createOrgTransaction(organization: UUID, organizationName: String, userUuid: UUID): TransactionInfo {
+    override fun createOrgTransaction(
+        organization: UUID,
+        organizationName: String,
+        user: UserPrincipal
+    ): TransactionInfo {
         val type = TransactionType.CREATE_ORG
         val description = type.description.format(organizationName)
-        val request = CreateTransactionRequest(type, description, userUuid, organization.toString())
+        val request = CreateTransactionRequest(type, description, user, organization.toString())
         return createTransaction(request)
     }
 
     @Transactional
-    override fun createProjectTransaction(project: UUID, projectName: String, userUuid: UUID): TransactionInfo {
+    override fun createProjectTransaction(project: UUID, projectName: String, user: UserPrincipal): TransactionInfo {
         val type = TransactionType.CREATE_PROJECT
         val description = type.description.format(projectName)
-        val request = CreateTransactionRequest(type, description, userUuid, project.toString())
+        val request = CreateTransactionRequest(type, description, user, project.toString())
         return createTransaction(request)
     }
 
     @Transactional
-    override fun createInvestTransaction(projectName: String, amount: Long, userUuid: UUID): TransactionInfo {
+    override fun createInvestTransaction(projectName: String, amount: Long, user: UserPrincipal): TransactionInfo {
         val type = TransactionType.INVEST
         val description = type.description.format(projectName, amountInDecimal(amount))
-        val request = CreateTransactionRequest(type, description, userUuid)
+        val request = CreateTransactionRequest(type, description, user)
         return createTransaction(request)
     }
 
     @Transactional
-    override fun cancelInvestmentTransaction(projectName: String, userUuid: UUID): TransactionInfo {
+    override fun cancelInvestmentTransaction(projectName: String, user: UserPrincipal): TransactionInfo {
         val type = TransactionType.CANCEL_INVEST
         val description = type.description.format(projectName)
-        val request = CreateTransactionRequest(type, description, userUuid)
+        val request = CreateTransactionRequest(type, description, user)
         return createTransaction(request)
     }
 
@@ -68,18 +78,18 @@ class TransactionInfoServiceImpl(
     }
 
     @Transactional
-    override fun createApprovalTransaction(amount: Long, userUuid: UUID, withdrawId: Int): TransactionInfo {
+    override fun createApprovalTransaction(amount: Long, user: UserPrincipal, withdrawId: Int): TransactionInfo {
         val type = TransactionType.BURN_APPROVAL
         val description = type.description.format(amount)
-        val txRequest = CreateTransactionRequest(type, description, userUuid, withdrawId.toString())
+        val txRequest = CreateTransactionRequest(type, description, user, withdrawId.toString())
         return createTransaction(txRequest)
     }
 
     @Transactional
-    override fun createBurnTransaction(amount: Long, userUuid: UUID, withdrawId: Int): TransactionInfo {
+    override fun createBurnTransaction(amount: Long, user: UserPrincipal, withdrawId: Int): TransactionInfo {
         val type = TransactionType.BURN
         val description = type.description.format(amount)
-        val txRequest = CreateTransactionRequest(type, description, userUuid, withdrawId.toString())
+        val txRequest = CreateTransactionRequest(type, description, user, withdrawId.toString())
         return createTransaction(txRequest)
     }
 
@@ -88,13 +98,13 @@ class TransactionInfoServiceImpl(
         val type = TransactionType.REVENUE_PAYOUT
         val description = type.description.format(amountInDecimal(request.amount), request.projectName)
         val transactionRequest = CreateTransactionRequest(
-            type, description, request.userUuid, request.revenuePayoutId.toString()
+            type, description, request.user, request.revenuePayoutId.toString()
         )
         return createTransaction(transactionRequest)
     }
 
     @Transactional
-    override fun createTransferOwnership(owner: UUID, request: WalletTransferRequest): TransactionInfo {
+    override fun createTransferOwnership(owner: UserPrincipal, request: WalletTransferRequest): TransactionInfo {
         val type = when (request.type) {
             TransferWalletType.TOKEN_ISSUER -> TransactionType.TRNSF_TOKEN_OWN
             TransferWalletType.PLATFORM_MANAGER -> TransactionType.TRNSF_PLTFRM_OWN
@@ -116,8 +126,9 @@ class TransactionInfoServiceImpl(
             0,
             request.type,
             request.description,
-            request.userUuid,
-            request.companionData
+            request.user.uuid,
+            request.companionData,
+            request.user.coop
         )
         return transactionInfoRepository.save(transaction)
     }

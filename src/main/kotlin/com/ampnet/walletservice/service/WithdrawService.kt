@@ -1,5 +1,6 @@
 package com.ampnet.walletservice.service
 
+import com.ampnet.core.jwt.UserPrincipal
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionDataAndInfo
 import com.ampnet.walletservice.persistence.model.Withdraw
 import com.ampnet.walletservice.service.pojo.request.WithdrawCreateServiceRequest
@@ -11,6 +12,6 @@ interface WithdrawService {
     fun getPendingForProject(project: UUID, user: UUID): WithdrawServiceResponse?
     fun createWithdraw(request: WithdrawCreateServiceRequest): WithdrawServiceResponse
     fun deleteWithdraw(withdrawId: Int, user: UUID)
-    fun generateApprovalTransaction(withdrawId: Int, user: UUID): TransactionDataAndInfo
+    fun generateApprovalTransaction(withdrawId: Int, user: UserPrincipal): TransactionDataAndInfo
     fun confirmApproval(signedTransaction: String, withdrawId: Int): Withdraw
 }

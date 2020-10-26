@@ -10,7 +10,11 @@ data class UserWithWalletResponse(val user: UserServiceResponse, val wallet: Wal
     )
 }
 
-data class UserWithWalletListResponse(val users: List<UserWithWalletResponse>, val page: Int, val totalPages: Int) {
+data class UserWithWalletListResponse(
+    val users: List<UserWithWalletResponse>,
+    val page: Int,
+    val totalPages: Int
+) {
     constructor(usersPage: Page<UserWithWallet>) : this(
         usersPage.toList().map { UserWithWalletResponse(it) },
         usersPage.number,

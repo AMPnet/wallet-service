@@ -75,6 +75,7 @@ class SellOfferControllerTest : ControllerTestBase() {
 
             val response: ProjectsWithSellOffersResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(response.projects).hasSize(2)
+            assertThat(response.coop).isEqualTo(COOP)
             val projectWithSellOffer = response.projects
                 .first { it.project.uuid == testContext.projectWallet.owner }
             assertThat(projectWithSellOffer.sellOffers).hasSize(2)

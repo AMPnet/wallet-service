@@ -40,7 +40,9 @@ class DepositServiceTest : JpaServiceTestBase() {
 
         verify("Service will throw exception for existing unapproved deposit") {
             val exception = assertThrows<ResourceAlreadyExistsException> {
-                val serviceRequest = DepositCreateServiceRequest(userUuid, userUuid, 100L, DepositWithdrawType.USER)
+                val serviceRequest = DepositCreateServiceRequest(
+                    userUuid, createUserPrincipal(userUuid), 100L, DepositWithdrawType.USER
+                )
                 depositService.create(serviceRequest)
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.WALLET_DEPOSIT_EXISTS)
@@ -61,7 +63,7 @@ class DepositServiceTest : JpaServiceTestBase() {
         verify("Service will throw exception for missing project privileges by user") {
             val exception = assertThrows<InvalidRequestException> {
                 val serviceRequest = DepositCreateServiceRequest(
-                    projectUuid, userUuid, 100L, DepositWithdrawType.PROJECT
+                    projectUuid, createUserPrincipal(userUuid), 100L, DepositWithdrawType.PROJECT
                 )
                 depositService.create(serviceRequest)
             }
@@ -122,8 +124,9 @@ class DepositServiceTest : JpaServiceTestBase() {
 
         verify("Service will throw exception for existing unapproved deposit") {
             val exception = assertThrows<ResourceAlreadyExistsException> {
-                val serviceRequest =
-                    DepositCreateServiceRequest(projectUuid, userUuid, 100L, DepositWithdrawType.PROJECT)
+                val serviceRequest = DepositCreateServiceRequest(
+                    projectUuid, createUserPrincipal(userUuid), 100L, DepositWithdrawType.PROJECT
+                )
                 depositService.create(serviceRequest)
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.WALLET_DEPOSIT_EXISTS)
@@ -139,8 +142,9 @@ class DepositServiceTest : JpaServiceTestBase() {
 
         verify("Service will throw exception for existing unapproved deposit") {
             val exception = assertThrows<ResourceNotFoundException> {
-                val serviceRequest =
-                    DepositCreateServiceRequest(projectUuid, userUuid, 100L, DepositWithdrawType.PROJECT)
+                val serviceRequest = DepositCreateServiceRequest(
+                    projectUuid, createUserPrincipal(userUuid), 100L, DepositWithdrawType.PROJECT
+                )
                 depositService.create(serviceRequest)
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.WALLET_MISSING)

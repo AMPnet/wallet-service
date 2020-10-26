@@ -58,16 +58,18 @@ class DepositControllerTest : ControllerTestBase() {
             assertThat(deposit.type).isEqualTo(DepositWithdrawType.USER)
             assertThat(deposit.reference).isNotNull()
             assertThat(deposit.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
+            assertThat(deposit.coop).isEqualTo(COOP)
             assertThat(deposit.documentResponse).isNull()
         }
         verify("User deposit is stored") {
-            val deposits = depositRepository.findAllWithFile()
+            val deposits = depositRepository.findAllWithFile(COOP)
             assertThat(deposits).hasSize(2)
             val deposit = deposits.first { it.txHash == null }
             assertThat(deposit.ownerUuid).isEqualTo(userUuid)
             assertThat(deposit.txHash).isNull()
             assertThat(deposit.reference).isNotNull()
             assertThat(deposit.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
+            assertThat(deposit.coop).isEqualTo(COOP)
             assertThat(deposit.file).isNull()
         }
     }
@@ -139,6 +141,7 @@ class DepositControllerTest : ControllerTestBase() {
 
             val deposit: DepositServiceResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(deposit.owner).isEqualTo(userUuid)
+            assertThat(deposit.coop).isEqualTo(COOP)
             assertThat(deposit.documentResponse).isNotNull
             val savedDeposit = testContext.deposits.first()
             assertThat(deposit.id).isEqualTo(savedDeposit.id)
@@ -187,62 +190,19 @@ class DepositControllerTest : ControllerTestBase() {
             assertThat(deposit.type).isEqualTo(DepositWithdrawType.PROJECT)
             assertThat(deposit.reference).isNotNull()
             assertThat(deposit.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
+            assertThat(deposit.coop).isEqualTo(COOP)
             assertThat(deposit.documentResponse).isNull()
         }
         verify("Project deposit is stored") {
-            val deposits = depositRepository.findAllWithFile()
+            val deposits = depositRepository.findAllWithFile(COOP)
             assertThat(deposits).hasSize(2)
             val deposit = deposits.first { it.txHash == null }
             assertThat(deposit.ownerUuid).isEqualTo(projectUuid)
             assertThat(deposit.txHash).isNull()
             assertThat(deposit.reference).isNotNull()
             assertThat(deposit.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
+            assertThat(deposit.coop).isEqualTo(COOP)
             assertThat(deposit.file).isNull()
-        }
-    }
-
-    @Test
-    @WithMockCrowdfoundUser
-    fun mustBeAbleToGetPendingProjectDeposit() {
-        suppose("Project has a wallet") {
-            databaseCleanerService.deleteAllWallets()
-            createWalletForProject(projectUuid, walletHash)
-        }
-        suppose("Project has pending deposit") {
-            val deposit = createUnsignedDeposit(projectUuid, type = DepositWithdrawType.PROJECT, withFile = true)
-            testContext.deposits = listOf(deposit)
-        }
-
-        verify("User can get pending project deposit") {
-            val result = mockMvc.perform(get("$depositPath/project/$projectUuid"))
-                .andExpect(status().isOk)
-                .andReturn()
-            val deposit: DepositServiceResponse = objectMapper.readValue(result.response.contentAsString)
-            assertThat(deposit.owner).isEqualTo(projectUuid)
-            assertThat(deposit.createdBy).isEqualTo(userUuid)
-            assertThat(deposit.documentResponse).isNotNull
-            val savedDeposit = testContext.deposits.first()
-            assertThat(deposit.id).isEqualTo(savedDeposit.id)
-        }
-    }
-
-    @Test
-    @WithMockCrowdfoundUser(uuid = "98986187-c870-4339-be4e-a597146f1428")
-    fun mustNotBeAbleToGetOtherProjectDeposit() {
-        suppose("Project has a wallet") {
-            databaseCleanerService.deleteAllWallets()
-            createWalletForProject(projectUuid, walletHash)
-        }
-        suppose("Project has pending deposit") {
-            val deposit = createUnsignedDeposit(projectUuid, type = DepositWithdrawType.PROJECT)
-            testContext.deposits = listOf(deposit)
-        }
-
-        verify("User can get pending project deposit") {
-            val result = mockMvc.perform(get("$depositPath/project/$projectUuid"))
-                .andExpect(status().isBadRequest)
-                .andReturn()
-            verifyResponseErrorCode(result, ErrorCode.USER_MISSING_PRIVILEGE)
         }
     }
 

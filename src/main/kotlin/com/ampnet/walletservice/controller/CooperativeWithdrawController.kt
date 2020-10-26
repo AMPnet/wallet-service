@@ -34,7 +34,7 @@ class CooperativeWithdrawController(
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to get all approved withdraws by user: ${userPrincipal.uuid}" }
         val withdrawWithUserListResponse =
-            cooperativeWithdrawService.getAllApproved(type, pageable)
+            cooperativeWithdrawService.getAllApproved(userPrincipal.coop, type, pageable)
         return ResponseEntity.ok(withdrawWithUserListResponse)
     }
 
@@ -47,7 +47,7 @@ class CooperativeWithdrawController(
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to get all burned withdraws by user: ${userPrincipal.uuid}" }
         val withdrawWithUserListResponse =
-            cooperativeWithdrawService.getAllBurned(type, pageable)
+            cooperativeWithdrawService.getAllBurned(userPrincipal.coop, type, pageable)
         return ResponseEntity.ok(withdrawWithUserListResponse)
     }
 
@@ -56,7 +56,7 @@ class CooperativeWithdrawController(
     fun generateBurnTransaction(@PathVariable("id") id: Int): ResponseEntity<TransactionResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.info { "Received request to generate withdraw burn transaction by user: ${userPrincipal.uuid}" }
-        val transactionDataAndInfo = cooperativeWithdrawService.generateBurnTransaction(id, userPrincipal.uuid)
+        val transactionDataAndInfo = cooperativeWithdrawService.generateBurnTransaction(id, userPrincipal)
         return ResponseEntity.ok(TransactionResponse(transactionDataAndInfo))
     }
 
@@ -68,7 +68,7 @@ class CooperativeWithdrawController(
     ): ResponseEntity<WithdrawServiceResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Adding document for withdraw" }
-        val documentRequest = DocumentSaveRequest(file, userPrincipal.uuid)
+        val documentRequest = DocumentSaveRequest(file, userPrincipal)
         val withdraw = cooperativeWithdrawService.addDocument(id, documentRequest)
         return ResponseEntity.ok(withdraw)
     }

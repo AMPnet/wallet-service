@@ -1,5 +1,6 @@
 package com.ampnet.walletservice.service.impl
 
+import com.ampnet.core.jwt.UserPrincipal
 import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.exception.InvalidRequestException
 import com.ampnet.walletservice.exception.ResourceNotFoundException
@@ -37,7 +38,7 @@ class ProjectInvestmentServiceImpl(
         verifyProjectIsStillActive(projectResponse)
         verifyInvestmentAmountIsValid(projectResponse, request.amount)
 
-        val userWalletHash = ServiceUtils.getWalletHash(request.investorUuid, walletRepository)
+        val userWalletHash = ServiceUtils.getWalletHash(request.investor.uuid, walletRepository)
         verifyUserHasEnoughFunds(userWalletHash, request.amount)
 
         val projectWalletHash = ServiceUtils.getWalletHash(request.projectUuid, walletRepository)
@@ -50,7 +51,7 @@ class ProjectInvestmentServiceImpl(
         )
         val data = blockchainService.generateProjectInvestmentTransaction(investRequest)
         val info = transactionInfoService.createInvestTransaction(
-            projectResponse.name, request.amount, request.investorUuid
+            projectResponse.name, request.amount, request.investor
         )
         logger.debug { "Generated Investment in project for request: $request" }
         return TransactionDataAndInfo(data, info)
@@ -59,16 +60,16 @@ class ProjectInvestmentServiceImpl(
     @Transactional
     override fun generateCancelInvestmentsInProjectTransaction(
         projectUuid: UUID,
-        userUuid: UUID
+        user: UserPrincipal
     ): TransactionDataAndInfo {
-        logger.debug { "Generating cancel investments in project $projectUuid by user $userUuid" }
+        logger.debug { "Generating cancel investments in project $projectUuid by user ${user.uuid}" }
         val projectResponse = projectService.getProject(projectUuid)
 
-        val userWalletHash = ServiceUtils.getWalletHash(userUuid, walletRepository)
+        val userWalletHash = ServiceUtils.getWalletHash(user.uuid, walletRepository)
         val projectWalletHash = ServiceUtils.getWalletHash(projectUuid, walletRepository)
         val data = blockchainService.generateCancelInvestmentsInProject(userWalletHash, projectWalletHash)
-        val info = transactionInfoService.cancelInvestmentTransaction(projectResponse.name, userUuid)
-        logger.debug { "Generated cancel investments in project $projectUuid by user $userUuid" }
+        val info = transactionInfoService.cancelInvestmentTransaction(projectResponse.name, user)
+        logger.debug { "Generated cancel investments in project $projectUuid by user ${user.uuid}" }
         return TransactionDataAndInfo(data, info)
     }
 

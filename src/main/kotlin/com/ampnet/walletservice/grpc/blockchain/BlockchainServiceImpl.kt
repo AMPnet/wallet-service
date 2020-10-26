@@ -347,9 +347,10 @@ class BlockchainServiceImpl(
         }
     }
 
-    override fun getTokenIssuer(): String {
-        logger.debug { "Get token issuer" }
+    override fun getTokenIssuer(coop: String): String {
+        logger.debug { "Get token issuer for coop: $coop" }
         try {
+            // TODO: add coop to request
             val response = serviceWithTimeout()
                 .getTokenIssuer(Empty.newBuilder().build())
             logger.debug { "Token issuer address: ${response.wallet}" }
@@ -373,9 +374,10 @@ class BlockchainServiceImpl(
         }
     }
 
-    override fun getPlatformManager(): String {
-        logger.debug { "Get platform manager" }
+    override fun getPlatformManager(coop: String): String {
+        logger.debug { "Get platform manager for coop: $coop" }
         try {
+            // TODO: add coop to request
             val response = serviceWithTimeout()
                 .getPlatformManager(Empty.newBuilder().build())
             logger.debug { "Platform address: ${response.wallet}" }

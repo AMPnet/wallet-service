@@ -46,6 +46,9 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
         suppose("Some project has approved withdraw") {
             createApprovedWithdraw(UUID.randomUUID(), type = DepositWithdrawType.PROJECT)
         }
+        suppose("There is approved user withdraw from another cooperative") {
+            createApprovedWithdraw(userUuid, coop = anotherCoop)
+        }
         suppose("User has a wallet") {
             databaseCleanerService.deleteAllWallets()
             createWalletForUser(userUuid, walletHash)
@@ -84,6 +87,7 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
             assertThat(withdraw.burnedAt).isNull()
             assertThat(withdraw.burnedBy).isNull()
             assertThat(withdraw.burnedTxHash).isNull()
+            withdrawList.withdraws.forEach { assertThat(it.withdraw.coop).isEqualTo(COOP) }
             assertThat(withdraw.documentResponse).isNull()
         }
     }
@@ -99,6 +103,9 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
         }
         suppose("Some user has approved withdraw") {
             createApprovedWithdraw(UUID.randomUUID())
+        }
+        suppose("There is approved project withdraw from another cooperative") {
+            createApprovedWithdraw(userUuid, type = DepositWithdrawType.PROJECT, coop = anotherCoop)
         }
         suppose("Project has a wallet") {
             databaseCleanerService.deleteAllWallets()
@@ -197,6 +204,9 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
         suppose("Some project has burned withdraw") {
             createBurnedWithdraw(UUID.randomUUID(), type = DepositWithdrawType.PROJECT)
         }
+        suppose("There is burned user withdraw from another cooperative") {
+            createBurnedWithdraw(userUuid, coop = anotherCoop)
+        }
         suppose("User has a wallet") {
             databaseCleanerService.deleteAllWallets()
             createWalletForUser(userUuid, walletHash)
@@ -249,6 +259,9 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
         }
         suppose("Some user has burned withdraw") {
             createBurnedWithdraw(UUID.randomUUID(), type = DepositWithdrawType.USER)
+        }
+        suppose("There is burned project withdraw from another cooperative") {
+            createBurnedWithdraw(projectUuid, type = DepositWithdrawType.PROJECT, coop = anotherCoop)
         }
         suppose("Project has a wallet") {
             databaseCleanerService.deleteAllWallets()
@@ -375,6 +388,7 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
             assertThat(transactionResponse.tx).isEqualTo(testContext.transactionData.tx)
             assertThat(transactionResponse.txId).isNotNull()
             assertThat(transactionResponse.info.txType).isEqualTo(TransactionType.BURN)
+            assertThat(transactionResponse.coop).isEqualTo(COOP)
         }
         verify("TransactionInfo for burn is created") {
             val transactionInfos = transactionInfoRepository.findAll()
@@ -383,6 +397,7 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
             assertThat(transactionInfo.companionData).isEqualTo(testContext.withdraw.id.toString())
             assertThat(transactionInfo.type).isEqualTo(TransactionType.BURN)
             assertThat(transactionInfo.userUuid).isEqualTo(userUuid)
+            assertThat(transactionInfo.coop).isEqualTo(COOP)
         }
     }
 
@@ -421,6 +436,7 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
             val withdrawResponse: WithdrawServiceResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(withdrawResponse.id).isEqualTo(testContext.withdraw.id)
             assertThat(withdrawResponse.documentResponse?.link).isEqualTo(testContext.documentLink)
+            assertThat(withdrawResponse.coop).isEqualTo(COOP)
         }
     }
 
@@ -450,7 +466,8 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
                 .andExpect(status().isOk)
                 .andReturn()
 
-            val withdrawWithData: WithdrawWithDataServiceResponse = objectMapper.readValue(result.response.contentAsString)
+            val withdrawWithData: WithdrawWithDataServiceResponse =
+                objectMapper.readValue(result.response.contentAsString)
             val withdraw = withdrawWithData.withdraw
             val project = withdrawWithData.project
             val user = withdrawWithData.user
@@ -470,12 +487,16 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
         }
     }
 
-    private fun createBurnedWithdraw(owner: UUID, type: DepositWithdrawType = DepositWithdrawType.USER): Withdraw {
+    private fun createBurnedWithdraw(
+        owner: UUID,
+        type: DepositWithdrawType = DepositWithdrawType.USER,
+        coop: String = COOP
+    ): Withdraw {
         val document = saveFile("withdraw-doc", "doc-link", "type", 1, userUuid)
         val withdraw = Withdraw(
             0, owner, testContext.amount, ZonedDateTime.now(), userUuid, testContext.bankAccount,
             testContext.approvedTx, ZonedDateTime.now(),
-            testContext.burnedTx, ZonedDateTime.now(), UUID.randomUUID(), document, type
+            testContext.burnedTx, ZonedDateTime.now(), UUID.randomUUID(), document, type, coop
         )
         return withdrawRepository.save(withdraw)
     }

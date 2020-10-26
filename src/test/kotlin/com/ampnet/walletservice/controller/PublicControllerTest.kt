@@ -48,6 +48,7 @@ class PublicControllerTest : ControllerTestBase() {
             assertThat(walletResponse.type).isEqualTo(testContext.wallet.type)
             assertThat(walletResponse.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
             assertThat(walletResponse.balance).isEqualTo(testContext.walletBalance)
+            assertThat(walletResponse.coop).isEqualTo(COOP)
         }
     }
 
@@ -102,6 +103,7 @@ class PublicControllerTest : ControllerTestBase() {
         verify("Controller will return only active project") {
             val result = mockMvc.perform(
                 get(publicProjectActivePath)
+                    .param("coop", COOP)
                     .param("size", "20")
                     .param("page", "0")
                     .param("sort", "createdAt,desc")
@@ -112,6 +114,7 @@ class PublicControllerTest : ControllerTestBase() {
             val projectsResponse: ProjectWithWalletListResponse =
                 objectMapper.readValue(result.response.contentAsString)
             assertThat(projectsResponse.projects).hasSize(1)
+            projectsResponse.projects.forEach { assertThat(it.wallet.coop).isEqualTo(COOP) }
             val projectWithWallet = projectsResponse.projects.first()
             assertThat(projectWithWallet.project.uuid).isEqualTo(projectUuid)
             assertThat(projectWithWallet.wallet.uuid).isEqualTo(testContext.wallet.uuid)
@@ -124,7 +127,10 @@ class PublicControllerTest : ControllerTestBase() {
     @Test
     fun mustBeAbleToGetEmptyListOfActiveProjects() {
         verify("Controller will return empty list of active projects") {
-            val result = mockMvc.perform(get(publicProjectActivePath))
+            val result = mockMvc.perform(
+                get(publicProjectActivePath)
+                    .param("coop", COOP)
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -157,6 +163,7 @@ class PublicControllerTest : ControllerTestBase() {
         verify("Controller will not return ended project") {
             val result = mockMvc.perform(
                 get(publicProjectActivePath)
+                    .param("coop", COOP)
             )
                 .andExpect(status().isOk)
                 .andReturn()
@@ -171,7 +178,10 @@ class PublicControllerTest : ControllerTestBase() {
     @WithMockCrowdfoundUser(verified = false)
     fun mustBeAbleToGetActiveProjectsWithUnVerifiedAccount() {
         verify("User with unverified account can access public project path") {
-            val result = mockMvc.perform(get(publicProjectActivePath))
+            val result = mockMvc.perform(
+                get(publicProjectActivePath)
+                    .param("coop", COOP)
+            )
                 .andExpect(status().isOk)
                 .andReturn()
 

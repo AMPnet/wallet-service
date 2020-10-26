@@ -1,7 +1,10 @@
 package com.ampnet.walletservice.service
 
+import com.ampnet.core.jwt.UserPrincipal
 import com.ampnet.walletservice.TestBase
+import com.ampnet.walletservice.config.ApplicationProperties
 import com.ampnet.walletservice.config.DatabaseCleanerService
+import com.ampnet.walletservice.controller.COOP
 import com.ampnet.walletservice.enums.Currency
 import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.enums.WalletType
@@ -40,7 +43,7 @@ import java.util.UUID
 @ExtendWith(SpringExtension::class)
 @DataJpaTest
 @Transactional(propagation = Propagation.SUPPORTS)
-@Import(DatabaseCleanerService::class)
+@Import(DatabaseCleanerService::class, ApplicationProperties::class)
 abstract class JpaServiceTestBase : TestBase() {
 
     @Autowired
@@ -70,6 +73,9 @@ abstract class JpaServiceTestBase : TestBase() {
     @Autowired
     protected lateinit var bankAccountRepository: BankAccountRepository
 
+    @Autowired
+    protected lateinit var applicationProperties: ApplicationProperties
+
     protected val mockedBlockchainService: BlockchainService = Mockito.mock(BlockchainService::class.java)
     protected val mockedCloudStorageService: CloudStorageServiceImpl = Mockito.mock(CloudStorageServiceImpl::class.java)
     protected val mockedMailService: MailService = Mockito.mock(MailServiceImpl::class.java)
@@ -86,7 +92,7 @@ abstract class JpaServiceTestBase : TestBase() {
     protected val providerId = "provider_id"
 
     protected fun createWalletForUser(userUuid: UUID, hash: String, providerId: String? = null) =
-        createWallet(userUuid, hash, WalletType.USER, providerId)
+        createWallet(userUuid, hash, WalletType.USER, providerId = providerId)
 
     protected fun createWalletForProject(project: UUID, hash: String) =
         createWallet(project, hash, WalletType.PROJECT)
@@ -94,10 +100,16 @@ abstract class JpaServiceTestBase : TestBase() {
     protected fun createWalletForOrganization(organization: UUID, hash: String) =
         createWallet(organization, hash, WalletType.ORG)
 
-    protected fun createWallet(owner: UUID, hash: String, type: WalletType, providerId: String? = null): Wallet {
+    protected fun createWallet(
+        owner: UUID,
+        hash: String,
+        type: WalletType,
+        coop: String = COOP,
+        providerId: String? = null
+    ): Wallet {
         val wallet = Wallet(
             UUID.randomUUID(), owner, hash, type, Currency.EUR,
-            ZonedDateTime.now(), hash, ZonedDateTime.now(), null, providerId
+            ZonedDateTime.now(), hash, ZonedDateTime.now(), coop, null, providerId
         )
         return walletRepository.save(wallet)
     }
@@ -115,49 +127,81 @@ abstract class JpaServiceTestBase : TestBase() {
         fail("Missing wallet")
     }
 
-    protected fun createBurnedWithdraw(user: UUID, type: DepositWithdrawType = DepositWithdrawType.USER): Withdraw {
+    protected fun createBurnedWithdraw(
+        user: UUID,
+        type: DepositWithdrawType = DepositWithdrawType.USER,
+        coop: String = COOP
+    ): Withdraw {
         val withdraw = Withdraw(
             0, user, 100L, ZonedDateTime.now(), user, bankAccount,
             "approved-tx", ZonedDateTime.now(),
-            "burned-tx", ZonedDateTime.now(), UUID.randomUUID(), null, type
+            "burned-tx", ZonedDateTime.now(), UUID.randomUUID(), null, type, coop
         )
         return withdrawRepository.save(withdraw)
     }
 
-    protected fun createApprovedWithdraw(user: UUID, type: DepositWithdrawType = DepositWithdrawType.USER): Withdraw {
+    protected fun createApprovedWithdraw(
+        user: UUID,
+        type: DepositWithdrawType = DepositWithdrawType.USER,
+        coop: String = COOP
+    ): Withdraw {
         val withdraw = Withdraw(
             0, user, 100L, ZonedDateTime.now(), user, bankAccount,
             "approved-tx", ZonedDateTime.now(),
-            null, null, null, null, type
+            null, null, null, null, type, coop
         )
         return withdrawRepository.save(withdraw)
     }
 
-    protected fun createWithdraw(user: UUID, type: DepositWithdrawType = DepositWithdrawType.USER): Withdraw {
+    protected fun createWithdraw(
+        user: UUID,
+        type: DepositWithdrawType = DepositWithdrawType.USER,
+        coop: String = COOP
+    ): Withdraw {
         val withdraw = Withdraw(
-            0, user, 100L, ZonedDateTime.now(), userUuid, bankAccount,
-            null, null, null, null, null, null, type
+            0, user, 100L, ZonedDateTime.now(), userUuid, bankAccount, null,
+            null, null, null, null, null, type, coop
         )
         return withdrawRepository.save(withdraw)
     }
 
     protected fun createApprovedDeposit(
         txHash: String?,
-        type: DepositWithdrawType = DepositWithdrawType.USER
+        type: DepositWithdrawType = DepositWithdrawType.USER,
+        coop: String = COOP
     ): Deposit {
         val document = saveFile(userUuid)
         val deposit = Deposit(
             0, userUuid, "S34SDGFT", 10_000,
-            ZonedDateTime.now(), userUuid, type, txHash, userUuid, ZonedDateTime.now(), document, null
+            ZonedDateTime.now(), userUuid, type, txHash, userUuid, ZonedDateTime.now(), document, null, coop
         )
         return depositRepository.save(deposit)
     }
 
-    protected fun createUnsigned(owner: UUID, type: DepositWithdrawType = DepositWithdrawType.USER): Deposit {
+    protected fun createUnsigned(
+        owner: UUID,
+        type: DepositWithdrawType = DepositWithdrawType.USER,
+        coop: String = COOP
+    ): Deposit {
         val deposit = Deposit(
             0, owner, "S34SDGFT", 10_000,
-            ZonedDateTime.now(), userUuid, type, null, null, null, null, null
+            ZonedDateTime.now(), userUuid, type, null, null, null, null, null, coop
         )
         return depositRepository.save(deposit)
+    }
+
+    protected fun createUserPrincipal(
+        userUuid: UUID,
+        email: String = "email@email",
+        name: String = "Username",
+        authorities: Set<String> = mutableSetOf(),
+        enabled: Boolean = true,
+        verified: Boolean = true,
+        coop: String = COOP
+    ): UserPrincipal {
+        return UserPrincipal(
+            userUuid, email, name, authorities,
+            enabled, verified, coop
+        )
     }
 }

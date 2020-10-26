@@ -22,6 +22,7 @@ import java.util.UUID
 const val SCALE = 10
 
 @Service
+@Suppress("TooManyFunctions")
 class PortfolioServiceImpl(
     private val walletRepository: WalletRepository,
     private val blockchainService: BlockchainService,

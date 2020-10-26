@@ -68,12 +68,14 @@ class RevenueControllerTest : ControllerTestBase() {
             assertThat(transactionResponse.tx).isEqualTo(testContext.transactionData.tx)
             assertThat(transactionResponse.txId).isNotNull()
             assertThat(transactionResponse.info.txType).isEqualTo(TransactionType.REVENUE_PAYOUT)
+            assertThat(transactionResponse.coop).isEqualTo(COOP)
         }
         verify("Transaction info for revenue payout is created") {
             val txInfo = transactionInfoRepository.findAll()[0]
             assertThat(txInfo.companionData).isNotNull()
             assertThat(txInfo.type).isEqualTo(TransactionType.REVENUE_PAYOUT)
             assertThat(txInfo.userUuid).isEqualTo(userUuid)
+            assertThat(txInfo.coop).isEqualTo(COOP)
         }
         verify("Revenue payout is created") {
             val revenuePayout = revenuePayoutRepository.findAll()[0]
@@ -82,6 +84,7 @@ class RevenueControllerTest : ControllerTestBase() {
             assertThat(revenuePayout.createdBy).isEqualTo(userUuid)
             assertThat(revenuePayout.txHash).isNull()
             assertThat(revenuePayout.completedAt).isNull()
+            assertThat(revenuePayout.coop).isEqualTo(COOP)
         }
     }
 
@@ -89,8 +92,8 @@ class RevenueControllerTest : ControllerTestBase() {
     @WithMockCrowdfoundUser
     fun mustBeAbleToGetRevenuePayouts() {
         suppose("Project has revenue payouts") {
-            revenuePayoutRepository.save(RevenuePayout(projectUuid, 100L, userUuid))
-            revenuePayoutRepository.save(RevenuePayout(projectUuid, 55L, userUuid))
+            revenuePayoutRepository.save(RevenuePayout(projectUuid, 100L, userUuid, COOP))
+            revenuePayoutRepository.save(RevenuePayout(projectUuid, 55L, userUuid, COOP))
         }
 
         verify("User can get revenue payouts") {
@@ -107,6 +110,7 @@ class RevenueControllerTest : ControllerTestBase() {
             assertThat(payouts.page).isEqualTo(0)
             assertThat(payouts.totalPages).isEqualTo(1)
             assertThat(payouts.revenuePayouts.map { it.amount }).containsAll(listOf(100L, 55L))
+            payouts.revenuePayouts.forEach { assertThat(it.coop).isEqualTo(COOP) }
         }
     }
 

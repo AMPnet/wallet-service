@@ -57,10 +57,20 @@ class Deposit(
 
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "declined_id")
-    var declined: Declined?
+    var declined: Declined?,
+
+    @Column(nullable = false)
+    var coop: String
 ) {
-    constructor(ownerUuid: UUID, reference: String, amount: Long, createdBy: UUID, type: DepositWithdrawType) : this(
+    constructor(
+        ownerUuid: UUID,
+        reference: String,
+        amount: Long,
+        createdBy: UUID,
+        type: DepositWithdrawType,
+        coop: String
+    ) : this(
         0, ownerUuid, reference, amount, ZonedDateTime.now(), createdBy, type,
-        null, null, null, null, null
+        null, null, null, null, null, coop
     )
 }

@@ -57,6 +57,7 @@ class GrpcWalletServer(val walletRepository: WalletRepository) : WalletServiceGr
             .setActivationData(wallet.activationData)
             .setType(getWalletType(wallet.type))
             .setCurrency(wallet.currency.name)
+            .setCoop(wallet.coop)
         wallet.hash?.let { builder.setHash(it) }
         return builder.build()
     }

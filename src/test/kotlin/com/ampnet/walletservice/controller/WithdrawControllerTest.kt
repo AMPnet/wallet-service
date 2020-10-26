@@ -67,9 +67,10 @@ class WithdrawControllerTest : ControllerTestBase() {
             assertThat(withdrawResponse.burnedTxHash).isNull()
             assertThat(withdrawResponse.burnedBy).isNull()
             assertThat(withdrawResponse.documentResponse).isNull()
+            assertThat(withdrawResponse.coop).isEqualTo(COOP)
         }
         verify("Withdraw is created") {
-            val withdraws = withdrawRepository.findAllWithFile()
+            val withdraws = withdrawRepository.findAllWithFile(COOP)
             assertThat(withdraws).hasSize(1)
             val withdraw = withdraws.first()
             assertThat(withdraw.ownerUuid).isEqualTo(userUuid)
@@ -83,6 +84,7 @@ class WithdrawControllerTest : ControllerTestBase() {
             assertThat(withdraw.burnedTxHash).isNull()
             assertThat(withdraw.burnedBy).isNull()
             assertThat(withdraw.file).isNull()
+            assertThat(withdraw.coop).isEqualTo(COOP)
         }
         verify("Mail notification for created withdraw is sent") {
             Mockito.verify(mailService, Mockito.times(1))
@@ -128,9 +130,10 @@ class WithdrawControllerTest : ControllerTestBase() {
             assertThat(withdrawResponse.burnedTxHash).isNull()
             assertThat(withdrawResponse.burnedBy).isNull()
             assertThat(withdrawResponse.documentResponse).isNull()
+            assertThat(withdrawResponse.coop).isEqualTo(COOP)
         }
         verify("Withdraw is created") {
-            val withdraws = withdrawRepository.findAllWithFile()
+            val withdraws = withdrawRepository.findAllWithFile(COOP)
             assertThat(withdraws).hasSize(1)
             val withdraw = withdraws.first()
             assertThat(withdraw.ownerUuid).isEqualTo(projectUuid)
@@ -144,6 +147,7 @@ class WithdrawControllerTest : ControllerTestBase() {
             assertThat(withdraw.burnedTxHash).isNull()
             assertThat(withdraw.burnedBy).isNull()
             assertThat(withdraw.file).isNull()
+            assertThat(withdraw.coop).isEqualTo(COOP)
         }
         verify("Mail notification for created project withdraw to user is sent") {
             Mockito.verify(mailService, Mockito.times(1))
@@ -185,6 +189,7 @@ class WithdrawControllerTest : ControllerTestBase() {
 
             val withdrawResponse: WithdrawServiceResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(withdrawResponse.owner).isEqualTo(userUuid)
+            assertThat(withdrawResponse.coop).isEqualTo(COOP)
             assertThat(withdrawResponse.documentResponse).isNull()
         }
     }
@@ -207,6 +212,7 @@ class WithdrawControllerTest : ControllerTestBase() {
 
             val withdrawResponse: WithdrawServiceResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(withdrawResponse.owner).isEqualTo(projectUuid)
+            assertThat(withdrawResponse.coop).isEqualTo(COOP)
             assertThat(withdrawResponse.documentResponse).isNull()
         }
     }
@@ -272,6 +278,7 @@ class WithdrawControllerTest : ControllerTestBase() {
             assertThat(transactionResponse.tx).isEqualTo(testContext.transactionData.tx)
             assertThat(transactionResponse.txId).isNotNull()
             assertThat(transactionResponse.info.txType).isEqualTo(TransactionType.BURN_APPROVAL)
+            assertThat(transactionResponse.coop).isEqualTo(COOP)
         }
         verify("Transaction info is created") {
             val transactionInfos = transactionInfoRepository.findAll()
@@ -280,6 +287,7 @@ class WithdrawControllerTest : ControllerTestBase() {
             assertThat(transactionInfo.companionData).isEqualTo(testContext.withdraw.id.toString())
             assertThat(transactionInfo.type).isEqualTo(TransactionType.BURN_APPROVAL)
             assertThat(transactionInfo.userUuid).isEqualTo(userUuid)
+            assertThat(transactionInfo.coop).isEqualTo(COOP)
         }
     }
 
@@ -322,6 +330,7 @@ class WithdrawControllerTest : ControllerTestBase() {
             assertThat(transactionResponse.tx).isEqualTo(testContext.transactionData.tx)
             assertThat(transactionResponse.txId).isNotNull()
             assertThat(transactionResponse.info.txType).isEqualTo(TransactionType.BURN_APPROVAL)
+            assertThat(transactionResponse.coop).isEqualTo(COOP)
         }
         verify("Transaction info is created") {
             val transactionInfos = transactionInfoRepository.findAll()
@@ -330,6 +339,7 @@ class WithdrawControllerTest : ControllerTestBase() {
             assertThat(transactionInfo.companionData).isEqualTo(testContext.withdraw.id.toString())
             assertThat(transactionInfo.type).isEqualTo(TransactionType.BURN_APPROVAL)
             assertThat(transactionInfo.userUuid).isEqualTo(userUuid)
+            assertThat(transactionInfo.coop).isEqualTo(COOP)
         }
     }
 

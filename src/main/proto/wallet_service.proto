@@ -17,6 +17,7 @@ message WalletResponse {
     Type type = 4;
     string currency = 5;
     string hash = 6;
+    string coop = 7;
     enum Type {
         USER = 0;
         ORGANIZATION = 1;

@@ -33,8 +33,12 @@ class CooperativeDepositController(private val cooperativeDepositService: Cooper
     fun getDepositByReference(
         @RequestParam("reference") reference: String
     ): ResponseEntity<DepositWithDataServiceResponse> {
-        logger.debug { "Received request to get find deposit by reference: $reference" }
-        cooperativeDepositService.findByReference(reference)?.let { depositWithData ->
+        val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
+        logger.debug {
+            "Received request to get find deposit by reference: $reference " +
+                "from cooperative with id: ${userPrincipal.coop}"
+        }
+        cooperativeDepositService.findByReference(userPrincipal.coop, reference)?.let { depositWithData ->
             return ResponseEntity.ok(depositWithData)
         }
         return ResponseEntity.notFound().build()
@@ -49,8 +53,8 @@ class CooperativeDepositController(private val cooperativeDepositService: Cooper
     ): ResponseEntity<DepositServiceResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to approve deposit: $id" }
-        val documentRequest = DocumentSaveRequest(file, userPrincipal.uuid)
-        val serviceRequest = ApproveDepositRequest(id, userPrincipal.uuid, amount, documentRequest)
+        val documentRequest = DocumentSaveRequest(file, userPrincipal)
+        val serviceRequest = ApproveDepositRequest(id, userPrincipal, amount, documentRequest)
         val deposit = cooperativeDepositService.approve(serviceRequest)
         return ResponseEntity.ok(deposit)
     }
@@ -63,7 +67,7 @@ class CooperativeDepositController(private val cooperativeDepositService: Cooper
     ): ResponseEntity<DepositServiceResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.info { "Received request to decline deposit: $id by user: ${userPrincipal.uuid}" }
-        val deposit = cooperativeDepositService.decline(id, userPrincipal.uuid, request.comment)
+        val deposit = cooperativeDepositService.decline(id, userPrincipal, request.comment)
         return ResponseEntity.ok(deposit)
     }
 
@@ -73,9 +77,10 @@ class CooperativeDepositController(private val cooperativeDepositService: Cooper
         @RequestParam("type") type: DepositWithdrawType?,
         pageable: Pageable
     ): ResponseEntity<DepositListServiceResponse> {
-        logger.debug { "Received request to get unapproved deposits" }
+        val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
+        logger.debug { "Received request to get unapproved deposits for coop: ${userPrincipal.coop}" }
         val depositWithUserListServiceResponse = cooperativeDepositService
-            .getUnapproved(type, pageable)
+            .getUnapproved(userPrincipal.coop, type, pageable)
         return ResponseEntity.ok(depositWithUserListServiceResponse)
     }
 
@@ -85,9 +90,10 @@ class CooperativeDepositController(private val cooperativeDepositService: Cooper
         @RequestParam("type") type: DepositWithdrawType?,
         pageable: Pageable
     ): ResponseEntity<DepositListServiceResponse> {
-        logger.debug { "Received request to get approved deposits" }
+        val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
+        logger.debug { "Received request to get approved deposits for coop: ${userPrincipal.coop}" }
         val deposits = cooperativeDepositService
-            .getApprovedWithDocuments(type, pageable)
+            .getApprovedWithDocuments(userPrincipal.coop, type, pageable)
         return ResponseEntity.ok(deposits)
     }
 
@@ -96,7 +102,7 @@ class CooperativeDepositController(private val cooperativeDepositService: Cooper
     fun generateMintTransaction(@PathVariable("id") id: Int): ResponseEntity<TransactionResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.info { "Received request to generate mint transaction by user: ${userPrincipal.uuid}" }
-        val serviceRequest = MintServiceRequest(id, userPrincipal.uuid)
+        val serviceRequest = MintServiceRequest(id, userPrincipal)
         val transactionDataAndInfo = cooperativeDepositService.generateMintTransaction(serviceRequest)
         return ResponseEntity.ok(TransactionResponse(transactionDataAndInfo))
     }
@@ -104,16 +110,18 @@ class CooperativeDepositController(private val cooperativeDepositService: Cooper
     @GetMapping("/cooperative/deposit/count")
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_DEPOSIT)")
     fun countUsersWithApprovedDeposit(): ResponseEntity<UsersWithApprovedDeposit> {
-        logger.debug { "Received request to count users with approved deposit" }
-        val counted = cooperativeDepositService.countUsersWithApprovedDeposit()
-        return ResponseEntity.ok(UsersWithApprovedDeposit(counted))
+        val user = ControllerUtils.getUserPrincipalFromSecurityContext()
+        logger.debug { "Received request to count users with approved deposit from cooperative with id: ${user.coop}" }
+        val counted = cooperativeDepositService.countUsersWithApprovedDeposit(user.coop)
+        return ResponseEntity.ok(UsersWithApprovedDeposit(counted, user.coop))
     }
 
     @GetMapping("/cooperative/deposit/{id}")
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_DEPOSIT)")
     fun getDepositById(@PathVariable("id") id: Int): ResponseEntity<DepositWithDataServiceResponse> {
-        logger.debug { "Received request to get deposit by id: $id" }
-        cooperativeDepositService.getById(id)?.let { depositWithData ->
+        val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
+        logger.debug { "Received request to get deposit by id: $id for coop: ${userPrincipal.coop}" }
+        cooperativeDepositService.getById(userPrincipal.coop, id)?.let { depositWithData ->
             return ResponseEntity.ok(depositWithData)
         }
         return ResponseEntity.notFound().build()

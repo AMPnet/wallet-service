@@ -41,17 +41,22 @@ class Wallet(
     @Column
     var activatedAt: ZonedDateTime?,
 
+    @Column(nullable = false)
+    var coop: String,
+
     @Column(length = 128)
     var email: String?,
 
     @Column
     var providerId: String?
+
 ) {
     constructor(
         owner: UUID,
         activationData: String,
         type: WalletType,
         currency: Currency,
+        coop: String,
         email: String? = null,
         providerId: String? = null
     ) : this(
@@ -63,6 +68,7 @@ class Wallet(
         ZonedDateTime.now(),
         null,
         null,
+        coop,
         email,
         providerId
     )

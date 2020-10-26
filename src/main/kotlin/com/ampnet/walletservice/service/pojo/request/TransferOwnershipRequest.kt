@@ -7,5 +7,6 @@ data class TransferOwnershipRequest(
     val owner: UUID,
     val walletAddress: String,
     val type: TransferWalletType,
-    val signedTransaction: String
+    val signedTransaction: String,
+    val coop: String
 )

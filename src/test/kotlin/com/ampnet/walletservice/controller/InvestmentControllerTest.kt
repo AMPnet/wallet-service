@@ -70,6 +70,7 @@ class InvestmentControllerTest : ControllerTestBase() {
             assertThat(transactionResponse.tx).isEqualTo(testContext.transactionData.tx)
             assertThat(transactionResponse.txId).isNotNull()
             assertThat(transactionResponse.info.txType).isEqualTo(TransactionType.INVEST)
+            assertThat(transactionResponse.coop).isEqualTo(COOP)
         }
     }
 
@@ -107,6 +108,7 @@ class InvestmentControllerTest : ControllerTestBase() {
             assertThat(transactionResponse.tx).isEqualTo(testContext.transactionData.tx)
             assertThat(transactionResponse.txId).isNotNull()
             assertThat(transactionResponse.info.txType).isEqualTo(TransactionType.CANCEL_INVEST)
+            assertThat(transactionResponse.coop).isEqualTo(COOP)
         }
     }
 

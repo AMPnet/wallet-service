@@ -38,7 +38,7 @@ class CooperativeWithdrawServiceTest : JpaServiceTestBase() {
 
         verify("Service will throw exception when user tries to generate burn tx for unapproved withdraw") {
             val exception = assertThrows<InvalidRequestException> {
-                cooperativeWithdrawService.generateBurnTransaction(withdraw.id, userUuid)
+                cooperativeWithdrawService.generateBurnTransaction(withdraw.id, createUserPrincipal(userUuid))
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.WALLET_WITHDRAW_NOT_APPROVED)
         }
@@ -52,7 +52,7 @@ class CooperativeWithdrawServiceTest : JpaServiceTestBase() {
 
         verify("Service will throw exception when user tries to generate burn tx for burned withdraw") {
             val exception = assertThrows<InvalidRequestException> {
-                cooperativeWithdrawService.generateBurnTransaction(withdraw.id, userUuid)
+                cooperativeWithdrawService.generateBurnTransaction(withdraw.id, createUserPrincipal(userUuid))
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.WALLET_WITHDRAW_BURNED)
         }

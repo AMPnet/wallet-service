@@ -1,5 +1,6 @@
 package com.ampnet.walletservice.service.impl
 
+import com.ampnet.core.jwt.UserPrincipal
 import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.exception.InvalidRequestException
@@ -29,7 +30,6 @@ import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.ZonedDateTime
-import java.util.UUID
 
 @Service
 @Suppress("TooManyFunctions")
@@ -49,12 +49,12 @@ class CooperativeDepositServiceImpl(
 
     @Transactional
     override fun approve(request: ApproveDepositRequest): DepositServiceResponse {
-        val deposit = getDepositForId(request.id)
+        val deposit = getDepositForIdAndCoop(request.id, request.user.coop)
         // TODO: think about document reading restrictions
         val document = storageService.saveDocument(request.documentSaveRequest)
         logger.info { "Approving deposit: ${request.id} by user: ${request.user}" }
 
-        deposit.approvedByUserUuid = request.user
+        deposit.approvedByUserUuid = request.user.uuid
         deposit.approvedAt = ZonedDateTime.now()
         deposit.amount = request.amount
         deposit.file = document
@@ -63,31 +63,35 @@ class CooperativeDepositServiceImpl(
     }
 
     @Transactional
-    override fun decline(id: Int, user: UUID, comment: String): DepositServiceResponse {
-        val deposit = getDepositForId(id)
+    override fun decline(id: Int, user: UserPrincipal, comment: String): DepositServiceResponse {
+        val deposit = getDepositForIdAndCoop(id, user.coop)
         if (deposit.txHash != null) {
             throw InvalidRequestException(ErrorCode.WALLET_DEPOSIT_MINTED, "Cannot decline minted deposit")
         }
         logger.info { "Declining deposit: $id by user: $user" }
-        val declined = Declined(comment, user)
+        val declined = Declined(comment, user.uuid)
         deposit.declined = declinedRepository.save(declined)
         mailService.sendDepositInfo(deposit.ownerUuid, false)
         return DepositServiceResponse(deposit, true)
     }
 
     @Transactional(readOnly = true)
-    override fun getApprovedWithDocuments(type: DepositWithdrawType?, pageable: Pageable): DepositListServiceResponse =
+    override fun getApprovedWithDocuments(
+        coop: String,
+        type: DepositWithdrawType?,
+        pageable: Pageable
+    ): DepositListServiceResponse =
         when (type) {
             DepositWithdrawType.USER -> {
-                val userDeposits = depositRepository.findAllApprovedWithFileByType(type, pageable)
+                val userDeposits = depositRepository.findAllApprovedWithFileByType(coop, type, pageable)
                 getDepositWithUserListServiceResponse(userDeposits, true)
             }
             DepositWithdrawType.PROJECT -> {
-                val projectDeposits = depositRepository.findAllApprovedWithFileByType(type, pageable)
+                val projectDeposits = depositRepository.findAllApprovedWithFileByType(coop, type, pageable)
                 getDepositWithProjectListServiceResponse(projectDeposits, true)
             }
             else -> {
-                val depositsPage = depositRepository.findAllApprovedWithFile(pageable)
+                val depositsPage = depositRepository.findAllApprovedWithFile(coop, pageable)
                 val depositsList = depositsPage.toList()
                 val userDeposits = depositsList.filter { it.type == DepositWithdrawType.USER }
                 val projectDeposits = depositsList.filter { it.type == DepositWithdrawType.PROJECT }
@@ -98,37 +102,38 @@ class CooperativeDepositServiceImpl(
         }
 
     @Transactional(readOnly = true)
-    override fun getUnapproved(type: DepositWithdrawType?, pageable: Pageable): DepositListServiceResponse =
-        when (type) {
-            DepositWithdrawType.USER -> {
-                val depositsPage = depositRepository.findAllUnapprovedByType(type, pageable)
-                getDepositWithUserListServiceResponse(depositsPage)
+    override fun getUnapproved(coop: String, type: DepositWithdrawType?, pageable: Pageable):
+        DepositListServiceResponse =
+            when (type) {
+                DepositWithdrawType.USER -> {
+                    val depositsPage = depositRepository.findAllUnapprovedByType(coop, type, pageable)
+                    getDepositWithUserListServiceResponse(depositsPage)
+                }
+                DepositWithdrawType.PROJECT -> {
+                    val depositsPage = depositRepository.findAllUnapprovedByType(coop, type, pageable)
+                    getDepositWithProjectListServiceResponse(depositsPage)
+                }
+                else -> {
+                    val depositsPage = depositRepository.findAllUnapproved(coop, pageable)
+                    val depositsList = depositsPage.toList()
+                    val userDeposits = depositsList.filter { it.type == DepositWithdrawType.USER }
+                    val projectDeposits = depositsList.filter { it.type == DepositWithdrawType.PROJECT }
+                    val allDeposits =
+                        getDepositsWithUser(userDeposits) + getDepositsWithProject(projectDeposits)
+                    DepositListServiceResponse(allDeposits, depositsPage.number, depositsPage.totalPages)
+                }
             }
-            DepositWithdrawType.PROJECT -> {
-                val depositsPage = depositRepository.findAllUnapprovedByType(type, pageable)
-                getDepositWithProjectListServiceResponse(depositsPage)
-            }
-            else -> {
-                val depositsPage = depositRepository.findAllUnapproved(pageable)
-                val depositsList = depositsPage.toList()
-                val userDeposits = depositsList.filter { it.type == DepositWithdrawType.USER }
-                val projectDeposits = depositsList.filter { it.type == DepositWithdrawType.PROJECT }
-                val allDeposits =
-                    getDepositsWithUser(userDeposits) + getDepositsWithProject(projectDeposits)
-                DepositListServiceResponse(allDeposits, depositsPage.number, depositsPage.totalPages)
-            }
-        }
 
     @Transactional(readOnly = true)
-    override fun findByReference(reference: String): DepositWithDataServiceResponse? =
-        ServiceUtils.wrapOptional(depositRepository.findByReference(reference))?.let {
+    override fun findByReference(coop: String, reference: String): DepositWithDataServiceResponse? =
+        ServiceUtils.wrapOptional(depositRepository.findByCoopAndReference(coop, reference))?.let {
             getDepositWithData(it)
         }
 
     @Transactional
     override fun generateMintTransaction(request: MintServiceRequest): TransactionDataAndInfo {
         logger.info { "Generating mint transaction for deposit: ${request.depositId} by user: ${request.byUser}" }
-        val deposit = getDepositForId(request.depositId)
+        val deposit = getDepositForIdAndCoop(request.depositId, request.byUser.coop)
         validateDepositForMintTransaction(deposit)
         val amount = deposit.amount
         val receivingWallet = ServiceUtils.getWalletHash(deposit.ownerUuid, walletRepository)
@@ -138,9 +143,9 @@ class CooperativeDepositServiceImpl(
     }
 
     @Transactional
-    override fun confirmMintTransaction(signedTransaction: String, depositId: Int): Deposit {
+    override fun confirmMintTransaction(coop: String, signedTransaction: String, depositId: Int): Deposit {
         logger.info { "Confirming mint transaction for deposit: $depositId" }
-        val deposit = getDepositForId(depositId)
+        val deposit = getDepositForIdAndCoop(depositId, coop)
         validateDepositForMintTransaction(deposit)
         val txHash = blockchainService.postTransaction(signedTransaction)
         deposit.txHash = txHash
@@ -149,11 +154,12 @@ class CooperativeDepositServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun countUsersWithApprovedDeposit(): Int = depositRepository.countUsersWithApprovedDeposit()
+    override fun countUsersWithApprovedDeposit(coop: String): Int =
+        depositRepository.countUsersWithApprovedDeposit(coop)
 
     @Transactional(readOnly = true)
-    override fun getById(id: Int): DepositWithDataServiceResponse? =
-        ServiceUtils.wrapOptional(depositRepository.findById(id))?.let {
+    override fun getById(coop: String, id: Int): DepositWithDataServiceResponse? =
+        ServiceUtils.wrapOptional(depositRepository.findByIdAndCoop(id, coop))?.let {
             getDepositWithData(it)
         }
 
@@ -169,10 +175,13 @@ class CooperativeDepositServiceImpl(
         }
     }
 
-    private fun getDepositForId(depositId: Int): Deposit =
-        depositRepository.findById(depositId).orElseThrow {
-            throw ResourceNotFoundException(ErrorCode.WALLET_DEPOSIT_MISSING, "Missing deposit: $depositId")
+    private fun getDepositForIdAndCoop(depositId: Int, coop: String): Deposit {
+        return depositRepository.findByIdAndCoop(depositId, coop).orElseThrow {
+            throw ResourceNotFoundException(
+                ErrorCode.WALLET_DEPOSIT_MISSING, "Missing deposit for id: $depositId and cooperative with id: $coop"
+            )
         }
+    }
 
     private fun getDepositWithUserListServiceResponse(
         depositsPage: Page<Deposit>,

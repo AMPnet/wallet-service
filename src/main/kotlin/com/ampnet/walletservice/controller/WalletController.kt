@@ -56,7 +56,7 @@ class WalletController(
     fun createWallet(@RequestBody @Valid request: WalletCreateRequest): ResponseEntity<WalletResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request from user: ${userPrincipal.uuid} to create wallet: $request" }
-        val wallet = walletService.createUserWallet(userPrincipal.uuid, request)
+        val wallet = walletService.createUserWallet(userPrincipal, request)
         val response = WalletResponse(wallet)
         return ResponseEntity.ok(response)
     }
@@ -67,7 +67,7 @@ class WalletController(
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to create a Wallet for project: $projectUuid by user: ${userPrincipal.uuid}" }
         val transaction =
-            walletService.generateTransactionToCreateProjectWallet(projectUuid, userPrincipal.uuid)
+            walletService.generateTransactionToCreateProjectWallet(projectUuid, userPrincipal)
         val response = TransactionResponse(transaction)
         return ResponseEntity.ok(response)
     }
@@ -94,8 +94,8 @@ class WalletController(
         logger.debug {
             "Received request to create Wallet for Organization: $organizationUuid by user: ${userPrincipal.email}"
         }
-        val transaction = walletService
-            .generateTransactionToCreateOrganizationWallet(organizationUuid, userPrincipal.uuid)
+        val transaction =
+            walletService.generateTransactionToCreateOrganizationWallet(organizationUuid, userPrincipal)
         val response = TransactionResponse(transaction)
         return ResponseEntity.ok(response)
     }

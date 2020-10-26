@@ -129,6 +129,7 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
             assertThat(organizationWallet.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
             assertThat(organizationWallet.hash).isNull()
             assertThat(organizationWallet.activatedAt).isNull()
+            assertThat(organizationWallet.coop).isEqualTo(COOP)
         }
         verify("TransactionInfo for creating organization wallet is deleted") {
             val transactionInfo = transactionInfoRepository.findById(testContext.transactionInfo.id)
@@ -189,13 +190,14 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
             assertThat(projectWallet.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
             assertThat(projectWallet.hash).isNull()
             assertThat(projectWallet.activatedAt).isNull()
+            assertThat(projectWallet.coop).isEqualTo(COOP)
         }
         verify("TransactionInfo for creating project wallet is deleted") {
             val transactionInfo = transactionInfoRepository.findById(testContext.transactionInfo.id)
             assertThat(transactionInfo).isNotPresent
         }
         verify("Mail notification for created project wallet") {
-            Mockito.verify(mailService, Mockito.times(1)).sendNewWalletMail(WalletTypeProto.PROJECT)
+            Mockito.verify(mailService, Mockito.times(1)).sendNewWalletMail(WalletTypeProto.PROJECT, COOP)
         }
     }
 
@@ -381,7 +383,7 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
     @Test
     fun mustBeAbleToPostRevenuePayout() {
         suppose("Revenue payout exists") {
-            testContext.revenuePayout = revenuePayoutRepository.save(RevenuePayout(projectUuid, 100L, userUuid))
+            testContext.revenuePayout = revenuePayoutRepository.save(RevenuePayout(projectUuid, 100L, userUuid, COOP))
         }
         suppose("TransactionInfo exists for revenue payout transaction") {
             testContext.transactionInfo =
@@ -473,12 +475,12 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
         userUuid: UUID,
         companionData: String? = null
     ): TransactionInfo {
-        val transactionInfo = TransactionInfo(0, type, "description", userUuid, companionData)
+        val transactionInfo = TransactionInfo(0, type, "description", userUuid, companionData, COOP)
         return transactionInfoRepository.save(transactionInfo)
     }
 
     private fun createUnactivatedWallet(owner: UUID): Wallet {
-        val wallet = Wallet(owner, "activation-data", WalletType.USER, Currency.EUR)
+        val wallet = Wallet(owner, "activation-data", WalletType.USER, Currency.EUR, COOP)
         return walletRepository.save(wallet)
     }
 

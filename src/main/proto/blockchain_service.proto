@@ -252,8 +252,8 @@ service BlockchainService {
 
     rpc GenerateAddWalletTx (GenerateAddWalletTxRequest) returns (RawTxResponse);
     rpc IsWalletActive (WalletActiveRequest) returns (WalletActiveResponse);
-    rpc GetPlatformManager (Empty) returns (PlatformManagerResponse);
-    rpc GenerateTransferPlatformManagerOwnershipTx (GenerateTransferPlatformManagerOwnershipTxRequest) returns (RawTxResponse);
+    rpc GetPlatformManager(Empty) returns (PlatformManagerResponse);    // TODO: add coop to request
+    rpc GenerateTransferPlatformManagerOwnershipTx(GenerateTransferPlatformManagerOwnershipTxRequest) returns (RawTxResponse);
 
     // EUR
 
@@ -262,10 +262,8 @@ service BlockchainService {
     rpc GenerateApproveWithdrawTx (GenerateApproveWithdrawTxRequest) returns (RawTxResponse);
     rpc GenerateInvestTx (GenerateInvestTxRequest) returns (RawTxResponse);
     rpc GetBalance (BalanceRequest) returns (BalanceResponse);
-    rpc GetTokenIssuer (Empty) returns (TokenIssuerResponse);
-    rpc GenerateTransferTokenIssuerOwnershipTx (GenerateTransferTokenIssuerOwnershipTxRequest) returns (RawTxResponse);
-
-    // Organization
+    rpc GetTokenIssuer(Empty) returns (TokenIssuerResponse);    // TODO: add coop to request
+    rpc GenerateTransferTokenIssuerOwnershipTx(GenerateTransferTokenIssuerOwnershipTxRequest) returns (RawTxResponse);
 
     // Project
 

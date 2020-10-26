@@ -59,5 +59,8 @@ class Withdraw(
 
     @Column(nullable = false, length = 8)
     @Enumerated(EnumType.STRING)
-    val type: DepositWithdrawType
+    val type: DepositWithdrawType,
+
+    @Column(nullable = false)
+    var coop: String
 )

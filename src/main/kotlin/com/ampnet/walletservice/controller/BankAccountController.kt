@@ -21,14 +21,16 @@ class BankAccountController(private val bankAccountService: BankAccountService) 
 
     @GetMapping("/bank-account")
     fun getBankAccounts(): ResponseEntity<BankAccountsResponse> {
-        val bankAccounts = bankAccountService.getAllBankAccounts().map { BankAccountResponse(it) }
+        val user = ControllerUtils.getUserPrincipalFromSecurityContext()
+        logger.debug { "Received request to get bank accounts for coop: ${user.coop}" }
+        val bankAccounts = bankAccountService.getAllBankAccounts(user.coop).map { BankAccountResponse(it) }
         return ResponseEntity.ok(BankAccountsResponse(bankAccounts))
     }
 
     @PostMapping("/bank-account")
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PWA_DEPOSIT)")
     fun createBankAccount(@RequestBody request: BankAccountCreateRequest): ResponseEntity<BankAccountResponse> {
-        val user = ControllerUtils.getUserPrincipalFromSecurityContext().uuid
+        val user = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to create bank account: $request by user $user" }
         val bankAccount = bankAccountService.createBankAccount(user, request)
         return ResponseEntity.ok(BankAccountResponse(bankAccount))

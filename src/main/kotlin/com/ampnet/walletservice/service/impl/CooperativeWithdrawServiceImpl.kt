@@ -1,5 +1,6 @@
 package com.ampnet.walletservice.service.impl
 
+import com.ampnet.core.jwt.UserPrincipal
 import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.exception.InvalidRequestException
@@ -25,9 +26,9 @@ import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.ZonedDateTime
-import java.util.UUID
 
 @Service
+@Suppress("TooManyFunctions")
 class CooperativeWithdrawServiceImpl(
     private val walletRepository: WalletRepository,
     private val withdrawRepository: WithdrawRepository,
@@ -43,42 +44,50 @@ class CooperativeWithdrawServiceImpl(
     companion object : KLogging()
 
     @Transactional(readOnly = true)
-    override fun getAllApproved(type: DepositWithdrawType?, pageable: Pageable): WithdrawListServiceResponse =
+    override fun getAllApproved(
+        coop: String,
+        type: DepositWithdrawType?,
+        pageable: Pageable
+    ): WithdrawListServiceResponse =
         when (type) {
             DepositWithdrawType.USER -> {
-                val userWithdraws = withdrawRepository.findAllApprovedByType(type, pageable)
+                val userWithdraws = withdrawRepository.findAllApprovedByType(coop, type, pageable)
                 getWithdrawWithUserListServiceResponse(userWithdraws)
             }
             DepositWithdrawType.PROJECT -> {
-                val projectWithdraws = withdrawRepository.findAllApprovedByType(type, pageable)
+                val projectWithdraws = withdrawRepository.findAllApprovedByType(coop, type, pageable)
                 getWithdrawWithProjectListServiceResponse(projectWithdraws)
             }
-            else -> generateWithdrawListResponse(withdrawRepository.findAllApproved(pageable))
+            else -> generateWithdrawListResponse(withdrawRepository.findAllApproved(coop, pageable))
         }
 
     @Transactional(readOnly = true)
-    override fun getAllBurned(type: DepositWithdrawType?, pageable: Pageable): WithdrawListServiceResponse =
+    override fun getAllBurned(
+        coop: String,
+        type: DepositWithdrawType?,
+        pageable: Pageable
+    ): WithdrawListServiceResponse =
         when (type) {
             DepositWithdrawType.USER -> {
-                val userWithdraws = withdrawRepository.findAllBurnedByType(type, pageable)
+                val userWithdraws = withdrawRepository.findAllBurnedByType(coop, type, pageable)
                 getWithdrawWithUserListServiceResponse(userWithdraws)
             }
             DepositWithdrawType.PROJECT -> {
-                val projectWithdraws = withdrawRepository.findAllBurnedByType(type, pageable)
+                val projectWithdraws = withdrawRepository.findAllBurnedByType(coop, type, pageable)
                 getWithdrawWithProjectListServiceResponse(projectWithdraws)
             }
-            else -> generateWithdrawListResponse(withdrawRepository.findAllBurned(pageable))
+            else -> generateWithdrawListResponse(withdrawRepository.findAllBurned(coop, pageable))
         }
 
     @Transactional
-    override fun generateBurnTransaction(withdrawId: Int, user: UUID): TransactionDataAndInfo {
+    override fun generateBurnTransaction(withdrawId: Int, user: UserPrincipal): TransactionDataAndInfo {
         val withdraw = ServiceUtils.getWithdraw(withdrawId, withdrawRepository)
         logger.info { "Generating Burn transaction for withdraw: $withdraw" }
         validateWithdrawForBurn(withdraw)
         val ownerWallet = ServiceUtils.getWalletHash(withdraw.ownerUuid, walletRepository)
         val data = blockchainService.generateBurnTransaction(ownerWallet)
         val info = transactionInfoService.createBurnTransaction(withdraw.amount, user, withdraw.id)
-        withdraw.burnedBy = user
+        withdraw.burnedBy = user.uuid
         logger.info { "Burned withdraw: $withdraw" }
         return TransactionDataAndInfo(data, info)
     }
@@ -98,7 +107,7 @@ class CooperativeWithdrawServiceImpl(
 
     @Transactional
     override fun addDocument(withdrawId: Int, request: DocumentSaveRequest): WithdrawServiceResponse {
-        val withdraw = ServiceUtils.getWithdraw(withdrawId, withdrawRepository)
+        val withdraw = ServiceUtils.getWithdrawForIdAndCoop(withdrawId, request.user.coop, withdrawRepository)
         logger.info { "Adding document for withdraw: $withdraw" }
         val document = storageService.saveDocument(request)
         withdraw.file = document

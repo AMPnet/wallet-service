@@ -7,11 +7,13 @@ import com.ampnet.walletservice.persistence.model.TransactionInfo
 data class TransactionResponse(
     val tx: String,
     val txId: Int,
+    val coop: String,
     val info: TransactionInfoResponse
 ) {
     constructor(transaction: TransactionDataAndInfo) : this(
         transaction.transactionData.tx,
         transaction.transactionInfo.id,
+        transaction.transactionInfo.coop,
         TransactionInfoResponse(transaction.transactionInfo)
     )
 }

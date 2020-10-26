@@ -1,5 +1,6 @@
 package com.ampnet.walletservice.service
 
+import com.ampnet.walletservice.controller.COOP
 import com.ampnet.walletservice.exception.InvalidRequestException
 import com.ampnet.walletservice.exception.ResourceAlreadyExistsException
 import com.ampnet.walletservice.exception.ResourceNotFoundException
@@ -41,7 +42,7 @@ class CooperativeDepositServiceTest : JpaServiceTestBase() {
 
         verify("Service will throw exception for existing unapproved deposit") {
             assertThrows<ResourceNotFoundException> {
-                val request = MintServiceRequest(deposit.id, userUuid)
+                val request = MintServiceRequest(deposit.id, createUserPrincipal(userUuid))
                 cooperativeDepositService.generateMintTransaction(request)
             }
         }
@@ -51,7 +52,7 @@ class CooperativeDepositServiceTest : JpaServiceTestBase() {
     fun mustThrowExceptionIfDepositIsMissingForMintTransaction() {
         verify("Service will throw exception if the deposit is missing") {
             assertThrows<ResourceNotFoundException> {
-                val request = MintServiceRequest(0, userUuid)
+                val request = MintServiceRequest(0, createUserPrincipal(userUuid))
                 cooperativeDepositService.generateMintTransaction(request)
             }
         }
@@ -65,7 +66,7 @@ class CooperativeDepositServiceTest : JpaServiceTestBase() {
 
         verify("Service will throw exception if the deposit already has tx hash") {
             assertThrows<ResourceAlreadyExistsException> {
-                val request = MintServiceRequest(deposit.id, userUuid)
+                val request = MintServiceRequest(deposit.id, createUserPrincipal(userUuid))
                 cooperativeDepositService.generateMintTransaction(request)
             }
         }
@@ -79,7 +80,7 @@ class CooperativeDepositServiceTest : JpaServiceTestBase() {
 
         verify("Service will throw exception if the deposit is not approved") {
             assertThrows<InvalidRequestException> {
-                val request = MintServiceRequest(deposit.id, userUuid)
+                val request = MintServiceRequest(deposit.id, createUserPrincipal(userUuid))
                 cooperativeDepositService.generateMintTransaction(request)
             }
         }
@@ -89,7 +90,7 @@ class CooperativeDepositServiceTest : JpaServiceTestBase() {
     fun mustThrowExceptionIfDepositIsMissingForConfirmMintTransaction() {
         verify("Service will throw exception if the deposit is missing") {
             assertThrows<ResourceNotFoundException> {
-                cooperativeDepositService.confirmMintTransaction(signedTransaction, 0)
+                cooperativeDepositService.confirmMintTransaction(COOP, signedTransaction, 0)
             }
         }
     }
@@ -102,7 +103,7 @@ class CooperativeDepositServiceTest : JpaServiceTestBase() {
 
         verify("Service will throw exception if the deposit already has tx hash") {
             assertThrows<ResourceAlreadyExistsException> {
-                cooperativeDepositService.confirmMintTransaction(signedTransaction, deposit.id)
+                cooperativeDepositService.confirmMintTransaction(COOP, signedTransaction, deposit.id)
             }
         }
     }
@@ -115,7 +116,7 @@ class CooperativeDepositServiceTest : JpaServiceTestBase() {
 
         verify("Service will throw exception if the deposit is not approved") {
             assertThrows<InvalidRequestException> {
-                cooperativeDepositService.confirmMintTransaction(signedTransaction, deposit.id)
+                cooperativeDepositService.confirmMintTransaction(COOP, signedTransaction, deposit.id)
             }
         }
     }
@@ -124,7 +125,7 @@ class CooperativeDepositServiceTest : JpaServiceTestBase() {
     fun mustThrowExceptionForDecliningMissingDeposit() {
         verify("Service will throw exception for declining missing deposit") {
             assertThrows<ResourceNotFoundException> {
-                cooperativeDepositService.decline(0, userUuid, "Missing")
+                cooperativeDepositService.decline(0, createUserPrincipal(userUuid), "Missing")
             }
         }
     }
@@ -137,7 +138,7 @@ class CooperativeDepositServiceTest : JpaServiceTestBase() {
 
         verify("User cannot decline minted deposit") {
             assertThrows<InvalidRequestException> {
-                cooperativeDepositService.decline(deposit.id, userUuid, "Minted")
+                cooperativeDepositService.decline(deposit.id, createUserPrincipal(userUuid), "Minted")
             }
         }
     }

@@ -17,8 +17,9 @@ class SellOfferServiceImpl(
 
     companion object : KLogging()
 
-    override fun getProjectsWithSalesOffers(): List<ProjectWithSellOffers> {
+    override fun getProjectsWithSalesOffers(coop: String): List<ProjectWithSellOffers> {
         logger.debug { "Get all projects with sales offers" }
+        // TODO get active sell offers for only one coop
         val activeOffers = blockchainService.getSellOffers()
         val distinctProjectWalletHashes = activeOffers.map { it.projectWalletHash }.toSet()
         logger.debug { "Distinct project wallet hashes: $distinctProjectWalletHashes" }

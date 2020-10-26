@@ -25,7 +25,7 @@ class RevenueController(private val revenueService: RevenueService) {
         @PathVariable project: UUID,
         @RequestBody @Valid request: AmountRequest
     ): ResponseEntity<TransactionResponse> {
-        val user = ControllerUtils.getUserPrincipalFromSecurityContext().uuid
+        val user = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.info { "Received request to generate revenue payout transaction for project: $project by user: $user" }
         val transaction = revenueService.generateRevenuePayout(user, project, request.amount)
         return ResponseEntity.ok(TransactionResponse(transaction))

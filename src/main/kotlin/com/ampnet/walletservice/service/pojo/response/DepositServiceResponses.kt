@@ -17,7 +17,8 @@ data class DepositServiceResponse(
     val txHash: String?,
     val declinedAt: ZonedDateTime?,
     val declinedComment: String?,
-    val documentResponse: DocumentServiceResponse?
+    val documentResponse: DocumentServiceResponse?,
+    val coop: String
 ) {
     constructor(deposit: Deposit, withDocument: Boolean = false) : this(
         deposit.id,
@@ -31,7 +32,8 @@ data class DepositServiceResponse(
         deposit.txHash,
         deposit.declined?.createdAt,
         deposit.declined?.comment,
-        if (withDocument) deposit.file?.let { DocumentServiceResponse(it) } else null
+        if (withDocument) deposit.file?.let { DocumentServiceResponse(it) } else null,
+        deposit.coop
     )
 }
 

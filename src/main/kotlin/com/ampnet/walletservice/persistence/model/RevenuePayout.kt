@@ -32,15 +32,19 @@ class RevenuePayout(
     var txHash: String?,
 
     @Column
-    var completedAt: ZonedDateTime?
+    var completedAt: ZonedDateTime?,
+
+    @Column(nullable = false)
+    var coop: String
 ) {
-    constructor(projectUuid: UUID, amount: Long, user: UUID) : this(
+    constructor(projectUuid: UUID, amount: Long, user: UUID, coop: String) : this(
         0,
         projectUuid,
         amount,
         ZonedDateTime.now(),
         user,
         null,
-        null
+        null,
+        coop
     )
 }

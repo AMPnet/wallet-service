@@ -272,7 +272,7 @@ class PortfolioControllerTest : ControllerTestBase() {
                 .thenReturn(testContext.users)
         }
         suppose("Project service will return a list of projects") {
-            testContext.projects = listOf(createProjectResponse(projectUuid))
+            testContext.projects = listOf(createProjectResponse(projectUuid, userUuid))
             Mockito.`when`(projectService.getProjects(setOf(userUuid, projectUuid)))
                 .thenReturn(testContext.projects)
         }

@@ -10,6 +10,7 @@ data class RevenuePayoutResponse(
     val amount: Long,
     val createdAt: ZonedDateTime,
     val createdBy: UUID,
+    val coop: String,
     val txHash: String?,
     val completedAt: ZonedDateTime?
 ) {
@@ -18,6 +19,7 @@ data class RevenuePayoutResponse(
         revenuePayout.amount,
         revenuePayout.createdAt,
         revenuePayout.createdBy,
+        revenuePayout.coop,
         revenuePayout.txHash,
         revenuePayout.completedAt
     )

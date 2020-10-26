@@ -1,5 +1,7 @@
 package com.ampnet.walletservice.service.impl
 
+import com.ampnet.core.jwt.UserPrincipal
+import com.ampnet.walletservice.config.ApplicationProperties
 import com.ampnet.walletservice.controller.pojo.request.WalletCreateRequest
 import com.ampnet.walletservice.enums.Currency
 import com.ampnet.walletservice.enums.WalletType
@@ -30,13 +32,15 @@ import java.util.UUID
 import com.ampnet.mailservice.proto.WalletType as WalletTypeProto
 
 @Service
+@Suppress("TooManyFunctions")
 class WalletServiceImpl(
     private val walletRepository: WalletRepository,
     private val pairWalletCodeRepository: PairWalletCodeRepository,
     private val blockchainService: BlockchainService,
     private val transactionInfoService: TransactionInfoService,
     private val projectService: ProjectService,
-    private val mailService: MailService
+    private val mailService: MailService,
+    private val applicationProperties: ApplicationProperties
 ) : WalletService {
 
     companion object {
@@ -59,8 +63,8 @@ class WalletServiceImpl(
 
     @Transactional
     @Throws(ResourceAlreadyExistsException::class)
-    override fun createUserWallet(user: UUID, request: WalletCreateRequest): Wallet {
-        walletRepository.findByOwner(user).ifPresent {
+    override fun createUserWallet(user: UserPrincipal, request: WalletCreateRequest): Wallet {
+        walletRepository.findByOwner(user.uuid).ifPresent {
             throw ResourceAlreadyExistsException(ErrorCode.WALLET_EXISTS, "User: $user already has a wallet.")
         }
         pairWalletCodeRepository.findByPublicKey(request.publicKey).ifPresent {
@@ -68,19 +72,22 @@ class WalletServiceImpl(
         }
 
         logger.debug { "Creating wallet: $request for user: $user" }
-        val wallet = createWallet(user, request.publicKey, WalletType.USER, request.email, request.providerId)
-        mailService.sendNewWalletMail(WalletTypeProto.USER)
+        val wallet = createWallet(
+            user.uuid, request.publicKey, WalletType.USER,
+            user.coop, request.email, request.providerId
+        )
+        mailService.sendNewWalletMail(WalletTypeProto.USER, user.coop)
         return wallet
     }
 
     @Transactional
-    override fun generateTransactionToCreateProjectWallet(project: UUID, user: UUID): TransactionDataAndInfo {
+    override fun generateTransactionToCreateProjectWallet(project: UUID, user: UserPrincipal): TransactionDataAndInfo {
         throwExceptionIfProjectHasWallet(project)
-        val userWalletHash = ServiceUtils.getWalletHash(user, walletRepository)
+        val userWalletHash = ServiceUtils.getWalletHash(user.uuid, walletRepository)
 
         logger.debug { "Generating create wallet transaction for project: $project" }
         val projectResponse = projectService.getProject(project)
-        ServiceUtils.validateUserIsProjectOwner(user, projectResponse)
+        ServiceUtils.validateUserIsProjectOwner(user.uuid, projectResponse)
 
         val organizationWalletHash = ServiceUtils.getWalletHash(projectResponse.organizationUuid, walletRepository)
         val request = GenerateProjectWalletRequest(
@@ -95,23 +102,26 @@ class WalletServiceImpl(
 
     @Transactional
     @Throws(ResourceAlreadyExistsException::class)
-    override fun createProjectWallet(project: UUID, signedTransaction: String): Wallet {
+    override fun createProjectWallet(project: UUID, signedTransaction: String, coop: String): Wallet {
         throwExceptionIfProjectHasWallet(project)
         logger.debug { "Creating wallet for project: $project" }
         val txHash = blockchainService.postTransaction(signedTransaction)
-        val wallet = createWallet(project, txHash, WalletType.PROJECT)
+        val wallet = createWallet(project, txHash, WalletType.PROJECT, coop)
         logger.debug { "Created wallet for project: $project" }
-        mailService.sendNewWalletMail(WalletTypeProto.PROJECT)
+        mailService.sendNewWalletMail(WalletTypeProto.PROJECT, coop)
         return wallet
     }
 
     @Transactional
-    override fun generateTransactionToCreateOrganizationWallet(organization: UUID, user: UUID): TransactionDataAndInfo {
+    override fun generateTransactionToCreateOrganizationWallet(
+        organization: UUID,
+        user: UserPrincipal
+    ): TransactionDataAndInfo {
         throwExceptionIfOrganizationAlreadyHasWallet(organization)
-        val userWalletHash = ServiceUtils.getWalletHash(user, walletRepository)
+        val userWalletHash = ServiceUtils.getWalletHash(user.uuid, walletRepository)
         logger.debug { "Generating create wallet transaction for organization: $organization" }
         val organizationResponse = projectService.getOrganization(organization)
-        if (organizationResponse.createdByUser != user.toString()) {
+        if (organizationResponse.createdByUser != user.uuid.toString()) {
             throw InvalidRequestException(
                 ErrorCode.ORG_MISSING_PRIVILEGE,
                 "User: $user did not create this organization: $organization and cannot create a wallet"
@@ -125,13 +135,13 @@ class WalletServiceImpl(
     }
 
     @Transactional
-    override fun createOrganizationWallet(organization: UUID, signedTransaction: String): Wallet {
+    override fun createOrganizationWallet(organization: UUID, signedTransaction: String, coop: String): Wallet {
         throwExceptionIfOrganizationAlreadyHasWallet(organization)
         logger.debug { "Creating wallet for organization: $organization" }
         val txHash = blockchainService.postTransaction(signedTransaction)
-        val wallet = createWallet(organization, txHash, WalletType.ORG)
+        val wallet = createWallet(organization, txHash, WalletType.ORG, coop)
         logger.debug { "Created wallet for organization: $organization" }
-        mailService.sendNewWalletMail(WalletTypeProto.ORGANIZATION)
+        mailService.sendNewWalletMail(WalletTypeProto.ORGANIZATION, coop)
         return wallet
     }
 
@@ -151,8 +161,10 @@ class WalletServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun getProjectsWithActiveWallet(pageable: Pageable): Page<ProjectWithWallet> {
-        val walletsPage = walletRepository.findActivatedByType(WalletType.PROJECT, pageable)
+    override fun getProjectsWithActiveWallet(coop: String?, pageable: Pageable): Page<ProjectWithWallet> {
+        val walletsPage = walletRepository.findActivatedByType(
+            WalletType.PROJECT, coop ?: applicationProperties.coop.default, pageable
+        )
         val projectWallets = walletsPage.toList()
             .filter { it.hash != null }
             .associateBy { it.owner }
@@ -182,16 +194,17 @@ class WalletServiceImpl(
         owner: UUID,
         activationData: String,
         type: WalletType,
+        coop: String,
         email: String? = null,
         providerId: String? = null
     ): Wallet {
-        if (walletRepository.findByActivationData(activationData).isPresent) {
+        if (walletRepository.findByActivationDataAndCoop(activationData, coop).isPresent) {
             throw ResourceAlreadyExistsException(
                 ErrorCode.WALLET_HASH_EXISTS,
                 "Trying to create wallet: $type with existing activationData: $activationData"
             )
         }
-        val wallet = Wallet(owner, activationData, type, Currency.EUR, email, providerId)
+        val wallet = Wallet(owner, activationData, type, Currency.EUR, coop, email, providerId)
         return walletRepository.save(wallet)
     }
 

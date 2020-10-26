@@ -11,10 +11,12 @@ import com.ampnet.walletservice.grpc.blockchain.BlockchainService
 import com.ampnet.walletservice.grpc.mail.MailService
 import com.ampnet.walletservice.grpc.projectservice.ProjectService
 import com.ampnet.walletservice.grpc.userservice.UserService
+import com.ampnet.walletservice.persistence.model.BankAccount
 import com.ampnet.walletservice.persistence.model.Deposit
 import com.ampnet.walletservice.persistence.model.File
 import com.ampnet.walletservice.persistence.model.Wallet
 import com.ampnet.walletservice.persistence.model.Withdraw
+import com.ampnet.walletservice.persistence.repository.BankAccountRepository
 import com.ampnet.walletservice.persistence.repository.DepositRepository
 import com.ampnet.walletservice.persistence.repository.DocumentRepository
 import com.ampnet.walletservice.persistence.repository.PairWalletCodeRepository
@@ -48,6 +50,8 @@ import org.springframework.web.context.WebApplicationContext
 import java.time.ZonedDateTime
 import java.util.UUID
 
+const val COOP = "ampnet-test"
+
 @ExtendWith(value = [SpringExtension::class, RestDocumentationExtension::class])
 @SpringBootTest
 abstract class ControllerTestBase : TestBase() {
@@ -57,6 +61,7 @@ abstract class ControllerTestBase : TestBase() {
     protected val projectUuid: UUID = UUID.randomUUID()
     protected val walletHash = "th_K3LCJLUQ1m2EsYmcNafGnRyEdDDgfPDGfZhmZ1YgbvAG35PQu"
     protected val signedTransaction = "tx_+RFNCwH4QrhARSL55I0DqhQePPV3J4ycxHpA9OkqnncvEJrYOThmo2h...signed-tx..."
+    protected val anotherCoop = "another coop"
 
     @Autowired
     protected lateinit var objectMapper: ObjectMapper
@@ -84,6 +89,9 @@ abstract class ControllerTestBase : TestBase() {
 
     @Autowired
     protected lateinit var revenuePayoutRepository: RevenuePayoutRepository
+
+    @Autowired
+    private lateinit var bankAccountRepository: BankAccountRepository
 
     @MockBean
     protected lateinit var userService: UserService
@@ -127,16 +135,22 @@ abstract class ControllerTestBase : TestBase() {
         assert(response.errCode == expectedErrorCode)
     }
 
-    protected fun createWalletForUser(userUuid: UUID, hash: String, providerId: String? = null) =
-        createWallet(userUuid, hash, WalletType.USER, providerId)
+    protected fun createWalletForUser(userUuid: UUID, hash: String, coop: String = COOP, providerId: String? = null) =
+        createWallet(userUuid, hash, WalletType.USER, coop, providerId)
 
-    protected fun createWalletForProject(project: UUID, address: String) =
-        createWallet(project, address, WalletType.PROJECT)
+    protected fun createWalletForProject(project: UUID, address: String, coop: String = COOP) =
+        createWallet(project, address, WalletType.PROJECT, coop)
 
-    protected fun createWalletForOrganization(organization: UUID, hash: String) =
-        createWallet(organization, hash, WalletType.ORG)
+    protected fun createWalletForOrganization(organization: UUID, hash: String, coop: String = COOP) =
+        createWallet(organization, hash, WalletType.ORG, coop)
 
-    private fun createWallet(owner: UUID, hash: String, type: WalletType, providerId: String? = null): Wallet {
+    private fun createWallet(
+        owner: UUID,
+        hash: String,
+        type: WalletType,
+        coop: String,
+        providerId: String? = null
+    ): Wallet {
         val email = if (type == WalletType.USER) {
             "wallet_email"
         } else {
@@ -144,7 +158,7 @@ abstract class ControllerTestBase : TestBase() {
         }
         val wallet = Wallet(
             UUID.randomUUID(), owner, hash, type, Currency.EUR,
-            ZonedDateTime.now(), hash, ZonedDateTime.now(), email, providerId
+            ZonedDateTime.now(), hash, ZonedDateTime.now(), coop, email, providerId
         )
         return walletRepository.save(wallet)
     }
@@ -186,13 +200,14 @@ abstract class ControllerTestBase : TestBase() {
     protected fun createApprovedDeposit(
         owner: UUID,
         amount: Long = 1000,
-        type: DepositWithdrawType = DepositWithdrawType.USER
+        type: DepositWithdrawType = DepositWithdrawType.USER,
+        coop: String = COOP
     ): Deposit {
         val document = saveFile("doc", "document-link", "type", 1, owner)
         val deposit = Deposit(
             0, owner, "S34SDGFT", amount,
             ZonedDateTime.now(), userUuid, type, "th_ktDw9ytaQ9aSi78qgCAw2JhdzS8F7vGgzYvWeMdRtP6hJnQqG",
-            userUuid, ZonedDateTime.now(), document, null
+            userUuid, ZonedDateTime.now(), document, null, coop
         )
         return depositRepository.save(deposit)
     }
@@ -200,12 +215,13 @@ abstract class ControllerTestBase : TestBase() {
     protected fun createApprovedWithdraw(
         owner: UUID,
         amount: Long = 1000,
-        type: DepositWithdrawType = DepositWithdrawType.USER
+        type: DepositWithdrawType = DepositWithdrawType.USER,
+        coop: String = COOP
     ): Withdraw {
         val withdraw = Withdraw(
             0, owner, amount, ZonedDateTime.now(), userUuid, "bank-account",
             "approved-tx", ZonedDateTime.now(),
-            null, null, null, null, type
+            null, null, null, null, type, coop
         )
         return withdrawRepository.save(withdraw)
     }
@@ -214,12 +230,13 @@ abstract class ControllerTestBase : TestBase() {
         owner: UUID,
         amount: Long = 1000,
         type: DepositWithdrawType = DepositWithdrawType.USER,
-        userUuid: UUID? = null
+        userUuid: UUID? = null,
+        coop: String = COOP
     ): Withdraw {
         val user = userUuid ?: owner
         val withdraw = Withdraw(
-            0, owner, amount, ZonedDateTime.now(), user, "bank-account",
-            null, null, null, null, null, null, type
+            0, owner, amount, ZonedDateTime.now(), user, "bank-account", null,
+            null, null, null, null, null, type, coop
         )
         return withdrawRepository.save(withdraw)
     }
@@ -228,14 +245,15 @@ abstract class ControllerTestBase : TestBase() {
         owner: UUID,
         type: DepositWithdrawType = DepositWithdrawType.USER,
         withFile: Boolean = false,
-        amount: Long = 0
+        amount: Long = 0,
+        coop: String = COOP
     ): Deposit {
         val file = if (withFile) saveFile() else null
         val approvedBy = if (withFile) userUuid else null
         val approvedAt = if (withFile) ZonedDateTime.now() else null
         val deposit = Deposit(
             0, owner, "S34SDGFT", amount,
-            ZonedDateTime.now(), userUuid, type, null, approvedBy, approvedAt, file, null
+            ZonedDateTime.now(), userUuid, type, null, approvedBy, approvedAt, file, null, coop
         )
         return depositRepository.save(deposit)
     }
@@ -254,4 +272,15 @@ abstract class ControllerTestBase : TestBase() {
         ZonedDateTime.now().minusDays(1), ZonedDateTime.now().plusDays(100),
         expectedFunding, currency, 1L, expectedFunding, true, imageUrl, createdByUser, organizationUuid
     )
+
+    protected fun createBankAccount(
+        iban: String,
+        bankCode: String,
+        createdBy: UUID,
+        alias: String,
+        coop: String = COOP
+    ): BankAccount {
+        val bankAccount = BankAccount(iban, bankCode, createdBy, alias, coop)
+        return bankAccountRepository.save(bankAccount)
+    }
 }

@@ -39,10 +39,11 @@ class BankAccountControllerTest : ControllerTestBase() {
     @WithMockCrowdfoundUser
     fun mustBeAbleToGetAllBankAccounts() {
         suppose("There are two bank accounts") {
-            val bankAccount = BankAccount(iban, bankCode, userUuid, alias)
-            bankAccountRepository.save(bankAccount)
-            val secondBankAccount = BankAccount("AL47212110090000000235698741", "AKIVALTR", userUuid, "albalias")
-            bankAccountRepository.save(secondBankAccount)
+            createBankAccount(iban, bankCode, userUuid, alias, COOP)
+            createBankAccount("AL47212110090000000235698741", "AKIVALTR", userUuid, "albalias", COOP)
+        }
+        suppose("There is bank account from another cooperative") {
+            createBankAccount("AL47212110090000000235698742", "AKIVBLTR", userUuid, alias, anotherCoop)
         }
 
         verify("User can get bank accounts") {
@@ -52,10 +53,12 @@ class BankAccountControllerTest : ControllerTestBase() {
 
             val bankAccounts: BankAccountsResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(bankAccounts.bankAccounts).hasSize(2)
-            val bankAccount = bankAccounts.bankAccounts.first()
+            assertThat(bankAccounts.bankAccounts.filter { it.coop != COOP }).hasSize(0)
+            val bankAccount = bankAccounts.bankAccounts.first { it.iban == iban }
             assertThat(bankAccount.iban).isEqualTo(iban)
             assertThat(bankAccount.bankCode).isEqualTo(bankAccount.bankCode)
             assertThat(bankAccount.alias).isEqualTo(alias)
+            assertThat(bankAccount.coop).isEqualTo(COOP)
         }
     }
 
@@ -76,12 +79,15 @@ class BankAccountControllerTest : ControllerTestBase() {
             assertThat(bankAccount.iban).isEqualTo(iban)
             assertThat(bankAccount.bankCode).isEqualTo(bankAccount.bankCode)
             assertThat(bankAccount.alias).isEqualTo(alias)
+            assertThat(bankAccount.coop).isEqualTo(COOP)
         }
         verify("Bank account is created") {
             val bankAccount = bankAccountRepository.findAll().first()
             assertThat(bankAccount.iban).isEqualTo(iban)
             assertThat(bankAccount.bankCode).isEqualTo(bankAccount.bankCode)
             assertThat(bankAccount.alias).isEqualTo(alias)
+            assertThat(bankAccount.createdBy).isEqualTo(userUuid)
+            assertThat(bankAccount.coop).isEqualTo(COOP)
         }
     }
 
@@ -106,7 +112,7 @@ class BankAccountControllerTest : ControllerTestBase() {
     @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWA_DEPOSIT])
     fun mustBeAbleToDeleteBankAccount() {
         suppose("There is bank account") {
-            bankAccount = BankAccount(iban, bankCode, userUuid, alias)
+            bankAccount = BankAccount(iban, bankCode, userUuid, alias, COOP)
             bankAccountRepository.save(bankAccount)
         }
 

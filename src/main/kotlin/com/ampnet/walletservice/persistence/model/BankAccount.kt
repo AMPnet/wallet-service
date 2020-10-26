@@ -29,9 +29,12 @@ class BankAccount(
     val createdAt: ZonedDateTime,
 
     @Column(length = 128)
-    val alias: String?
+    val alias: String?,
+
+    @Column(nullable = false)
+    var coop: String
 ) {
-    constructor(iban: String, bankCode: String, createdBy: UUID, alias: String?) : this(
-        0, iban, bankCode, createdBy, ZonedDateTime.now(), alias
+    constructor(iban: String, bankCode: String, createdBy: UUID, alias: String?, coop: String) : this(
+        0, iban, bankCode, createdBy, ZonedDateTime.now(), alias, coop
     )
 }

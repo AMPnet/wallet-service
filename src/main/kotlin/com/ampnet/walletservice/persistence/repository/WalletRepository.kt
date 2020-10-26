@@ -11,20 +11,20 @@ import java.util.UUID
 
 interface WalletRepository : JpaRepository<Wallet, UUID> {
     fun findByOwner(owner: UUID): Optional<Wallet>
-    fun findByActivationData(activationData: String): Optional<Wallet>
+    fun findByActivationDataAndCoop(activationData: String, coop: String): Optional<Wallet>
     fun findByOwnerIn(owners: Collection<UUID>): List<Wallet>
 
     @Query(
         "SELECT wallet FROM Wallet wallet " +
-            "WHERE wallet.type = ?1 AND wallet.hash IS NULL"
+            "WHERE wallet.type = ?1 AND wallet.hash IS NULL AND wallet.coop = ?2"
     )
-    fun findUnactivatedByType(type: WalletType, pageable: Pageable): Page<Wallet>
+    fun findUnactivatedByType(type: WalletType, coop: String, pageable: Pageable): Page<Wallet>
 
     @Query(
         "SELECT wallet FROM Wallet wallet " +
-            "WHERE wallet.type = ?1 AND wallet.hash IS NOT NULL"
+            "WHERE wallet.type = ?1 AND wallet.hash IS NOT NULL AND wallet.coop = ?2"
     )
-    fun findActivatedByType(type: WalletType, pageable: Pageable): Page<Wallet>
+    fun findActivatedByType(type: WalletType, coop: String, pageable: Pageable): Page<Wallet>
 
     @Query(
         "SELECT wallet FROM Wallet wallet " +

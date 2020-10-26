@@ -15,7 +15,8 @@ data class WithdrawServiceResponse(
     val burnedAt: ZonedDateTime?,
     val bankAccount: String,
     val createdAt: ZonedDateTime,
-    val documentResponse: DocumentServiceResponse?
+    val documentResponse: DocumentServiceResponse?,
+    val coop: String
 ) {
     constructor(withdraw: Withdraw, withDocument: Boolean = false) : this(
         withdraw.id,
@@ -28,7 +29,8 @@ data class WithdrawServiceResponse(
         withdraw.burnedAt,
         withdraw.bankAccount,
         withdraw.createdAt,
-        if (withDocument) withdraw.file?.let { DocumentServiceResponse(it) } else null
+        if (withDocument) withdraw.file?.let { DocumentServiceResponse(it) } else null,
+        withdraw.coop
     )
 }
 

@@ -57,7 +57,7 @@ class WithdrawServiceTest : JpaServiceTestBase() {
     fun mustThrowExceptionForInvalidIban() {
         verify("Service will throw exception for invalid IBAN") {
             val requet = WithdrawCreateServiceRequest(
-                userUuid, "ivalid-iban", 100L, userUuid, DepositWithdrawType.USER
+                userUuid, "ivalid-iban", 100L, createUserPrincipal(userUuid), DepositWithdrawType.USER
             )
             val exception = assertThrows<InvalidRequestException> {
                 withdrawService.createWithdraw(requet)
@@ -125,7 +125,7 @@ class WithdrawServiceTest : JpaServiceTestBase() {
         verify("Service will throw exception missing privilege for project") {
             val exception = assertThrows<InvalidRequestException> {
                 val request = WithdrawCreateServiceRequest(
-                    projectUuid, bankAccount, 100L, userUuid, DepositWithdrawType.PROJECT
+                    projectUuid, bankAccount, 100L, createUserPrincipal(userUuid), DepositWithdrawType.PROJECT
                 )
                 withdrawService.createWithdraw(request)
             }
@@ -189,7 +189,7 @@ class WithdrawServiceTest : JpaServiceTestBase() {
 
         verify("Service will throw exception when another user tires to generate approval transaction") {
             val exception = assertThrows<InvalidRequestException> {
-                withdrawService.generateApprovalTransaction(withdraw.id, UUID.randomUUID())
+                withdrawService.generateApprovalTransaction(withdraw.id, createUserPrincipal(UUID.randomUUID()))
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.USER_MISSING_PRIVILEGE)
         }
@@ -207,7 +207,7 @@ class WithdrawServiceTest : JpaServiceTestBase() {
 
         verify("Service will throw exception when user tires to generate approval transaction for project") {
             val exception = assertThrows<InvalidRequestException> {
-                withdrawService.generateApprovalTransaction(withdraw.id, userUuid)
+                withdrawService.generateApprovalTransaction(withdraw.id, createUserPrincipal(userUuid))
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.PRJ_MISSING_PRIVILEGE)
         }
@@ -221,7 +221,7 @@ class WithdrawServiceTest : JpaServiceTestBase() {
 
         verify("Service will throw exception when user tries to generate approval transaction for approved withdraw") {
             val exception = assertThrows<InvalidRequestException> {
-                withdrawService.generateApprovalTransaction(withdraw.id, userUuid)
+                withdrawService.generateApprovalTransaction(withdraw.id, createUserPrincipal(userUuid))
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.WALLET_WITHDRAW_APPROVED)
         }
@@ -242,5 +242,5 @@ class WithdrawServiceTest : JpaServiceTestBase() {
     }
 
     private fun createUserWithdrawServiceRequest() =
-        WithdrawCreateServiceRequest(userUuid, bankAccount, 100L, userUuid, DepositWithdrawType.USER)
+        WithdrawCreateServiceRequest(userUuid, bankAccount, 100L, createUserPrincipal(userUuid), DepositWithdrawType.USER)
 }

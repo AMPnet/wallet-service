@@ -112,7 +112,7 @@ class WalletControllerTest : ControllerTestBase() {
     @WithMockCrowdfoundUser
     fun mustBeAbleToGetOwnWallet() {
         suppose("User wallet exists") {
-            testContext.wallet = createWalletForUser(userUuid, testContext.hash, testContext.providerId)
+            testContext.wallet = createWalletForUser(userUuid, testContext.hash, providerId = testContext.providerId)
         }
         suppose("User has some funds on wallet") {
             testContext.balance = 100_00
@@ -133,7 +133,7 @@ class WalletControllerTest : ControllerTestBase() {
             assertThat(walletResponse.type).isEqualTo(testContext.wallet.type)
             assertThat(walletResponse.providerId).isEqualTo(testContext.providerId)
             assertThat(walletResponse.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
-
+            assertThat(walletResponse.coop).isEqualTo(COOP)
             assertThat(walletResponse.balance).isEqualTo(testContext.balance)
         }
     }
@@ -170,6 +170,7 @@ class WalletControllerTest : ControllerTestBase() {
             assertThat(walletResponse.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
             assertThat(walletResponse.hash).isNull()
             assertThat(walletResponse.activatedAt).isNull()
+            assertThat(walletResponse.coop).isEqualTo(COOP)
 
             testContext.walletUuid = walletResponse.uuid
         }
@@ -181,9 +182,10 @@ class WalletControllerTest : ControllerTestBase() {
             assertThat(wallet.email).isEqualTo(testContext.email)
             assertThat(wallet.providerId).isEqualTo(testContext.providerId)
             assertThat(wallet.hash).isNull()
+            assertThat(wallet.coop).isEqualTo(COOP)
         }
         verify("Mail notification for created wallet") {
-            Mockito.verify(mailService, Mockito.times(1)).sendNewWalletMail(WalletTypeProto.USER)
+            Mockito.verify(mailService, Mockito.times(1)).sendNewWalletMail(WalletTypeProto.USER, COOP)
         }
     }
 
@@ -261,6 +263,7 @@ class WalletControllerTest : ControllerTestBase() {
             assertThat(transactionResponse.tx).isEqualTo(testContext.transactionData.tx)
             assertThat(transactionResponse.txId).isNotNull()
             assertThat(transactionResponse.info.txType).isEqualTo(TransactionType.CREATE_PROJECT)
+            assertThat(transactionResponse.coop).isEqualTo(COOP)
         }
     }
 
@@ -302,6 +305,7 @@ class WalletControllerTest : ControllerTestBase() {
             assertThat(walletResponse.currency).isEqualTo(testContext.wallet.currency)
             assertThat(walletResponse.type).isEqualTo(testContext.wallet.type)
             assertThat(walletResponse.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
+            assertThat(walletResponse.coop).isEqualTo(COOP)
             assertThat(walletResponse.providerId).isNull()
         }
     }
@@ -345,6 +349,7 @@ class WalletControllerTest : ControllerTestBase() {
             assertThat(transactionResponse.tx).isEqualTo(testContext.transactionData.tx)
             assertThat(transactionResponse.txId).isNotNull()
             assertThat(transactionResponse.info.txType).isEqualTo(TransactionType.CREATE_ORG)
+            assertThat(transactionResponse.coop).isEqualTo(COOP)
         }
     }
 

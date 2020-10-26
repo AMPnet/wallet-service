@@ -12,37 +12,40 @@ import java.util.UUID
 interface DepositRepository : JpaRepository<Deposit, Int> {
     @Query(
         "SELECT deposit FROM Deposit deposit LEFT JOIN FETCH deposit.file " +
-            "WHERE deposit.type = :type AND deposit.txHash IS NOT NULL",
+            "WHERE deposit.type = :type AND deposit.txHash IS NOT NULL AND deposit.coop = :coop",
         countQuery = "SELECT COUNT(deposit) FROM Deposit deposit " +
-            "WHERE deposit.type = :type AND deposit.txHash IS NOT NULL"
+            "WHERE deposit.type = :type AND deposit.txHash IS NOT NULL AND deposit.coop = :coop"
     )
-    fun findAllApprovedWithFileByType(type: DepositWithdrawType, pageable: Pageable): Page<Deposit>
+    fun findAllApprovedWithFileByType(coop: String, type: DepositWithdrawType, pageable: Pageable): Page<Deposit>
 
     @Query(
         "SELECT deposit FROM Deposit deposit LEFT JOIN FETCH deposit.file " +
-            "WHERE deposit.txHash IS NOT NULL",
+            "WHERE deposit.txHash IS NOT NULL AND deposit.coop = :coop",
         countQuery = "SELECT COUNT(deposit) FROM Deposit deposit " +
-            "WHERE deposit.txHash IS NOT NULL"
+            "WHERE deposit.txHash IS NOT NULL AND deposit.coop = :coop"
     )
-    fun findAllApprovedWithFile(pageable: Pageable): Page<Deposit>
+    fun findAllApprovedWithFile(coop: String, pageable: Pageable): Page<Deposit>
 
     @Query(
         "SELECT deposit FROM Deposit deposit " +
-            "WHERE deposit.type = :type AND deposit.txHash IS NULL AND deposit.declined is NULL",
+            "WHERE deposit.type = :type AND deposit.txHash IS NULL AND deposit.declined is NULL " +
+            "AND deposit.coop = :coop",
         countQuery = "SELECT COUNT(deposit) FROM Deposit deposit " +
-            "WHERE deposit.type = :type AND deposit.txHash IS NULL AND deposit.declined is NULL"
+            "WHERE deposit.type = :type AND deposit.txHash IS NULL AND deposit.declined is NULL " +
+            "AND deposit.coop = :coop"
     )
-    fun findAllUnapprovedByType(type: DepositWithdrawType, pageable: Pageable): Page<Deposit>
+    fun findAllUnapprovedByType(coop: String, type: DepositWithdrawType, pageable: Pageable): Page<Deposit>
 
     @Query(
         "SELECT deposit FROM Deposit deposit " +
-            "WHERE deposit.txHash IS NULL AND deposit.declined is NULL",
+            "WHERE deposit.txHash IS NULL AND deposit.declined is NULL AND deposit.coop = :coop",
         countQuery = "SELECT COUNT(deposit) FROM Deposit deposit " +
-            "WHERE deposit.txHash IS NULL AND deposit.declined is NULL"
+            "WHERE deposit.txHash IS NULL AND deposit.declined is NULL AND deposit.coop = :coop"
     )
-    fun findAllUnapproved(pageable: Pageable): Page<Deposit>
+    fun findAllUnapproved(coop: String, pageable: Pageable): Page<Deposit>
 
-    fun findByReference(reference: String): Optional<Deposit>
+    fun findByCoopAndReference(coop: String, reference: String): Optional<Deposit>
+    fun findByIdAndCoop(id: Int, coop: String): Optional<Deposit>
 
     @Query(
         "SELECT deposit FROM Deposit deposit LEFT JOIN FETCH deposit.file " +
@@ -52,16 +55,19 @@ interface DepositRepository : JpaRepository<Deposit, Int> {
 
     @Query(
         "SELECT COUNT(DISTINCT deposit.ownerUuid) FROM Deposit deposit " +
-            "WHERE deposit.txHash IS NOT NULL AND deposit.type = 'USER'"
+            "WHERE deposit.txHash IS NOT NULL AND deposit.type = 'USER' AND deposit.coop = :coop"
     )
-    fun countUsersWithApprovedDeposit(): Int
+    fun countUsersWithApprovedDeposit(coop: String): Int
 
     @Query(
         "SELECT deposit FROM Deposit deposit LEFT JOIN FETCH deposit.file " +
-            "WHERE deposit.id = :depositId"
+            "WHERE deposit.id = :depositId AND deposit.coop = :coop"
     )
-    fun findWithFileById(depositId: Int): Optional<Deposit>
+    fun findWithFileById(coop: String, depositId: Int): Optional<Deposit>
 
-    @Query("SELECT deposit FROM Deposit deposit LEFT JOIN FETCH deposit.file")
-    fun findAllWithFile(): List<Deposit>
+    @Query(
+        "SELECT deposit FROM Deposit deposit LEFT JOIN FETCH deposit.file " +
+            "WHERE deposit.coop = :coop"
+    )
+    fun findAllWithFile(coop: String): List<Deposit>
 }

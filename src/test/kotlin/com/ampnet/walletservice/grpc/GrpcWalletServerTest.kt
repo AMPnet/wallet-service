@@ -17,6 +17,8 @@ import java.util.UUID
 
 class GrpcWalletServerTest : TestBase() {
 
+    private val coop = "ampnet"
+
     private val mockedWalletRepository = Mockito.mock(WalletRepository::class.java)
 
     private lateinit var grpcServer: GrpcWalletServer
@@ -87,6 +89,7 @@ class GrpcWalletServerTest : TestBase() {
                 .setType(WalletResponse.Type.USER)
                 .setCurrency(Currency.EUR.name)
                 .setHash(it.hash)
+                .setCoop(it.coop)
                 .build()
         }
 
@@ -96,7 +99,7 @@ class GrpcWalletServerTest : TestBase() {
     ): List<Wallet> {
         val uuidsWithHashes = uuids.zip(hashes).toMap()
         return uuidsWithHashes.map {
-            val wallet = Wallet(it.key, "activation-data", WalletType.USER, Currency.EUR, "alias")
+            val wallet = Wallet(it.key, "activation-data", WalletType.USER, Currency.EUR, coop, "alias")
             wallet.hash = it.value
             wallet
         }
