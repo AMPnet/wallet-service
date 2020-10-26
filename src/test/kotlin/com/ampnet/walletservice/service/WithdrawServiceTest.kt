@@ -158,7 +158,7 @@ class WithdrawServiceTest : JpaServiceTestBase() {
             val exception = assertThrows<InvalidRequestException> {
                 withdrawService.deleteWithdraw(withdraw.id, userUuid)
             }
-            assertThat(exception.errorCode).isEqualTo(ErrorCode.USER_ROLE_INVALID)
+            assertThat(exception.errorCode).isEqualTo(ErrorCode.USER_MISSING_PRIVILEGE)
         }
     }
 
@@ -191,7 +191,7 @@ class WithdrawServiceTest : JpaServiceTestBase() {
             val exception = assertThrows<InvalidRequestException> {
                 withdrawService.generateApprovalTransaction(withdraw.id, createUserPrincipal(UUID.randomUUID()))
             }
-            assertThat(exception.errorCode).isEqualTo(ErrorCode.USER_ROLE_INVALID)
+            assertThat(exception.errorCode).isEqualTo(ErrorCode.USER_MISSING_PRIVILEGE)
         }
     }
 

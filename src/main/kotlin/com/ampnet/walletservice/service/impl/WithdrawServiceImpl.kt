@@ -128,7 +128,7 @@ class WithdrawServiceImpl(
             DepositWithdrawType.USER -> {
                 if (withdraw.ownerUuid != user) {
                     throw InvalidRequestException(
-                        ErrorCode.USER_ROLE_INVALID, "Withdraw does not belong to this user"
+                        ErrorCode.USER_MISSING_PRIVILEGE, "Withdraw does not belong to this user"
                     )
                 }
             }

@@ -86,7 +86,7 @@ class DepositServiceImpl(
 
     private fun validateUserCanEditDeposit(deposit: Deposit, user: UUID) {
         if (deposit.createdBy != user)
-            throw InvalidRequestException(ErrorCode.USER_ROLE_INVALID, "Deposit does not belong to this user")
+            throw InvalidRequestException(ErrorCode.USER_MISSING_PRIVILEGE, "Deposit does not belong to this user")
     }
 
     private fun validateOwnerDoesNotHavePendingDeposit(request: DepositCreateServiceRequest) {
