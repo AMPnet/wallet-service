@@ -104,7 +104,7 @@ class DepositServiceTest : JpaServiceTestBase() {
             val exception = assertThrows<InvalidRequestException> {
                 depositService.delete(deposit.id, UUID.randomUUID())
             }
-            assertThat(exception.errorCode).isEqualTo(ErrorCode.USER_MISSING_PRIVILEGE)
+            assertThat(exception.errorCode).isEqualTo(ErrorCode.USER_ROLE_INVALID)
         }
     }
 
