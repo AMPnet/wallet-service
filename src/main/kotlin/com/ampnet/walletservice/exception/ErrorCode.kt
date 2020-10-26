@@ -3,8 +3,8 @@ package com.ampnet.walletservice.exception
 enum class ErrorCode(val categoryCode: String, var specificCode: String, var message: String) {
 
     // User: 03
-    USER_MISSING_PRIVILEGE("03", "04", "User does not have a privilege"),
     USER_BANK_INVALID("03", "02", "Invalid bank account data"),
+    USER_MISSING_PRIVILEGE("03", "05", "User does not have a privilege"),
 
     // Wallet: 05
     WALLET_MISSING("05", "01", "Missing wallet"),
