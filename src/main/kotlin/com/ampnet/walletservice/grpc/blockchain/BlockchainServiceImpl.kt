@@ -281,7 +281,7 @@ class BlockchainServiceImpl(
                         .setTxHash(hash)
                         .build()
                 )
-            logger.debug { "User portfolio response: $response" }
+            logger.debug { "Received user portfolio response, size = ${response.portfolioCount}" }
             val portfolioData = response.portfolioList.map { PortfolioData(it) }
             return Portfolio(portfolioData)
         } catch (ex: StatusRuntimeException) {
@@ -298,7 +298,7 @@ class BlockchainServiceImpl(
                         .setTxHash(hash)
                         .build()
                 )
-            logger.debug { "Transactions response: $response" }
+            logger.debug { "Transactions response received, size = ${response.transactionsCount}" }
             return response.transactionsList.map { BlockchainTransaction(it) }
         } catch (ex: StatusRuntimeException) {
             throw getInternalExceptionFromStatusException(ex, "Could not get transactions for wallet: $hash")
@@ -318,7 +318,7 @@ class BlockchainServiceImpl(
                         .setProjectTxHash(projectWalletHash)
                         .build()
                 )
-            logger.debug { "Investments in project response: $response" }
+            logger.debug { "Investments in project response, size = ${response.transactionsCount}" }
             return response.transactionsList.map { BlockchainTransaction(it) }
         } catch (ex: StatusRuntimeException) {
             throw getInternalExceptionFromStatusException(
@@ -337,7 +337,7 @@ class BlockchainServiceImpl(
                         .addAllProjectTxHashes(hashes)
                         .build()
                 )
-            logger.debug { "Projects info response: $response" }
+            logger.debug { "Projects info response, size ${response.projectsCount}" }
             return response.projectsList.map { ProjectInfoResponse(it) }
         } catch (ex: StatusRuntimeException) {
             throw getInternalExceptionFromStatusException(
@@ -416,7 +416,7 @@ class BlockchainServiceImpl(
         try {
             val response = serviceWithTimeout()
                 .getActiveSellOffers(Empty.newBuilder().build())
-            logger.debug { "Active sell offers: $response" }
+            logger.debug { "Active sell offers, size = ${response.offersCount}" }
             return response.offersList.map { SellOfferData(it) }
         } catch (ex: StatusRuntimeException) {
             throw getInternalExceptionFromStatusException(ex, "Could not get active sell offers")
@@ -467,7 +467,7 @@ class BlockchainServiceImpl(
         return GrpcException(errorCode, message)
     }
 
-    // Status defined in ampenet-blockchain service, for more info see:
+    // Status defined in ampnet-blockchain service, for more info see:
     // ampnet-blockchain-service/src/main/kotlin/com/ampnet/crowdfunding/blockchain/enums/ErrorCode.kt
     private fun getErrorDescriptionFromExceptionStatus(ex: StatusRuntimeException): GrpcErrorCode? {
         val description = ex.status.description?.split(" > ") ?: return null
