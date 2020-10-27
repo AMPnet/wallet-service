@@ -138,11 +138,11 @@ message PortfolioResponse {
 }
 
 message TransactionsRequest {
-    string tx_hash = 1;
+    string wallet_data = 1;
 }
 
 message InvestmentsInProjectRequest {
-    string from_tx_hash = 1;
+    string from_address = 1;
     string project_tx_hash = 2;
 }
 

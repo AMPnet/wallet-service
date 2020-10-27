@@ -25,8 +25,8 @@ interface BlockchainService {
     fun generateApproveProjectBurnTransaction(request: ApproveProjectBurnTransactionRequest): TransactionData
     fun generateRevenuePayout(request: RevenuePayoutTxRequest): TransactionData
     fun getPortfolio(hash: String): Portfolio
-    fun getTransactions(hash: String): List<BlockchainTransaction>
-    fun getInvestmentsInProject(userWalletHash: String, projectWalletHash: String): List<BlockchainTransaction>
+    fun getTransactions(walletData: String): List<BlockchainTransaction>
+    fun getInvestmentsInProject(userWalletAddress: String, projectWalletHash: String): List<BlockchainTransaction>
     fun getProjectsInfo(hashes: List<String>): List<ProjectInfoResponse>
     fun getTokenIssuer(coop: String): String
     fun generateTransferTokenIssuer(address: String): TransactionData
