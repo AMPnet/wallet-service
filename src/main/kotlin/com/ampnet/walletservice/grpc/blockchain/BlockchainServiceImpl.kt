@@ -289,32 +289,32 @@ class BlockchainServiceImpl(
         }
     }
 
-    override fun getTransactions(hash: String): List<BlockchainTransaction> {
-        logger.debug { "Get transactions for wallet hash: $hash" }
+    override fun getTransactions(walletData: String): List<BlockchainTransaction> {
+        logger.debug { "Get transactions for wallet data(user address): $walletData" }
         try {
             val response = serviceWithTimeout()
                 .getTransactions(
                     TransactionsRequest.newBuilder()
-                        .setTxHash(hash)
+                        .setWalletData(walletData)
                         .build()
                 )
             logger.debug { "Transactions response received, size = ${response.transactionsCount}" }
             return response.transactionsList.map { BlockchainTransaction(it) }
         } catch (ex: StatusRuntimeException) {
-            throw getInternalExceptionFromStatusException(ex, "Could not get transactions for wallet: $hash")
+            throw getInternalExceptionFromStatusException(ex, "Could not get transactions for wallet data: $walletData")
         }
     }
 
     override fun getInvestmentsInProject(
-        userWalletHash: String,
+        userWalletAddress: String,
         projectWalletHash: String
     ): List<BlockchainTransaction> {
-        logger.debug { "Get investments by user: $userWalletHash in project: $projectWalletHash" }
+        logger.debug { "Get investments by user address: $userWalletAddress in project hash: $projectWalletHash" }
         try {
             val response = serviceWithTimeout()
                 .getInvestmentsInProject(
                     InvestmentsInProjectRequest.newBuilder()
-                        .setFromTxHash(userWalletHash)
+                        .setFromAddress(userWalletAddress)
                         .setProjectTxHash(projectWalletHash)
                         .build()
                 )
@@ -323,7 +323,7 @@ class BlockchainServiceImpl(
         } catch (ex: StatusRuntimeException) {
             throw getInternalExceptionFromStatusException(
                 ex,
-                "Could not get investments by user: $userWalletHash in project: $projectWalletHash"
+                "Could not get investments by user address: $userWalletAddress in project hash: $projectWalletHash"
             )
         }
     }

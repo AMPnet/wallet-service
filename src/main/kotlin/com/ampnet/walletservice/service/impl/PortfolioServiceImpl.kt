@@ -34,15 +34,16 @@ class PortfolioServiceImpl(
 
     @Transactional(readOnly = true)
     override fun getPortfolio(user: UUID): List<ProjectWithInvestment> {
-        val userWallet = ServiceUtils.getWalletHash(user, walletRepository)
-        val portfolio = blockchainService.getPortfolio(userWallet).data.associateBy { it.projectTxHash }
+        val userWallet = ServiceUtils.getWalletByUserUuid(user, walletRepository)
+        val portfolio = blockchainService.getPortfolio(userWallet.activationData).data
+            .associateBy { it.projectTxHash }
         return getProjectsWithInvestments(portfolio)
     }
 
     @Transactional(readOnly = true)
     override fun getPortfolioStats(user: UUID): PortfolioStats {
-        val userWallet = ServiceUtils.getWalletHash(user, walletRepository)
-        val transactions = blockchainService.getTransactions(userWallet)
+        val userWallet = ServiceUtils.getWalletByUserUuid(user, walletRepository)
+        val transactions = blockchainService.getTransactions(userWallet.activationData)
             .filter { it.state == TransactionState.MINED }
         val investments = sumTransactionForType(transactions, TransactionType.INVEST)
         val cancelInvestments = sumTransactionForType(transactions, TransactionType.CANCEL_INVESTMENT)
@@ -55,15 +56,15 @@ class PortfolioServiceImpl(
 
     @Transactional(readOnly = true)
     override fun getInvestmentsInProject(user: UUID, project: UUID): List<BlockchainTransaction> {
-        val userWalletHash = ServiceUtils.getWalletHash(user, walletRepository)
+        val userWalletAddress = ServiceUtils.getWalletByUserUuid(user, walletRepository).activationData
         val projectWalletHash = ServiceUtils.getWalletHash(project, walletRepository)
-        return blockchainService.getInvestmentsInProject(userWalletHash, projectWalletHash)
+        return blockchainService.getInvestmentsInProject(userWalletAddress, projectWalletHash)
     }
 
     @Transactional(readOnly = true)
     override fun getTransactions(user: UUID): List<BlockchainTransaction> {
-        val userWalletHash = ServiceUtils.getWalletHash(user, walletRepository)
-        val blockchainTransactions = blockchainService.getTransactions(userWalletHash)
+        val userWalletAddress = ServiceUtils.getWalletByUserUuid(user, walletRepository).activationData
+        val blockchainTransactions = blockchainService.getTransactions(userWalletAddress)
         val walletHashes = getWalletHashes(blockchainTransactions)
         val wallets = walletRepository.findByHashes(walletHashes)
         return setBlockchainTransactionFromToNames(

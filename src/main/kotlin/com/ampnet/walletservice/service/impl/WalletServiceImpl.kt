@@ -65,13 +65,13 @@ class WalletServiceImpl(
     @Throws(ResourceAlreadyExistsException::class)
     override fun createUserWallet(user: UserPrincipal, request: WalletCreateRequest): Wallet {
         walletRepository.findByOwner(user.uuid).ifPresent {
-            throw ResourceAlreadyExistsException(ErrorCode.WALLET_EXISTS, "User: $user already has a wallet.")
+            throw ResourceAlreadyExistsException(ErrorCode.WALLET_EXISTS, "User: ${user.uuid} already has a wallet.")
         }
         pairWalletCodeRepository.findByPublicKey(request.publicKey).ifPresent {
             pairWalletCodeRepository.delete(it)
         }
 
-        logger.debug { "Creating wallet: $request for user: $user" }
+        logger.debug { "Creating wallet: $request for user: ${user.uuid}" }
         val wallet = createWallet(
             user.uuid, request.publicKey, WalletType.USER,
             user.coop, request.email, request.providerId

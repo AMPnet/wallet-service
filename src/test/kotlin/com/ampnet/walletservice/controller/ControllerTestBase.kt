@@ -180,11 +180,13 @@ abstract class ControllerTestBase : TestBase() {
         return documentRepository.save(document)
     }
 
-    protected fun getWalletHash(owner: UUID): String {
+    protected fun getWallet(owner: UUID): Wallet {
         val optionalUserWallet = walletRepository.findByOwner(owner)
         assertThat(optionalUserWallet).isPresent
-        return getWalletHash(optionalUserWallet.get())
+        return optionalUserWallet.get()
     }
+
+    protected fun getWalletHash(owner: UUID): String = getWalletHash(getWallet(owner))
 
     protected fun getWalletHash(wallet: Wallet): String =
         wallet.hash ?: fail("Wallet hash must be present")

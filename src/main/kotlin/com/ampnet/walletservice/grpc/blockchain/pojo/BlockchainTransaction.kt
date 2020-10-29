@@ -13,7 +13,8 @@ data class BlockchainTransaction(
     val amount: Long,
     val type: TransactionType,
     val date: ZonedDateTime,
-    val state: TransactionState
+    val state: TransactionState,
+    val txHash: String
 ) {
     var from: String? = null
     var to: String? = null
@@ -26,6 +27,7 @@ data class BlockchainTransaction(
         transaction.amount.toLong(),
         transaction.type,
         ZonedDateTime.ofInstant(Instant.ofEpochMilli(transaction.date.toLong()), ZoneId.systemDefault()),
-        transaction.state
+        transaction.state,
+        transaction.txHash
     )
 }
