@@ -34,8 +34,8 @@ class PortfolioServiceImpl(
 
     @Transactional(readOnly = true)
     override fun getPortfolio(user: UUID): List<ProjectWithInvestment> {
-        val userWallet = ServiceUtils.getWalletByUserUuid(user, walletRepository)
-        val portfolio = blockchainService.getPortfolio(userWallet.activationData).data
+        val walletHash = ServiceUtils.getWalletHash(user, walletRepository)
+        val portfolio = blockchainService.getPortfolio(walletHash).data
             .associateBy { it.projectTxHash }
         return getProjectsWithInvestments(portfolio)
     }

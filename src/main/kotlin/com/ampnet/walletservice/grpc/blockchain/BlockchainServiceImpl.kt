@@ -285,7 +285,7 @@ class BlockchainServiceImpl(
             val portfolioData = response.portfolioList.map { PortfolioData(it) }
             return Portfolio(portfolioData)
         } catch (ex: StatusRuntimeException) {
-            throw getInternalExceptionFromStatusException(ex, "Could not get portfolio for wallet: $hash")
+            throw getInternalExceptionFromStatusException(ex, "Could not get portfolio for wallet hash: $hash")
         }
     }
 
