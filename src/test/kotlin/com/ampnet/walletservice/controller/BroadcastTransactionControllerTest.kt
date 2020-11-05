@@ -197,7 +197,7 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
             assertThat(transactionInfo).isNotPresent
         }
         verify("Mail notification for created project wallet") {
-            Mockito.verify(mailService, Mockito.times(1)).sendNewWalletMail(WalletTypeProto.PROJECT, COOP)
+            Mockito.verify(mailService, Mockito.times(1)).sendNewWalletMail(WalletTypeProto.PROJECT, COOP, activationData)
         }
     }
 
