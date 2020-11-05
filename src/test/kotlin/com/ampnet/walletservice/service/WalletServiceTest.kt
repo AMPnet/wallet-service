@@ -88,7 +88,7 @@ class WalletServiceTest : JpaServiceTestBase() {
             assertThat(optionalPairWalletCode).isNotPresent
         }
         verify("Mail notification for created wallet") {
-            Mockito.verify(mockedMailService, Mockito.times(1)).sendNewWalletMail(WalletTypeProto.USER, COOP)
+            Mockito.verify(mockedMailService, Mockito.times(1)).sendNewWalletMail(WalletTypeProto.USER, COOP, defaultPublicKey)
         }
     }
 
@@ -118,7 +118,7 @@ class WalletServiceTest : JpaServiceTestBase() {
             assertThat(projectWallet.providerId).isNull()
         }
         verify("Mail notification for created wallet") {
-            Mockito.verify(mockedMailService, Mockito.times(1)).sendNewWalletMail(WalletTypeProto.PROJECT, COOP)
+            Mockito.verify(mockedMailService, Mockito.times(1)).sendNewWalletMail(WalletTypeProto.PROJECT, COOP, defaultAddressHash)
         }
     }
 
@@ -274,7 +274,7 @@ class WalletServiceTest : JpaServiceTestBase() {
             assertThat(wallet.providerId).isNull()
         }
         verify("Mail notification for created wallet") {
-            Mockito.verify(mockedMailService, Mockito.times(1)).sendNewWalletMail(WalletTypeProto.ORGANIZATION, COOP)
+            Mockito.verify(mockedMailService, Mockito.times(1)).sendNewWalletMail(WalletTypeProto.ORGANIZATION, COOP, defaultAddressHash)
         }
     }
 

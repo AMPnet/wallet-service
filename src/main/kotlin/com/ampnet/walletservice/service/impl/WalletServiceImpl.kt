@@ -76,7 +76,7 @@ class WalletServiceImpl(
             user.uuid, request.publicKey, WalletType.USER,
             user.coop, request.email, request.providerId
         )
-        mailService.sendNewWalletMail(WalletTypeProto.USER, user.coop)
+        mailService.sendNewWalletMail(WalletTypeProto.USER, user.coop, request.publicKey)
         return wallet
     }
 
@@ -108,7 +108,7 @@ class WalletServiceImpl(
         val txHash = blockchainService.postTransaction(signedTransaction)
         val wallet = createWallet(project, txHash, WalletType.PROJECT, coop)
         logger.debug { "Created wallet for project: $project" }
-        mailService.sendNewWalletMail(WalletTypeProto.PROJECT, coop)
+        mailService.sendNewWalletMail(WalletTypeProto.PROJECT, coop, txHash)
         return wallet
     }
 
@@ -141,7 +141,7 @@ class WalletServiceImpl(
         val txHash = blockchainService.postTransaction(signedTransaction)
         val wallet = createWallet(organization, txHash, WalletType.ORG, coop)
         logger.debug { "Created wallet for organization: $organization" }
-        mailService.sendNewWalletMail(WalletTypeProto.ORGANIZATION, coop)
+        mailService.sendNewWalletMail(WalletTypeProto.ORGANIZATION, coop, txHash)
         return wallet
     }
 
