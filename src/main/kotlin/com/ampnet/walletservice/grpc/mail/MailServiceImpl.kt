@@ -83,12 +83,13 @@ class MailServiceImpl(
         }
     }
 
-    override fun sendWalletActivated(walletType: WalletType, walletOwner: String) {
+    override fun sendWalletActivated(walletType: WalletType, walletOwner: String, activationData: String) {
         logger.debug { "Sending ${walletType.name} wallet approved mail" }
         try {
             val request = ActivatedWalletRequest.newBuilder()
                 .setType(walletType)
                 .setWalletOwner(walletOwner)
+                .setActivationData(activationData)
                 .build()
             serviceWithTimeout()?.sendWalletActivated(request, createSteamObserver("$walletType wallet is approved for owner $walletOwner"))
         } catch (ex: StatusRuntimeException) {

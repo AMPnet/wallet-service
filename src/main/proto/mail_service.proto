@@ -43,6 +43,7 @@ message NewWalletRequest {
 message ActivatedWalletRequest {
     WalletType type = 1;
     string wallet_owner = 2;
+    string activation_data = 3;
 }
 
 message Empty {

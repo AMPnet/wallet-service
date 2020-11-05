@@ -91,7 +91,7 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
         }
         verify("Mail notification for user wallet approved") {
             Mockito.verify(mailService, Mockito.times(1))
-                .sendWalletActivated(WalletTypeProto.USER, testContext.wallet.owner.toString())
+                .sendWalletActivated(WalletTypeProto.USER, testContext.wallet.owner.toString(), testContext.wallet.activationData)
         }
     }
 
