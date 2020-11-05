@@ -69,12 +69,13 @@ class MailServiceImpl(
         }
     }
 
-    override fun sendNewWalletMail(walletType: WalletType, coop: String) {
+    override fun sendNewWalletMail(walletType: WalletType, coop: String, activationData: String) {
         logger.debug { "Sending new $walletType wallet mail" }
         try {
             val request = WalletTypeRequest.newBuilder()
                 .setType(walletType)
                 .setCoop(coop)
+                .setActivationData(activationData)
                 .build()
             serviceWithTimeout()?.sendNewWalletMail(request, createSteamObserver("new $walletType wallet mail"))
         } catch (ex: StatusRuntimeException) {

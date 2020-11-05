@@ -37,6 +37,7 @@ message ResetPasswordRequest {
 message WalletTypeRequest {
     WalletType type = 1;
     string coop = 2;
+    string activation_data = 3;
 }
 
 message ActivatedWalletRequest {
