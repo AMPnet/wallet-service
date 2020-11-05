@@ -168,10 +168,11 @@ class CooperativeWalletServiceImpl(
 
     private fun sendWalletActivatedMail(wallet: Wallet) {
         val walletOwner = wallet.owner.toString()
+        val activationData = wallet.activationData
         when (wallet.type) {
-            WalletType.USER -> mailService.sendWalletActivated(WalletTypeProto.USER, walletOwner)
-            WalletType.PROJECT -> mailService.sendWalletActivated(WalletTypeProto.PROJECT, walletOwner)
-            WalletType.ORG -> mailService.sendWalletActivated(WalletTypeProto.ORGANIZATION, walletOwner)
+            WalletType.USER -> mailService.sendWalletActivated(WalletTypeProto.USER, walletOwner, activationData)
+            WalletType.PROJECT -> mailService.sendWalletActivated(WalletTypeProto.PROJECT, walletOwner, activationData)
+            WalletType.ORG -> mailService.sendWalletActivated(WalletTypeProto.ORGANIZATION, walletOwner, activationData)
         }
     }
 }
