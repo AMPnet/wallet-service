@@ -62,7 +62,7 @@ class CooperativeWalletServiceImpl(
         val wallet = getWalletByUuid(walletUuid)
         wallet.hash = blockchainService.postTransaction(signedTransaction)
         wallet.activatedAt = ZonedDateTime.now()
-        sendWalletActivatedMail(wallet)
+        mailService.sendWalletActivated(getWalletType(wallet.type), wallet.owner.toString(), wallet.activationData)
         return wallet
     }
 
@@ -166,13 +166,11 @@ class CooperativeWalletServiceImpl(
             throw InvalidRequestException(ErrorCode.WALLET_MISSING, "Wallet: $address is unknown for coop: $coop")
         }
 
-    private fun sendWalletActivatedMail(wallet: Wallet) {
-        val walletOwner = wallet.owner.toString()
-        val activationData = wallet.activationData
-        when (wallet.type) {
-            WalletType.USER -> mailService.sendWalletActivated(WalletTypeProto.USER, walletOwner, activationData)
-            WalletType.PROJECT -> mailService.sendWalletActivated(WalletTypeProto.PROJECT, walletOwner, activationData)
-            WalletType.ORG -> mailService.sendWalletActivated(WalletTypeProto.ORGANIZATION, walletOwner, activationData)
+    private fun getWalletType(type: WalletType): WalletTypeProto {
+        return when (type) {
+            WalletType.USER -> WalletTypeProto.USER
+            WalletType.PROJECT -> WalletTypeProto.PROJECT
+            WalletType.ORG -> WalletTypeProto.ORGANIZATION
         }
     }
 }
