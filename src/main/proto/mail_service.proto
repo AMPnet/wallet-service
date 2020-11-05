@@ -34,7 +34,7 @@ message ResetPasswordRequest {
     string token = 2;
 }
 
-message WalletTypeRequest {
+message NewWalletRequest {
     WalletType type = 1;
     string coop = 2;
     string activation_data = 3;
@@ -61,6 +61,6 @@ service MailService {
     rpc SendWithdrawRequest(WithdrawRequest) returns (Empty);
     rpc SendDepositInfo(DepositInfoRequest) returns (Empty);
     rpc SendResetPassword(ResetPasswordRequest) returns (Empty);
-    rpc SendNewWalletMail(WalletTypeRequest) returns (Empty);
+    rpc SendNewWalletMail(NewWalletRequest) returns (Empty);
     rpc SendWalletActivated(ActivatedWalletRequest) returns (Empty);
 }

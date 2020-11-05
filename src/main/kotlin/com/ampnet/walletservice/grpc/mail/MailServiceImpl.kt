@@ -4,8 +4,8 @@ import com.ampnet.mailservice.proto.ActivatedWalletRequest
 import com.ampnet.mailservice.proto.DepositInfoRequest
 import com.ampnet.mailservice.proto.Empty
 import com.ampnet.mailservice.proto.MailServiceGrpc
+import com.ampnet.mailservice.proto.NewWalletRequest
 import com.ampnet.mailservice.proto.WalletType
-import com.ampnet.mailservice.proto.WalletTypeRequest
 import com.ampnet.mailservice.proto.WithdrawInfoRequest
 import com.ampnet.mailservice.proto.WithdrawRequest
 import com.ampnet.walletservice.config.ApplicationProperties
@@ -72,7 +72,7 @@ class MailServiceImpl(
     override fun sendNewWalletMail(walletType: WalletType, coop: String, activationData: String) {
         logger.debug { "Sending new $walletType wallet mail" }
         try {
-            val request = WalletTypeRequest.newBuilder()
+            val request = NewWalletRequest.newBuilder()
                 .setType(walletType)
                 .setCoop(coop)
                 .setActivationData(activationData)
