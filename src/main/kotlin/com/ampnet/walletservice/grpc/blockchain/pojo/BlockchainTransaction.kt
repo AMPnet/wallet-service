@@ -1,8 +1,8 @@
 package com.ampnet.walletservice.grpc.blockchain.pojo
 
+import com.ampnet.crowdfunding.proto.TransactionInfo
 import com.ampnet.crowdfunding.proto.TransactionState
 import com.ampnet.crowdfunding.proto.TransactionType
-import com.ampnet.crowdfunding.proto.TransactionsResponse
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -21,7 +21,7 @@ data class BlockchainTransaction(
     var description: String? = null
     var share: String? = null
 
-    constructor(transaction: TransactionsResponse.Transaction) : this(
+    constructor(transaction: TransactionInfo) : this(
         transaction.fromTxHash,
         transaction.toTxHash,
         transaction.amount.toLong(),
