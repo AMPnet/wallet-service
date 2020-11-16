@@ -19,16 +19,6 @@ To verify check `user service` docs. Unverified accounts will get link:#unverifi
 == Public API
 Collection of public endpoints
 
-=== Active projects with wallet
-Get all active projects with wallet.
-List of all organizations is pageable. Define size of the list using param: `size` and page number with param: `page`.
-List can be sorted using param: `sort` (e.g. `sort=createdAt,desc`).
-
-.Request
-include::{snippets}/PublicControllerTest/mustBeAbleToGetAllActiveProjectsWithWallet/http-request.adoc[]
-.Response
-include::{snippets}/PublicControllerTest/mustBeAbleToGetAllActiveProjectsWithWallet/http-response.adoc[]
-
 === Project Wallet
 
 ==== Successfully get wallet

@@ -1,7 +1,6 @@
 package com.ampnet.walletservice.service.impl
 
 import com.ampnet.core.jwt.UserPrincipal
-import com.ampnet.walletservice.config.ApplicationProperties
 import com.ampnet.walletservice.controller.pojo.request.WalletCreateRequest
 import com.ampnet.walletservice.enums.Currency
 import com.ampnet.walletservice.enums.WalletType
@@ -20,11 +19,7 @@ import com.ampnet.walletservice.persistence.repository.PairWalletCodeRepository
 import com.ampnet.walletservice.persistence.repository.WalletRepository
 import com.ampnet.walletservice.service.TransactionInfoService
 import com.ampnet.walletservice.service.WalletService
-import com.ampnet.walletservice.service.pojo.response.ProjectWithWallet
 import mu.KotlinLogging
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageImpl
-import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.ZonedDateTime
@@ -39,8 +34,7 @@ class WalletServiceImpl(
     private val blockchainService: BlockchainService,
     private val transactionInfoService: TransactionInfoService,
     private val projectService: ProjectService,
-    private val mailService: MailService,
-    private val applicationProperties: ApplicationProperties
+    private val mailService: MailService
 ) : WalletService {
 
     companion object {
@@ -158,36 +152,6 @@ class WalletServiceImpl(
     @Transactional(readOnly = true)
     override fun getPairWalletCode(code: String): PairWalletCode? {
         return ServiceUtils.wrapOptional(pairWalletCodeRepository.findByCode(code))
-    }
-
-    @Transactional(readOnly = true)
-    override fun getProjectsWithActiveWallet(coop: String?, pageable: Pageable): Page<ProjectWithWallet> {
-        val walletsPage = walletRepository.findActivatedByType(
-            WalletType.PROJECT, coop ?: applicationProperties.coop.default, pageable
-        )
-        val projectWallets = walletsPage.toList()
-            .filter { it.hash != null }
-            .associateBy { it.owner }
-        if (projectWallets.isEmpty()) {
-            return PageImpl(emptyList(), pageable, walletsPage.totalElements)
-        }
-
-        val now = ZonedDateTime.now()
-        val projectWalletHashes = projectWallets.values.mapNotNull { it.hash }
-        val projectsInfo = blockchainService.getProjectsInfo(projectWalletHashes)
-            .toList()
-            .associateBy { it.txHash }
-        val projectsWithWallet = projectService.getProjects(projectWallets.keys)
-            .filter { it.active && it.endDate.isAfter(now) }
-            .mapNotNull { project ->
-                projectWallets[project.uuid]?.let { wallet ->
-                    val projectInfo = projectsInfo[wallet.hash]
-                    val balance = projectInfo?.balance
-                    val payoutInProcess = projectInfo?.payoutInProcess
-                    ProjectWithWallet(project, wallet, balance, payoutInProcess)
-                }
-            }
-        return PageImpl(projectsWithWallet, pageable, walletsPage.totalElements)
     }
 
     private fun createWallet(

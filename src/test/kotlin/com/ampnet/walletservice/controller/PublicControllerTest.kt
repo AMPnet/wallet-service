@@ -1,9 +1,7 @@
 package com.ampnet.walletservice.controller
 
-import com.ampnet.walletservice.controller.pojo.response.ProjectWithWalletListResponse
 import com.ampnet.walletservice.controller.pojo.response.WalletResponse
 import com.ampnet.walletservice.persistence.model.Wallet
-import com.ampnet.walletservice.security.WithMockCrowdfoundUser
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -17,7 +15,6 @@ import java.util.UUID
 class PublicControllerTest : ControllerTestBase() {
 
     private val projectWalletPublicPath = "/public/wallet/project"
-    private val publicProjectActivePath = "/public/project/active"
 
     private lateinit var testContext: TestContext
 
@@ -60,141 +57,8 @@ class PublicControllerTest : ControllerTestBase() {
         }
     }
 
-    @Test
-    fun mustBeAbleToGetAllActiveProjectsWithWallet() {
-        suppose("Project wallet exists") {
-            testContext.wallet = createWalletForProject(projectUuid, walletHash)
-        }
-        suppose("Second inactive project wallet exists") {
-            testContext.inactiveProjectWallet =
-                createWalletForProject(UUID.randomUUID(), "th_49bC6a8219c798394726f8e86E040A878da1d00A")
-        }
-        suppose("Blockchain service will return projects info") {
-            val inactiveWalletHash = getWalletHash(testContext.inactiveProjectWallet)
-            Mockito.`when`(
-                blockchainService.getProjectsInfo(listOf(walletHash, inactiveWalletHash))
-            ).thenReturn(
-                listOf(
-                    getProjectInfoResponse(walletHash, testContext.projectBalance),
-                    getProjectInfoResponse(inactiveWalletHash, testContext.projectBalance - 100)
-                )
-            )
-            Mockito.`when`(
-                blockchainService.getProjectsInfo(listOf(inactiveWalletHash, walletHash))
-            ).thenReturn(
-                listOf(
-                    getProjectInfoResponse(inactiveWalletHash, testContext.projectBalance - 100),
-                    getProjectInfoResponse(walletHash, testContext.projectBalance)
-                )
-            )
-        }
-        suppose("Project service will return projects") {
-            val projects = listOf(projectUuid, testContext.inactiveProjectWallet.owner)
-            Mockito.`when`(
-                projectService.getProjects(projects.toSet())
-            ).thenReturn(
-                listOf(
-                    getProjectResponse(projects[0], userUuid, UUID.randomUUID()),
-                    getProjectResponse(projects[1], userUuid, UUID.randomUUID(), active = false)
-                )
-            )
-        }
-
-        verify("Controller will return only active project") {
-            val result = mockMvc.perform(
-                get(publicProjectActivePath)
-                    .param("coop", COOP)
-                    .param("size", "20")
-                    .param("page", "0")
-                    .param("sort", "createdAt,desc")
-            )
-                .andExpect(status().isOk)
-                .andReturn()
-
-            val projectsResponse: ProjectWithWalletListResponse =
-                objectMapper.readValue(result.response.contentAsString)
-            assertThat(projectsResponse.projects).hasSize(1)
-            projectsResponse.projects.forEach { assertThat(it.wallet.coop).isEqualTo(COOP) }
-            val projectWithWallet = projectsResponse.projects.first()
-            assertThat(projectWithWallet.project.uuid).isEqualTo(projectUuid)
-            assertThat(projectWithWallet.wallet.uuid).isEqualTo(testContext.wallet.uuid)
-            assertThat(projectWithWallet.wallet.balance).isEqualTo(testContext.projectBalance)
-            assertThat(projectsResponse.page).isEqualTo(0)
-            assertThat(projectsResponse.totalPages).isEqualTo(1)
-        }
-    }
-
-    @Test
-    fun mustBeAbleToGetEmptyListOfActiveProjects() {
-        verify("Controller will return empty list of active projects") {
-            val result = mockMvc.perform(
-                get(publicProjectActivePath)
-                    .param("coop", COOP)
-            )
-                .andExpect(status().isOk)
-                .andReturn()
-
-            val projectsResponse: ProjectWithWalletListResponse =
-                objectMapper.readValue(result.response.contentAsString)
-            assertThat(projectsResponse.projects).hasSize(0)
-        }
-    }
-
-    @Test
-    fun mustNotReturnEndedProjectInActiveProjects() {
-        suppose("Project wallet exists") {
-            testContext.wallet = createWalletForProject(projectUuid, walletHash)
-        }
-        suppose("Blockchain service will return projects info") {
-            Mockito.`when`(
-                blockchainService.getProjectsInfo(listOf(walletHash))
-            ).thenReturn(
-                listOf(getProjectInfoResponse(walletHash, testContext.projectBalance))
-            )
-        }
-        suppose("Project service will return projects") {
-            Mockito.`when`(
-                projectService.getProjects(setOf(projectUuid))
-            ).thenReturn(
-                listOf(getProjectResponse(projectUuid, userUuid, UUID.randomUUID(), endDate = ZonedDateTime.now().minusDays(10)))
-            )
-        }
-
-        verify("Controller will not return ended project") {
-            val result = mockMvc.perform(
-                get(publicProjectActivePath)
-                    .param("coop", COOP)
-            )
-                .andExpect(status().isOk)
-                .andReturn()
-
-            val projectsResponse: ProjectWithWalletListResponse =
-                objectMapper.readValue(result.response.contentAsString)
-            assertThat(projectsResponse.projects).hasSize(0)
-        }
-    }
-
-    @Test
-    @WithMockCrowdfoundUser(verified = false)
-    fun mustBeAbleToGetActiveProjectsWithUnVerifiedAccount() {
-        verify("User with unverified account can access public project path") {
-            val result = mockMvc.perform(
-                get(publicProjectActivePath)
-                    .param("coop", COOP)
-            )
-                .andExpect(status().isOk)
-                .andReturn()
-
-            val projectsResponse: ProjectWithWalletListResponse =
-                objectMapper.readValue(result.response.contentAsString)
-            assertThat(projectsResponse.projects).hasSize(0)
-        }
-    }
-
     private class TestContext {
         lateinit var wallet: Wallet
-        lateinit var inactiveProjectWallet: Wallet
         val walletBalance = 100L
-        val projectBalance = 10_000_000_00L
     }
 }
