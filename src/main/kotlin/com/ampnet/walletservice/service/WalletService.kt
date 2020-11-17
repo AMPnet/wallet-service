@@ -5,9 +5,6 @@ import com.ampnet.walletservice.controller.pojo.request.WalletCreateRequest
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionDataAndInfo
 import com.ampnet.walletservice.persistence.model.PairWalletCode
 import com.ampnet.walletservice.persistence.model.Wallet
-import com.ampnet.walletservice.service.pojo.response.ProjectWithWallet
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.Pageable
 import java.util.UUID
 
 interface WalletService {
@@ -20,5 +17,4 @@ interface WalletService {
     fun createOrganizationWallet(organization: UUID, signedTransaction: String, coop: String): Wallet
     fun generatePairWalletCode(publicKey: String): PairWalletCode
     fun getPairWalletCode(code: String): PairWalletCode?
-    fun getProjectsWithActiveWallet(coop: String?, pageable: Pageable): Page<ProjectWithWallet>
 }
