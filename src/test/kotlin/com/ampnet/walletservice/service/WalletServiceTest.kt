@@ -3,6 +3,7 @@ package com.ampnet.walletservice.service
 import com.ampnet.walletservice.controller.COOP
 import com.ampnet.walletservice.controller.pojo.request.WalletCreateRequest
 import com.ampnet.walletservice.enums.Currency
+import com.ampnet.walletservice.enums.PrivilegeType
 import com.ampnet.walletservice.enums.WalletType
 import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.exception.InvalidRequestException
@@ -91,6 +92,10 @@ class WalletServiceTest : JpaServiceTestBase() {
         verify("Mail notification for created wallet") {
             Mockito.verify(mockedMailService, Mockito.times(1))
                 .sendNewWalletMail(WalletTypeProto.USER, COOP, defaultPublicKey)
+        }
+        verify("Deploy coop contract is not called") {
+            Mockito.verify(mockedBlockchainService, Mockito.never())
+                .deployCoopContract(COOP, defaultAddressHash)
         }
     }
 
@@ -396,6 +401,33 @@ class WalletServiceTest : JpaServiceTestBase() {
                 )
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.WALLET_HASH_EXISTS)
+        }
+    }
+
+    @Test
+    fun mustThrowExceptionForActivatingMissingWallet() {
+        verify("Service will throw exception for missing wallet") {
+            val exception = assertThrows<ResourceNotFoundException> {
+                walletService.activateAdminWallet(defaultPublicKey, COOP, defaultAddressHash)
+            }
+            assertThat(exception.errorCode).isEqualTo(ErrorCode.WALLET_MISSING)
+        }
+    }
+
+    @Test
+    fun mustDeployCoopContractOnAdminWalletCreation() {
+        suppose("There is one wallet in coop") {
+            createWalletForUser(userUuid, defaultPublicKey)
+        }
+
+        verify("Admin can create a wallet") {
+            val request = WalletCreateRequest(defaultAddressHash, "admin@mail.com", "arkane")
+            val user = createUserPrincipal(UUID.randomUUID(), authorities = setOf(PrivilegeType.PWA_COOP.name))
+            walletService.createUserWallet(user, request)
+        }
+        verify("Deploy coop contract is called") {
+            Mockito.verify(mockedBlockchainService, Mockito.times(1))
+                .deployCoopContract(COOP, defaultAddressHash)
         }
     }
 

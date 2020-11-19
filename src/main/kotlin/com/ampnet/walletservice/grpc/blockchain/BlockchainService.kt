@@ -34,4 +34,5 @@ interface BlockchainService {
     fun generateTransferPlatformManager(address: String): TransactionData
     fun getTransactionState(txHash: String): TransactionState
     fun getSellOffers(): List<SellOfferData>
+    fun deployCoopContract(coop: String, address: String)
 }

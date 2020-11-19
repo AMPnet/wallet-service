@@ -188,6 +188,11 @@ message GenerateCreateProjectTxRequest {
     string end_investment_time = 6;
 }
 
+message CreateCooperativeRequest {
+    string coop = 1;
+    string wallet = 2;
+}
+
 ////////// Generic messages ////////////////
 
 message RawTxResponse {
@@ -277,4 +282,6 @@ service BlockchainService {
     rpc GetInvestmentsInProject (InvestmentsInProjectRequest) returns (TransactionsResponse);
     rpc GetTransactionInfo (TransactionInfoRequest) returns (TransactionInfo);
     rpc GetActiveSellOffers (Empty) returns (ActiveSellOffersResponse);
+
+    rpc CreateCooperative(CreateCooperativeRequest) returns (Empty);
 }

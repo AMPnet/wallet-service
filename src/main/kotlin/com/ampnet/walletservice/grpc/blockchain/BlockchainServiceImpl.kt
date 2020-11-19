@@ -2,6 +2,7 @@ package com.ampnet.walletservice.grpc.blockchain
 
 import com.ampnet.crowdfunding.proto.BalanceRequest
 import com.ampnet.crowdfunding.proto.BlockchainServiceGrpc
+import com.ampnet.crowdfunding.proto.CreateCooperativeRequest
 import com.ampnet.crowdfunding.proto.Empty
 import com.ampnet.crowdfunding.proto.GenerateAddWalletTxRequest
 import com.ampnet.crowdfunding.proto.GenerateApproveProjectWithdrawTxRequest
@@ -418,6 +419,19 @@ class BlockchainServiceImpl(
                 .getActiveSellOffers(Empty.newBuilder().build())
             logger.debug { "Active sell offers, size = ${response.offersCount}" }
             return response.offersList.map { SellOfferData(it) }
+        } catch (ex: StatusRuntimeException) {
+            throw getInternalExceptionFromStatusException(ex, "Could not get active sell offers")
+        }
+    }
+
+    override fun deployCoopContract(coop: String, address: String) {
+        logger.info { "Deploy contract for coop: $coop with admin address: $address" }
+        try {
+            val request = CreateCooperativeRequest.newBuilder()
+                .setCoop(coop)
+                .setWallet(address)
+                .build()
+            serviceBlockingStub.createCooperative(request)
         } catch (ex: StatusRuntimeException) {
             throw getInternalExceptionFromStatusException(ex, "Could not get active sell offers")
         }
