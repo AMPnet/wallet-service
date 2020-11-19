@@ -5,6 +5,7 @@ import com.ampnet.walletservice.controller.pojo.request.WalletCreateRequest
 import com.ampnet.walletservice.enums.Currency
 import com.ampnet.walletservice.enums.WalletType
 import com.ampnet.walletservice.exception.ErrorCode
+import com.ampnet.walletservice.exception.InvalidRequestException
 import com.ampnet.walletservice.exception.ResourceAlreadyExistsException
 import com.ampnet.walletservice.exception.ResourceNotFoundException
 import com.ampnet.walletservice.persistence.model.PairWalletCode
@@ -88,7 +89,8 @@ class WalletServiceTest : JpaServiceTestBase() {
             assertThat(optionalPairWalletCode).isNotPresent
         }
         verify("Mail notification for created wallet") {
-            Mockito.verify(mockedMailService, Mockito.times(1)).sendNewWalletMail(WalletTypeProto.USER, COOP, defaultPublicKey)
+            Mockito.verify(mockedMailService, Mockito.times(1))
+                .sendNewWalletMail(WalletTypeProto.USER, COOP, defaultPublicKey)
         }
     }
 
@@ -118,7 +120,8 @@ class WalletServiceTest : JpaServiceTestBase() {
             assertThat(projectWallet.providerId).isNull()
         }
         verify("Mail notification for created wallet") {
-            Mockito.verify(mockedMailService, Mockito.times(1)).sendNewWalletMail(WalletTypeProto.PROJECT, COOP, defaultAddressHash)
+            Mockito.verify(mockedMailService, Mockito.times(1))
+                .sendNewWalletMail(WalletTypeProto.PROJECT, COOP, defaultAddressHash)
         }
     }
 
@@ -205,7 +208,10 @@ class WalletServiceTest : JpaServiceTestBase() {
     fun mustThrowExceptionWhenGenerateTransactionToCreateOrganizationWalletWithoutUserWallet() {
         verify("Service can generate create organization transaction") {
             val exception = assertThrows<ResourceNotFoundException> {
-                walletService.generateTransactionToCreateOrganizationWallet(organizationUuid, createUserPrincipal(userUuid))
+                walletService.generateTransactionToCreateOrganizationWallet(
+                    organizationUuid,
+                    createUserPrincipal(userUuid)
+                )
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.WALLET_MISSING)
         }
@@ -219,7 +225,10 @@ class WalletServiceTest : JpaServiceTestBase() {
 
         verify("Service will throw exception that organization already has a wallet") {
             val exception = assertThrows<ResourceAlreadyExistsException> {
-                walletService.generateTransactionToCreateOrganizationWallet(organizationUuid, createUserPrincipal(userUuid))
+                walletService.generateTransactionToCreateOrganizationWallet(
+                    organizationUuid,
+                    createUserPrincipal(userUuid)
+                )
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.WALLET_EXISTS)
         }
@@ -274,7 +283,8 @@ class WalletServiceTest : JpaServiceTestBase() {
             assertThat(wallet.providerId).isNull()
         }
         verify("Mail notification for created wallet") {
-            Mockito.verify(mockedMailService, Mockito.times(1)).sendNewWalletMail(WalletTypeProto.ORGANIZATION, COOP, defaultAddressHash)
+            Mockito.verify(mockedMailService, Mockito.times(1))
+                .sendNewWalletMail(WalletTypeProto.ORGANIZATION, COOP, defaultAddressHash)
         }
     }
 
@@ -346,6 +356,46 @@ class WalletServiceTest : JpaServiceTestBase() {
         verify("Old pair wallet code is deleted") {
             val oldPairWalletCode = pairWalletCodeRepository.findById(testContext.pairWalletCode.id)
             assertThat(oldPairWalletCode).isNotPresent
+        }
+    }
+
+    @Test
+    fun mustBeAbleToActiveWallet() {
+        suppose("Unactivated wallet exists") {
+            val wallet = createWalletForUser(userUuid, defaultPublicKey)
+            wallet.hash = null
+            testContext.wallet = walletRepository.save(wallet)
+        }
+
+        verify("Service can activated wallet") {
+            val wallet = walletService.activateAdminWallet(
+                testContext.wallet.activationData,
+                testContext.wallet.coop,
+                defaultAddressHash
+            )
+            assertThat(wallet.hash).isEqualTo(defaultAddressHash)
+        }
+        verify("Wallet is activated") {
+            val wallet = walletRepository.findByActivationDataAndCoop(
+                testContext.wallet.activationData, testContext.wallet.coop
+            )
+            assertThat(wallet.get().hash).isEqualTo(defaultAddressHash)
+        }
+    }
+
+    @Test
+    fun mustNotBeAbleToActivatedAlreadyActivatedWallet() {
+        suppose("User has activated wallet") {
+            testContext.wallet = createWalletForUser(userUuid, defaultAddressHash)
+        }
+
+        verify("Service will throw exception that the wallet is already activated") {
+            val exception = assertThrows<InvalidRequestException> {
+                walletService.activateAdminWallet(
+                    testContext.wallet.activationData, testContext.wallet.coop, defaultAddressHash
+                )
+            }
+            assertThat(exception.errorCode).isEqualTo(ErrorCode.WALLET_HASH_EXISTS)
         }
     }
 

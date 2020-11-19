@@ -9,6 +9,7 @@ import com.ampnet.walletservice.proto.GetWalletsByHashRequest
 import com.ampnet.walletservice.proto.GetWalletsByOwnerRequest
 import com.ampnet.walletservice.proto.WalletResponse
 import com.ampnet.walletservice.proto.WalletsResponse
+import com.ampnet.walletservice.service.WalletService
 import io.grpc.stub.StreamObserver
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -20,6 +21,7 @@ class GrpcWalletServerTest : TestBase() {
     private val coop = "ampnet"
 
     private val mockedWalletRepository = Mockito.mock(WalletRepository::class.java)
+    private val mockedWalletService = Mockito.mock(WalletService::class.java)
 
     private lateinit var grpcServer: GrpcWalletServer
     private lateinit var testContext: TestContext
@@ -27,7 +29,7 @@ class GrpcWalletServerTest : TestBase() {
     @BeforeEach
     fun init() {
         Mockito.reset(mockedWalletRepository)
-        grpcServer = GrpcWalletServer(mockedWalletRepository)
+        grpcServer = GrpcWalletServer(mockedWalletRepository, mockedWalletService)
         testContext = TestContext()
     }
 
