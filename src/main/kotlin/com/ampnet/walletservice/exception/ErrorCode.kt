@@ -31,7 +31,6 @@ enum class ErrorCode(val categoryCode: String, var specificCode: String, var mes
     PRJ_MISSING("07", "01", "Non existing project"),
     PRJ_DATE_EXPIRED("07", "03", "Project has expired"),
     PRJ_MAX_PER_USER("07", "04", "User has exceeded max funds per project"),
-    PRJ_MIN_PER_USER("07", "05", "Funding is below project minimum"),
     PRJ_MAX_FUNDS("07", "06", "Project has reached expected funding"),
     PRJ_NOT_ACTIVE("07", "07", "Project is not active"),
     PRJ_MISSING_PRIVILEGE("07", "11", "User is missing a privilege for project"),
