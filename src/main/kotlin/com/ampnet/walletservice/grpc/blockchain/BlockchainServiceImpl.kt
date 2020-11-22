@@ -75,19 +75,20 @@ class BlockchainServiceImpl(
         }
     }
 
-    override fun addWallet(activationData: String): TransactionData {
-        logger.info { "Adding wallet with activation data: $activationData" }
+    override fun addWallet(activationData: String, coop: String): TransactionData {
+        logger.info { "Adding wallet with activation data: $activationData for coop: $coop" }
         try {
             val response = serviceWithTimeout()
                 .generateAddWalletTx(
                     GenerateAddWalletTxRequest.newBuilder()
                         .setWallet(activationData)
+                        .setCoop(coop)
                         .build()
                 )
             logger.info { "Successfully added wallet: $response" }
             return TransactionData(response)
         } catch (ex: StatusRuntimeException) {
-            throw getInternalExceptionFromStatusException(ex, "Could not add wallet: $activationData")
+            throw getInternalExceptionFromStatusException(ex, "Could not add wallet: $activationData for coop: $coop")
         }
     }
 
@@ -131,8 +132,8 @@ class BlockchainServiceImpl(
         }
     }
 
-    override fun postTransaction(transaction: String) =
-        postTransactionWithRetries(transaction, 0)
+    override fun postTransaction(transaction: String, coop: String) =
+        postTransactionWithRetries(transaction, coop, 0)
 
     override fun generateProjectInvestmentTransaction(request: ProjectInvestmentTxRequest): TransactionData {
         logger.info {
@@ -366,17 +367,21 @@ class BlockchainServiceImpl(
         }
     }
 
-    override fun generateTransferTokenIssuer(address: String): TransactionData {
-        logger.info { "Generating transfer token issuer for address: $address" }
+    override fun generateTransferTokenIssuer(address: String, coop: String): TransactionData {
+        logger.info { "Generating transfer token issuer for address: $address for coop: $coop" }
         try {
             val request = GenerateTransferTokenIssuerOwnershipTxRequest.newBuilder()
                 .setNewOwnerWallet(address)
+                .setCoop(coop)
                 .build()
             val response = serviceWithTimeout().generateTransferTokenIssuerOwnershipTx(request)
             logger.info { "Successfully generated transfer token issuer for address: $address" }
             return TransactionData(response)
         } catch (ex: StatusRuntimeException) {
-            throw getInternalExceptionFromStatusException(ex, "Could not generate transfer token issuer")
+            throw getInternalExceptionFromStatusException(
+                ex,
+                "Could not generate transfer token issuer for coop: $coop"
+            )
         }
     }
 
@@ -396,17 +401,21 @@ class BlockchainServiceImpl(
         }
     }
 
-    override fun generateTransferPlatformManager(address: String): TransactionData {
-        logger.info { "Generating transfer platform manager for address: $address" }
+    override fun generateTransferPlatformManager(address: String, coop: String): TransactionData {
+        logger.info { "Generating transfer platform manager for address: $address for coop: $coop" }
         try {
             val request = GenerateTransferPlatformManagerOwnershipTxRequest.newBuilder()
                 .setNewOwnerWallet(address)
+                .setCoop(coop)
                 .build()
             val response = serviceWithTimeout().generateTransferPlatformManagerOwnershipTx(request)
             logger.info { "Successfully generated transfer platform manager for address: $address" }
             return TransactionData(response)
         } catch (ex: StatusRuntimeException) {
-            throw getInternalExceptionFromStatusException(ex, "Could not generate transfer platform manager")
+            throw getInternalExceptionFromStatusException(
+                ex,
+                "Could not generate transfer platform manager for coop: $coop"
+            )
         }
     }
 
@@ -452,7 +461,7 @@ class BlockchainServiceImpl(
     private fun serviceWithTimeout() = serviceBlockingStub
         .withDeadlineAfter(applicationProperties.grpc.blockchainServiceTimeout, TimeUnit.MILLISECONDS)
 
-    private fun postTransactionWithRetries(transaction: String, retryCount: Int): String {
+    private fun postTransactionWithRetries(transaction: String, coop: String, retryCount: Int): String {
         logger.info { "Posting transaction (#$retryCount)" }
         if (retryCount > applicationProperties.grpc.blockchainServiceMaxRetries) {
             logger.warn { "Retry posting transaction exceeded" }
@@ -463,6 +472,7 @@ class BlockchainServiceImpl(
                 .postTransaction(
                     PostTxRequest.newBuilder()
                         .setData(transaction)
+                        .setCoop(coop)
                         .build()
                 )
             logger.info { "Successfully posted transaction: ${response.txHash}" }
@@ -478,7 +488,7 @@ class BlockchainServiceImpl(
             // retry posting transaction for unknown errors
             logger.warn("Failed to post transaction", ex)
             sleep(applicationProperties.grpc.blockchainServiceRetryDelay)
-            return postTransactionWithRetries(transaction, retryCount + 1)
+            return postTransactionWithRetries(transaction, coop, retryCount + 1)
         }
     }
 

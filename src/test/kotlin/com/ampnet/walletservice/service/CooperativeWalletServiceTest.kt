@@ -21,6 +21,7 @@ class CooperativeWalletServiceTest : JpaServiceTestBase() {
     private val walletAddress = "ak_RYkcTuYcyxQ6fWZsL2G3Kj3K5WCRUEXsi76bPUNkEsoHc52Wp"
     private val secondWalletAddress = "ak_2rTBMSCJgbeQoSt3MzSk93kAaYKjuTFyyfcMbhp62e2JJCTiSS"
     private val secondUser: UUID = UUID.randomUUID()
+    private val newCoop = "new-coop"
 
     private val service: CooperativeWalletService by lazy {
         databaseCleanerService.deleteAllWallets()
@@ -37,7 +38,7 @@ class CooperativeWalletServiceTest : JpaServiceTestBase() {
     @Test
     fun mustTransferOwnershipToAdmin() {
         suppose("Blockchain service will handle post transaction") {
-            Mockito.`when`(mockedBlockchainService.postTransaction(signedTransaction))
+            Mockito.`when`(mockedBlockchainService.postTransaction(signedTransaction, COOP))
                 .thenReturn(txHash)
         }
         suppose("Blockchain service will return transaction status") {
@@ -66,7 +67,7 @@ class CooperativeWalletServiceTest : JpaServiceTestBase() {
     @Test
     fun mustTransferOwnershipToTokenIssuer() {
         suppose("Blockchain service will handle post transaction") {
-            Mockito.`when`(mockedBlockchainService.postTransaction(signedTransaction))
+            Mockito.`when`(mockedBlockchainService.postTransaction(signedTransaction, COOP))
                 .thenReturn(txHash)
         }
         suppose("Blockchain service will return transaction status") {
@@ -95,7 +96,7 @@ class CooperativeWalletServiceTest : JpaServiceTestBase() {
     @Test
     fun mustTransferOwnershipToPlatformManager() {
         suppose("Blockchain service will handle post transaction") {
-            Mockito.`when`(mockedBlockchainService.postTransaction(signedTransaction))
+            Mockito.`when`(mockedBlockchainService.postTransaction(signedTransaction, COOP))
                 .thenReturn(txHash)
         }
         suppose("Blockchain service will return transaction status") {
@@ -124,7 +125,7 @@ class CooperativeWalletServiceTest : JpaServiceTestBase() {
     @Test
     fun mustNotTransferOwnershipToPlatformManagerFromAnotherCoop() {
         suppose("Blockchain service will handle post transaction") {
-            Mockito.`when`(mockedBlockchainService.postTransaction(signedTransaction))
+            Mockito.`when`(mockedBlockchainService.postTransaction(signedTransaction, newCoop))
                 .thenReturn(txHash)
         }
         suppose("Blockchain service will return transaction status") {
@@ -132,15 +133,15 @@ class CooperativeWalletServiceTest : JpaServiceTestBase() {
                 .thenReturn(TransactionState.MINED)
         }
         suppose("Blockchain service will return user address as platform manager") {
-            Mockito.`when`(mockedBlockchainService.getTokenIssuer("new-coop"))
+            Mockito.`when`(mockedBlockchainService.getTokenIssuer(newCoop))
                 .thenReturn(secondWalletAddress)
-            Mockito.`when`(mockedBlockchainService.getPlatformManager("new-coop"))
+            Mockito.`when`(mockedBlockchainService.getPlatformManager(newCoop))
                 .thenReturn(walletAddress)
         }
 
         verify("Service will set user as platform manager") {
             val request = TransferOwnershipRequest(
-                secondUser, walletAddress, TransferWalletType.PLATFORM_MANAGER, signedTransaction, "new-coop"
+                secondUser, walletAddress, TransferWalletType.PLATFORM_MANAGER, signedTransaction, newCoop
             )
             service.transferOwnership(request)
             assertThrows<InvalidRequestException> {

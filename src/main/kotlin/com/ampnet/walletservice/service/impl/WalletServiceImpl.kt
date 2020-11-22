@@ -104,7 +104,7 @@ class WalletServiceImpl(
     override fun createProjectWallet(project: UUID, signedTransaction: String, coop: String): Wallet {
         throwExceptionIfProjectHasWallet(project)
         logger.debug { "Creating wallet for project: $project" }
-        val txHash = blockchainService.postTransaction(signedTransaction)
+        val txHash = blockchainService.postTransaction(signedTransaction, coop)
         val wallet = createWallet(project, txHash, WalletType.PROJECT, coop)
         logger.debug { "Created wallet for project: $project" }
         mailService.sendNewWalletMail(WalletTypeProto.PROJECT, coop, txHash)
@@ -137,7 +137,7 @@ class WalletServiceImpl(
     override fun createOrganizationWallet(organization: UUID, signedTransaction: String, coop: String): Wallet {
         throwExceptionIfOrganizationAlreadyHasWallet(organization)
         logger.debug { "Creating wallet for organization: $organization" }
-        val txHash = blockchainService.postTransaction(signedTransaction)
+        val txHash = blockchainService.postTransaction(signedTransaction, coop)
         val wallet = createWallet(organization, txHash, WalletType.ORG, coop)
         logger.debug { "Created wallet for organization: $organization" }
         mailService.sendNewWalletMail(WalletTypeProto.ORGANIZATION, coop, txHash)

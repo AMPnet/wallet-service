@@ -7,7 +7,7 @@ import java.util.UUID
 
 interface ProjectInvestmentService {
     fun generateInvestInProjectTransaction(request: ProjectInvestmentRequest): TransactionDataAndInfo
-    fun investInProject(signedTransaction: String): String
+    fun investInProject(signedTransaction: String, coop: String): String
     fun generateCancelInvestmentsInProjectTransaction(projectUuid: UUID, user: UserPrincipal): TransactionDataAndInfo
-    fun cancelInvestmentsInProject(signedTransaction: String): String
+    fun cancelInvestmentsInProject(signedTransaction: String, coop: String): String
 }

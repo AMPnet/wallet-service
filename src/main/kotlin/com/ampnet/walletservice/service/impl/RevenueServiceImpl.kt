@@ -59,7 +59,7 @@ class RevenueServiceImpl(
                 ErrorCode.WALLET_PAYOUT_MISSING, "Missing RevenuePayout with id: $revenuePayoutId"
             )
         }
-        val txHash = blockchainService.postTransaction(signedTransaction)
+        val txHash = blockchainService.postTransaction(signedTransaction, revenuePayout.coop)
         revenuePayout.txHash = txHash
         revenuePayout.completedAt = ZonedDateTime.now()
         return revenuePayout

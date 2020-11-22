@@ -102,7 +102,7 @@ class WithdrawServiceImpl(
         val withdraw = ServiceUtils.getWithdraw(withdrawId, withdrawRepository)
         validateWithdrawIsNotApproved(withdraw)
         logger.info { "Approving Withdraw: $withdraw" }
-        val approvalTxHash = blockchainService.postTransaction(signedTransaction)
+        val approvalTxHash = blockchainService.postTransaction(signedTransaction, withdraw.coop)
         withdraw.approvedTxHash = approvalTxHash
         withdraw.approvedAt = ZonedDateTime.now()
         logger.info { "Approved Withdraw: $withdraw" }

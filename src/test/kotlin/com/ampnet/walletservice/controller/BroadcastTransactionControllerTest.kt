@@ -62,7 +62,7 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
                 createTransactionInfo(TransactionType.WALLET_ACTIVATE, userUuid, testContext.wallet.uuid.toString())
         }
         suppose("Blockchain service successfully generates transaction to activate wallet") {
-            Mockito.`when`(blockchainService.postTransaction(signedTransaction)).thenReturn(txHash)
+            Mockito.`when`(blockchainService.postTransaction(signedTransaction, COOP)).thenReturn(txHash)
         }
 
         verify("Cooperative can activate wallet") {
@@ -102,7 +102,7 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
                 createTransactionInfo(TransactionType.CREATE_ORG, userUuid, organizationUuid.toString())
         }
         suppose("Blockchain service successfully generates transaction to create organization wallet") {
-            Mockito.`when`(blockchainService.postTransaction(signedTransaction)).thenReturn(activationData)
+            Mockito.`when`(blockchainService.postTransaction(signedTransaction, COOP)).thenReturn(activationData)
         }
 
         verify("User can create organization wallet") {
@@ -163,7 +163,7 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
                 createTransactionInfo(TransactionType.CREATE_PROJECT, userUuid, projectUuid.toString())
         }
         suppose("Blockchain service successfully generates data to create project wallet") {
-            Mockito.`when`(blockchainService.postTransaction(signedTransaction)).thenReturn(activationData)
+            Mockito.`when`(blockchainService.postTransaction(signedTransaction, COOP)).thenReturn(activationData)
         }
 
         verify("User can create project wallet") {
@@ -226,7 +226,7 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
             testContext.transactionInfo = createTransactionInfo(TransactionType.INVEST, userUuid)
         }
         suppose("Blockchain service will accept signed transaction for project investment confirmation") {
-            Mockito.`when`(blockchainService.postTransaction(signedTransaction)).thenReturn(txHash)
+            Mockito.`when`(blockchainService.postTransaction(signedTransaction, COOP)).thenReturn(txHash)
         }
 
         verify("User can post signed transaction to confirm investment in project") {
@@ -254,7 +254,7 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
             testContext.transactionInfo = createTransactionInfo(TransactionType.CANCEL_INVEST, userUuid)
         }
         suppose("Blockchain service will accept signed transaction to cancel investments in project") {
-            Mockito.`when`(blockchainService.postTransaction(signedTransaction)).thenReturn(txHash)
+            Mockito.`when`(blockchainService.postTransaction(signedTransaction, COOP)).thenReturn(txHash)
         }
 
         verify("User can post signed transaction to cancel all investments in project") {
@@ -286,7 +286,7 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
                 createTransactionInfo(TransactionType.MINT, userUuid, testContext.deposit.id.toString())
         }
         suppose("Blockchain service will accept signed transaction for mint transaction") {
-            Mockito.`when`(blockchainService.postTransaction(signedTransaction)).thenReturn(txHash)
+            Mockito.`when`(blockchainService.postTransaction(signedTransaction, COOP)).thenReturn(txHash)
         }
 
         verify("Cooperative can post signed transaction to mint funds") {
@@ -322,7 +322,7 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
                 createTransactionInfo(TransactionType.BURN_APPROVAL, userUuid, testContext.withdraw.id.toString())
         }
         suppose("Blockchain service will accept signed transaction for burn approval") {
-            Mockito.`when`(blockchainService.postTransaction(signedTransaction)).thenReturn(txHash)
+            Mockito.`when`(blockchainService.postTransaction(signedTransaction, COOP)).thenReturn(txHash)
         }
 
         verify("User can post signed transaction to confirm burn approval") {
@@ -354,7 +354,7 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
                 createTransactionInfo(TransactionType.BURN, userUuid, testContext.withdraw.id.toString())
         }
         suppose("Blockchain service will accept signed transaction for issuer burn") {
-            Mockito.`when`(blockchainService.postTransaction(signedTransaction)).thenReturn(txHash)
+            Mockito.`when`(blockchainService.postTransaction(signedTransaction, COOP)).thenReturn(txHash)
         }
 
         verify("Cooperative can post signed transaction to confirm burn") {
@@ -390,7 +390,7 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
                 createTransactionInfo(TransactionType.REVENUE_PAYOUT, userUuid, testContext.revenuePayout.id.toString())
         }
         suppose("Blockchain service will accept signed transaction for revenue payout") {
-            Mockito.`when`(blockchainService.postTransaction(signedTransaction)).thenReturn(txHash)
+            Mockito.`when`(blockchainService.postTransaction(signedTransaction, COOP)).thenReturn(txHash)
         }
 
         verify("User can post signed transaction to confirm burn approval") {
@@ -419,7 +419,7 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
                 createTransactionInfo(TransactionType.TRNSF_TOKEN_OWN, userUuid, walletAddress)
         }
         suppose("Blockchain service will accept signed transaction for transfer token issuer") {
-            Mockito.`when`(blockchainService.postTransaction(signedTransaction)).thenReturn(txHash)
+            Mockito.`when`(blockchainService.postTransaction(signedTransaction, COOP)).thenReturn(txHash)
         }
 
         verify("User can post signed transaction to confirm transfer token issuer") {
@@ -448,7 +448,7 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
                 createTransactionInfo(TransactionType.TRNSF_PLTFRM_OWN, userUuid, walletAddress)
         }
         suppose("Blockchain service will accept signed transaction for transfer platform manager") {
-            Mockito.`when`(blockchainService.postTransaction(signedTransaction)).thenReturn(txHash)
+            Mockito.`when`(blockchainService.postTransaction(signedTransaction, COOP)).thenReturn(txHash)
         }
 
         verify("User can post signed transaction to confirm transfer platform manager") {

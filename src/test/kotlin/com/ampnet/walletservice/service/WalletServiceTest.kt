@@ -103,7 +103,7 @@ class WalletServiceTest : JpaServiceTestBase() {
     fun mustBeAbleToCreateWalletForProject() {
         suppose("Blockchain service successfully adds wallet") {
             Mockito.`when`(
-                mockedBlockchainService.postTransaction(signedTransaction)
+                mockedBlockchainService.postTransaction(signedTransaction, COOP)
             ).thenReturn(defaultAddressHash)
         }
 
@@ -266,7 +266,7 @@ class WalletServiceTest : JpaServiceTestBase() {
     fun mustBeAbleToCreateOrganizationWallet() {
         suppose("Blockchain service successfully adds wallet") {
             Mockito.`when`(
-                mockedBlockchainService.postTransaction(signedTransaction)
+                mockedBlockchainService.postTransaction(signedTransaction, COOP)
             ).thenReturn(defaultAddressHash)
         }
 
@@ -314,7 +314,7 @@ class WalletServiceTest : JpaServiceTestBase() {
         }
         suppose("Blockchain service will return same hash for new project wallet transaction") {
             Mockito.`when`(
-                mockedBlockchainService.postTransaction(signedTransaction)
+                mockedBlockchainService.postTransaction(signedTransaction, COOP)
             ).thenReturn(defaultAddressHash)
         }
 
