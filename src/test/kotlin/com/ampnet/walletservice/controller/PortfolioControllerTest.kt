@@ -129,7 +129,7 @@ class PortfolioControllerTest : ControllerTestBase() {
                 )
             )
             Mockito.`when`(
-                blockchainService.getTransactions(getWallet(userUuid).activationData)
+                blockchainService.getTransactions(getWalletHash(userUuid))
             ).thenReturn(testContext.transactions)
         }
 
@@ -153,7 +153,7 @@ class PortfolioControllerTest : ControllerTestBase() {
         }
         suppose("Blockchain service will return empty portfolio stats") {
             Mockito.`when`(
-                blockchainService.getTransactions(getWallet(userUuid).activationData)
+                blockchainService.getTransactions(getWalletHash(userUuid))
             ).thenReturn(emptyList())
         }
 
@@ -264,7 +264,7 @@ class PortfolioControllerTest : ControllerTestBase() {
                 )
             )
             Mockito.`when`(
-                blockchainService.getTransactions(getWallet(userUuid).activationData)
+                blockchainService.getTransactions(getWalletHash(userUuid))
             ).thenReturn(testContext.transactions)
         }
         suppose("User service will return a list of users") {

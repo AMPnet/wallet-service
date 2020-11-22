@@ -25,7 +25,7 @@ interface BlockchainService {
     fun generateApproveProjectBurnTransaction(request: ApproveProjectBurnTransactionRequest): TransactionData
     fun generateRevenuePayout(request: RevenuePayoutTxRequest): TransactionData
     fun getPortfolio(hash: String): Portfolio
-    fun getTransactions(walletData: String): List<BlockchainTransaction>
+    fun getTransactions(walletHash: String): List<BlockchainTransaction>
     fun getInvestmentsInProject(userWalletAddress: String, projectWalletHash: String): List<BlockchainTransaction>
     fun getProjectsInfo(hashes: List<String>): List<ProjectInfoResponse>
     fun getTokenIssuer(coop: String): String
@@ -33,6 +33,6 @@ interface BlockchainService {
     fun getPlatformManager(coop: String): String
     fun generateTransferPlatformManager(address: String): TransactionData
     fun getTransactionState(txHash: String): TransactionState
-    fun getSellOffers(): List<SellOfferData>
+    fun getSellOffers(coop: String): List<SellOfferData>
     fun deployCoopContract(coop: String, address: String)
 }

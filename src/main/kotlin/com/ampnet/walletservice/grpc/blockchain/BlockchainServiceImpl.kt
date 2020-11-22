@@ -1,9 +1,9 @@
 package com.ampnet.walletservice.grpc.blockchain
 
+import com.ampnet.crowdfunding.proto.ActiveSellOffersRequest
 import com.ampnet.crowdfunding.proto.BalanceRequest
 import com.ampnet.crowdfunding.proto.BlockchainServiceGrpc
 import com.ampnet.crowdfunding.proto.CreateCooperativeRequest
-import com.ampnet.crowdfunding.proto.Empty
 import com.ampnet.crowdfunding.proto.GenerateAddWalletTxRequest
 import com.ampnet.crowdfunding.proto.GenerateApproveProjectWithdrawTxRequest
 import com.ampnet.crowdfunding.proto.GenerateApproveWithdrawTxRequest
@@ -18,8 +18,10 @@ import com.ampnet.crowdfunding.proto.GenerateTransferPlatformManagerOwnershipTxR
 import com.ampnet.crowdfunding.proto.GenerateTransferTokenIssuerOwnershipTxRequest
 import com.ampnet.crowdfunding.proto.GetProjectsInfoRequest
 import com.ampnet.crowdfunding.proto.InvestmentsInProjectRequest
+import com.ampnet.crowdfunding.proto.PlatformManagerRequest
 import com.ampnet.crowdfunding.proto.PortfolioRequest
 import com.ampnet.crowdfunding.proto.PostTxRequest
+import com.ampnet.crowdfunding.proto.TokenIssuerRequest
 import com.ampnet.crowdfunding.proto.TransactionInfoRequest
 import com.ampnet.crowdfunding.proto.TransactionState
 import com.ampnet.crowdfunding.proto.TransactionsRequest
@@ -290,19 +292,19 @@ class BlockchainServiceImpl(
         }
     }
 
-    override fun getTransactions(walletData: String): List<BlockchainTransaction> {
-        logger.debug { "Get transactions for wallet data(user address): $walletData" }
+    override fun getTransactions(walletHash: String): List<BlockchainTransaction> {
+        logger.debug { "Get transactions for wallet hash: $walletHash" }
         try {
             val response = serviceWithTimeout()
                 .getTransactions(
                     TransactionsRequest.newBuilder()
-                        .setWalletData(walletData)
+                        .setWalletHash(walletHash)
                         .build()
                 )
             logger.debug { "Transactions response received, size = ${response.transactionsCount}" }
             return response.transactionsList.map { BlockchainTransaction(it) }
         } catch (ex: StatusRuntimeException) {
-            throw getInternalExceptionFromStatusException(ex, "Could not get transactions for wallet data: $walletData")
+            throw getInternalExceptionFromStatusException(ex, "Could not get transactions for wallet hash: $walletHash")
         }
     }
 
@@ -351,9 +353,12 @@ class BlockchainServiceImpl(
     override fun getTokenIssuer(coop: String): String {
         logger.debug { "Get token issuer for coop: $coop" }
         try {
-            // TODO: add coop to request
             val response = serviceWithTimeout()
-                .getTokenIssuer(Empty.newBuilder().build())
+                .getTokenIssuer(
+                    TokenIssuerRequest.newBuilder()
+                        .setCoop(coop)
+                        .build()
+                )
             logger.debug { "Token issuer address: ${response.wallet}" }
             return response.wallet
         } catch (ex: StatusRuntimeException) {
@@ -378,9 +383,12 @@ class BlockchainServiceImpl(
     override fun getPlatformManager(coop: String): String {
         logger.debug { "Get platform manager for coop: $coop" }
         try {
-            // TODO: add coop to request
             val response = serviceWithTimeout()
-                .getPlatformManager(Empty.newBuilder().build())
+                .getPlatformManager(
+                    PlatformManagerRequest.newBuilder()
+                        .setCoop(coop)
+                        .build()
+                )
             logger.debug { "Platform address: ${response.wallet}" }
             return response.wallet
         } catch (ex: StatusRuntimeException) {
@@ -412,11 +420,15 @@ class BlockchainServiceImpl(
         }
     }
 
-    override fun getSellOffers(): List<SellOfferData> {
+    override fun getSellOffers(coop: String): List<SellOfferData> {
         logger.debug { "Get active sell offers" }
         try {
             val response = serviceWithTimeout()
-                .getActiveSellOffers(Empty.newBuilder().build())
+                .getActiveSellOffers(
+                    ActiveSellOffersRequest.newBuilder()
+                        .setCoop(coop)
+                        .build()
+                )
             logger.debug { "Active sell offers, size = ${response.offersCount}" }
             return response.offersList.map { SellOfferData(it) }
         } catch (ex: StatusRuntimeException) {

@@ -56,7 +56,7 @@ class SellOfferControllerTest : ControllerTestBase() {
         }
         suppose("Blockchain service will return sell offers") {
             Mockito.`when`(
-                blockchainService.getSellOffers()
+                blockchainService.getSellOffers(COOP)
             ).thenReturn(
                 listOf(
                     createSellOffer(testContext.walletHash, 1, 1),
