@@ -71,25 +71,6 @@ class ProjectInvestmentServiceTest : JpaServiceTestBase() {
     }
 
     @Test
-    fun mustThrowExceptionIfInvestmentAmountIsBelowMinimum() {
-        suppose("Project service will return project") {
-            Mockito.`when`(
-                mockedProjectService.getProject(projectUuid)
-            ).thenReturn(getProjectResponse(projectUuid, userUuid, organizationUuid))
-        }
-        suppose("Request amount is below project minimum") {
-            testContext.investmentRequest = ProjectInvestmentRequest(projectUuid, createUserPrincipal(userUuid), 10)
-        }
-
-        verify("Service will throw exception investment below project minimum") {
-            val exception = assertThrows<InvalidRequestException> {
-                projectInvestmentService.generateInvestInProjectTransaction(testContext.investmentRequest)
-            }
-            assertThat(exception.errorCode).isEqualTo(ErrorCode.PRJ_MIN_PER_USER)
-        }
-    }
-
-    @Test
     fun mustThrowExceptionIfInvestmentAmountIsAboveMaximum() {
         suppose("Project service will return project") {
             Mockito.`when`(
