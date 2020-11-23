@@ -97,11 +97,6 @@ class ProjectInvestmentServiceImpl(
                 "User can invest max ${project.maxPerUser.toEurAmount()}"
             )
         }
-        if (amount < project.minPerUser) {
-            throw InvalidRequestException(
-                ErrorCode.PRJ_MIN_PER_USER, "User has to invest at least ${project.minPerUser.toEurAmount()}"
-            )
-        }
     }
 
     private fun verifyUserHasEnoughFunds(hash: String, amount: Long) {
