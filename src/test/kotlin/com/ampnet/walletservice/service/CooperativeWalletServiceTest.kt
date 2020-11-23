@@ -5,11 +5,16 @@ import com.ampnet.userservice.proto.SetRoleRequest
 import com.ampnet.walletservice.controller.COOP
 import com.ampnet.walletservice.enums.TransferWalletType
 import com.ampnet.walletservice.enums.WalletType
+import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.exception.InvalidRequestException
+import com.ampnet.walletservice.exception.ResourceNotFoundException
+import com.ampnet.walletservice.persistence.model.Wallet
 import com.ampnet.walletservice.service.impl.CooperativeWalletServiceImpl
 import com.ampnet.walletservice.service.impl.TransactionInfoServiceImpl
 import com.ampnet.walletservice.service.pojo.request.TransferOwnershipRequest
+import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.Awaitility.await
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
@@ -22,11 +27,9 @@ class CooperativeWalletServiceTest : JpaServiceTestBase() {
     private val secondWalletAddress = "ak_2rTBMSCJgbeQoSt3MzSk93kAaYKjuTFyyfcMbhp62e2JJCTiSS"
     private val secondUser: UUID = UUID.randomUUID()
     private val newCoop = "new-coop"
+    private lateinit var testContext: TestContext
 
     private val service: CooperativeWalletService by lazy {
-        databaseCleanerService.deleteAllWallets()
-        createWallet(userUuid, walletAddress, WalletType.USER)
-        createWallet(secondUser, secondWalletAddress, WalletType.USER)
         val transactionInfoService = TransactionInfoServiceImpl(transactionInfoRepository)
         CooperativeWalletServiceImpl(
             walletRepository, mockedUserService, mockedBlockchainService,
@@ -35,8 +38,18 @@ class CooperativeWalletServiceTest : JpaServiceTestBase() {
         )
     }
 
+    @BeforeEach
+    fun init() {
+        databaseCleanerService.deleteAllWallets()
+        testContext = TestContext()
+    }
+
     @Test
     fun mustTransferOwnershipToAdmin() {
+        suppose("There are two user wallets") {
+            createWallet(userUuid, walletAddress, WalletType.USER)
+            createWallet(secondUser, secondWalletAddress, WalletType.USER)
+        }
         suppose("Blockchain service will handle post transaction") {
             Mockito.`when`(mockedBlockchainService.postTransaction(signedTransaction, COOP))
                 .thenReturn(txHash)
@@ -66,6 +79,10 @@ class CooperativeWalletServiceTest : JpaServiceTestBase() {
 
     @Test
     fun mustTransferOwnershipToTokenIssuer() {
+        suppose("There are two user wallets") {
+            createWallet(userUuid, walletAddress, WalletType.USER)
+            createWallet(secondUser, secondWalletAddress, WalletType.USER)
+        }
         suppose("Blockchain service will handle post transaction") {
             Mockito.`when`(mockedBlockchainService.postTransaction(signedTransaction, COOP))
                 .thenReturn(txHash)
@@ -95,6 +112,10 @@ class CooperativeWalletServiceTest : JpaServiceTestBase() {
 
     @Test
     fun mustTransferOwnershipToPlatformManager() {
+        suppose("There are two user wallets") {
+            createWallet(userUuid, walletAddress, WalletType.USER)
+            createWallet(secondUser, secondWalletAddress, WalletType.USER)
+        }
         suppose("Blockchain service will handle post transaction") {
             Mockito.`when`(mockedBlockchainService.postTransaction(signedTransaction, COOP))
                 .thenReturn(txHash)
@@ -124,6 +145,10 @@ class CooperativeWalletServiceTest : JpaServiceTestBase() {
 
     @Test
     fun mustNotTransferOwnershipToPlatformManagerFromAnotherCoop() {
+        suppose("There are two user wallets") {
+            createWallet(userUuid, walletAddress, WalletType.USER)
+            createWallet(secondUser, secondWalletAddress, WalletType.USER)
+        }
         suppose("Blockchain service will handle post transaction") {
             Mockito.`when`(mockedBlockchainService.postTransaction(signedTransaction, newCoop))
                 .thenReturn(txHash)
@@ -151,5 +176,61 @@ class CooperativeWalletServiceTest : JpaServiceTestBase() {
             }
             Mockito.verifyNoInteractions(mockedUserService)
         }
+    }
+
+    @Test
+    fun mustBeAbleToActiveWallet() {
+        suppose("Unactivated wallet exists") {
+            val wallet = createWalletForUser(userUuid, defaultPublicKey)
+            wallet.hash = null
+            wallet.activatedAt = null
+            testContext.wallet = walletRepository.save(wallet)
+        }
+
+        verify("Service can activated wallet") {
+            val wallet = service.activateAdminWallet(
+                testContext.wallet.activationData,
+                testContext.wallet.coop,
+                defaultAddressHash
+            )
+            assertThat(wallet.hash).isEqualTo(defaultAddressHash)
+        }
+        verify("Wallet is activated") {
+            val wallet = walletRepository.findByActivationDataAndCoop(
+                testContext.wallet.activationData, testContext.wallet.coop
+            )
+            assertThat(wallet.get().hash).isEqualTo(defaultAddressHash)
+            assertThat(wallet.get().activatedAt).isNotNull()
+        }
+    }
+
+    @Test
+    fun mustNotBeAbleToActivatedAlreadyActivatedWallet() {
+        suppose("User has activated wallet") {
+            testContext.wallet = createWalletForUser(userUuid, defaultAddressHash)
+        }
+
+        verify("Service will throw exception that the wallet is already activated") {
+            val exception = assertThrows<InvalidRequestException> {
+                service.activateAdminWallet(
+                    testContext.wallet.activationData, testContext.wallet.coop, defaultAddressHash
+                )
+            }
+            assertThat(exception.errorCode).isEqualTo(ErrorCode.WALLET_HASH_EXISTS)
+        }
+    }
+
+    @Test
+    fun mustThrowExceptionForActivatingMissingWallet() {
+        verify("Service will throw exception for missing wallet") {
+            val exception = assertThrows<ResourceNotFoundException> {
+                service.activateAdminWallet(defaultPublicKey, COOP, defaultAddressHash)
+            }
+            assertThat(exception.errorCode).isEqualTo(ErrorCode.WALLET_MISSING)
+        }
+    }
+
+    private class TestContext {
+        lateinit var wallet: Wallet
     }
 }

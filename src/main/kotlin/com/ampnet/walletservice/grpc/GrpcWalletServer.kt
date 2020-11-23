@@ -10,15 +10,17 @@ import com.ampnet.walletservice.proto.GetWalletsByOwnerRequest
 import com.ampnet.walletservice.proto.WalletResponse
 import com.ampnet.walletservice.proto.WalletServiceGrpc
 import com.ampnet.walletservice.proto.WalletsResponse
-import com.ampnet.walletservice.service.WalletService
+import com.ampnet.walletservice.service.CooperativeWalletService
 import io.grpc.stub.StreamObserver
 import mu.KLogging
 import net.devh.boot.grpc.server.service.GrpcService
 import java.util.UUID
 
 @GrpcService
-class GrpcWalletServer(private val walletRepository: WalletRepository, private val walletService: WalletService) :
-    WalletServiceGrpc.WalletServiceImplBase() {
+class GrpcWalletServer(
+    private val walletRepository: WalletRepository,
+    private val cooperativeWalletService: CooperativeWalletService
+) : WalletServiceGrpc.WalletServiceImplBase() {
 
     companion object : KLogging()
 
@@ -58,7 +60,7 @@ class GrpcWalletServer(private val walletRepository: WalletRepository, private v
     }
 
     override fun activateWallet(request: ActivateWalletRequest, responseObserver: StreamObserver<Empty>) {
-        walletService.activateAdminWallet(request.address, request.coop, request.hash)
+        cooperativeWalletService.activateAdminWallet(request.address, request.coop, request.hash)
         responseObserver.onNext(Empty.newBuilder().build())
         responseObserver.onCompleted()
     }

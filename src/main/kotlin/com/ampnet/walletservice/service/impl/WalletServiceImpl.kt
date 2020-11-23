@@ -9,7 +9,6 @@ import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.exception.GrpcException
 import com.ampnet.walletservice.exception.InvalidRequestException
 import com.ampnet.walletservice.exception.ResourceAlreadyExistsException
-import com.ampnet.walletservice.exception.ResourceNotFoundException
 import com.ampnet.walletservice.grpc.blockchain.BlockchainService
 import com.ampnet.walletservice.grpc.blockchain.pojo.GenerateProjectWalletRequest
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionDataAndInfo
@@ -157,20 +156,6 @@ class WalletServiceImpl(
     @Transactional(readOnly = true)
     override fun getPairWalletCode(code: String): PairWalletCode? {
         return ServiceUtils.wrapOptional(pairWalletCodeRepository.findByCode(code))
-    }
-
-    @Transactional
-    override fun activateAdminWallet(address: String, coop: String, hash: String): Wallet {
-        val wallet = ServiceUtils.wrapOptional(walletRepository.findByActivationDataAndCoop(address, coop))
-            ?: throw ResourceNotFoundException(
-                ErrorCode.WALLET_MISSING,
-                "Missing wallet with address: $address in coop: $coop"
-            )
-        wallet.hash?.let {
-            throw InvalidRequestException(ErrorCode.WALLET_HASH_EXISTS, "Wallet with hash: $it already activated")
-        }
-        wallet.hash = hash
-        return wallet
     }
 
     private fun createWallet(

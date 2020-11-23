@@ -130,6 +130,21 @@ class CooperativeWalletServiceImpl(
         return txHash
     }
 
+    @Transactional
+    override fun activateAdminWallet(address: String, coop: String, hash: String): Wallet {
+        val wallet = ServiceUtils.wrapOptional(walletRepository.findByActivationDataAndCoop(address, coop))
+            ?: throw ResourceNotFoundException(
+                ErrorCode.WALLET_MISSING,
+                "Missing wallet with address: $address in coop: $coop"
+            )
+        wallet.hash?.let {
+            throw InvalidRequestException(ErrorCode.WALLET_HASH_EXISTS, "Wallet with hash: $it already activated")
+        }
+        wallet.hash = hash
+        wallet.activatedAt = ZonedDateTime.now()
+        return wallet
+    }
+
     private fun handleTransaction(txHash: String, coop: String) {
         logger.info { "Wait for transaction: $txHash" }
         sleep(applicationProperties.grpc.blockchainPollingDelay)
