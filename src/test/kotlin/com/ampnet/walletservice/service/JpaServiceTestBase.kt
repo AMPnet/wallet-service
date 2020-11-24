@@ -90,6 +90,8 @@ abstract class JpaServiceTestBase : TestBase() {
     protected val transactionData = TransactionData("data")
     protected val bankAccount = "AL35202111090000000001234567"
     protected val providerId = "provider_id"
+    protected val defaultAddressHash = "th_4e4ee58ff3a9e9e78c2dfdbac0d1518e4e1039f9189267e1dc8d3e35cbdf7892"
+    protected val defaultPublicKey = "th_C2D7CF95645D33006175B78989035C7c9061d3F9"
 
     protected fun createWalletForUser(userUuid: UUID, hash: String, providerId: String? = null) =
         createWallet(userUuid, hash, WalletType.USER, providerId = providerId)

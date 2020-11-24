@@ -114,7 +114,7 @@ class CooperativeDepositServiceImpl(
         logger.info { "Confirming mint transaction for deposit: $depositId" }
         val deposit = getDepositForIdAndCoop(depositId, coop)
         validateDepositForMintTransaction(deposit)
-        val txHash = blockchainService.postTransaction(signedTransaction)
+        val txHash = blockchainService.postTransaction(signedTransaction, deposit.coop)
         deposit.txHash = txHash
         mailService.sendDepositInfo(deposit.ownerUuid, true)
         return deposit

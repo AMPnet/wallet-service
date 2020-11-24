@@ -48,7 +48,7 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
         suppose("Blockchain service will return transaction data for activating user wallet") {
             testContext.transactionData = TransactionData(testContext.walletHash)
             Mockito.`when`(
-                blockchainService.addWallet(testContext.activationData)
+                blockchainService.addWallet(testContext.activationData, COOP)
             ).thenReturn(testContext.transactionData)
         }
 
@@ -259,7 +259,7 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
         suppose("Blockchain service will return transaction data for transferring token issuer") {
             testContext.transactionData = TransactionData(testContext.walletHash)
             Mockito.`when`(
-                blockchainService.generateTransferTokenIssuer(testContext.wallet.activationData)
+                blockchainService.generateTransferTokenIssuer(testContext.wallet.activationData, COOP)
             ).thenReturn(testContext.transactionData)
         }
 
@@ -298,7 +298,7 @@ class CooperativeWalletControllerTest : ControllerTestBase() {
         suppose("Blockchain service will return transaction data for transferring platform owner") {
             testContext.transactionData = TransactionData(testContext.walletHash)
             Mockito.`when`(
-                blockchainService.generateTransferPlatformManager(testContext.wallet.activationData)
+                blockchainService.generateTransferPlatformManager(testContext.wallet.activationData, COOP)
             ).thenReturn(testContext.transactionData)
         }
 

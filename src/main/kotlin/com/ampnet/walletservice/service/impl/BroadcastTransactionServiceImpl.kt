@@ -41,17 +41,18 @@ class BroadcastTransactionServiceImpl(
     override fun broadcast(txId: Int, signedTransaction: String): String {
         val transactionInfo = transactionInfoService.findTransactionInfo(txId)
             ?: throw ResourceNotFoundException(ErrorCode.TX_MISSING, "Non existing transaction with id: $txId")
-        logger.info { "Broadcasting transaction: $transactionInfo" }
+        val coop = transactionInfo.coop
+        logger.info { "Broadcasting transaction: $transactionInfo for coop: $coop" }
 
         val txHash = when (transactionInfo.type) {
             TransactionType.WALLET_ACTIVATE -> activateWallet(transactionInfo, signedTransaction)
             TransactionType.CREATE_ORG ->
-                createOrganizationWallet(transactionInfo, signedTransaction, transactionInfo.coop)
+                createOrganizationWallet(transactionInfo, signedTransaction, coop)
             TransactionType.CREATE_PROJECT ->
-                createProjectWallet(transactionInfo, signedTransaction, transactionInfo.coop)
-            TransactionType.INVEST -> projectInvestmentService.investInProject(signedTransaction)
+                createProjectWallet(transactionInfo, signedTransaction, coop)
+            TransactionType.INVEST -> projectInvestmentService.investInProject(signedTransaction, coop)
             TransactionType.CANCEL_INVEST ->
-                projectInvestmentService.cancelInvestmentsInProject(signedTransaction)
+                projectInvestmentService.cancelInvestmentsInProject(signedTransaction, coop)
             TransactionType.MINT -> confirmMintTransaction(transactionInfo, signedTransaction)
             TransactionType.BURN_APPROVAL ->
                 confirmApprovalTransaction(transactionInfo, signedTransaction)

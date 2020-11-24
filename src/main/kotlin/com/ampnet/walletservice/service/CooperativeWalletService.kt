@@ -20,4 +20,5 @@ interface CooperativeWalletService {
     fun getProjectsWithUnactivatedWallet(coop: String, pageable: Pageable): Page<ProjectWithWallet>
     fun generateSetTransferOwnership(owner: UserPrincipal, request: WalletTransferRequest): TransactionDataAndInfo
     fun transferOwnership(request: TransferOwnershipRequest): String
+    fun activateAdminWallet(address: String, coop: String, hash: String): Wallet
 }

@@ -7,10 +7,18 @@ All amount (fiat) values in request and response messages are x100 format intege
 for example amount: 1550 is actually 15.50 EUR.
 ******************************************/
 
+//////// General calls messages //////////////
+
+message CreateCooperativeRequest {
+    string coop = 1;
+    string wallet = 2;
+}
+
 //////// Cooperative contract messages ///////
 
 message GenerateAddWalletTxRequest {
     string wallet = 1;
+    string coop = 2;
 }
 
 message WalletActiveRequest {
@@ -21,12 +29,17 @@ message WalletActiveResponse {
     bool active = 1;
 }
 
+message PlatformManagerRequest {
+    string coop = 1;
+}
+
 message PlatformManagerResponse {
     string wallet = 1;
 }
 
 message GenerateTransferPlatformManagerOwnershipTxRequest {
     string new_owner_wallet = 1;
+    string coop = 2;
 }
 
 ///////// EUR contract messages //////////
@@ -59,12 +72,17 @@ message GenerateInvestTxRequest {
     string amount = 3;
 }
 
+message TokenIssuerRequest {
+    string coop = 1;
+}
+
 message TokenIssuerResponse {
     string wallet = 1;
 }
 
 message GenerateTransferTokenIssuerOwnershipTxRequest {
     string new_owner_wallet = 1;
+    string coop = 2;
 }
 
 ///////// Organization contract //////////
@@ -110,6 +128,7 @@ message GetProjectsInfoResponse {
 
 message PostTxRequest {
     string data = 1;
+    string coop = 2;
 }
 
 message PostTxResponse {
@@ -129,7 +148,7 @@ message PortfolioResponse {
 }
 
 message TransactionsRequest {
-    string wallet_data = 1;
+    string wallet_hash = 1;
 }
 
 message InvestmentsInProjectRequest {
@@ -156,6 +175,10 @@ message TransactionInfo {
 
 message TransactionsResponse {
     repeated TransactionInfo transactions = 1;
+}
+
+message ActiveSellOffersRequest {
+    string coop = 1;
 }
 
 message ActiveSellOffersResponse {
@@ -238,11 +261,15 @@ enum TransactionType {
 
 service BlockchainService {
 
+    // General calls
+
+    rpc CreateCooperative (CreateCooperativeRequest) returns (Empty);
+
     // Cooperative
 
     rpc GenerateAddWalletTx (GenerateAddWalletTxRequest) returns (RawTxResponse);
     rpc IsWalletActive (WalletActiveRequest) returns (WalletActiveResponse);
-    rpc GetPlatformManager (Empty) returns (PlatformManagerResponse); // TODO: add coop to request
+    rpc GetPlatformManager (PlatformManagerRequest) returns (PlatformManagerResponse);
     rpc GenerateTransferPlatformManagerOwnershipTx (GenerateTransferPlatformManagerOwnershipTxRequest) returns (RawTxResponse);
 
     // EUR
@@ -252,7 +279,7 @@ service BlockchainService {
     rpc GenerateApproveWithdrawTx (GenerateApproveWithdrawTxRequest) returns (RawTxResponse);
     rpc GenerateInvestTx (GenerateInvestTxRequest) returns (RawTxResponse);
     rpc GetBalance (BalanceRequest) returns (BalanceResponse);
-    rpc GetTokenIssuer (Empty) returns (TokenIssuerResponse); // TODO: add coop to request
+    rpc GetTokenIssuer (TokenIssuerRequest) returns (TokenIssuerResponse);
     rpc GenerateTransferTokenIssuerOwnershipTx (GenerateTransferTokenIssuerOwnershipTxRequest) returns (RawTxResponse);
 
     // Organization
@@ -276,5 +303,5 @@ service BlockchainService {
     rpc GetTransactions (TransactionsRequest) returns (TransactionsResponse);
     rpc GetInvestmentsInProject (InvestmentsInProjectRequest) returns (TransactionsResponse);
     rpc GetTransactionInfo (TransactionInfoRequest) returns (TransactionInfo);
-    rpc GetActiveSellOffers (Empty) returns (ActiveSellOffersResponse);
+    rpc GetActiveSellOffers (ActiveSellOffersRequest) returns (ActiveSellOffersResponse);
 }

@@ -77,7 +77,7 @@ class CooperativeWithdrawServiceImpl(
         val withdraw = ServiceUtils.getWithdraw(withdrawId, withdrawRepository)
         validateWithdrawForBurn(withdraw)
         logger.info { "Burning Withdraw: $withdraw" }
-        val burnedTxHash = blockchainService.postTransaction(signedTransaction)
+        val burnedTxHash = blockchainService.postTransaction(signedTransaction, withdraw.coop)
         withdraw.burnedTxHash = burnedTxHash
         withdraw.burnedAt = ZonedDateTime.now()
         logger.info { "Burned Withdraw: $withdraw" }

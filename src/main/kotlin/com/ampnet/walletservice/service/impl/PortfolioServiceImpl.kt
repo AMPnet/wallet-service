@@ -42,8 +42,8 @@ class PortfolioServiceImpl(
 
     @Transactional(readOnly = true)
     override fun getPortfolioStats(user: UUID): PortfolioStats {
-        val userWallet = ServiceUtils.getWalletByUserUuid(user, walletRepository)
-        val transactions = blockchainService.getTransactions(userWallet.activationData)
+        val walletHash = ServiceUtils.getWalletHash(user, walletRepository)
+        val transactions = blockchainService.getTransactions(walletHash)
             .filter { it.state == TransactionState.MINED }
         val investments = sumTransactionForType(transactions, TransactionType.INVEST)
         val cancelInvestments = sumTransactionForType(transactions, TransactionType.CANCEL_INVESTMENT)
@@ -63,8 +63,8 @@ class PortfolioServiceImpl(
 
     @Transactional(readOnly = true)
     override fun getTransactions(user: UUID): List<BlockchainTransaction> {
-        val userWalletAddress = ServiceUtils.getWalletByUserUuid(user, walletRepository).activationData
-        val blockchainTransactions = blockchainService.getTransactions(userWalletAddress)
+        val walletHash = ServiceUtils.getWalletHash(user, walletRepository)
+        val blockchainTransactions = blockchainService.getTransactions(walletHash)
         val walletHashes = getWalletHashes(blockchainTransactions)
         val wallets = walletRepository.findByHashes(walletHashes)
         return setBlockchainTransactionFromToNames(

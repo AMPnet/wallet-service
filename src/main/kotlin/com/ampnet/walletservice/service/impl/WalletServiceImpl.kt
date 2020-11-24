@@ -3,6 +3,7 @@ package com.ampnet.walletservice.service.impl
 import com.ampnet.core.jwt.UserPrincipal
 import com.ampnet.walletservice.controller.pojo.request.WalletCreateRequest
 import com.ampnet.walletservice.enums.Currency
+import com.ampnet.walletservice.enums.PrivilegeType
 import com.ampnet.walletservice.enums.WalletType
 import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.exception.GrpcException
@@ -70,6 +71,9 @@ class WalletServiceImpl(
             user.uuid, request.publicKey, WalletType.USER,
             user.coop, request.email, request.providerId
         )
+        if (user.authorities.contains(PrivilegeType.PWA_COOP.name)) {
+            blockchainService.deployCoopContract(user.coop, wallet.activationData)
+        }
         mailService.sendNewWalletMail(WalletTypeProto.USER, user.coop, request.publicKey)
         return wallet
     }
@@ -99,7 +103,7 @@ class WalletServiceImpl(
     override fun createProjectWallet(project: UUID, signedTransaction: String, coop: String): Wallet {
         throwExceptionIfProjectHasWallet(project)
         logger.debug { "Creating wallet for project: $project" }
-        val txHash = blockchainService.postTransaction(signedTransaction)
+        val txHash = blockchainService.postTransaction(signedTransaction, coop)
         val wallet = createWallet(project, txHash, WalletType.PROJECT, coop)
         logger.debug { "Created wallet for project: $project" }
         mailService.sendNewWalletMail(WalletTypeProto.PROJECT, coop, txHash)
@@ -132,7 +136,7 @@ class WalletServiceImpl(
     override fun createOrganizationWallet(organization: UUID, signedTransaction: String, coop: String): Wallet {
         throwExceptionIfOrganizationAlreadyHasWallet(organization)
         logger.debug { "Creating wallet for organization: $organization" }
-        val txHash = blockchainService.postTransaction(signedTransaction)
+        val txHash = blockchainService.postTransaction(signedTransaction, coop)
         val wallet = createWallet(organization, txHash, WalletType.ORG, coop)
         logger.debug { "Created wallet for organization: $organization" }
         mailService.sendNewWalletMail(WalletTypeProto.ORGANIZATION, coop, txHash)

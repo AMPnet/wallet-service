@@ -1,5 +1,6 @@
 package com.ampnet.walletservice.service
 
+import com.ampnet.walletservice.controller.COOP
 import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.exception.InvalidRequestException
 import com.ampnet.walletservice.exception.ResourceNotFoundException
@@ -223,12 +224,12 @@ class ProjectInvestmentServiceTest : JpaServiceTestBase() {
         suppose("Blockchain service will return hash for post transaction") {
             Mockito.`when`(
                 mockedBlockchainService
-                    .postTransaction(signedTransaction)
+                    .postTransaction(signedTransaction, COOP)
             ).thenReturn(txHash)
         }
 
         verify("Service can post project invest transaction") {
-            val txHash = projectInvestmentService.investInProject(signedTransaction)
+            val txHash = projectInvestmentService.investInProject(signedTransaction, COOP)
             assertThat(txHash).isEqualTo(txHash)
         }
     }

@@ -1,8 +1,9 @@
 package com.ampnet.walletservice.grpc.blockchain
 
+import com.ampnet.crowdfunding.proto.ActiveSellOffersRequest
 import com.ampnet.crowdfunding.proto.BalanceRequest
 import com.ampnet.crowdfunding.proto.BlockchainServiceGrpc
-import com.ampnet.crowdfunding.proto.Empty
+import com.ampnet.crowdfunding.proto.CreateCooperativeRequest
 import com.ampnet.crowdfunding.proto.GenerateAddWalletTxRequest
 import com.ampnet.crowdfunding.proto.GenerateApproveProjectWithdrawTxRequest
 import com.ampnet.crowdfunding.proto.GenerateApproveWithdrawTxRequest
@@ -17,8 +18,10 @@ import com.ampnet.crowdfunding.proto.GenerateTransferPlatformManagerOwnershipTxR
 import com.ampnet.crowdfunding.proto.GenerateTransferTokenIssuerOwnershipTxRequest
 import com.ampnet.crowdfunding.proto.GetProjectsInfoRequest
 import com.ampnet.crowdfunding.proto.InvestmentsInProjectRequest
+import com.ampnet.crowdfunding.proto.PlatformManagerRequest
 import com.ampnet.crowdfunding.proto.PortfolioRequest
 import com.ampnet.crowdfunding.proto.PostTxRequest
+import com.ampnet.crowdfunding.proto.TokenIssuerRequest
 import com.ampnet.crowdfunding.proto.TransactionInfoRequest
 import com.ampnet.crowdfunding.proto.TransactionState
 import com.ampnet.crowdfunding.proto.TransactionsRequest
@@ -72,19 +75,20 @@ class BlockchainServiceImpl(
         }
     }
 
-    override fun addWallet(activationData: String): TransactionData {
-        logger.info { "Adding wallet with activation data: $activationData" }
+    override fun addWallet(activationData: String, coop: String): TransactionData {
+        logger.info { "Adding wallet with activation data: $activationData for coop: $coop" }
         try {
             val response = serviceWithTimeout()
                 .generateAddWalletTx(
                     GenerateAddWalletTxRequest.newBuilder()
                         .setWallet(activationData)
+                        .setCoop(coop)
                         .build()
                 )
             logger.info { "Successfully added wallet: $response" }
             return TransactionData(response)
         } catch (ex: StatusRuntimeException) {
-            throw getInternalExceptionFromStatusException(ex, "Could not add wallet: $activationData")
+            throw getInternalExceptionFromStatusException(ex, "Could not add wallet: $activationData for coop: $coop")
         }
     }
 
@@ -128,8 +132,8 @@ class BlockchainServiceImpl(
         }
     }
 
-    override fun postTransaction(transaction: String) =
-        postTransactionWithRetries(transaction, 0)
+    override fun postTransaction(transaction: String, coop: String) =
+        postTransactionWithRetries(transaction, coop, 0)
 
     override fun generateProjectInvestmentTransaction(request: ProjectInvestmentTxRequest): TransactionData {
         logger.info {
@@ -289,19 +293,19 @@ class BlockchainServiceImpl(
         }
     }
 
-    override fun getTransactions(walletData: String): List<BlockchainTransaction> {
-        logger.debug { "Get transactions for wallet data(user address): $walletData" }
+    override fun getTransactions(walletHash: String): List<BlockchainTransaction> {
+        logger.debug { "Get transactions for wallet hash: $walletHash" }
         try {
             val response = serviceWithTimeout()
                 .getTransactions(
                     TransactionsRequest.newBuilder()
-                        .setWalletData(walletData)
+                        .setWalletHash(walletHash)
                         .build()
                 )
             logger.debug { "Transactions response received, size = ${response.transactionsCount}" }
             return response.transactionsList.map { BlockchainTransaction(it) }
         } catch (ex: StatusRuntimeException) {
-            throw getInternalExceptionFromStatusException(ex, "Could not get transactions for wallet data: $walletData")
+            throw getInternalExceptionFromStatusException(ex, "Could not get transactions for wallet hash: $walletHash")
         }
     }
 
@@ -350,9 +354,12 @@ class BlockchainServiceImpl(
     override fun getTokenIssuer(coop: String): String {
         logger.debug { "Get token issuer for coop: $coop" }
         try {
-            // TODO: add coop to request
             val response = serviceWithTimeout()
-                .getTokenIssuer(Empty.newBuilder().build())
+                .getTokenIssuer(
+                    TokenIssuerRequest.newBuilder()
+                        .setCoop(coop)
+                        .build()
+                )
             logger.debug { "Token issuer address: ${response.wallet}" }
             return response.wallet
         } catch (ex: StatusRuntimeException) {
@@ -360,26 +367,33 @@ class BlockchainServiceImpl(
         }
     }
 
-    override fun generateTransferTokenIssuer(address: String): TransactionData {
-        logger.info { "Generating transfer token issuer for address: $address" }
+    override fun generateTransferTokenIssuer(address: String, coop: String): TransactionData {
+        logger.info { "Generating transfer token issuer for address: $address for coop: $coop" }
         try {
             val request = GenerateTransferTokenIssuerOwnershipTxRequest.newBuilder()
                 .setNewOwnerWallet(address)
+                .setCoop(coop)
                 .build()
             val response = serviceWithTimeout().generateTransferTokenIssuerOwnershipTx(request)
             logger.info { "Successfully generated transfer token issuer for address: $address" }
             return TransactionData(response)
         } catch (ex: StatusRuntimeException) {
-            throw getInternalExceptionFromStatusException(ex, "Could not generate transfer token issuer")
+            throw getInternalExceptionFromStatusException(
+                ex,
+                "Could not generate transfer token issuer for coop: $coop"
+            )
         }
     }
 
     override fun getPlatformManager(coop: String): String {
         logger.debug { "Get platform manager for coop: $coop" }
         try {
-            // TODO: add coop to request
             val response = serviceWithTimeout()
-                .getPlatformManager(Empty.newBuilder().build())
+                .getPlatformManager(
+                    PlatformManagerRequest.newBuilder()
+                        .setCoop(coop)
+                        .build()
+                )
             logger.debug { "Platform address: ${response.wallet}" }
             return response.wallet
         } catch (ex: StatusRuntimeException) {
@@ -387,17 +401,21 @@ class BlockchainServiceImpl(
         }
     }
 
-    override fun generateTransferPlatformManager(address: String): TransactionData {
-        logger.info { "Generating transfer platform manager for address: $address" }
+    override fun generateTransferPlatformManager(address: String, coop: String): TransactionData {
+        logger.info { "Generating transfer platform manager for address: $address for coop: $coop" }
         try {
             val request = GenerateTransferPlatformManagerOwnershipTxRequest.newBuilder()
                 .setNewOwnerWallet(address)
+                .setCoop(coop)
                 .build()
             val response = serviceWithTimeout().generateTransferPlatformManagerOwnershipTx(request)
             logger.info { "Successfully generated transfer platform manager for address: $address" }
             return TransactionData(response)
         } catch (ex: StatusRuntimeException) {
-            throw getInternalExceptionFromStatusException(ex, "Could not generate transfer platform manager")
+            throw getInternalExceptionFromStatusException(
+                ex,
+                "Could not generate transfer platform manager for coop: $coop"
+            )
         }
     }
 
@@ -411,13 +429,30 @@ class BlockchainServiceImpl(
         }
     }
 
-    override fun getSellOffers(): List<SellOfferData> {
+    override fun getSellOffers(coop: String): List<SellOfferData> {
         logger.debug { "Get active sell offers" }
         try {
             val response = serviceWithTimeout()
-                .getActiveSellOffers(Empty.newBuilder().build())
+                .getActiveSellOffers(
+                    ActiveSellOffersRequest.newBuilder()
+                        .setCoop(coop)
+                        .build()
+                )
             logger.debug { "Active sell offers, size = ${response.offersCount}" }
             return response.offersList.map { SellOfferData(it) }
+        } catch (ex: StatusRuntimeException) {
+            throw getInternalExceptionFromStatusException(ex, "Could not get active sell offers")
+        }
+    }
+
+    override fun deployCoopContract(coop: String, address: String) {
+        logger.info { "Deploy contract for coop: $coop with admin address: $address" }
+        try {
+            val request = CreateCooperativeRequest.newBuilder()
+                .setCoop(coop)
+                .setWallet(address)
+                .build()
+            serviceBlockingStub.createCooperative(request)
         } catch (ex: StatusRuntimeException) {
             throw getInternalExceptionFromStatusException(ex, "Could not get active sell offers")
         }
@@ -426,7 +461,7 @@ class BlockchainServiceImpl(
     private fun serviceWithTimeout() = serviceBlockingStub
         .withDeadlineAfter(applicationProperties.grpc.blockchainServiceTimeout, TimeUnit.MILLISECONDS)
 
-    private fun postTransactionWithRetries(transaction: String, retryCount: Int): String {
+    private fun postTransactionWithRetries(transaction: String, coop: String, retryCount: Int): String {
         logger.info { "Posting transaction (#$retryCount)" }
         if (retryCount > applicationProperties.grpc.blockchainServiceMaxRetries) {
             logger.warn { "Retry posting transaction exceeded" }
@@ -437,6 +472,7 @@ class BlockchainServiceImpl(
                 .postTransaction(
                     PostTxRequest.newBuilder()
                         .setData(transaction)
+                        .setCoop(coop)
                         .build()
                 )
             logger.info { "Successfully posted transaction: ${response.txHash}" }
@@ -452,7 +488,7 @@ class BlockchainServiceImpl(
             // retry posting transaction for unknown errors
             logger.warn("Failed to post transaction", ex)
             sleep(applicationProperties.grpc.blockchainServiceRetryDelay)
-            return postTransactionWithRetries(transaction, retryCount + 1)
+            return postTransactionWithRetries(transaction, coop, retryCount + 1)
         }
     }
 

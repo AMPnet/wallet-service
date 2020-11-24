@@ -3,22 +3,31 @@ package com.ampnet.walletservice.grpc
 import com.ampnet.walletservice.enums.WalletType
 import com.ampnet.walletservice.persistence.model.Wallet
 import com.ampnet.walletservice.persistence.repository.WalletRepository
+import com.ampnet.walletservice.proto.ActivateWalletRequest
+import com.ampnet.walletservice.proto.Empty
 import com.ampnet.walletservice.proto.GetWalletsByHashRequest
 import com.ampnet.walletservice.proto.GetWalletsByOwnerRequest
 import com.ampnet.walletservice.proto.WalletResponse
 import com.ampnet.walletservice.proto.WalletServiceGrpc
 import com.ampnet.walletservice.proto.WalletsResponse
+import com.ampnet.walletservice.service.CooperativeWalletService
 import io.grpc.stub.StreamObserver
 import mu.KLogging
 import net.devh.boot.grpc.server.service.GrpcService
 import java.util.UUID
 
 @GrpcService
-class GrpcWalletServer(val walletRepository: WalletRepository) : WalletServiceGrpc.WalletServiceImplBase() {
+class GrpcWalletServer(
+    private val walletRepository: WalletRepository,
+    private val cooperativeWalletService: CooperativeWalletService
+) : WalletServiceGrpc.WalletServiceImplBase() {
 
     companion object : KLogging()
 
-    override fun getWalletsByOwner(request: GetWalletsByOwnerRequest, responseObserver: StreamObserver<WalletsResponse>) {
+    override fun getWalletsByOwner(
+        request: GetWalletsByOwnerRequest,
+        responseObserver: StreamObserver<WalletsResponse>
+    ) {
         logger.debug { "Received gRPC request: getWalletsByOwner = ${request.ownersUuidsList}" }
         val uuids = request.ownersUuidsList.mapNotNull {
             try {
@@ -47,6 +56,12 @@ class GrpcWalletServer(val walletRepository: WalletRepository) : WalletServiceGr
             .addAllWallets(wallets)
             .build()
         responseObserver.onNext(response)
+        responseObserver.onCompleted()
+    }
+
+    override fun activateWallet(request: ActivateWalletRequest, responseObserver: StreamObserver<Empty>) {
+        cooperativeWalletService.activateAdminWallet(request.address, request.coop, request.hash)
+        responseObserver.onNext(Empty.newBuilder().build())
         responseObserver.onCompleted()
     }
 

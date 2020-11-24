@@ -52,7 +52,7 @@ class CooperativeWalletServiceImpl(
     @Transactional
     override fun generateWalletActivationTransaction(walletUuid: UUID, user: UserPrincipal): TransactionDataAndInfo {
         val wallet = getWalletByUuid(walletUuid)
-        val data = blockchainService.addWallet(wallet.activationData)
+        val data = blockchainService.addWallet(wallet.activationData, wallet.coop)
         val info = transactionInfoService.activateWalletTransaction(wallet.uuid, wallet.type, user)
         return TransactionDataAndInfo(data, info)
     }
@@ -60,7 +60,7 @@ class CooperativeWalletServiceImpl(
     @Transactional
     override fun activateWallet(walletUuid: UUID, signedTransaction: String): Wallet {
         val wallet = getWalletByUuid(walletUuid)
-        wallet.hash = blockchainService.postTransaction(signedTransaction)
+        wallet.hash = blockchainService.postTransaction(signedTransaction, wallet.coop)
         wallet.activatedAt = ZonedDateTime.now()
         mailService.sendWalletActivated(getWalletType(wallet.type), wallet.owner.toString(), wallet.activationData)
         return wallet
@@ -112,9 +112,10 @@ class CooperativeWalletServiceImpl(
     ): TransactionDataAndInfo {
         val userWallet = ServiceUtils.getWalletByUserUuid(request.userUuid, walletRepository)
         val data = when (request.type) {
-            TransferWalletType.TOKEN_ISSUER -> blockchainService.generateTransferTokenIssuer(userWallet.activationData)
+            TransferWalletType.TOKEN_ISSUER ->
+                blockchainService.generateTransferTokenIssuer(userWallet.activationData, userWallet.coop)
             TransferWalletType.PLATFORM_MANAGER ->
-                blockchainService.generateTransferPlatformManager(userWallet.activationData)
+                blockchainService.generateTransferPlatformManager(userWallet.activationData, userWallet.coop)
         }
         val info = transactionInfoService.createTransferOwnership(owner, request)
         return TransactionDataAndInfo(data, info)
@@ -122,11 +123,26 @@ class CooperativeWalletServiceImpl(
 
     @Transactional(readOnly = true)
     override fun transferOwnership(request: TransferOwnershipRequest): String {
-        val txHash = blockchainService.postTransaction(request.signedTransaction)
+        val txHash = blockchainService.postTransaction(request.signedTransaction, request.coop)
         thread(start = true, isDaemon = true, name = "waitForTransaction:$txHash") {
             handleTransaction(txHash, request.coop)
         }
         return txHash
+    }
+
+    @Transactional
+    override fun activateAdminWallet(address: String, coop: String, hash: String): Wallet {
+        val wallet = ServiceUtils.wrapOptional(walletRepository.findByActivationDataAndCoop(address, coop))
+            ?: throw ResourceNotFoundException(
+                ErrorCode.WALLET_MISSING,
+                "Missing wallet with address: $address in coop: $coop"
+            )
+        wallet.hash?.let {
+            throw InvalidRequestException(ErrorCode.WALLET_HASH_EXISTS, "Wallet with hash: $it already activated")
+        }
+        wallet.hash = hash
+        wallet.activatedAt = ZonedDateTime.now()
+        return wallet
     }
 
     private fun handleTransaction(txHash: String, coop: String) {

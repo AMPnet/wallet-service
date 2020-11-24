@@ -73,11 +73,11 @@ class ProjectInvestmentServiceImpl(
         return TransactionDataAndInfo(data, info)
     }
 
-    override fun investInProject(signedTransaction: String): String =
-        blockchainService.postTransaction(signedTransaction)
+    override fun investInProject(signedTransaction: String, coop: String): String =
+        blockchainService.postTransaction(signedTransaction, coop)
 
-    override fun cancelInvestmentsInProject(signedTransaction: String): String =
-        blockchainService.postTransaction(signedTransaction)
+    override fun cancelInvestmentsInProject(signedTransaction: String, coop: String): String =
+        blockchainService.postTransaction(signedTransaction, coop)
 
     private fun verifyProjectIsStillActive(project: ProjectServiceResponse) {
         if (project.active.not()) {

@@ -3,6 +3,7 @@ package com.ampnet.walletservice.service
 import com.ampnet.walletservice.controller.COOP
 import com.ampnet.walletservice.controller.pojo.request.WalletCreateRequest
 import com.ampnet.walletservice.enums.Currency
+import com.ampnet.walletservice.enums.PrivilegeType
 import com.ampnet.walletservice.enums.WalletType
 import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.exception.ResourceAlreadyExistsException
@@ -32,9 +33,6 @@ class WalletServiceTest : JpaServiceTestBase() {
         )
     }
     private lateinit var testContext: TestContext
-
-    private val defaultAddressHash = "th_4e4ee58ff3a9e9e78c2dfdbac0d1518e4e1039f9189267e1dc8d3e35cbdf7892"
-    private val defaultPublicKey = "th_C2D7CF95645D33006175B78989035C7c9061d3F9"
 
     @BeforeEach
     fun init() {
@@ -88,7 +86,12 @@ class WalletServiceTest : JpaServiceTestBase() {
             assertThat(optionalPairWalletCode).isNotPresent
         }
         verify("Mail notification for created wallet") {
-            Mockito.verify(mockedMailService, Mockito.times(1)).sendNewWalletMail(WalletTypeProto.USER, COOP, defaultPublicKey)
+            Mockito.verify(mockedMailService, Mockito.times(1))
+                .sendNewWalletMail(WalletTypeProto.USER, COOP, defaultPublicKey)
+        }
+        verify("Deploy coop contract is not called") {
+            Mockito.verify(mockedBlockchainService, Mockito.never())
+                .deployCoopContract(COOP, defaultAddressHash)
         }
     }
 
@@ -96,7 +99,7 @@ class WalletServiceTest : JpaServiceTestBase() {
     fun mustBeAbleToCreateWalletForProject() {
         suppose("Blockchain service successfully adds wallet") {
             Mockito.`when`(
-                mockedBlockchainService.postTransaction(signedTransaction)
+                mockedBlockchainService.postTransaction(signedTransaction, COOP)
             ).thenReturn(defaultAddressHash)
         }
 
@@ -118,7 +121,8 @@ class WalletServiceTest : JpaServiceTestBase() {
             assertThat(projectWallet.providerId).isNull()
         }
         verify("Mail notification for created wallet") {
-            Mockito.verify(mockedMailService, Mockito.times(1)).sendNewWalletMail(WalletTypeProto.PROJECT, COOP, defaultAddressHash)
+            Mockito.verify(mockedMailService, Mockito.times(1))
+                .sendNewWalletMail(WalletTypeProto.PROJECT, COOP, defaultAddressHash)
         }
     }
 
@@ -205,7 +209,10 @@ class WalletServiceTest : JpaServiceTestBase() {
     fun mustThrowExceptionWhenGenerateTransactionToCreateOrganizationWalletWithoutUserWallet() {
         verify("Service can generate create organization transaction") {
             val exception = assertThrows<ResourceNotFoundException> {
-                walletService.generateTransactionToCreateOrganizationWallet(organizationUuid, createUserPrincipal(userUuid))
+                walletService.generateTransactionToCreateOrganizationWallet(
+                    organizationUuid,
+                    createUserPrincipal(userUuid)
+                )
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.WALLET_MISSING)
         }
@@ -219,7 +226,10 @@ class WalletServiceTest : JpaServiceTestBase() {
 
         verify("Service will throw exception that organization already has a wallet") {
             val exception = assertThrows<ResourceAlreadyExistsException> {
-                walletService.generateTransactionToCreateOrganizationWallet(organizationUuid, createUserPrincipal(userUuid))
+                walletService.generateTransactionToCreateOrganizationWallet(
+                    organizationUuid,
+                    createUserPrincipal(userUuid)
+                )
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.WALLET_EXISTS)
         }
@@ -252,7 +262,7 @@ class WalletServiceTest : JpaServiceTestBase() {
     fun mustBeAbleToCreateOrganizationWallet() {
         suppose("Blockchain service successfully adds wallet") {
             Mockito.`when`(
-                mockedBlockchainService.postTransaction(signedTransaction)
+                mockedBlockchainService.postTransaction(signedTransaction, COOP)
             ).thenReturn(defaultAddressHash)
         }
 
@@ -274,7 +284,8 @@ class WalletServiceTest : JpaServiceTestBase() {
             assertThat(wallet.providerId).isNull()
         }
         verify("Mail notification for created wallet") {
-            Mockito.verify(mockedMailService, Mockito.times(1)).sendNewWalletMail(WalletTypeProto.ORGANIZATION, COOP, defaultAddressHash)
+            Mockito.verify(mockedMailService, Mockito.times(1))
+                .sendNewWalletMail(WalletTypeProto.ORGANIZATION, COOP, defaultAddressHash)
         }
     }
 
@@ -299,7 +310,7 @@ class WalletServiceTest : JpaServiceTestBase() {
         }
         suppose("Blockchain service will return same hash for new project wallet transaction") {
             Mockito.`when`(
-                mockedBlockchainService.postTransaction(signedTransaction)
+                mockedBlockchainService.postTransaction(signedTransaction, COOP)
             ).thenReturn(defaultAddressHash)
         }
 
@@ -346,6 +357,23 @@ class WalletServiceTest : JpaServiceTestBase() {
         verify("Old pair wallet code is deleted") {
             val oldPairWalletCode = pairWalletCodeRepository.findById(testContext.pairWalletCode.id)
             assertThat(oldPairWalletCode).isNotPresent
+        }
+    }
+
+    @Test
+    fun mustDeployCoopContractOnAdminWalletCreation() {
+        suppose("There is one wallet in coop") {
+            createWalletForUser(userUuid, defaultPublicKey)
+        }
+
+        verify("Admin can create a wallet") {
+            val request = WalletCreateRequest(defaultAddressHash, "admin@mail.com", "arkane")
+            val user = createUserPrincipal(UUID.randomUUID(), authorities = setOf(PrivilegeType.PWA_COOP.name))
+            walletService.createUserWallet(user, request)
+        }
+        verify("Deploy coop contract is called") {
+            Mockito.verify(mockedBlockchainService, Mockito.times(1))
+                .deployCoopContract(COOP, defaultAddressHash)
         }
     }
 
