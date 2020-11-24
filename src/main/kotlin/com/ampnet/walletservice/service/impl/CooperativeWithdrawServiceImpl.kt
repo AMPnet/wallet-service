@@ -49,17 +49,7 @@ class CooperativeWithdrawServiceImpl(
         type: DepositWithdrawType?,
         pageable: Pageable
     ): WithdrawListServiceResponse =
-        when (type) {
-            DepositWithdrawType.USER -> {
-                val userWithdraws = withdrawRepository.findAllApprovedByType(coop, type, pageable)
-                getWithdrawWithUserListServiceResponse(userWithdraws)
-            }
-            DepositWithdrawType.PROJECT -> {
-                val projectWithdraws = withdrawRepository.findAllApprovedByType(coop, type, pageable)
-                getWithdrawWithProjectListServiceResponse(projectWithdraws)
-            }
-            else -> generateWithdrawListResponse(withdrawRepository.findAllApproved(coop, pageable))
-        }
+        generateWithdrawListResponse(withdrawRepository.findAllApproved(coop, type, pageable))
 
     @Transactional(readOnly = true)
     override fun getAllBurned(
@@ -67,17 +57,7 @@ class CooperativeWithdrawServiceImpl(
         type: DepositWithdrawType?,
         pageable: Pageable
     ): WithdrawListServiceResponse =
-        when (type) {
-            DepositWithdrawType.USER -> {
-                val userWithdraws = withdrawRepository.findAllBurnedByType(coop, type, pageable)
-                getWithdrawWithUserListServiceResponse(userWithdraws)
-            }
-            DepositWithdrawType.PROJECT -> {
-                val projectWithdraws = withdrawRepository.findAllBurnedByType(coop, type, pageable)
-                getWithdrawWithProjectListServiceResponse(projectWithdraws)
-            }
-            else -> generateWithdrawListResponse(withdrawRepository.findAllBurned(coop, pageable))
-        }
+        generateWithdrawListResponse(withdrawRepository.findAllBurned(coop, type, pageable))
 
     @Transactional
     override fun generateBurnTransaction(withdrawId: Int, user: UserPrincipal): TransactionDataAndInfo {
@@ -115,10 +95,15 @@ class CooperativeWithdrawServiceImpl(
         return WithdrawServiceResponse(withdraw, true)
     }
 
+    @Transactional(readOnly = true)
     override fun getById(id: Int): WithdrawWithDataServiceResponse? =
         ServiceUtils.wrapOptional(withdrawRepository.findById(id))?.let {
             getWithdrawWithData(it)
         }
+
+    @Transactional(readOnly = true)
+    override fun getPending(coop: String, type: DepositWithdrawType?, pageable: Pageable): WithdrawListServiceResponse =
+        generateWithdrawListResponse(withdrawRepository.findAllPending(coop, type, pageable))
 
     private fun validateWithdrawForBurn(withdraw: Withdraw) {
         if (withdraw.approvedTxHash == null) {
@@ -127,11 +112,6 @@ class CooperativeWithdrawServiceImpl(
         if (withdraw.burnedTxHash != null) {
             throw InvalidRequestException(ErrorCode.WALLET_WITHDRAW_BURNED, "Burned txHash: ${withdraw.burnedTxHash}")
         }
-    }
-
-    private fun getWithdrawWithUserListServiceResponse(withdrawsPage: Page<Withdraw>): WithdrawListServiceResponse {
-        val withdrawWithUserList = getWithdrawsWithUser(withdrawsPage.toList())
-        return WithdrawListServiceResponse(withdrawWithUserList, withdrawsPage.number, withdrawsPage.totalPages)
     }
 
     private fun getWithdrawsWithUser(withdraws: List<Withdraw>): List<WithdrawWithDataServiceResponse> {
@@ -143,11 +123,6 @@ class CooperativeWithdrawServiceImpl(
             val userResponse = users[withdraw.ownerUuid]
             WithdrawWithDataServiceResponse(withdraw, userResponse, null, walletHash)
         }
-    }
-
-    private fun getWithdrawWithProjectListServiceResponse(withdrawsPage: Page<Withdraw>): WithdrawListServiceResponse {
-        val withdrawWithProjectList = getWithdrawsWithProject(withdrawsPage.toList())
-        return WithdrawListServiceResponse(withdrawWithProjectList, withdrawsPage.number, withdrawsPage.totalPages)
     }
 
     private fun getWithdrawsWithProject(withdraws: List<Withdraw>): List<WithdrawWithDataServiceResponse> {

@@ -33,9 +33,9 @@ class CooperativeWithdrawController(
     ): ResponseEntity<WithdrawListServiceResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to get all approved withdraws by user: ${userPrincipal.uuid}" }
-        val withdrawWithUserListResponse =
+        val withdrawList =
             cooperativeWithdrawService.getAllApproved(userPrincipal.coop, type, pageable)
-        return ResponseEntity.ok(withdrawWithUserListResponse)
+        return ResponseEntity.ok(withdrawList)
     }
 
     @GetMapping("/cooperative/withdraw/burned")
@@ -46,9 +46,9 @@ class CooperativeWithdrawController(
     ): ResponseEntity<WithdrawListServiceResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to get all burned withdraws by user: ${userPrincipal.uuid}" }
-        val withdrawWithUserListResponse =
+        val withdrawList =
             cooperativeWithdrawService.getAllBurned(userPrincipal.coop, type, pageable)
-        return ResponseEntity.ok(withdrawWithUserListResponse)
+        return ResponseEntity.ok(withdrawList)
     }
 
     @PostMapping("/cooperative/withdraw/{id}/transaction/burn")
@@ -81,5 +81,17 @@ class CooperativeWithdrawController(
             return ResponseEntity.ok(withdrawWithData)
         }
         return ResponseEntity.notFound().build()
+    }
+
+    @GetMapping("/cooperative/withdraw/pending")
+    @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_WITHDRAW)")
+    fun getWithdrawById(
+        @RequestParam("type") type: DepositWithdrawType?,
+        pageable: Pageable
+    ): ResponseEntity<WithdrawListServiceResponse> {
+        val coop = ControllerUtils.getUserPrincipalFromSecurityContext().coop
+        logger.debug { "Received request to get pending withdrawals for type: $type in coop: $coop" }
+        val withdrawList = cooperativeWithdrawService.getPending(coop, type, pageable)
+        return ResponseEntity.ok(withdrawList)
     }
 }
