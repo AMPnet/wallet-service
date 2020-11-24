@@ -45,4 +45,12 @@ interface WithdrawRepository : JpaRepository<Withdraw, Int> {
             "WHERE withdraw.coop = :coop"
     )
     fun findAllWithFile(coop: String): List<Withdraw>
+
+    @Query(
+        "SELECT withdraw FROM Withdraw withdraw " +
+            "WHERE withdraw.approvedTxHash IS NOT NULL " +
+            "AND (withdraw.burnedTxHash IS NULL OR (withdraw.burnedTxHash IS NOT NULL AND withdraw.file IS NULL))" +
+            "AND withdraw.coop = :coop AND (:type IS NULL OR withdraw.type = :type)"
+    )
+    fun findAllPending(coop: String, type: DepositWithdrawType?, pageable: Pageable): Page<Withdraw>
 }

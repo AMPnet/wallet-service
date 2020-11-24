@@ -325,7 +325,6 @@ include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToGetApprovedWit
 include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToGetApprovedWithdraws/http-response.adoc[]
 
 ===== Get withdraw by id
-
 .Request
 include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToGetWithdrawById/http-request.adoc[]
 .Response
@@ -338,6 +337,15 @@ include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToGetWithdrawByI
 include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToGetBurnedWithdraws/http-request.adoc[]
 .Response
 include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToGetBurnedWithdraws/http-response.adoc[]
+
+==== Pending Withdraws
+Pending withdrawals are all approved (by user) withdrawals and burned withdrawals but without confirmation document.
+Optional query parameter `type` can be `USER` or `PROJECT`. If `type` is empty both types will be returned.
+
+.Request
+include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToGetAllPendingWithdraws/http-request.adoc[]
+.Response
+include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToGetAllPendingWithdraws/http-response.adoc[]
 
 ==== Upload Document
 Must have Admin role - privilege: `PrivilegeType.PRA_WITHDRAW`
@@ -364,9 +372,9 @@ For deposit type `USER`, project response will be null.
 
 ===== Search by reference
 .Request
-include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToSearchProjectByReference/http-request.adoc[]
+include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToSearchByReference/http-request.adoc[]
 .Response
-include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToSearchProjectByReference/http-response.adoc[]
+include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToSearchByReference/http-response.adoc[]
 
 ===== Get by id
 Deposit type `PROJECT` will have both user and project response.

@@ -115,10 +115,15 @@ class CooperativeWithdrawServiceImpl(
         return WithdrawServiceResponse(withdraw, true)
     }
 
+    @Transactional(readOnly = true)
     override fun getById(id: Int): WithdrawWithDataServiceResponse? =
         ServiceUtils.wrapOptional(withdrawRepository.findById(id))?.let {
             getWithdrawWithData(it)
         }
+
+    @Transactional(readOnly = true)
+    override fun getPending(coop: String, type: DepositWithdrawType?, pageable: Pageable): WithdrawListServiceResponse =
+        generateWithdrawListResponse(withdrawRepository.findAllPending(coop, type, pageable))
 
     private fun validateWithdrawForBurn(withdraw: Withdraw) {
         if (withdraw.approvedTxHash == null) {
