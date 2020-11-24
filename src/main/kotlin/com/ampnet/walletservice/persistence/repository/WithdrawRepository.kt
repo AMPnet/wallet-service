@@ -13,28 +13,16 @@ interface WithdrawRepository : JpaRepository<Withdraw, Int> {
     @Query(
         "SELECT withdraw FROM Withdraw withdraw " +
             "WHERE withdraw.approvedTxHash IS NOT NULL AND withdraw.burnedTxHash IS NULL " +
-            "AND withdraw.type = :type AND withdraw.coop = :coop"
+            "AND withdraw.coop = :coop AND (:type IS NULL OR withdraw.type = :type)"
     )
-    fun findAllApprovedByType(coop: String, type: DepositWithdrawType, pageable: Pageable): Page<Withdraw>
-
-    @Query(
-        "SELECT withdraw FROM Withdraw withdraw " +
-            "WHERE withdraw.approvedTxHash IS NOT NULL AND withdraw.burnedTxHash IS NULL AND withdraw.coop = :coop"
-    )
-    fun findAllApproved(coop: String, pageable: Pageable): Page<Withdraw>
+    fun findAllApproved(coop: String, type: DepositWithdrawType?, pageable: Pageable): Page<Withdraw>
 
     @Query(
         "SELECT withdraw FROM Withdraw withdraw " +
             "WHERE withdraw.approvedTxHash IS NOT NULL AND withdraw.burnedTxHash IS NOT NULL " +
-            "AND withdraw.type = :type AND withdraw.coop = :coop"
+            "AND withdraw.coop = :coop AND (:type IS NULL OR withdraw.type = :type)"
     )
-    fun findAllBurnedByType(coop: String, type: DepositWithdrawType, pageable: Pageable): Page<Withdraw>
-
-    @Query(
-        "SELECT withdraw FROM Withdraw withdraw " +
-            "WHERE withdraw.approvedTxHash IS NOT NULL AND withdraw.burnedTxHash IS NOT NULL AND withdraw.coop = :coop"
-    )
-    fun findAllBurned(coop: String, pageable: Pageable): Page<Withdraw>
+    fun findAllBurned(coop: String, type: DepositWithdrawType?, pageable: Pageable): Page<Withdraw>
 
     fun findByOwnerUuid(owner: UUID): List<Withdraw>
 
