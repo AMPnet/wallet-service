@@ -206,6 +206,51 @@ class DepositControllerTest : ControllerTestBase() {
         }
     }
 
+    @Test
+    @WithMockCrowdfoundUser
+    fun mustBeAbleToGetPendingProjectDeposit() {
+        suppose("Project has a wallet") {
+            databaseCleanerService.deleteAllWallets()
+            createWalletForProject(projectUuid, walletHash)
+        }
+        suppose("Project has pending deposit") {
+            val deposit = createUnsignedDeposit(projectUuid, type = DepositWithdrawType.PROJECT, withFile = true)
+            testContext.deposits = listOf(deposit)
+        }
+
+        verify("User can get pending project deposit") {
+            val result = mockMvc.perform(get("$depositPath/project/$projectUuid"))
+                .andExpect(status().isOk)
+                .andReturn()
+            val deposit: DepositServiceResponse = objectMapper.readValue(result.response.contentAsString)
+            assertThat(deposit.owner).isEqualTo(projectUuid)
+            assertThat(deposit.createdBy).isEqualTo(userUuid)
+            assertThat(deposit.documentResponse).isNotNull
+            val savedDeposit = testContext.deposits.first()
+            assertThat(deposit.id).isEqualTo(savedDeposit.id)
+        }
+    }
+
+    @Test
+    @WithMockCrowdfoundUser(uuid = "98986187-c870-4339-be4e-a597146f1428")
+    fun mustNotBeAbleToGetOtherProjectDeposit() {
+        suppose("Project has a wallet") {
+            databaseCleanerService.deleteAllWallets()
+            createWalletForProject(projectUuid, walletHash)
+        }
+        suppose("Project has pending deposit") {
+            val deposit = createUnsignedDeposit(projectUuid, type = DepositWithdrawType.PROJECT)
+            testContext.deposits = listOf(deposit)
+        }
+
+        verify("User can get pending project deposit") {
+            val result = mockMvc.perform(get("$depositPath/project/$projectUuid"))
+                .andExpect(status().isBadRequest)
+                .andReturn()
+            verifyResponseErrorCode(result, ErrorCode.USER_MISSING_PRIVILEGE)
+        }
+    }
+
     private class TestContext {
         val amount = 30_000L
         var deposits = listOf<Deposit>()
