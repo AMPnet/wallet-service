@@ -12,37 +12,21 @@ import java.util.UUID
 interface DepositRepository : JpaRepository<Deposit, Int> {
     @Query(
         "SELECT deposit FROM Deposit deposit LEFT JOIN FETCH deposit.file " +
-            "WHERE deposit.type = :type AND deposit.txHash IS NOT NULL AND deposit.coop = :coop",
+            "WHERE deposit.txHash IS NOT NULL AND deposit.coop = :coop AND (:type IS NULL OR deposit.type = :type)",
         countQuery = "SELECT COUNT(deposit) FROM Deposit deposit " +
-            "WHERE deposit.type = :type AND deposit.txHash IS NOT NULL AND deposit.coop = :coop"
+            "WHERE deposit.txHash IS NOT NULL AND deposit.coop = :coop AND (:type IS NULL OR deposit.type = :type)"
     )
-    fun findAllApprovedWithFileByType(coop: String, type: DepositWithdrawType, pageable: Pageable): Page<Deposit>
-
-    @Query(
-        "SELECT deposit FROM Deposit deposit LEFT JOIN FETCH deposit.file " +
-            "WHERE deposit.txHash IS NOT NULL AND deposit.coop = :coop",
-        countQuery = "SELECT COUNT(deposit) FROM Deposit deposit " +
-            "WHERE deposit.txHash IS NOT NULL AND deposit.coop = :coop"
-    )
-    fun findAllApprovedWithFile(coop: String, pageable: Pageable): Page<Deposit>
+    fun findAllApprovedWithFile(coop: String, type: DepositWithdrawType?, pageable: Pageable): Page<Deposit>
 
     @Query(
         "SELECT deposit FROM Deposit deposit " +
-            "WHERE deposit.type = :type AND deposit.txHash IS NULL AND deposit.declined is NULL " +
-            "AND deposit.coop = :coop",
+            "WHERE deposit.txHash IS NULL AND deposit.declined is NULL AND deposit.coop = :coop " +
+            "AND (:type IS NULL OR deposit.type = :type)",
         countQuery = "SELECT COUNT(deposit) FROM Deposit deposit " +
-            "WHERE deposit.type = :type AND deposit.txHash IS NULL AND deposit.declined is NULL " +
-            "AND deposit.coop = :coop"
+            "WHERE deposit.txHash IS NULL AND deposit.declined is NULL AND deposit.coop = :coop " +
+            "AND (:type IS NULL OR deposit.type = :type)"
     )
-    fun findAllUnapprovedByType(coop: String, type: DepositWithdrawType, pageable: Pageable): Page<Deposit>
-
-    @Query(
-        "SELECT deposit FROM Deposit deposit " +
-            "WHERE deposit.txHash IS NULL AND deposit.declined is NULL AND deposit.coop = :coop",
-        countQuery = "SELECT COUNT(deposit) FROM Deposit deposit " +
-            "WHERE deposit.txHash IS NULL AND deposit.declined is NULL AND deposit.coop = :coop"
-    )
-    fun findAllUnapproved(coop: String, pageable: Pageable): Page<Deposit>
+    fun findAllUnapproved(coop: String, type: DepositWithdrawType?, pageable: Pageable): Page<Deposit>
 
     fun findByCoopAndReference(coop: String, reference: String): Optional<Deposit>
     fun findByIdAndCoop(id: Int, coop: String): Optional<Deposit>
