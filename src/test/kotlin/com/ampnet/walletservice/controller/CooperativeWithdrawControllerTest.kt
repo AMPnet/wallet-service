@@ -487,12 +487,68 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
         }
     }
 
+    @Test
+    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PRA_WITHDRAW])
+    fun mustBeAbleToGetAllPendingWithdraws() {
+        suppose("Approved, burned and burned with document project withdraws are created") {
+            createApprovedWithdraw(projectUuid, type = DepositWithdrawType.PROJECT)
+            createBurnedWithdraw(projectUuid, type = DepositWithdrawType.PROJECT)
+            createBurnedWithdraw(projectUuid, type = DepositWithdrawType.PROJECT, withDocument = false)
+        }
+        suppose("Approved, burned and burned with document user withdraws are created") {
+            createApprovedWithdraw(userUuid)
+            createBurnedWithdraw(userUuid)
+            createBurnedWithdraw(userUuid, withDocument = false)
+        }
+        suppose("Another coop has pending withdrawals") {
+            createApprovedDeposit(UUID.randomUUID(), coop = "new-coop")
+            createApprovedDeposit(UUID.randomUUID(), type = DepositWithdrawType.PROJECT, coop = "new-coop")
+        }
+        suppose("Project has a wallet") {
+            databaseCleanerService.deleteAllWallets()
+            createWalletForProject(projectUuid, walletHash)
+        }
+        suppose("Project service will return project") {
+            Mockito.`when`(projectService.getProjects(setOf(projectUuid)))
+                .thenReturn(listOf(createProjectResponse(projectUuid, userUuid)))
+        }
+        suppose("User service will return user data") {
+            Mockito.`when`(userService.getUsers(setOf(userUuid)))
+                .thenReturn(listOf(createUserResponse(userUuid)))
+        }
+
+        verify("Cooperative can get list of burned withdraws for unspecified type") {
+            val result = mockMvc.perform(
+                get("$withdrawPath/pending")
+                    .param("size", "20")
+                    .param("page", "0")
+                    .param("sort", "burnedAt,desc")
+            )
+                .andExpect(status().isOk)
+                .andReturn()
+
+            val withdrawList: WithdrawListServiceResponse = objectMapper.readValue(result.response.contentAsString)
+            assertThat(withdrawList.withdraws).hasSize(4)
+            assertThat(withdrawList.withdraws.filter { it.withdraw.coop != COOP }).hasSize(0)
+            assertThat(withdrawList.withdraws.filter { it.withdraw.burnedTxHash == null }).hasSize(2)
+            assertThat(
+                withdrawList.withdraws
+                    .filter { it.withdraw.burnedTxHash != null && it.withdraw.documentResponse == null }
+            ).hasSize(2)
+        }
+    }
+
     private fun createBurnedWithdraw(
         owner: UUID,
         type: DepositWithdrawType = DepositWithdrawType.USER,
-        coop: String = COOP
+        coop: String = COOP,
+        withDocument: Boolean = true
     ): Withdraw {
-        val document = saveFile("withdraw-doc", "doc-link", "type", 1, userUuid)
+        val document = if (withDocument) {
+            saveFile("withdraw-doc", "doc-link", "type", 1, userUuid)
+        } else {
+            null
+        }
         val withdraw = Withdraw(
             0, owner, testContext.amount, ZonedDateTime.now(), userUuid, testContext.bankAccount,
             testContext.approvedTx, ZonedDateTime.now(),
