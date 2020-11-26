@@ -27,10 +27,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
-class WebSecurityConfig : WebSecurityConfigurerAdapter() {
-
-    @Autowired
-    private lateinit var objectMapper: ObjectMapper
+class WebSecurityConfig(private val objectMapper: ObjectMapper) : WebSecurityConfigurerAdapter() {
 
     @Bean
     override fun authenticationManagerBean(): AuthenticationManager {
