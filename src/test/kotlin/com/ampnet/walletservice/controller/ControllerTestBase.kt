@@ -1,5 +1,6 @@
 package com.ampnet.walletservice.controller
 
+import com.ampnet.projectservice.proto.OrganizationMembershipResponse
 import com.ampnet.walletservice.TestBase
 import com.ampnet.walletservice.config.DatabaseCleanerService
 import com.ampnet.walletservice.enums.Currency
@@ -284,5 +285,9 @@ abstract class ControllerTestBase : TestBase() {
     ): BankAccount {
         val bankAccount = BankAccount(iban, bankCode, createdBy, alias, coop)
         return bankAccountRepository.save(bankAccount)
+    }
+
+    protected fun createOrganizationMembership(userUuid: UUID): OrganizationMembershipResponse {
+        return OrganizationMembershipResponse.newBuilder().setUserUuid(userUuid.toString()).build()
     }
 }

@@ -26,6 +26,7 @@ enum class ErrorCode(val categoryCode: String, var specificCode: String, var mes
     // Organization: 06
     ORG_MISSING("06", "01", "Non existing organization"),
     ORG_MISSING_PRIVILEGE("06", "07", "Missing a privilege for this organization"),
+    ORG_MEM_MISSING("06", "08", "Organization membership missing"),
 
     // Project: 07
     PRJ_MISSING("07", "01", "Non existing project"),

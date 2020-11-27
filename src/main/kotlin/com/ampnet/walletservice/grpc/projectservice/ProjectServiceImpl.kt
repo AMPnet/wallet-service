@@ -1,6 +1,8 @@
 package com.ampnet.walletservice.grpc.projectservice
 
+import com.ampnet.projectservice.proto.GetByUuid
 import com.ampnet.projectservice.proto.GetByUuids
+import com.ampnet.projectservice.proto.OrganizationMembershipResponse
 import com.ampnet.projectservice.proto.OrganizationResponse
 import com.ampnet.projectservice.proto.ProjectServiceGrpc
 import com.ampnet.walletservice.config.ApplicationProperties
@@ -71,6 +73,20 @@ class ProjectServiceImpl(
             return response.map { ProjectServiceResponse(it) }
         } catch (ex: StatusRuntimeException) {
             throw GrpcException(ErrorCode.INT_GRPC_PROJECT, "Failed to fetch projects. ${ex.localizedMessage}")
+        }
+    }
+
+    override fun getOrganizationMembers(projectUuid: UUID): List<OrganizationMembershipResponse> {
+        logger.debug { "Fetching organization members for project: $projectUuid" }
+        try {
+            val request = GetByUuid.newBuilder()
+                .setProjectUuid(projectUuid.toString())
+                .build()
+            val response = serviceWithTimeout().getOrganizationMembers(request).membershipsList
+            logger.debug { "Fetched organization members: ${response.map { it.userUuid }}" }
+            return response
+        } catch (ex: StatusRuntimeException) {
+            throw GrpcException(ErrorCode.INT_GRPC_PROJECT, "Failed to fetch organization members. ${ex.localizedMessage}")
         }
     }
 

@@ -6,6 +6,10 @@ message GetByUuids {
     repeated string uuids = 1;
 }
 
+message GetByUuid {
+    string project_uuid = 1;
+}
+
 message OrganizationResponse {
     string uuid = 1;
     string name = 2;
@@ -34,6 +38,17 @@ message ProjectResponse {
     string coop = 14;
 }
 
+message OrganizationMembershipResponse {
+    string organizationUuid = 1;
+    string userUuid = 2;
+    Role role = 3;
+    uint64 memberSince = 4;
+    enum Role {
+        ORG_ADMIN = 0;
+        ORG_MEMBER = 1;
+    }
+}
+
 message OrganizationsResponse {
     repeated OrganizationResponse organizations = 1;
 }
@@ -42,7 +57,12 @@ message ProjectsResponse {
     repeated ProjectResponse projects = 1;
 }
 
+message OrganizationMembershipsResponse {
+    repeated OrganizationMembershipResponse memberships = 1;
+}
+
 service ProjectService {
     rpc GetOrganizations(GetByUuids) returns (OrganizationsResponse);
     rpc GetProjects(GetByUuids) returns (ProjectsResponse);
+    rpc GetOrganizationMembers(GetByUuid) returns (OrganizationMembershipsResponse);
 }

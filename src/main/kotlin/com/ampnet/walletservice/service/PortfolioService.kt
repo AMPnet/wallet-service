@@ -10,4 +10,5 @@ interface PortfolioService {
     fun getPortfolioStats(user: UUID): PortfolioStats
     fun getInvestmentsInProject(user: UUID, project: UUID): List<BlockchainTransaction>
     fun getTransactions(user: UUID): List<BlockchainTransaction>
+    fun getProjectTransactions(projectUuid: UUID, userUuid: UUID): List<BlockchainTransaction>
 }

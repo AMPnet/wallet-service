@@ -1,6 +1,7 @@
 package com.ampnet.walletservice.service
 
 import com.ampnet.core.jwt.UserPrincipal
+import com.ampnet.projectservice.proto.OrganizationMembershipResponse
 import com.ampnet.walletservice.TestBase
 import com.ampnet.walletservice.config.ApplicationProperties
 import com.ampnet.walletservice.config.DatabaseCleanerService
@@ -205,5 +206,9 @@ abstract class JpaServiceTestBase : TestBase() {
             userUuid, email, name, authorities,
             enabled, verified, coop
         )
+    }
+
+    protected fun createOrganizationMembership(userUuid: UUID): OrganizationMembershipResponse {
+        return OrganizationMembershipResponse.newBuilder().setUserUuid(userUuid.toString()).build()
     }
 }
