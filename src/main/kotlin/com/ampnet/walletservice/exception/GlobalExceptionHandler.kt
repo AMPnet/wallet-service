@@ -51,6 +51,13 @@ class GlobalExceptionHandler {
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(GrpcHandledException::class)
+    fun handleGrpcHandledException(exception: GrpcHandledException): ErrorResponse {
+        logger.error("GrpcHandledException", exception)
+        return generateErrorResponse(exception.errorCode, exception.message)
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(DataIntegrityViolationException::class)
     fun handleDbException(exception: DataIntegrityViolationException): ErrorResponse {
         logger.error("DataIntegrityViolationException", exception)
