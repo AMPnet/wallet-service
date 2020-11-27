@@ -25,14 +25,14 @@ class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(ResourceNotFoundException::class)
     fun handleResourceDoesNotExists(exception: ResourceNotFoundException): ErrorResponse {
-        logger.error("ResourceNotFoundException", exception)
+        logger.warn("ResourceNotFoundException", exception)
         return generateErrorResponse(exception.errorCode, exception.message)
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(InvalidRequestException::class)
     fun handleInvalidRequestException(exception: InvalidRequestException): ErrorResponse {
-        logger.warn("InvalidRequestException", exception)
+        logger.info("InvalidRequestException", exception)
         return generateErrorResponse(exception.errorCode, exception.message)
     }
 
@@ -46,14 +46,14 @@ class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_GATEWAY)
     @ExceptionHandler(GrpcException::class)
     fun handleGrpcException(exception: GrpcException): ErrorResponse {
-        logger.error("GrpcException", exception)
+        logger.warn("GrpcException", exception)
         return generateErrorResponse(exception.errorCode, exception.message)
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(GrpcHandledException::class)
     fun handleGrpcHandledException(exception: GrpcHandledException): ErrorResponse {
-        logger.error("GrpcHandledException", exception)
+        logger.info("GrpcHandledException", exception)
         return generateErrorResponse(exception.errorCode, exception.message)
     }
 
@@ -76,7 +76,7 @@ class GlobalExceptionHandler {
             errors[filed] = errorMessage
             sb.append("$filed $errorMessage. ")
         }
-        logger.info { "MethodArgumentNotValidException: $sb" }
+        logger.info("MethodArgumentNotValidException: $sb")
         return generateErrorResponse(ErrorCode.INT_REQUEST, sb.toString(), errors)
     }
 
