@@ -100,7 +100,7 @@ class ProjectInvestmentServiceImpl(
     }
 
     private fun verifyUserHasEnoughFunds(hash: String, amount: Long) {
-        val funds = blockchainService.getBalance(hash)
+        val funds = blockchainService.getBalance(hash) ?: 0
         if (funds < amount) {
             throw InvalidRequestException(ErrorCode.WALLET_FUNDS, "User does not have enough funds on wallet")
         }

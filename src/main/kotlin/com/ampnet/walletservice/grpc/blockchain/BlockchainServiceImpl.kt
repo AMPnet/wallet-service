@@ -58,9 +58,9 @@ class BlockchainServiceImpl(
         BlockchainServiceGrpc.newBlockingStub(channel)
     }
 
-    override fun getBalance(hash: String): Long {
+    override fun getBalance(hash: String): Long? {
         logger.debug { "Fetching balance for hash: $hash" }
-        try {
+        return try {
             val response = serviceWithTimeout()
                 .getBalance(
                     BalanceRequest.newBuilder()
@@ -68,10 +68,10 @@ class BlockchainServiceImpl(
                         .build()
                 )
             logger.info { "Received response: $response" }
-            return response.balance.toLongOrNull()
-                ?: throw GrpcException(ErrorCode.INT_GRPC_BLOCKCHAIN, "Cannot get balance as number")
+            response.balance.toLongOrNull()
         } catch (ex: StatusRuntimeException) {
-            throw getInternalExceptionFromStatusException(ex, "Could not get balance for wallet: $hash")
+            logger.warn("Could not get balance for wallet: $hash", ex)
+            null
         }
     }
 
