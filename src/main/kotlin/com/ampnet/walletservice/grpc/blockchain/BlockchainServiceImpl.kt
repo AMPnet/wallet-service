@@ -28,6 +28,7 @@ import com.ampnet.crowdfunding.proto.TransactionsRequest
 import com.ampnet.walletservice.config.ApplicationProperties
 import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.exception.GrpcException
+import com.ampnet.walletservice.exception.GrpcHandledException
 import com.ampnet.walletservice.grpc.blockchain.pojo.ApproveProjectBurnTransactionRequest
 import com.ampnet.walletservice.grpc.blockchain.pojo.BlockchainTransaction
 import com.ampnet.walletservice.grpc.blockchain.pojo.GenerateProjectWalletRequest
@@ -58,9 +59,9 @@ class BlockchainServiceImpl(
         BlockchainServiceGrpc.newBlockingStub(channel)
     }
 
-    override fun getBalance(hash: String): Long {
+    override fun getBalance(hash: String): Long? {
         logger.debug { "Fetching balance for hash: $hash" }
-        try {
+        return try {
             val response = serviceWithTimeout()
                 .getBalance(
                     BalanceRequest.newBuilder()
@@ -68,10 +69,10 @@ class BlockchainServiceImpl(
                         .build()
                 )
             logger.info { "Received response: $response" }
-            return response.balance.toLongOrNull()
-                ?: throw GrpcException(ErrorCode.INT_GRPC_BLOCKCHAIN, "Cannot get balance as number")
+            response.balance.toLongOrNull()
         } catch (ex: StatusRuntimeException) {
-            throw getInternalExceptionFromStatusException(ex, "Could not get balance for wallet: $hash")
+            logger.warn("Could not get balance for wallet: $hash", ex)
+            null
         }
     }
 
@@ -88,7 +89,7 @@ class BlockchainServiceImpl(
             logger.info { "Successfully added wallet: $response" }
             return TransactionData(response)
         } catch (ex: StatusRuntimeException) {
-            throw getInternalExceptionFromStatusException(ex, "Could not add wallet: $activationData for coop: $coop")
+            throw generateInternalExceptionFromStatusException(ex, "Could not add wallet: $activationData for coop: $coop")
         }
     }
 
@@ -104,7 +105,7 @@ class BlockchainServiceImpl(
             logger.info { "Successfully created organization wallet" }
             return TransactionData(response)
         } catch (ex: StatusRuntimeException) {
-            throw getInternalExceptionFromStatusException(
+            throw generateInternalExceptionFromStatusException(
                 ex,
                 "Could not generate transaction create organization: $userWalletHash"
             )
@@ -128,7 +129,7 @@ class BlockchainServiceImpl(
             logger.info { "Successfully created project wallet" }
             return TransactionData(response)
         } catch (ex: StatusRuntimeException) {
-            throw getInternalExceptionFromStatusException(ex, "Could not generate create Project transaction: $request")
+            throw generateInternalExceptionFromStatusException(ex, "Could not generate create Project transaction: $request")
         }
     }
 
@@ -152,7 +153,7 @@ class BlockchainServiceImpl(
             logger.info { "Successfully generated investment transaction" }
             return TransactionData(response)
         } catch (ex: StatusRuntimeException) {
-            throw getInternalExceptionFromStatusException(
+            throw generateInternalExceptionFromStatusException(
                 ex, "Could not invest in project: ${request.projectWalletHash}"
             )
         }
@@ -174,7 +175,7 @@ class BlockchainServiceImpl(
             logger.info { "Successfully generated cancel investments in project: $projectWalletHash transaction" }
             return TransactionData(response)
         } catch (ex: StatusRuntimeException) {
-            throw getInternalExceptionFromStatusException(
+            throw generateInternalExceptionFromStatusException(
                 ex, "Could not cancel invests in project: $projectWalletHash by user: $userWalletHash"
             )
         }
@@ -193,7 +194,7 @@ class BlockchainServiceImpl(
             logger.info { "Successfully generated mint transaction" }
             return TransactionData(response)
         } catch (ex: StatusRuntimeException) {
-            throw getInternalExceptionFromStatusException(ex, "Could not Mint toHash: $toHash")
+            throw generateInternalExceptionFromStatusException(ex, "Could not Mint toHash: $toHash")
         }
     }
 
@@ -209,7 +210,7 @@ class BlockchainServiceImpl(
             logger.info { "Successfully generated burn transaction" }
             return TransactionData(response)
         } catch (ex: StatusRuntimeException) {
-            throw getInternalExceptionFromStatusException(ex, "Could not Burn toHash: $burnFromTxHash")
+            throw generateInternalExceptionFromStatusException(ex, "Could not Burn toHash: $burnFromTxHash")
         }
     }
 
@@ -226,7 +227,7 @@ class BlockchainServiceImpl(
             logger.info { "Successfully generated approve burn transaction" }
             return TransactionData(response)
         } catch (ex: StatusRuntimeException) {
-            throw getInternalExceptionFromStatusException(ex, "Could not Burn toHash: $burnFromTxHash")
+            throw generateInternalExceptionFromStatusException(ex, "Could not Burn toHash: $burnFromTxHash")
         }
     }
 
@@ -247,7 +248,7 @@ class BlockchainServiceImpl(
             logger.info { "Successfully generated approve burn transaction" }
             return TransactionData(response)
         } catch (ex: StatusRuntimeException) {
-            throw getInternalExceptionFromStatusException(
+            throw generateInternalExceptionFromStatusException(
                 ex, "Could not Burn Transaction for project: ${request.projectTxHash}"
             )
         }
@@ -270,7 +271,7 @@ class BlockchainServiceImpl(
             logger.info { "Successfully generated Revenue Payout Transaction" }
             return TransactionData(response)
         } catch (ex: StatusRuntimeException) {
-            throw getInternalExceptionFromStatusException(
+            throw generateInternalExceptionFromStatusException(
                 ex, "Could not Revenue Payout Transaction for project: ${request.projectWallet}"
             )
         }
@@ -289,7 +290,7 @@ class BlockchainServiceImpl(
             val portfolioData = response.portfolioList.map { PortfolioData(it) }
             return Portfolio(portfolioData)
         } catch (ex: StatusRuntimeException) {
-            throw getInternalExceptionFromStatusException(ex, "Could not get portfolio for wallet hash: $hash")
+            throw generateInternalExceptionFromStatusException(ex, "Could not get portfolio for wallet hash: $hash")
         }
     }
 
@@ -305,7 +306,7 @@ class BlockchainServiceImpl(
             logger.debug { "Transactions response received, size = ${response.transactionsCount}" }
             return response.transactionsList.map { BlockchainTransaction(it) }
         } catch (ex: StatusRuntimeException) {
-            throw getInternalExceptionFromStatusException(ex, "Could not get transactions for wallet hash: $walletHash")
+            throw generateInternalExceptionFromStatusException(ex, "Could not get transactions for wallet hash: $walletHash")
         }
     }
 
@@ -325,7 +326,7 @@ class BlockchainServiceImpl(
             logger.debug { "Investments in project response, size = ${response.transactionsCount}" }
             return response.transactionsList.map { BlockchainTransaction(it) }
         } catch (ex: StatusRuntimeException) {
-            throw getInternalExceptionFromStatusException(
+            throw generateInternalExceptionFromStatusException(
                 ex,
                 "Could not get investments by user address: $userWalletAddress in project hash: $projectWalletHash"
             )
@@ -344,7 +345,7 @@ class BlockchainServiceImpl(
             logger.debug { "Projects info response, size ${response.projectsCount}" }
             return response.projectsList.map { ProjectInfoResponse(it) }
         } catch (ex: StatusRuntimeException) {
-            throw getInternalExceptionFromStatusException(
+            throw generateInternalExceptionFromStatusException(
                 ex,
                 "Could not get projects info for hashes: $hashes"
             )
@@ -363,7 +364,7 @@ class BlockchainServiceImpl(
             logger.debug { "Token issuer address: ${response.wallet}" }
             return response.wallet
         } catch (ex: StatusRuntimeException) {
-            throw getInternalExceptionFromStatusException(ex, "Could not get token issuer")
+            throw generateInternalExceptionFromStatusException(ex, "Could not get token issuer")
         }
     }
 
@@ -378,7 +379,7 @@ class BlockchainServiceImpl(
             logger.info { "Successfully generated transfer token issuer for address: $address" }
             return TransactionData(response)
         } catch (ex: StatusRuntimeException) {
-            throw getInternalExceptionFromStatusException(
+            throw generateInternalExceptionFromStatusException(
                 ex,
                 "Could not generate transfer token issuer for coop: $coop"
             )
@@ -397,7 +398,7 @@ class BlockchainServiceImpl(
             logger.debug { "Platform address: ${response.wallet}" }
             return response.wallet
         } catch (ex: StatusRuntimeException) {
-            throw getInternalExceptionFromStatusException(ex, "Could not get platform manager")
+            throw generateInternalExceptionFromStatusException(ex, "Could not get platform manager")
         }
     }
 
@@ -412,7 +413,7 @@ class BlockchainServiceImpl(
             logger.info { "Successfully generated transfer platform manager for address: $address" }
             return TransactionData(response)
         } catch (ex: StatusRuntimeException) {
-            throw getInternalExceptionFromStatusException(
+            throw generateInternalExceptionFromStatusException(
                 ex,
                 "Could not generate transfer platform manager for coop: $coop"
             )
@@ -425,7 +426,7 @@ class BlockchainServiceImpl(
             val response = serviceWithTimeout().getTransactionInfo(request)
             return response.state
         } catch (ex: StatusRuntimeException) {
-            throw getInternalExceptionFromStatusException(ex, "Could not get transaction info for hash: $txHash")
+            throw generateInternalExceptionFromStatusException(ex, "Could not get transaction info for hash: $txHash")
         }
     }
 
@@ -441,7 +442,7 @@ class BlockchainServiceImpl(
             logger.debug { "Active sell offers, size = ${response.offersCount}" }
             return response.offersList.map { SellOfferData(it) }
         } catch (ex: StatusRuntimeException) {
-            throw getInternalExceptionFromStatusException(ex, "Could not get active sell offers")
+            throw generateInternalExceptionFromStatusException(ex, "Could not get active sell offers")
         }
     }
 
@@ -454,7 +455,7 @@ class BlockchainServiceImpl(
                 .build()
             serviceBlockingStub.createCooperative(request)
         } catch (ex: StatusRuntimeException) {
-            throw getInternalExceptionFromStatusException(ex, "Could not get active sell offers")
+            throw generateInternalExceptionFromStatusException(ex, "Could not get active sell offers")
         }
     }
 
@@ -492,15 +493,16 @@ class BlockchainServiceImpl(
         }
     }
 
-    private fun getInternalExceptionFromStatusException(
+    private fun generateInternalExceptionFromStatusException(
         ex: StatusRuntimeException,
         message: String
     ): GrpcException {
-        val grpcErrorCode = getErrorDescriptionFromExceptionStatus(ex) ?: throw ex
-        val errorCode = ErrorCode.INT_GRPC_BLOCKCHAIN
+        val grpcErrorCode = getErrorDescriptionFromExceptionStatus(ex)
+            ?: throw GrpcException(ErrorCode.INT_GRPC_BLOCKCHAIN, ex.localizedMessage)
+        val errorCode = ErrorCode.INT_REQUEST
         errorCode.specificCode = grpcErrorCode.code
         errorCode.message = grpcErrorCode.message
-        return GrpcException(errorCode, message)
+        return GrpcHandledException(errorCode, message)
     }
 
     // Status defined in ampnet-blockchain service, for more info see:

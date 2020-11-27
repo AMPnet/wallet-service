@@ -141,7 +141,7 @@ class WithdrawServiceImpl(
 
     private fun checkIfOwnerHasEnoughFunds(owner: UUID, amount: Long) {
         val walletHash = ServiceUtils.getWalletHash(owner, walletRepository)
-        val balance = blockchainService.getBalance(walletHash)
+        val balance = blockchainService.getBalance(walletHash) ?: 0
         if (amount > balance) {
             throw InvalidRequestException(ErrorCode.WALLET_FUNDS, "Insufficient funds")
         }

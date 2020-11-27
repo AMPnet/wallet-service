@@ -12,7 +12,7 @@ import com.ampnet.walletservice.grpc.blockchain.pojo.SellOfferData
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionData
 
 interface BlockchainService {
-    fun getBalance(hash: String): Long
+    fun getBalance(hash: String): Long?
     fun addWallet(activationData: String, coop: String): TransactionData
     fun generateCreateOrganizationTransaction(userWalletHash: String): TransactionData
     fun generateProjectWalletTransaction(request: GenerateProjectWalletRequest): TransactionData
