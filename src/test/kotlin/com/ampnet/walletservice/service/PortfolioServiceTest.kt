@@ -16,7 +16,7 @@ class PortfolioServiceTest : JpaServiceTestBase() {
     private val portfolioService: PortfolioService by lazy {
         PortfolioServiceImpl(
             walletRepository, mockedBlockchainService,
-            mockedProjectService, mockedUserService, mockedWalletService
+            mockedProjectService, mockedUserService
         )
     }
 
@@ -24,7 +24,6 @@ class PortfolioServiceTest : JpaServiceTestBase() {
 
     @BeforeEach
     fun initTestContext() {
-        databaseCleanerService.deleteAllWallets()
         testContext = TestContext()
     }
 

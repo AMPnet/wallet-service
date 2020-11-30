@@ -12,7 +12,6 @@ import com.ampnet.walletservice.grpc.userservice.UserService
 import com.ampnet.walletservice.persistence.model.Wallet
 import com.ampnet.walletservice.persistence.repository.WalletRepository
 import com.ampnet.walletservice.service.PortfolioService
-import com.ampnet.walletservice.service.WalletService
 import com.ampnet.walletservice.service.pojo.response.PortfolioStats
 import com.ampnet.walletservice.service.pojo.response.ProjectServiceResponse
 import com.ampnet.walletservice.service.pojo.response.ProjectWithInvestment
@@ -30,8 +29,7 @@ class PortfolioServiceImpl(
     private val walletRepository: WalletRepository,
     private val blockchainService: BlockchainService,
     private val projectService: ProjectService,
-    private val userService: UserService,
-    private val walletService: WalletService
+    private val userService: UserService
 ) : PortfolioService {
 
     private val platformWalletName = "Platform"

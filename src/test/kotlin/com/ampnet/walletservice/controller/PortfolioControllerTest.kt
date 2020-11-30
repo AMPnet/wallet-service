@@ -380,7 +380,6 @@ class PortfolioControllerTest : ControllerTestBase() {
             Mockito.`when`(projectService.getProjects(setOf(userUuid, projectUuid)))
                 .thenReturn(testContext.projects)
         }
-
         suppose("Project service will return a list organization members") {
             testContext.organizationMembers = listOf(
                 createOrganizationMembership(userUuid), createOrganizationMembership(UUID.randomUUID())
