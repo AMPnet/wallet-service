@@ -384,7 +384,7 @@ class PortfolioControllerTest : ControllerTestBase() {
             testContext.organizationMembers = listOf(
                 createOrganizationMembership(userUuid), createOrganizationMembership(UUID.randomUUID())
             )
-            Mockito.`when`(projectService.getOrganizationMembers(projectUuid))
+            Mockito.`when`(projectService.getOrganizationMembersForProject(projectUuid))
                 .thenReturn(testContext.organizationMembers)
         }
 

@@ -184,7 +184,7 @@ class PortfolioServiceImpl(
 
     private fun throwExceptionIfUserNotMemberOfOrganization(projectUuid: UUID, userUuid: UUID) {
         val memberInOrganization =
-            projectService.getOrganizationMembers(projectUuid).any { it.userUuid == userUuid.toString() }
+            projectService.getOrganizationMembersForProject(projectUuid).any { it.userUuid == userUuid.toString() }
         if (memberInOrganization.not()) {
             throw InvalidRequestException(
                 ErrorCode.ORG_MEM_MISSING,

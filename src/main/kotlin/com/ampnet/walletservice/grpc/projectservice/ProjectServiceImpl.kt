@@ -76,13 +76,13 @@ class ProjectServiceImpl(
         }
     }
 
-    override fun getOrganizationMembers(projectUuid: UUID): List<OrganizationMembershipResponse> {
+    override fun getOrganizationMembersForProject(projectUuid: UUID): List<OrganizationMembershipResponse> {
         logger.debug { "Fetching organization members for project: $projectUuid" }
         try {
             val request = GetByUuid.newBuilder()
                 .setProjectUuid(projectUuid.toString())
                 .build()
-            val response = serviceWithTimeout().getOrganizationMembers(request).membershipsList
+            val response = serviceWithTimeout().getOrganizationMembersForProject(request).membershipsList
             logger.debug { "Fetched organization members: ${response.map { it.userUuid }}" }
             return response
         } catch (ex: StatusRuntimeException) {

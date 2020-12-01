@@ -33,7 +33,7 @@ class PortfolioServiceTest : JpaServiceTestBase() {
             testContext.organizationMembers = listOf(
                 createOrganizationMembership(UUID.randomUUID()), createOrganizationMembership(UUID.randomUUID())
             )
-            Mockito.`when`(mockedProjectService.getOrganizationMembers(projectUuid))
+            Mockito.`when`(mockedProjectService.getOrganizationMembersForProject(projectUuid))
                 .thenReturn(testContext.organizationMembers)
         }
 

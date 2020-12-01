@@ -64,5 +64,5 @@ message OrganizationMembershipsResponse {
 service ProjectService {
     rpc GetOrganizations(GetByUuids) returns (OrganizationsResponse);
     rpc GetProjects(GetByUuids) returns (ProjectsResponse);
-    rpc GetOrganizationMembers(GetByUuid) returns (OrganizationMembershipsResponse);
+    rpc GetOrganizationMembersForProject(GetByUuid) returns (OrganizationMembershipsResponse);
 }
