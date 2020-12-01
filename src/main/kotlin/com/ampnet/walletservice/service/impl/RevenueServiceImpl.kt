@@ -71,7 +71,7 @@ class RevenueServiceImpl(
     }
 
     private fun validateProjectHasEnoughFunds(projectWallet: String, amount: Long) {
-        val balance = blockchainService.getBalance(projectWallet)
+        val balance = blockchainService.getBalance(projectWallet) ?: 0
         if (amount > balance) {
             throw InvalidRequestException(ErrorCode.WALLET_FUNDS, "Insufficient funds for revenue payout")
         }
