@@ -244,6 +244,8 @@ include::{snippets}/PortfolioControllerTest/mustBeAbleToGetBlockchainTransaction
 include::{snippets}/PortfolioControllerTest/mustBeAbleToGetBlockchainTransactions/http-response.adoc[]
 
 === Get all project transactions
+Only organization members can see a list of project transactions.
+
 .Request
 include::{snippets}/PortfolioControllerTest/mustBeAbleToGetTransactionsForProject/http-request.adoc[]
 .Response
