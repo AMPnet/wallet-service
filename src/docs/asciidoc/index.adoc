@@ -243,6 +243,14 @@ include::{snippets}/PortfolioControllerTest/mustBeAbleToGetBlockchainTransaction
 .Response
 include::{snippets}/PortfolioControllerTest/mustBeAbleToGetBlockchainTransactions/http-response.adoc[]
 
+=== Get all project transactions
+Only organization members can see a list of project transactions.
+
+.Request
+include::{snippets}/PortfolioControllerTest/mustBeAbleToGetTransactionsForProject/http-request.adoc[]
+.Response
+include::{snippets}/PortfolioControllerTest/mustBeAbleToGetTransactionsForProject/http-response.adoc[]
+
 == Investment API
 All requests need header: `Authorization: Bearer JWT`.
 

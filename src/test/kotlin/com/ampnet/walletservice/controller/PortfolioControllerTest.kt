@@ -2,6 +2,7 @@ package com.ampnet.walletservice.controller
 
 import com.ampnet.crowdfunding.proto.TransactionState
 import com.ampnet.crowdfunding.proto.TransactionType
+import com.ampnet.projectservice.proto.OrganizationMembershipResponse
 import com.ampnet.walletservice.controller.pojo.response.BlockchainTransactionsResponse
 import com.ampnet.walletservice.controller.pojo.response.PortfolioResponse
 import com.ampnet.walletservice.controller.pojo.response.ProjectWithInvestments
@@ -330,6 +331,102 @@ class PortfolioControllerTest : ControllerTestBase() {
         }
     }
 
+    @Test
+    @WithMockCrowdfoundUser
+    fun mustBeAbleToGetTransactionsForProject() {
+        suppose("User has wallet") {
+            createWalletForUser(userUuid, "user-wallet-hash")
+        }
+        suppose("Project has a wallet") {
+            createWalletForProject(projectUuid, "project-wallet-hash")
+        }
+        suppose("Blockchain service will return transactions for project wallet") {
+            val userWalletHash = getWalletHash(userUuid)
+            val projectWalletHash = getWalletHash(projectUuid)
+            val now = ZonedDateTime.now()
+            testContext.transactions = listOf(
+                BlockchainTransaction(
+                    userWalletHash, projectWalletHash, 1000,
+                    TransactionType.APPROVE_INVESTMENT, now.minusMonths(1),
+                    TransactionState.MINED, txHash
+                ),
+                BlockchainTransaction(
+                    userWalletHash, projectWalletHash, 1000,
+                    TransactionType.INVEST, now.minusMonths(1),
+                    TransactionState.MINED, txHash
+                ),
+                BlockchainTransaction(
+                    projectWalletHash, userWalletHash, 1000,
+                    TransactionType.CANCEL_INVESTMENT, now.minusDays(1),
+                    TransactionState.MINED, txHash
+                ),
+                BlockchainTransaction(
+                    projectWalletHash, userWalletHash, 10,
+                    TransactionType.SHARE_PAYOUT, now.minusDays(1),
+                    TransactionState.MINED, txHash
+                )
+            )
+            Mockito.`when`(
+                blockchainService.getTransactions(projectWalletHash)
+            ).thenReturn(testContext.transactions)
+        }
+        suppose("User service will return a list of users") {
+            testContext.users = listOf(createUserResponse(userUuid))
+            Mockito.`when`(userService.getUsers(setOf(userUuid, projectUuid)))
+                .thenReturn(testContext.users)
+        }
+        suppose("Project service will return a list of projects") {
+            testContext.projects = listOf(createProjectResponse(projectUuid, userUuid))
+            Mockito.`when`(projectService.getProjects(setOf(userUuid, projectUuid)))
+                .thenReturn(testContext.projects)
+        }
+        suppose("Project service will return a list organization members") {
+            testContext.organizationMembers = listOf(
+                createOrganizationMembership(userUuid), createOrganizationMembership(UUID.randomUUID())
+            )
+            Mockito.`when`(projectService.getOrganizationMembersForProject(projectUuid))
+                .thenReturn(testContext.organizationMembers)
+        }
+
+        verify("User can get project transactions") {
+            val result = mockMvc.perform(get("$portfolioPath/project/$projectUuid/transactions"))
+                .andExpect(status().isOk)
+                .andReturn()
+
+            val user = testContext.users.first()
+            val project = testContext.projects.first()
+            val response: BlockchainTransactionsResponse = objectMapper.readValue(result.response.contentAsString)
+            assertThat(response.transactions).hasSize(4)
+
+            val responseApproveInvestment =
+                response.transactions.first { it.type == TransactionType.APPROVE_INVESTMENT }
+            assertThat(responseApproveInvestment.from).isEqualTo("${user.firstName} ${user.lastName}")
+            assertThat(responseApproveInvestment.to).isEqualTo(project.name)
+            assertThat(responseApproveInvestment.description).isEqualTo(project.name)
+            assertThat(responseApproveInvestment.share).isEqualTo(getShare(project.expectedFunding, responseApproveInvestment.amount))
+            assertThat(responseApproveInvestment.txHash).isEqualTo(txHash)
+            val responseInvest = response.transactions.first { it.type == TransactionType.INVEST }
+            assertThat(responseInvest.from).isEqualTo("${user.firstName} ${user.lastName}")
+            assertThat(responseInvest.to).isEqualTo(project.name)
+            assertThat(responseInvest.description).isEqualTo(project.name)
+            assertThat(responseInvest.share).isEqualTo(getShare(project.expectedFunding, responseInvest.amount))
+            assertThat(responseInvest.txHash).isEqualTo(txHash)
+            val responseCancelInvestment = response.transactions.first { it.type == TransactionType.CANCEL_INVESTMENT }
+            assertThat(responseCancelInvestment.from).isEqualTo(project.name)
+            assertThat(responseCancelInvestment.to).isEqualTo("${user.firstName} ${user.lastName}")
+            assertThat(responseCancelInvestment.description).isEqualTo(project.name)
+            assertThat(responseCancelInvestment.share)
+                .isEqualTo(getShare(project.expectedFunding, responseCancelInvestment.amount))
+            assertThat(responseCancelInvestment.txHash).isEqualTo(txHash)
+            val responseSharePayout = response.transactions.first { it.type == TransactionType.SHARE_PAYOUT }
+            assertThat(responseSharePayout.from).isEqualTo(project.name)
+            assertThat(responseSharePayout.to).isEqualTo("${user.firstName} ${user.lastName}")
+            assertThat(responseSharePayout.description).isEqualTo(project.name)
+            assertThat(responseSharePayout.share).isNull()
+            assertThat(responseSharePayout.txHash).isEqualTo(txHash)
+        }
+    }
+
     private fun createInvestmentInProject(amount: Long): BlockchainTransaction =
         BlockchainTransaction(
             getWalletHash(userUuid),
@@ -350,5 +447,6 @@ class PortfolioControllerTest : ControllerTestBase() {
         lateinit var transactions: List<BlockchainTransaction>
         lateinit var users: List<UserServiceResponse>
         lateinit var projects: List<ProjectServiceResponse>
+        lateinit var organizationMembers: List<OrganizationMembershipResponse>
     }
 }

@@ -55,4 +55,14 @@ class PortfolioController(
         val blockchainTransactions = portfolioService.getTransactions(userPrincipal.uuid)
         return ResponseEntity.ok(BlockchainTransactionsResponse(blockchainTransactions))
     }
+
+    @GetMapping("portfolio/project/{uuid}/transactions")
+    fun getProjectTransactions(
+        @PathVariable("uuid") projectUuid: UUID
+    ): ResponseEntity<BlockchainTransactionsResponse> {
+        val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
+        logger.debug { "Received request to get transactions for project: $projectUuid" }
+        val transactions = portfolioService.getProjectTransactions(projectUuid, userPrincipal.uuid)
+        return ResponseEntity.ok(BlockchainTransactionsResponse(transactions))
+    }
 }

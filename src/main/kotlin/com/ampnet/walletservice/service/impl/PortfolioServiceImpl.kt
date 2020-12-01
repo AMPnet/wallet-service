@@ -2,6 +2,8 @@ package com.ampnet.walletservice.service.impl
 
 import com.ampnet.crowdfunding.proto.TransactionState
 import com.ampnet.crowdfunding.proto.TransactionType
+import com.ampnet.walletservice.exception.ErrorCode
+import com.ampnet.walletservice.exception.InvalidRequestException
 import com.ampnet.walletservice.grpc.blockchain.BlockchainService
 import com.ampnet.walletservice.grpc.blockchain.pojo.BlockchainTransaction
 import com.ampnet.walletservice.grpc.blockchain.pojo.PortfolioData
@@ -67,9 +69,17 @@ class PortfolioServiceImpl(
         val blockchainTransactions = blockchainService.getTransactions(walletHash)
         val walletHashes = getWalletHashes(blockchainTransactions)
         val wallets = walletRepository.findByHashes(walletHashes)
-        return setBlockchainTransactionFromToNames(
-            blockchainTransactions, wallets
-        )
+        return setBlockchainTransactionFromToNames(blockchainTransactions, wallets)
+    }
+
+    @Transactional(readOnly = true)
+    override fun getProjectTransactions(projectUuid: UUID, userUuid: UUID): List<BlockchainTransaction> {
+        throwExceptionIfUserNotMemberOfOrganization(projectUuid, userUuid)
+        val walletHash = ServiceUtils.getWalletHash(projectUuid, walletRepository)
+        val transactions = blockchainService.getTransactions(walletHash)
+        val walletHashes = getWalletHashes(transactions)
+        val wallets = walletRepository.findByHashes(walletHashes)
+        return setBlockchainTransactionFromToNames(transactions, wallets)
     }
 
     private fun sumTransactionForType(transactions: List<BlockchainTransaction>, type: TransactionType): Long {
@@ -170,5 +180,16 @@ class PortfolioServiceImpl(
         return amount.toBigDecimal().divide(
             projectFunding.toBigDecimal(), SCALE, RoundingMode.HALF_UP
         ).toPlainString()
+    }
+
+    private fun throwExceptionIfUserNotMemberOfOrganization(projectUuid: UUID, userUuid: UUID) {
+        val memberInOrganization =
+            projectService.getOrganizationMembersForProject(projectUuid).any { it.userUuid == userUuid.toString() }
+        if (memberInOrganization.not()) {
+            throw InvalidRequestException(
+                ErrorCode.ORG_MEM_MISSING,
+                "User: $userUuid is not a member of project: $projectUuid"
+            )
+        }
     }
 }
