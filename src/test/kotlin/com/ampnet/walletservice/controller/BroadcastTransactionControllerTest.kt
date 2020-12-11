@@ -152,7 +152,7 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
             )
                 .andExpect(status().isBadRequest)
                 .andReturn()
-            verifyResponseErrorCode(result, ErrorCode.TX_COMPANION_DATA_MISSING)
+            verifyResponseErrorCode(result, ErrorCode.TX_DATA_MISSING)
         }
     }
 
@@ -216,7 +216,7 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
             )
                 .andExpect(status().isBadRequest)
                 .andReturn()
-            verifyResponseErrorCode(result, ErrorCode.TX_COMPANION_DATA_MISSING)
+            verifyResponseErrorCode(result, ErrorCode.TX_DATA_MISSING)
         }
     }
 
