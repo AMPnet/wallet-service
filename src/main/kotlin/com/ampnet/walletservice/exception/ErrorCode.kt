@@ -4,7 +4,7 @@ enum class ErrorCode(val categoryCode: String, var specificCode: String, var mes
 
     // User: 03
     USER_BANK_INVALID("03", "02", "Invalid bank account data"),
-    USER_MISSING_PRIVILEGE("03", "05", "User does not have a privilege"),
+    USER_MISSING_PRIVILEGE("03", "05", "Missing privilege to access data"),
 
     // Wallet: 05
     WALLET_MISSING("05", "01", "Missing wallet"),
@@ -34,7 +34,7 @@ enum class ErrorCode(val categoryCode: String, var specificCode: String, var mes
     PRJ_MAX_PER_USER("07", "04", "User has exceeded max funds per project"),
     PRJ_MAX_FUNDS("07", "06", "Project has reached expected funding"),
     PRJ_NOT_ACTIVE("07", "07", "Project is not active"),
-    PRJ_MISSING_PRIVILEGE("07", "11", "User is missing a privilege for project"),
+    PRJ_MISSING_PRIVILEGE("07", "12", "Missing project owner privilege"),
 
     // Internal: 08
     INT_FILE_STORAGE("08", "01", "Could not upload document on cloud file storage"),
@@ -48,5 +48,8 @@ enum class ErrorCode(val categoryCode: String, var specificCode: String, var mes
 
     // Transaction: 09
     TX_MISSING("09", "01", "Non existing transaction"),
-    TX_COMPANION_DATA_MISSING("09", "02", "Missing companion data"),
+    TX_DATA_MISSING("09", "02", "Missing transaction data"),
+
+    // Middleware: 11
+    MIDDLEWARE("11", "00", "Undefined")
 }

@@ -499,7 +499,7 @@ class BlockchainServiceImpl(
     ): GrpcException {
         val grpcErrorCode = getErrorDescriptionFromExceptionStatus(ex)
             ?: throw GrpcException(ErrorCode.INT_GRPC_BLOCKCHAIN, ex.localizedMessage)
-        val errorCode = ErrorCode.INT_REQUEST
+        val errorCode = ErrorCode.MIDDLEWARE
         errorCode.specificCode = grpcErrorCode.code
         errorCode.message = grpcErrorCode.message
         return GrpcHandledException(errorCode, message)

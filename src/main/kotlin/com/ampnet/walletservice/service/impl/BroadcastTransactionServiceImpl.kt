@@ -122,7 +122,7 @@ class BroadcastTransactionServiceImpl(
 
     private fun transferOwnershipTransaction(info: TransactionInfo, signed: String): String {
         val walletAddress = info.companionData
-            ?: throw InvalidRequestException(ErrorCode.TX_COMPANION_DATA_MISSING, "Missing wallet address data")
+            ?: throw InvalidRequestException(ErrorCode.TX_DATA_MISSING, "Missing wallet address data")
         val transferType = when (info.type) {
             TransactionType.TRNSF_PLTFRM_OWN -> TransferWalletType.PLATFORM_MANAGER
             TransactionType.TRNSF_TOKEN_OWN -> TransferWalletType.TOKEN_ISSUER
@@ -136,7 +136,7 @@ class BroadcastTransactionServiceImpl(
         try {
             val companionData = transactionInfo.companionData
                 ?: throw InvalidRequestException(
-                    ErrorCode.TX_COMPANION_DATA_MISSING, "Missing id for ${transactionInfo.type}"
+                    ErrorCode.TX_DATA_MISSING, "Missing id for ${transactionInfo.type}"
                 )
             return companionData.toInt()
         } catch (ex: NumberFormatException) {
@@ -148,7 +148,7 @@ class BroadcastTransactionServiceImpl(
         try {
             val companionData = transactionInfo.companionData
                 ?: throw InvalidRequestException(
-                    ErrorCode.TX_COMPANION_DATA_MISSING, "Missing uuid for ${transactionInfo.type}"
+                    ErrorCode.TX_DATA_MISSING, "Missing uuid for ${transactionInfo.type}"
                 )
             return UUID.fromString(companionData)
         } catch (ex: IllegalArgumentException) {
