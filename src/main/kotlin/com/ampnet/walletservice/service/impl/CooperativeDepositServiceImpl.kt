@@ -3,6 +3,7 @@ package com.ampnet.walletservice.service.impl
 import com.ampnet.core.jwt.UserPrincipal
 import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.exception.ErrorCode
+import com.ampnet.walletservice.exception.InternalException
 import com.ampnet.walletservice.exception.InvalidRequestException
 import com.ampnet.walletservice.exception.ResourceAlreadyExistsException
 import com.ampnet.walletservice.exception.ResourceNotFoundException
@@ -48,6 +49,7 @@ class CooperativeDepositServiceImpl(
     companion object : KLogging()
 
     @Transactional
+    @Throws(ResourceNotFoundException::class, InternalException::class)
     override fun approve(request: ApproveDepositRequest): DepositServiceResponse {
         val deposit = getDepositForIdAndCoop(request.id, request.user.coop)
         // TODO: think about document reading restrictions
@@ -63,6 +65,7 @@ class CooperativeDepositServiceImpl(
     }
 
     @Transactional
+    @Throws(ResourceNotFoundException::class, InvalidRequestException::class)
     override fun decline(id: Int, user: UserPrincipal, comment: String): DepositServiceResponse {
         val deposit = getDepositForIdAndCoop(id, user.coop)
         if (deposit.txHash != null) {
@@ -98,6 +101,7 @@ class CooperativeDepositServiceImpl(
         }
 
     @Transactional
+    @Throws(ResourceNotFoundException::class, InvalidRequestException::class, ResourceAlreadyExistsException::class)
     override fun generateMintTransaction(request: MintServiceRequest): TransactionDataAndInfo {
         logger.info { "Generating mint transaction for deposit: ${request.depositId} by user: ${request.byUser}" }
         val deposit = getDepositForIdAndCoop(request.depositId, request.byUser.coop)
@@ -110,6 +114,7 @@ class CooperativeDepositServiceImpl(
     }
 
     @Transactional
+    @Throws(ResourceNotFoundException::class, InvalidRequestException::class, ResourceAlreadyExistsException::class)
     override fun confirmMintTransaction(coop: String, signedTransaction: String, depositId: Int): Deposit {
         logger.info { "Confirming mint transaction for deposit: $depositId" }
         val deposit = getDepositForIdAndCoop(depositId, coop)

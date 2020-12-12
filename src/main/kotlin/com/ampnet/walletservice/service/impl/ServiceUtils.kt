@@ -49,6 +49,7 @@ internal object ServiceUtils {
             throw ResourceNotFoundException(ErrorCode.WALLET_MISSING, "Missing wallet for user with uuid: $userUuid")
         }
 
+    @Throws(ResourceNotFoundException::class)
     fun getWithdrawForIdAndCoop(withdrawId: Int, coop: String, withdrawRepository: WithdrawRepository): Withdraw {
         return withdrawRepository.findByIdAndCoop(withdrawId, coop).orElseThrow {
             throw ResourceNotFoundException(

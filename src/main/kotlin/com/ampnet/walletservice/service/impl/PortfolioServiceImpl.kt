@@ -4,6 +4,7 @@ import com.ampnet.crowdfunding.proto.TransactionState
 import com.ampnet.crowdfunding.proto.TransactionType
 import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.exception.InvalidRequestException
+import com.ampnet.walletservice.exception.ResourceNotFoundException
 import com.ampnet.walletservice.grpc.blockchain.BlockchainService
 import com.ampnet.walletservice.grpc.blockchain.pojo.BlockchainTransaction
 import com.ampnet.walletservice.grpc.blockchain.pojo.PortfolioData
@@ -35,6 +36,7 @@ class PortfolioServiceImpl(
     private val platformWalletName = "Platform"
 
     @Transactional(readOnly = true)
+    @Throws(ResourceNotFoundException::class, InvalidRequestException::class)
     override fun getPortfolio(user: UUID): List<ProjectWithInvestment> {
         val walletHash = ServiceUtils.getWalletHash(user, walletRepository)
         val portfolio = blockchainService.getPortfolio(walletHash).data
@@ -43,6 +45,7 @@ class PortfolioServiceImpl(
     }
 
     @Transactional(readOnly = true)
+    @Throws(ResourceNotFoundException::class, InvalidRequestException::class)
     override fun getPortfolioStats(user: UUID): PortfolioStats {
         val walletHash = ServiceUtils.getWalletHash(user, walletRepository)
         val transactions = blockchainService.getTransactions(walletHash)
@@ -57,6 +60,7 @@ class PortfolioServiceImpl(
     }
 
     @Transactional(readOnly = true)
+    @Throws(ResourceNotFoundException::class, InvalidRequestException::class)
     override fun getInvestmentsInProject(user: UUID, project: UUID): List<BlockchainTransaction> {
         val userWalletAddress = ServiceUtils.getWalletByUserUuid(user, walletRepository).activationData
         val projectWalletHash = ServiceUtils.getWalletHash(project, walletRepository)
@@ -64,6 +68,7 @@ class PortfolioServiceImpl(
     }
 
     @Transactional(readOnly = true)
+    @Throws(ResourceNotFoundException::class, InvalidRequestException::class)
     override fun getTransactions(user: UUID): List<BlockchainTransaction> {
         val walletHash = ServiceUtils.getWalletHash(user, walletRepository)
         val blockchainTransactions = blockchainService.getTransactions(walletHash)
@@ -73,6 +78,7 @@ class PortfolioServiceImpl(
     }
 
     @Transactional(readOnly = true)
+    @Throws(ResourceNotFoundException::class, InvalidRequestException::class)
     override fun getProjectTransactions(projectUuid: UUID, userUuid: UUID): List<BlockchainTransaction> {
         throwExceptionIfUserNotMemberOfOrganization(projectUuid, userUuid)
         val walletHash = ServiceUtils.getWalletHash(projectUuid, walletRepository)

@@ -3,7 +3,9 @@ package com.ampnet.walletservice.service.impl
 import com.ampnet.core.jwt.UserPrincipal
 import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.exception.ErrorCode
+import com.ampnet.walletservice.exception.InternalException
 import com.ampnet.walletservice.exception.InvalidRequestException
+import com.ampnet.walletservice.exception.ResourceNotFoundException
 import com.ampnet.walletservice.grpc.blockchain.BlockchainService
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionDataAndInfo
 import com.ampnet.walletservice.grpc.mail.MailService
@@ -60,6 +62,7 @@ class CooperativeWithdrawServiceImpl(
         generateWithdrawListResponse(withdrawRepository.findAllBurned(coop, type, pageable))
 
     @Transactional
+    @Throws(ResourceNotFoundException::class, InvalidRequestException::class)
     override fun generateBurnTransaction(withdrawId: Int, user: UserPrincipal): TransactionDataAndInfo {
         val withdraw = ServiceUtils.getWithdraw(withdrawId, withdrawRepository)
         logger.info { "Generating Burn transaction for withdraw: $withdraw" }
@@ -73,6 +76,7 @@ class CooperativeWithdrawServiceImpl(
     }
 
     @Transactional
+    @Throws(ResourceNotFoundException::class, InvalidRequestException::class)
     override fun burn(signedTransaction: String, withdrawId: Int): Withdraw {
         val withdraw = ServiceUtils.getWithdraw(withdrawId, withdrawRepository)
         validateWithdrawForBurn(withdraw)
@@ -86,6 +90,7 @@ class CooperativeWithdrawServiceImpl(
     }
 
     @Transactional
+    @Throws(ResourceNotFoundException::class, InternalException::class)
     override fun addDocument(withdrawId: Int, request: DocumentSaveRequest): WithdrawServiceResponse {
         val withdraw = ServiceUtils.getWithdrawForIdAndCoop(withdrawId, request.user.coop, withdrawRepository)
         logger.info { "Adding document for withdraw: $withdraw" }

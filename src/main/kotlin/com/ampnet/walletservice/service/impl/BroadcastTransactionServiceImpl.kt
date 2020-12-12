@@ -38,6 +38,7 @@ class BroadcastTransactionServiceImpl(
     companion object : KLogging()
 
     @Transactional
+    @Throws(ResourceNotFoundException::class, InvalidRequestException::class)
     override fun broadcast(txId: Int, signedTransaction: String): String {
         val transactionInfo = transactionInfoService.findTransactionInfo(txId)
             ?: throw ResourceNotFoundException(ErrorCode.TX_MISSING, "Non existing transaction with id: $txId")

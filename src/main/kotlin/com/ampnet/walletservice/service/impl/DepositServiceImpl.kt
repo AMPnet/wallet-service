@@ -31,6 +31,7 @@ class DepositServiceImpl(
     }
 
     @Transactional
+    @Throws(ResourceNotFoundException::class, ResourceAlreadyExistsException::class, InvalidRequestException::class)
     override fun create(request: DepositCreateServiceRequest): DepositServiceResponse {
         validateOwnerHasWallet(request.owner)
         validateOwnerDoesNotHavePendingDeposit(request)
@@ -51,6 +52,7 @@ class DepositServiceImpl(
     }
 
     @Transactional
+    @Throws(ResourceNotFoundException::class, InvalidRequestException::class)
     override fun delete(id: Int, user: UUID) {
         val deposit = depositRepository.findById(id).orElseThrow {
             throw ResourceNotFoundException(ErrorCode.WALLET_DEPOSIT_MISSING, "Missing deposit: $id")
@@ -70,6 +72,7 @@ class DepositServiceImpl(
     }
 
     @Transactional(readOnly = true)
+    @Throws(InvalidRequestException::class)
     override fun getPendingForProject(project: UUID, user: UUID): DepositServiceResponse? {
         val deposit = depositRepository.findByOwnerUuidUnsigned(project).firstOrNull()
         return deposit?.let {

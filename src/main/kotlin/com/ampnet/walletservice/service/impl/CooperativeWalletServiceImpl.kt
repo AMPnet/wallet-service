@@ -50,6 +50,7 @@ class CooperativeWalletServiceImpl(
     companion object : KLogging()
 
     @Transactional
+    @Throws(ResourceNotFoundException::class)
     override fun generateWalletActivationTransaction(walletUuid: UUID, user: UserPrincipal): TransactionDataAndInfo {
         val wallet = getWalletByUuid(walletUuid)
         val data = blockchainService.addWallet(wallet.activationData, wallet.coop)
@@ -58,6 +59,7 @@ class CooperativeWalletServiceImpl(
     }
 
     @Transactional
+    @Throws(ResourceNotFoundException::class)
     override fun activateWallet(walletUuid: UUID, signedTransaction: String): Wallet {
         val wallet = getWalletByUuid(walletUuid)
         wallet.hash = blockchainService.postTransaction(signedTransaction, wallet.coop)
@@ -106,6 +108,7 @@ class CooperativeWalletServiceImpl(
     }
 
     @Transactional
+    @Throws(ResourceNotFoundException::class)
     override fun generateSetTransferOwnership(
         owner: UserPrincipal,
         request: WalletTransferRequest
@@ -131,6 +134,7 @@ class CooperativeWalletServiceImpl(
     }
 
     @Transactional
+    @Throws(ResourceNotFoundException::class)
     override fun activateAdminWallet(address: String, coop: String, hash: String): Wallet {
         val wallet = ServiceUtils.wrapOptional(walletRepository.findByActivationDataAndCoop(address, coop))
             ?: throw ResourceNotFoundException(

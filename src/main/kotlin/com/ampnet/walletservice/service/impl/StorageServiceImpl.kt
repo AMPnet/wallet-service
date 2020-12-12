@@ -1,5 +1,6 @@
 package com.ampnet.walletservice.service.impl
 
+import com.ampnet.walletservice.exception.InternalException
 import com.ampnet.walletservice.persistence.model.File
 import com.ampnet.walletservice.persistence.repository.DocumentRepository
 import com.ampnet.walletservice.service.CloudStorageService
@@ -20,6 +21,7 @@ class StorageServiceImpl(
         private const val MAX_DOCUMENT_TYPE_NAME = 16
     }
 
+    @Throws(InternalException::class)
     override fun saveDocument(request: DocumentSaveRequest): File {
         logger.debug { "Storing document: ${request.name}" }
 

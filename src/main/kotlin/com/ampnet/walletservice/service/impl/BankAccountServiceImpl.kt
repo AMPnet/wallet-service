@@ -24,6 +24,7 @@ class BankAccountServiceImpl(private val bankAccountRepository: BankAccountRepos
     override fun getAllBankAccounts(coop: String): List<BankAccount> = bankAccountRepository.findAllByCoop(coop)
 
     @Transactional
+    @Throws(InvalidRequestException::class)
     override fun createBankAccount(user: UserPrincipal, request: BankAccountCreateRequest): BankAccount {
         validateBankCode(request.bankCode)
         validateIban(request.iban)

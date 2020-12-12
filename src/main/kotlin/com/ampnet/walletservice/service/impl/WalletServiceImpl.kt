@@ -6,7 +6,6 @@ import com.ampnet.walletservice.enums.Currency
 import com.ampnet.walletservice.enums.PrivilegeType
 import com.ampnet.walletservice.enums.WalletType
 import com.ampnet.walletservice.exception.ErrorCode
-import com.ampnet.walletservice.exception.GrpcException
 import com.ampnet.walletservice.exception.InvalidRequestException
 import com.ampnet.walletservice.exception.ResourceAlreadyExistsException
 import com.ampnet.walletservice.grpc.blockchain.BlockchainService
@@ -45,7 +44,6 @@ class WalletServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    @Throws(GrpcException::class)
     override fun getWalletBalance(wallet: Wallet): Long? {
         val walletHash = wallet.hash ?: return null
         return blockchainService.getBalance(walletHash)
@@ -79,6 +77,7 @@ class WalletServiceImpl(
     }
 
     @Transactional
+    @Throws(ResourceAlreadyExistsException::class, InvalidRequestException::class)
     override fun generateTransactionToCreateProjectWallet(project: UUID, user: UserPrincipal): TransactionDataAndInfo {
         throwExceptionIfProjectHasWallet(project)
         val userWalletHash = ServiceUtils.getWalletHash(user.uuid, walletRepository)
@@ -111,6 +110,7 @@ class WalletServiceImpl(
     }
 
     @Transactional
+    @Throws(ResourceAlreadyExistsException::class, InvalidRequestException::class)
     override fun generateTransactionToCreateOrganizationWallet(
         organization: UUID,
         user: UserPrincipal
@@ -133,6 +133,7 @@ class WalletServiceImpl(
     }
 
     @Transactional
+    @Throws(ResourceAlreadyExistsException::class)
     override fun createOrganizationWallet(organization: UUID, signedTransaction: String, coop: String): Wallet {
         throwExceptionIfOrganizationAlreadyHasWallet(organization)
         logger.debug { "Creating wallet for organization: $organization" }
@@ -154,9 +155,8 @@ class WalletServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun getPairWalletCode(code: String): PairWalletCode? {
-        return ServiceUtils.wrapOptional(pairWalletCodeRepository.findByCode(code))
-    }
+    override fun getPairWalletCode(code: String): PairWalletCode? =
+        ServiceUtils.wrapOptional(pairWalletCodeRepository.findByCode(code))
 
     private fun createWallet(
         owner: UUID,

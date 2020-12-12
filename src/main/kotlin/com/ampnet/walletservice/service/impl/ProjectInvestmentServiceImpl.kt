@@ -58,6 +58,7 @@ class ProjectInvestmentServiceImpl(
     }
 
     @Transactional
+    @Throws(ResourceNotFoundException::class, InvalidRequestException::class)
     override fun generateCancelInvestmentsInProjectTransaction(
         projectUuid: UUID,
         user: UserPrincipal

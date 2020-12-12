@@ -7,6 +7,7 @@ import com.ampnet.walletservice.service.SellOfferService
 import com.ampnet.walletservice.service.pojo.response.ProjectWithSellOffers
 import mu.KLogging
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 @Service
 class SellOfferServiceImpl(
@@ -17,6 +18,7 @@ class SellOfferServiceImpl(
 
     companion object : KLogging()
 
+    @Transactional(readOnly = true)
     override fun getProjectsWithSalesOffers(coop: String): List<ProjectWithSellOffers> {
         logger.debug { "Get all projects with sales offers" }
         val activeOffers = blockchainService.getSellOffers(coop)

@@ -5,6 +5,7 @@ import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.exception.InvalidRequestException
 import com.ampnet.walletservice.exception.ResourceAlreadyExistsException
+import com.ampnet.walletservice.exception.ResourceNotFoundException
 import com.ampnet.walletservice.grpc.blockchain.BlockchainService
 import com.ampnet.walletservice.grpc.blockchain.pojo.ApproveProjectBurnTransactionRequest
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionData
@@ -55,6 +56,7 @@ class WithdrawServiceImpl(
     }
 
     @Transactional
+    @Throws(ResourceAlreadyExistsException::class, InvalidRequestException::class)
     override fun createWithdraw(request: WithdrawCreateServiceRequest): WithdrawServiceResponse {
         bankAccountService.validateIban(request.bankAccount)
         validateOwnerDoesNotHavePendingWithdraw(request.owner)
@@ -78,6 +80,7 @@ class WithdrawServiceImpl(
     }
 
     @Transactional
+    @Throws(ResourceNotFoundException::class, InvalidRequestException::class)
     override fun deleteWithdraw(withdrawId: Int, user: UUID) {
         val withdraw = ServiceUtils.getWithdraw(withdrawId, withdrawRepository)
         validateWithdrawIsNotApproved(withdraw)
@@ -88,6 +91,7 @@ class WithdrawServiceImpl(
     }
 
     @Transactional
+    @Throws(ResourceNotFoundException::class, InvalidRequestException::class)
     override fun generateApprovalTransaction(withdrawId: Int, user: UserPrincipal): TransactionDataAndInfo {
         val withdraw = ServiceUtils.getWithdraw(withdrawId, withdrawRepository)
         validateWithdrawIsNotApproved(withdraw)
@@ -98,6 +102,7 @@ class WithdrawServiceImpl(
     }
 
     @Transactional
+    @Throws(ResourceNotFoundException::class, InvalidRequestException::class)
     override fun confirmApproval(signedTransaction: String, withdrawId: Int): Withdraw {
         val withdraw = ServiceUtils.getWithdraw(withdrawId, withdrawRepository)
         validateWithdrawIsNotApproved(withdraw)
