@@ -16,7 +16,6 @@ import com.ampnet.crowdfunding.proto.GenerateMintTxRequest
 import com.ampnet.crowdfunding.proto.GenerateStartRevenueSharesPayoutTxRequest
 import com.ampnet.crowdfunding.proto.GenerateTransferPlatformManagerOwnershipTxRequest
 import com.ampnet.crowdfunding.proto.GenerateTransferTokenIssuerOwnershipTxRequest
-import com.ampnet.crowdfunding.proto.GetProjectsInfoRequest
 import com.ampnet.crowdfunding.proto.InvestmentsInProjectRequest
 import com.ampnet.crowdfunding.proto.PlatformManagerRequest
 import com.ampnet.crowdfunding.proto.PortfolioRequest
@@ -34,7 +33,6 @@ import com.ampnet.walletservice.grpc.blockchain.pojo.BlockchainTransaction
 import com.ampnet.walletservice.grpc.blockchain.pojo.GenerateProjectWalletRequest
 import com.ampnet.walletservice.grpc.blockchain.pojo.Portfolio
 import com.ampnet.walletservice.grpc.blockchain.pojo.PortfolioData
-import com.ampnet.walletservice.grpc.blockchain.pojo.ProjectInfoResponse
 import com.ampnet.walletservice.grpc.blockchain.pojo.ProjectInvestmentTxRequest
 import com.ampnet.walletservice.grpc.blockchain.pojo.RevenuePayoutTxRequest
 import com.ampnet.walletservice.grpc.blockchain.pojo.SellOfferData
@@ -329,25 +327,6 @@ class BlockchainServiceImpl(
             throw generateInternalExceptionFromStatusException(
                 ex,
                 "Could not get investments by user address: $userWalletAddress in project hash: $projectWalletHash"
-            )
-        }
-    }
-
-    override fun getProjectsInfo(hashes: List<String>): List<ProjectInfoResponse> {
-        logger.debug { "Get projects info for hashes: $hashes" }
-        try {
-            val response = serviceWithTimeout()
-                .getProjectsInfo(
-                    GetProjectsInfoRequest.newBuilder()
-                        .addAllProjectTxHashes(hashes)
-                        .build()
-                )
-            logger.debug { "Projects info response, size ${response.projectsCount}" }
-            return response.projectsList.map { ProjectInfoResponse(it) }
-        } catch (ex: StatusRuntimeException) {
-            throw generateInternalExceptionFromStatusException(
-                ex,
-                "Could not get projects info for hashes: $hashes"
             )
         }
     }

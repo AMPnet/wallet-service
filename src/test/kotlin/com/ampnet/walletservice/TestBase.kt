@@ -2,7 +2,6 @@ package com.ampnet.walletservice
 
 import com.ampnet.projectservice.proto.OrganizationResponse
 import com.ampnet.walletservice.enums.Currency
-import com.ampnet.walletservice.grpc.blockchain.pojo.ProjectInfoResponse
 import com.ampnet.walletservice.service.pojo.response.ProjectServiceResponse
 import org.springframework.test.context.ActiveProfiles
 import java.time.ZonedDateTime
@@ -44,16 +43,6 @@ abstract class TestBase {
         ZonedDateTime.now().minusDays(1), endDate,
         expectedFunding, currency, 100, 100000, active, imageUrl, user, organization
     )
-
-    protected fun getProjectInfoResponse(
-        walletHash: String,
-        balance: Long,
-        investmentCap: Long = 10_000_000_000_00,
-        minPerUser: Long = 100_00,
-        maxPerUser: Long = 10_000_000_00,
-        endsAt: Long = ZonedDateTime.now().plusDays(30).toEpochSecond()
-    ): ProjectInfoResponse =
-        ProjectInfoResponse(walletHash, balance, investmentCap, minPerUser, maxPerUser, endsAt, false)
 
     protected fun createProjectResponse(
         project: UUID,
