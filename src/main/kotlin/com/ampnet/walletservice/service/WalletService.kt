@@ -8,7 +8,6 @@ import com.ampnet.walletservice.persistence.model.Wallet
 import java.util.UUID
 
 interface WalletService {
-    fun getWalletBalance(wallet: Wallet): Long?
     fun getWallet(owner: UUID): Wallet?
     fun createUserWallet(user: UserPrincipal, request: WalletCreateRequest): Wallet
     fun generateTransactionToCreateProjectWallet(project: UUID, user: UserPrincipal): TransactionDataAndInfo

@@ -44,12 +44,6 @@ class WalletServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun getWalletBalance(wallet: Wallet): Long? {
-        val walletHash = wallet.hash ?: return null
-        return blockchainService.getBalance(walletHash)
-    }
-
-    @Transactional(readOnly = true)
     override fun getWallet(owner: UUID): Wallet? {
         return ServiceUtils.wrapOptional(walletRepository.findByOwner(owner))
     }

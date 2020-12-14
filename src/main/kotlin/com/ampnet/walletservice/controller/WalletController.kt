@@ -5,6 +5,7 @@ import com.ampnet.walletservice.controller.pojo.request.WalletPairRequest
 import com.ampnet.walletservice.controller.pojo.response.PairWalletResponse
 import com.ampnet.walletservice.controller.pojo.response.TransactionResponse
 import com.ampnet.walletservice.controller.pojo.response.WalletResponse
+import com.ampnet.walletservice.grpc.blockchain.BlockchainService
 import com.ampnet.walletservice.service.WalletService
 import mu.KLogging
 import org.springframework.http.ResponseEntity
@@ -18,7 +19,8 @@ import javax.validation.Valid
 
 @RestController
 class WalletController(
-    private val walletService: WalletService
+    private val walletService: WalletService,
+    private val blockchainService: BlockchainService
 ) {
 
     companion object : KLogging()
@@ -44,10 +46,9 @@ class WalletController(
     fun getMyWallet(): ResponseEntity<WalletResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request for Wallet from user: ${userPrincipal.uuid}" }
-        walletService.getWallet(userPrincipal.uuid)?.let {
-            val balance = walletService.getWalletBalance(it)
-            val response = WalletResponse(it, balance)
-            return ResponseEntity.ok(response)
+        walletService.getWallet(userPrincipal.uuid)?.let { wallet ->
+            val balance = wallet.hash?.let { blockchainService.getBalance(it) }
+            return ResponseEntity.ok(WalletResponse(wallet, balance))
         }
         return ResponseEntity.notFound().build()
     }
@@ -79,9 +80,9 @@ class WalletController(
         logger.debug {
             "Received request to get Wallet for organization $organizationUuid by user: ${userPrincipal.email}"
         }
-        walletService.getWallet(organizationUuid)?.let {
-            val balance = walletService.getWalletBalance(it)
-            return ResponseEntity.ok(WalletResponse(it, balance))
+        walletService.getWallet(organizationUuid)?.let { wallet ->
+            val balance = wallet.hash?.let { blockchainService.getBalance(it) }
+            return ResponseEntity.ok(WalletResponse(wallet, balance))
         }
         return ResponseEntity.notFound().build()
     }
