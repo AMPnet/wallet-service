@@ -74,6 +74,7 @@ class BlockchainServiceImpl(
         }
     }
 
+    @Throws(GrpcException::class, GrpcHandledException::class)
     override fun addWallet(activationData: String, coop: String): TransactionData {
         logger.info { "Adding wallet with activation data: $activationData for coop: $coop" }
         try {
@@ -91,6 +92,7 @@ class BlockchainServiceImpl(
         }
     }
 
+    @Throws(GrpcException::class, GrpcHandledException::class)
     override fun generateCreateOrganizationTransaction(userWalletHash: String): TransactionData {
         logger.info { "Generating create organization wallet: $userWalletHash" }
         try {
@@ -110,6 +112,7 @@ class BlockchainServiceImpl(
         }
     }
 
+    @Throws(GrpcException::class, GrpcHandledException::class)
     override fun generateProjectWalletTransaction(request: GenerateProjectWalletRequest): TransactionData {
         logger.info { "Generating create project wallet transaction" }
         try {
@@ -131,9 +134,11 @@ class BlockchainServiceImpl(
         }
     }
 
+    @Throws(GrpcException::class, GrpcHandledException::class)
     override fun postTransaction(transaction: String, coop: String) =
         postTransactionWithRetries(transaction, coop, 0)
 
+    @Throws(GrpcException::class, GrpcHandledException::class)
     override fun generateProjectInvestmentTransaction(request: ProjectInvestmentTxRequest): TransactionData {
         logger.info {
             "User: ${request.userWalletHash} is investing to project: ${request.projectWalletHash} " +
@@ -157,6 +162,7 @@ class BlockchainServiceImpl(
         }
     }
 
+    @Throws(GrpcException::class, GrpcHandledException::class)
     override fun generateCancelInvestmentsInProject(
         userWalletHash: String,
         projectWalletHash: String
@@ -179,6 +185,7 @@ class BlockchainServiceImpl(
         }
     }
 
+    @Throws(GrpcException::class, GrpcHandledException::class)
     override fun generateMintTransaction(toHash: String, amount: Long): TransactionData {
         logger.info { "Generating Mint transaction toHash: $toHash with amount = $amount" }
         try {
@@ -196,6 +203,7 @@ class BlockchainServiceImpl(
         }
     }
 
+    @Throws(GrpcException::class, GrpcHandledException::class)
     override fun generateBurnTransaction(burnFromTxHash: String): TransactionData {
         logger.info { "Generating Burn transaction burnFromTxHash: $burnFromTxHash" }
         try {
@@ -212,6 +220,7 @@ class BlockchainServiceImpl(
         }
     }
 
+    @Throws(GrpcException::class, GrpcHandledException::class)
     override fun generateApproveBurnTransaction(burnFromTxHash: String, amount: Long): TransactionData {
         logger.info { "Generating Approve Burn Transaction burnFromTxHash: $burnFromTxHash with amount = $amount" }
         try {
@@ -229,6 +238,7 @@ class BlockchainServiceImpl(
         }
     }
 
+    @Throws(GrpcException::class, GrpcHandledException::class)
     override fun generateApproveProjectBurnTransaction(request: ApproveProjectBurnTransactionRequest): TransactionData {
         logger.info {
             "Generating Approve Burn Project Transaction projectTxHash: ${request.projectTxHash} " +
@@ -252,6 +262,7 @@ class BlockchainServiceImpl(
         }
     }
 
+    @Throws(GrpcException::class, GrpcHandledException::class)
     override fun generateRevenuePayout(request: RevenuePayoutTxRequest): TransactionData {
         logger.info {
             "Generating Revenue Payout Transaction projectTxHash: ${request.projectWallet} " +
@@ -275,6 +286,7 @@ class BlockchainServiceImpl(
         }
     }
 
+    @Throws(GrpcException::class, GrpcHandledException::class)
     override fun getPortfolio(hash: String): Portfolio {
         logger.debug { "Get user portfolio for wallet hash: $hash" }
         try {
@@ -292,6 +304,7 @@ class BlockchainServiceImpl(
         }
     }
 
+    @Throws(GrpcException::class, GrpcHandledException::class)
     override fun getTransactions(walletHash: String): List<BlockchainTransaction> {
         logger.debug { "Get transactions for wallet hash: $walletHash" }
         try {
@@ -308,6 +321,7 @@ class BlockchainServiceImpl(
         }
     }
 
+    @Throws(GrpcException::class, GrpcHandledException::class)
     override fun getInvestmentsInProject(
         userWalletAddress: String,
         projectWalletHash: String
@@ -331,6 +345,7 @@ class BlockchainServiceImpl(
         }
     }
 
+    @Throws(GrpcException::class, GrpcHandledException::class)
     override fun getTokenIssuer(coop: String): String {
         logger.debug { "Get token issuer for coop: $coop" }
         try {
@@ -347,6 +362,7 @@ class BlockchainServiceImpl(
         }
     }
 
+    @Throws(GrpcException::class, GrpcHandledException::class)
     override fun generateTransferTokenIssuer(address: String, coop: String): TransactionData {
         logger.info { "Generating transfer token issuer for address: $address for coop: $coop" }
         try {
@@ -365,6 +381,7 @@ class BlockchainServiceImpl(
         }
     }
 
+    @Throws(GrpcException::class, GrpcHandledException::class)
     override fun getPlatformManager(coop: String): String {
         logger.debug { "Get platform manager for coop: $coop" }
         try {
@@ -381,6 +398,7 @@ class BlockchainServiceImpl(
         }
     }
 
+    @Throws(GrpcException::class, GrpcHandledException::class)
     override fun generateTransferPlatformManager(address: String, coop: String): TransactionData {
         logger.info { "Generating transfer platform manager for address: $address for coop: $coop" }
         try {
@@ -399,6 +417,7 @@ class BlockchainServiceImpl(
         }
     }
 
+    @Throws(GrpcException::class, GrpcHandledException::class)
     override fun getTransactionState(txHash: String): TransactionState {
         try {
             val request = TransactionInfoRequest.newBuilder().setTxHash(txHash).build()
@@ -409,6 +428,7 @@ class BlockchainServiceImpl(
         }
     }
 
+    @Throws(GrpcException::class, GrpcHandledException::class)
     override fun getSellOffers(coop: String): List<SellOfferData> {
         logger.debug { "Get active sell offers" }
         try {
@@ -425,6 +445,7 @@ class BlockchainServiceImpl(
         }
     }
 
+    @Throws(GrpcException::class, GrpcHandledException::class)
     override fun deployCoopContract(coop: String, address: String) {
         logger.info { "Deploy contract for coop: $coop with admin address: $address" }
         try {
