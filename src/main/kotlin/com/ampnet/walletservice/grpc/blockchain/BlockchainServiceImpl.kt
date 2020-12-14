@@ -479,15 +479,11 @@ class BlockchainServiceImpl(
             logger.info { "Successfully posted transaction: ${response.txHash}" }
             return response.txHash
         } catch (ex: StatusRuntimeException) {
-            getErrorDescriptionFromExceptionStatus(ex)?.let { grpcErrorCode ->
-                // throw exception for known errors
-                val errorCode = ErrorCode.INT_GRPC_BLOCKCHAIN
-                errorCode.specificCode = grpcErrorCode.code
-                errorCode.message = grpcErrorCode.message
-                throw GrpcException(errorCode, "Couldn't post transaction")
-            }
+            val handledException = generateInternalExceptionFromStatusException(ex, "Couldn't post transaction")
+            if (handledException is GrpcHandledException) throw handledException
+
             // retry posting transaction for unknown errors
-            logger.warn("Failed to post transaction", ex)
+            logger.warn("Failed to post transaction, retrying.", ex)
             sleep(applicationProperties.grpc.blockchainServiceRetryDelay)
             return postTransactionWithRetries(transaction, coop, retryCount + 1)
         }
@@ -498,7 +494,7 @@ class BlockchainServiceImpl(
         message: String
     ): GrpcException {
         val grpcErrorCode = getErrorDescriptionFromExceptionStatus(ex)
-            ?: throw GrpcException(ErrorCode.INT_GRPC_BLOCKCHAIN, ex.localizedMessage)
+            ?: return GrpcException(ErrorCode.INT_GRPC_BLOCKCHAIN, ex.localizedMessage)
         val errorCode = ErrorCode.MIDDLEWARE
         errorCode.specificCode = grpcErrorCode.code
         errorCode.message = grpcErrorCode.message
