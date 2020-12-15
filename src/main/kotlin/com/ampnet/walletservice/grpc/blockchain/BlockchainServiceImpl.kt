@@ -21,8 +21,6 @@ import com.ampnet.crowdfunding.proto.PlatformManagerRequest
 import com.ampnet.crowdfunding.proto.PortfolioRequest
 import com.ampnet.crowdfunding.proto.PostTxRequest
 import com.ampnet.crowdfunding.proto.TokenIssuerRequest
-import com.ampnet.crowdfunding.proto.TransactionInfoRequest
-import com.ampnet.crowdfunding.proto.TransactionState
 import com.ampnet.crowdfunding.proto.TransactionsRequest
 import com.ampnet.walletservice.config.ApplicationProperties
 import com.ampnet.walletservice.exception.ErrorCode
@@ -88,7 +86,10 @@ class BlockchainServiceImpl(
             logger.info { "Successfully added wallet: $response" }
             return TransactionData(response)
         } catch (ex: StatusRuntimeException) {
-            throw generateInternalExceptionFromStatusException(ex, "Could not add wallet: $activationData for coop: $coop")
+            throw generateInternalExceptionFromStatusException(
+                ex,
+                "Could not add wallet: $activationData for coop: $coop"
+            )
         }
     }
 
@@ -130,7 +131,10 @@ class BlockchainServiceImpl(
             logger.info { "Successfully created project wallet" }
             return TransactionData(response)
         } catch (ex: StatusRuntimeException) {
-            throw generateInternalExceptionFromStatusException(ex, "Could not generate create Project transaction: $request")
+            throw generateInternalExceptionFromStatusException(
+                ex,
+                "Could not generate create Project transaction: $request"
+            )
         }
     }
 
@@ -317,7 +321,10 @@ class BlockchainServiceImpl(
             logger.debug { "Transactions response received, size = ${response.transactionsCount}" }
             return response.transactionsList.map { BlockchainTransaction(it) }
         } catch (ex: StatusRuntimeException) {
-            throw generateInternalExceptionFromStatusException(ex, "Could not get transactions for wallet hash: $walletHash")
+            throw generateInternalExceptionFromStatusException(
+                ex,
+                "Could not get transactions for wallet hash: $walletHash"
+            )
         }
     }
 
@@ -414,17 +421,6 @@ class BlockchainServiceImpl(
                 ex,
                 "Could not generate transfer platform manager for coop: $coop"
             )
-        }
-    }
-
-    @Throws(GrpcException::class, GrpcHandledException::class)
-    override fun getTransactionState(txHash: String): TransactionState {
-        try {
-            val request = TransactionInfoRequest.newBuilder().setTxHash(txHash).build()
-            val response = serviceWithTimeout().getTransactionInfo(request)
-            return response.state
-        } catch (ex: StatusRuntimeException) {
-            throw generateInternalExceptionFromStatusException(ex, "Could not get transaction info for hash: $txHash")
         }
     }
 

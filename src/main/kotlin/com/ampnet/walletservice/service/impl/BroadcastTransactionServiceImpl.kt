@@ -1,7 +1,6 @@
 package com.ampnet.walletservice.service.impl
 
 import com.ampnet.walletservice.enums.TransactionType
-import com.ampnet.walletservice.enums.TransferWalletType
 import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.exception.GrpcException
 import com.ampnet.walletservice.exception.GrpcHandledException
@@ -18,7 +17,6 @@ import com.ampnet.walletservice.service.RevenueService
 import com.ampnet.walletservice.service.TransactionInfoService
 import com.ampnet.walletservice.service.WalletService
 import com.ampnet.walletservice.service.WithdrawService
-import com.ampnet.walletservice.service.pojo.request.TransferOwnershipRequest
 import mu.KLogging
 import org.springframework.stereotype.Service
 import java.util.UUID
@@ -128,17 +126,8 @@ class BroadcastTransactionServiceImpl(
             ?: throw ResourceNotFoundException(ErrorCode.TX_MISSING, "Missing txHash for revenue payout transaction")
     }
 
-    private fun transferOwnershipTransaction(info: TransactionInfo, signed: String): String {
-        val walletAddress = info.companionData
-            ?: throw InvalidRequestException(ErrorCode.TX_DATA_MISSING, "Missing wallet address data")
-        val transferType = when (info.type) {
-            TransactionType.TRNSF_PLTFRM_OWN -> TransferWalletType.PLATFORM_MANAGER
-            TransactionType.TRNSF_TOKEN_OWN -> TransferWalletType.TOKEN_ISSUER
-            else -> throw InternalException(ErrorCode.INT_INVALID_VALUE, "Invalid type of wallet transfer ownership")
-        }
-        val request = TransferOwnershipRequest(info.userUuid, walletAddress, transferType, signed, info.coop)
-        return cooperativeWalletService.transferOwnership(request)
-    }
+    private fun transferOwnershipTransaction(info: TransactionInfo, signed: String): String =
+        cooperativeWalletService.transferOwnership(signed, info.coop)
 
     private fun getIdFromCompanionData(transactionInfo: TransactionInfo): Int {
         try {
