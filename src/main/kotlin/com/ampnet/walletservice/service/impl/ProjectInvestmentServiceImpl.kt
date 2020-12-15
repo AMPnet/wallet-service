@@ -2,6 +2,8 @@ package com.ampnet.walletservice.service.impl
 
 import com.ampnet.core.jwt.UserPrincipal
 import com.ampnet.walletservice.exception.ErrorCode
+import com.ampnet.walletservice.exception.GrpcException
+import com.ampnet.walletservice.exception.GrpcHandledException
 import com.ampnet.walletservice.exception.InvalidRequestException
 import com.ampnet.walletservice.exception.ResourceNotFoundException
 import com.ampnet.walletservice.grpc.blockchain.BlockchainService
@@ -31,7 +33,12 @@ class ProjectInvestmentServiceImpl(
     companion object : KLogging()
 
     @Transactional
-    @Throws(InvalidRequestException::class, ResourceNotFoundException::class)
+    @Throws(
+        InvalidRequestException::class,
+        ResourceNotFoundException::class,
+        GrpcException::class,
+        GrpcHandledException::class
+    )
     override fun generateInvestInProjectTransaction(request: ProjectInvestmentRequest): TransactionDataAndInfo {
         logger.debug { "Generating Investment in project for request: $request" }
         val projectResponse = projectService.getProject(request.projectUuid)
@@ -58,7 +65,12 @@ class ProjectInvestmentServiceImpl(
     }
 
     @Transactional
-    @Throws(ResourceNotFoundException::class, InvalidRequestException::class)
+    @Throws(
+        ResourceNotFoundException::class,
+        InvalidRequestException::class,
+        GrpcException::class,
+        GrpcHandledException::class
+    )
     override fun generateCancelInvestmentsInProjectTransaction(
         projectUuid: UUID,
         user: UserPrincipal
@@ -74,9 +86,11 @@ class ProjectInvestmentServiceImpl(
         return TransactionDataAndInfo(data, info)
     }
 
+    @Throws(GrpcException::class, GrpcHandledException::class)
     override fun investInProject(signedTransaction: String, coop: String): String =
         blockchainService.postTransaction(signedTransaction, coop)
 
+    @Throws(GrpcException::class, GrpcHandledException::class)
     override fun cancelInvestmentsInProject(signedTransaction: String, coop: String): String =
         blockchainService.postTransaction(signedTransaction, coop)
 

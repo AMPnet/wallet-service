@@ -1,5 +1,7 @@
 package com.ampnet.walletservice.service.impl
 
+import com.ampnet.walletservice.exception.GrpcException
+import com.ampnet.walletservice.exception.GrpcHandledException
 import com.ampnet.walletservice.grpc.blockchain.BlockchainService
 import com.ampnet.walletservice.grpc.projectservice.ProjectService
 import com.ampnet.walletservice.persistence.repository.WalletRepository
@@ -19,6 +21,7 @@ class SellOfferServiceImpl(
     companion object : KLogging()
 
     @Transactional(readOnly = true)
+    @Throws(GrpcException::class, GrpcHandledException::class)
     override fun getProjectsWithSalesOffers(coop: String): List<ProjectWithSellOffers> {
         logger.debug { "Get all projects with sales offers" }
         val activeOffers = blockchainService.getSellOffers(coop)

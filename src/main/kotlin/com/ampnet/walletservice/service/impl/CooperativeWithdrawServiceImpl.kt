@@ -3,6 +3,8 @@ package com.ampnet.walletservice.service.impl
 import com.ampnet.core.jwt.UserPrincipal
 import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.exception.ErrorCode
+import com.ampnet.walletservice.exception.GrpcException
+import com.ampnet.walletservice.exception.GrpcHandledException
 import com.ampnet.walletservice.exception.InternalException
 import com.ampnet.walletservice.exception.InvalidRequestException
 import com.ampnet.walletservice.exception.ResourceNotFoundException
@@ -62,7 +64,12 @@ class CooperativeWithdrawServiceImpl(
         generateWithdrawListResponse(withdrawRepository.findAllBurned(coop, type, pageable))
 
     @Transactional
-    @Throws(ResourceNotFoundException::class, InvalidRequestException::class)
+    @Throws(
+        ResourceNotFoundException::class,
+        InvalidRequestException::class,
+        GrpcException::class,
+        GrpcHandledException::class
+    )
     override fun generateBurnTransaction(withdrawId: Int, user: UserPrincipal): TransactionDataAndInfo {
         val withdraw = ServiceUtils.getWithdraw(withdrawId, withdrawRepository)
         logger.info { "Generating Burn transaction for withdraw: $withdraw" }
@@ -76,7 +83,12 @@ class CooperativeWithdrawServiceImpl(
     }
 
     @Transactional
-    @Throws(ResourceNotFoundException::class, InvalidRequestException::class)
+    @Throws(
+        ResourceNotFoundException::class,
+        InvalidRequestException::class,
+        GrpcException::class,
+        GrpcHandledException::class
+    )
     override fun burn(signedTransaction: String, withdrawId: Int): Withdraw {
         val withdraw = ServiceUtils.getWithdraw(withdrawId, withdrawRepository)
         validateWithdrawForBurn(withdraw)

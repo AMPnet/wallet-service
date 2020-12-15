@@ -6,6 +6,8 @@ import com.ampnet.walletservice.enums.Currency
 import com.ampnet.walletservice.enums.PrivilegeType
 import com.ampnet.walletservice.enums.WalletType
 import com.ampnet.walletservice.exception.ErrorCode
+import com.ampnet.walletservice.exception.GrpcException
+import com.ampnet.walletservice.exception.GrpcHandledException
 import com.ampnet.walletservice.exception.InvalidRequestException
 import com.ampnet.walletservice.exception.ResourceAlreadyExistsException
 import com.ampnet.walletservice.grpc.blockchain.BlockchainService
@@ -49,7 +51,7 @@ class WalletServiceImpl(
     }
 
     @Transactional
-    @Throws(ResourceAlreadyExistsException::class)
+    @Throws(ResourceAlreadyExistsException::class, GrpcException::class, GrpcHandledException::class)
     override fun createUserWallet(user: UserPrincipal, request: WalletCreateRequest): Wallet {
         walletRepository.findByOwner(user.uuid).ifPresent {
             throw ResourceAlreadyExistsException(ErrorCode.WALLET_EXISTS, "User: ${user.uuid} already has a wallet.")
@@ -71,7 +73,12 @@ class WalletServiceImpl(
     }
 
     @Transactional
-    @Throws(ResourceAlreadyExistsException::class, InvalidRequestException::class)
+    @Throws(
+        ResourceAlreadyExistsException::class,
+        InvalidRequestException::class,
+        GrpcException::class,
+        GrpcHandledException::class
+    )
     override fun generateTransactionToCreateProjectWallet(project: UUID, user: UserPrincipal): TransactionDataAndInfo {
         throwExceptionIfProjectHasWallet(project)
         val userWalletHash = ServiceUtils.getWalletHash(user.uuid, walletRepository)
@@ -92,7 +99,7 @@ class WalletServiceImpl(
     }
 
     @Transactional
-    @Throws(ResourceAlreadyExistsException::class)
+    @Throws(ResourceAlreadyExistsException::class, GrpcException::class, GrpcHandledException::class)
     override fun createProjectWallet(project: UUID, signedTransaction: String, coop: String): Wallet {
         throwExceptionIfProjectHasWallet(project)
         logger.debug { "Creating wallet for project: $project" }
@@ -104,7 +111,12 @@ class WalletServiceImpl(
     }
 
     @Transactional
-    @Throws(ResourceAlreadyExistsException::class, InvalidRequestException::class)
+    @Throws(
+        ResourceAlreadyExistsException::class,
+        InvalidRequestException::class,
+        GrpcException::class,
+        GrpcHandledException::class
+    )
     override fun generateTransactionToCreateOrganizationWallet(
         organization: UUID,
         user: UserPrincipal
@@ -127,7 +139,7 @@ class WalletServiceImpl(
     }
 
     @Transactional
-    @Throws(ResourceAlreadyExistsException::class)
+    @Throws(ResourceAlreadyExistsException::class, GrpcException::class, GrpcHandledException::class)
     override fun createOrganizationWallet(organization: UUID, signedTransaction: String, coop: String): Wallet {
         throwExceptionIfOrganizationAlreadyHasWallet(organization)
         logger.debug { "Creating wallet for organization: $organization" }

@@ -2,6 +2,8 @@ package com.ampnet.walletservice.service.impl
 
 import com.ampnet.core.jwt.UserPrincipal
 import com.ampnet.walletservice.exception.ErrorCode
+import com.ampnet.walletservice.exception.GrpcException
+import com.ampnet.walletservice.exception.GrpcHandledException
 import com.ampnet.walletservice.exception.InvalidRequestException
 import com.ampnet.walletservice.exception.ResourceNotFoundException
 import com.ampnet.walletservice.grpc.blockchain.BlockchainService
@@ -34,7 +36,12 @@ class RevenueServiceImpl(
     companion object : KLogging()
 
     @Transactional
-    @Throws(ResourceNotFoundException::class, InvalidRequestException::class)
+    @Throws(
+        ResourceNotFoundException::class,
+        InvalidRequestException::class,
+        GrpcException::class,
+        GrpcHandledException::class
+    )
     override fun generateRevenuePayout(user: UserPrincipal, project: UUID, amount: Long): TransactionDataAndInfo {
         logger.info { "Generating revenue payout transaction info" }
         val projectResponse = projectService.getProject(project)
@@ -54,7 +61,7 @@ class RevenueServiceImpl(
     }
 
     @Transactional
-    @Throws(ResourceNotFoundException::class)
+    @Throws(ResourceNotFoundException::class, GrpcException::class, GrpcHandledException::class)
     override fun confirmRevenuePayout(signedTransaction: String, revenuePayoutId: Int): RevenuePayout {
         val revenuePayout = revenuePayoutRepository.findById(revenuePayoutId).orElseThrow {
             throw ResourceNotFoundException(

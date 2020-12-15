@@ -3,6 +3,8 @@ package com.ampnet.walletservice.service.impl
 import com.ampnet.walletservice.enums.TransactionType
 import com.ampnet.walletservice.enums.TransferWalletType
 import com.ampnet.walletservice.exception.ErrorCode
+import com.ampnet.walletservice.exception.GrpcException
+import com.ampnet.walletservice.exception.GrpcHandledException
 import com.ampnet.walletservice.exception.InternalException
 import com.ampnet.walletservice.exception.InvalidRequestException
 import com.ampnet.walletservice.exception.ResourceNotFoundException
@@ -38,7 +40,12 @@ class BroadcastTransactionServiceImpl(
     companion object : KLogging()
 
     @Transactional
-    @Throws(ResourceNotFoundException::class, InvalidRequestException::class)
+    @Throws(
+        ResourceNotFoundException::class,
+        InvalidRequestException::class,
+        GrpcException::class,
+        GrpcHandledException::class
+    )
     override fun broadcast(txId: Int, signedTransaction: String): String {
         val transactionInfo = transactionInfoService.findTransactionInfo(txId)
             ?: throw ResourceNotFoundException(ErrorCode.TX_MISSING, "Non existing transaction with id: $txId")

@@ -8,6 +8,8 @@ import com.ampnet.walletservice.controller.pojo.request.WalletTransferRequest
 import com.ampnet.walletservice.enums.TransferWalletType
 import com.ampnet.walletservice.enums.WalletType
 import com.ampnet.walletservice.exception.ErrorCode
+import com.ampnet.walletservice.exception.GrpcException
+import com.ampnet.walletservice.exception.GrpcHandledException
 import com.ampnet.walletservice.exception.InvalidRequestException
 import com.ampnet.walletservice.exception.ResourceNotFoundException
 import com.ampnet.walletservice.grpc.blockchain.BlockchainService
@@ -50,7 +52,7 @@ class CooperativeWalletServiceImpl(
     companion object : KLogging()
 
     @Transactional
-    @Throws(ResourceNotFoundException::class)
+    @Throws(ResourceNotFoundException::class, GrpcException::class, GrpcHandledException::class)
     override fun generateWalletActivationTransaction(walletUuid: UUID, user: UserPrincipal): TransactionDataAndInfo {
         val wallet = getWalletByUuid(walletUuid)
         val data = blockchainService.addWallet(wallet.activationData, wallet.coop)
@@ -59,7 +61,7 @@ class CooperativeWalletServiceImpl(
     }
 
     @Transactional
-    @Throws(ResourceNotFoundException::class)
+    @Throws(ResourceNotFoundException::class, GrpcException::class, GrpcHandledException::class)
     override fun activateWallet(walletUuid: UUID, signedTransaction: String): Wallet {
         val wallet = getWalletByUuid(walletUuid)
         wallet.hash = blockchainService.postTransaction(signedTransaction, wallet.coop)
@@ -108,7 +110,7 @@ class CooperativeWalletServiceImpl(
     }
 
     @Transactional
-    @Throws(ResourceNotFoundException::class)
+    @Throws(ResourceNotFoundException::class, GrpcException::class, GrpcHandledException::class)
     override fun generateSetTransferOwnership(
         owner: UserPrincipal,
         request: WalletTransferRequest
@@ -125,6 +127,7 @@ class CooperativeWalletServiceImpl(
     }
 
     @Transactional(readOnly = true)
+    @Throws(GrpcException::class, GrpcHandledException::class)
     override fun transferOwnership(request: TransferOwnershipRequest): String {
         val txHash = blockchainService.postTransaction(request.signedTransaction, request.coop)
         thread(start = true, isDaemon = true, name = "waitForTransaction:$txHash") {

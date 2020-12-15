@@ -3,6 +3,8 @@ package com.ampnet.walletservice.service.impl
 import com.ampnet.core.jwt.UserPrincipal
 import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.exception.ErrorCode
+import com.ampnet.walletservice.exception.GrpcException
+import com.ampnet.walletservice.exception.GrpcHandledException
 import com.ampnet.walletservice.exception.InvalidRequestException
 import com.ampnet.walletservice.exception.ResourceAlreadyExistsException
 import com.ampnet.walletservice.exception.ResourceNotFoundException
@@ -102,7 +104,12 @@ class WithdrawServiceImpl(
     }
 
     @Transactional
-    @Throws(ResourceNotFoundException::class, InvalidRequestException::class)
+    @Throws(
+        ResourceNotFoundException::class,
+        InvalidRequestException::class,
+        GrpcException::class,
+        GrpcHandledException::class
+    )
     override fun confirmApproval(signedTransaction: String, withdrawId: Int): Withdraw {
         val withdraw = ServiceUtils.getWithdraw(withdrawId, withdrawRepository)
         validateWithdrawIsNotApproved(withdraw)
