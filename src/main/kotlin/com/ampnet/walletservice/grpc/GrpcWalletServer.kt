@@ -4,6 +4,7 @@ import com.ampnet.walletservice.enums.WalletType
 import com.ampnet.walletservice.persistence.model.Wallet
 import com.ampnet.walletservice.persistence.repository.WalletRepository
 import com.ampnet.walletservice.proto.ActivateWalletRequest
+import com.ampnet.walletservice.proto.CoopRequest
 import com.ampnet.walletservice.proto.Empty
 import com.ampnet.walletservice.proto.GetWalletsByHashRequest
 import com.ampnet.walletservice.proto.GetWalletsByOwnerRequest
@@ -60,7 +61,15 @@ class GrpcWalletServer(
     }
 
     override fun activateWallet(request: ActivateWalletRequest, responseObserver: StreamObserver<Empty>) {
+        logger.info { "Received gRPC request to active admin account. $request" }
         cooperativeWalletService.activateAdminWallet(request.address, request.coop, request.hash)
+        responseObserver.onNext(Empty.newBuilder().build())
+        responseObserver.onCompleted()
+    }
+
+    override fun updateCoopRoles(request: CoopRequest, responseObserver: StreamObserver<Empty>) {
+        logger.info { "Received gRPC request to update user roles for coop: ${request.coop}" }
+        cooperativeWalletService.updateCoopUserRoles(request.coop)
         responseObserver.onNext(Empty.newBuilder().build())
         responseObserver.onCompleted()
     }

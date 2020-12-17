@@ -1,9 +1,7 @@
 package com.ampnet.walletservice.service.impl
 
 import com.ampnet.core.jwt.UserPrincipal
-import com.ampnet.crowdfunding.proto.TransactionState
 import com.ampnet.userservice.proto.SetRoleRequest
-import com.ampnet.walletservice.config.ApplicationProperties
 import com.ampnet.walletservice.controller.pojo.request.WalletTransferRequest
 import com.ampnet.walletservice.enums.TransferWalletType
 import com.ampnet.walletservice.enums.WalletType
@@ -21,7 +19,6 @@ import com.ampnet.walletservice.persistence.model.Wallet
 import com.ampnet.walletservice.persistence.repository.WalletRepository
 import com.ampnet.walletservice.service.CooperativeWalletService
 import com.ampnet.walletservice.service.TransactionInfoService
-import com.ampnet.walletservice.service.pojo.request.TransferOwnershipRequest
 import com.ampnet.walletservice.service.pojo.response.OrganizationWithWallet
 import com.ampnet.walletservice.service.pojo.response.ProjectWithWallet
 import com.ampnet.walletservice.service.pojo.response.UserWithWallet
@@ -31,10 +28,8 @@ import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.lang.Thread.sleep
 import java.time.ZonedDateTime
 import java.util.UUID
-import kotlin.concurrent.thread
 import com.ampnet.mailservice.proto.WalletType as WalletTypeProto
 
 @Service
@@ -45,8 +40,7 @@ class CooperativeWalletServiceImpl(
     private val blockchainService: BlockchainService,
     private val transactionInfoService: TransactionInfoService,
     private val projectService: ProjectService,
-    private val mailService: MailService,
-    private val applicationProperties: ApplicationProperties
+    private val mailService: MailService
 ) : CooperativeWalletService {
 
     companion object : KLogging()
@@ -128,22 +122,13 @@ class CooperativeWalletServiceImpl(
 
     @Transactional(readOnly = true)
     @Throws(GrpcException::class, GrpcHandledException::class)
-    override fun transferOwnership(request: TransferOwnershipRequest): String {
-        val txHash = blockchainService.postTransaction(request.signedTransaction, request.coop)
-        thread(start = true, isDaemon = true, name = "waitForTransaction:$txHash") {
-            handleTransaction(txHash, request.coop)
-        }
-        return txHash
-    }
+    override fun transferOwnership(signedTransaction: String, coop: String): String =
+        blockchainService.postTransaction(signedTransaction, coop)
 
     @Transactional
-    @Throws(ResourceNotFoundException::class)
+    @Throws(ResourceNotFoundException::class, InvalidRequestException::class)
     override fun activateAdminWallet(address: String, coop: String, hash: String): Wallet {
-        val wallet = ServiceUtils.wrapOptional(walletRepository.findByActivationDataAndCoop(address, coop))
-            ?: throw ResourceNotFoundException(
-                ErrorCode.WALLET_MISSING,
-                "Missing wallet with address: $address in coop: $coop"
-            )
+        val wallet = getWalletByAddress(address, coop)
         wallet.hash?.let {
             throw InvalidRequestException(ErrorCode.WALLET_HASH_EXISTS, "Wallet with hash: $it already activated")
         }
@@ -152,18 +137,8 @@ class CooperativeWalletServiceImpl(
         return wallet
     }
 
-    private fun handleTransaction(txHash: String, coop: String) {
-        logger.info { "Wait for transaction: $txHash" }
-        sleep(applicationProperties.grpc.blockchainPollingDelay)
-        when (blockchainService.getTransactionState(txHash)) {
-            TransactionState.MINED -> setNewUserRoles(coop)
-            TransactionState.PENDING -> handleTransaction(txHash, coop)
-            TransactionState.FAILED -> logger.warn { "Failed to change wallet ownership" }
-            else -> logger.warn { "Unknown status for transaction: $txHash" }
-        }
-    }
-
-    private fun setNewUserRoles(coop: String) {
+    @Throws(GrpcException::class, GrpcHandledException::class, ResourceNotFoundException::class)
+    override fun updateCoopUserRoles(coop: String) {
         val platformManagerAddress = blockchainService.getPlatformManager(coop)
         val tokenIssuerAddress = blockchainService.getTokenIssuer(coop)
         if (platformManagerAddress == tokenIssuerAddress) {
@@ -186,7 +161,9 @@ class CooperativeWalletServiceImpl(
 
     private fun getWalletByAddress(address: String, coop: String): Wallet =
         walletRepository.findByActivationDataAndCoop(address, coop).orElseThrow {
-            throw InvalidRequestException(ErrorCode.WALLET_MISSING, "Wallet: $address is unknown for coop: $coop")
+            throw ResourceNotFoundException(
+                ErrorCode.WALLET_MISSING, "Missing wallet with address: $address in coop: $coop"
+            )
         }
 
     private fun getWalletType(type: WalletType): WalletTypeProto {

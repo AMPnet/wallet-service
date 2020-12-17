@@ -4,7 +4,6 @@ import com.ampnet.core.jwt.UserPrincipal
 import com.ampnet.walletservice.controller.pojo.request.WalletTransferRequest
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionDataAndInfo
 import com.ampnet.walletservice.persistence.model.Wallet
-import com.ampnet.walletservice.service.pojo.request.TransferOwnershipRequest
 import com.ampnet.walletservice.service.pojo.response.OrganizationWithWallet
 import com.ampnet.walletservice.service.pojo.response.ProjectWithWallet
 import com.ampnet.walletservice.service.pojo.response.UserWithWallet
@@ -19,6 +18,7 @@ interface CooperativeWalletService {
     fun getOrganizationsWithUnactivatedWallet(coop: String, pageable: Pageable): Page<OrganizationWithWallet>
     fun getProjectsWithUnactivatedWallet(coop: String, pageable: Pageable): Page<ProjectWithWallet>
     fun generateSetTransferOwnership(owner: UserPrincipal, request: WalletTransferRequest): TransactionDataAndInfo
-    fun transferOwnership(request: TransferOwnershipRequest): String
+    fun transferOwnership(signedTransaction: String, coop: String): String
     fun activateAdminWallet(address: String, coop: String, hash: String): Wallet
+    fun updateCoopUserRoles(coop: String)
 }

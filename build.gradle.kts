@@ -32,7 +32,7 @@ allOpen {
 }
 
 group = "com.ampnet"
-version = "0.11.5"
+version = "0.12.0"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
@@ -68,7 +68,6 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
     testImplementation("org.springframework.restdocs:spring-restdocs-mockmvc")
-    testImplementation("org.awaitility:awaitility-kotlin:4.0.2")
 }
 
 tasks.withType<KotlinCompile> {
