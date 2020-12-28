@@ -139,6 +139,7 @@ class CooperativeWalletServiceImpl(
 
     @Throws(GrpcException::class, GrpcHandledException::class, ResourceNotFoundException::class)
     override fun updateCoopUserRoles(coop: String) {
+        logger.info { "Updating user roles for coop: $coop" }
         val platformManagerAddress = blockchainService.getPlatformManager(coop)
         val tokenIssuerAddress = blockchainService.getTokenIssuer(coop)
         if (platformManagerAddress == tokenIssuerAddress) {

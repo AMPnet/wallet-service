@@ -64,7 +64,7 @@ class BlockchainServiceImpl(
                         .setWalletTxHash(hash)
                         .build()
                 )
-            logger.info { "Received response: $response" }
+            logger.info { "Received response: $response for hash: $hash" }
             response.balance.toLongOrNull()
         } catch (ex: StatusRuntimeException) {
             logger.warn("Could not get balance for wallet: $hash", ex)
