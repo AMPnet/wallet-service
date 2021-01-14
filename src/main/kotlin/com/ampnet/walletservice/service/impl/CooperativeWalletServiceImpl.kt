@@ -104,12 +104,20 @@ class CooperativeWalletServiceImpl(
     }
 
     @Transactional
-    @Throws(ResourceNotFoundException::class, GrpcException::class, GrpcHandledException::class)
+    @Throws(
+        ResourceNotFoundException::class, InvalidRequestException::class,
+        GrpcException::class, GrpcHandledException::class
+    )
     override fun generateSetTransferOwnership(
         owner: UserPrincipal,
         request: WalletTransferRequest
     ): TransactionDataAndInfo {
         val userWallet = ServiceUtils.getWalletByUserUuid(request.userUuid, walletRepository)
+        if (userWallet.hash == null) {
+            throw InvalidRequestException(
+                ErrorCode.WALLET_NOT_ACTIVATED, "Cannot transfer ownership to unactivated wallet"
+            )
+        }
         val data = when (request.type) {
             TransferWalletType.TOKEN_ISSUER ->
                 blockchainService.generateTransferTokenIssuer(userWallet.activationData, userWallet.coop)

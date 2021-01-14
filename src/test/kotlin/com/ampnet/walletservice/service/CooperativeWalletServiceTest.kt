@@ -2,6 +2,9 @@ package com.ampnet.walletservice.service
 
 import com.ampnet.userservice.proto.SetRoleRequest
 import com.ampnet.walletservice.controller.COOP
+import com.ampnet.walletservice.controller.pojo.request.WalletTransferRequest
+import com.ampnet.walletservice.enums.Currency
+import com.ampnet.walletservice.enums.TransferWalletType
 import com.ampnet.walletservice.enums.WalletType
 import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.exception.InvalidRequestException
@@ -14,6 +17,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
+import java.time.ZonedDateTime
 import java.util.UUID
 
 class CooperativeWalletServiceTest : JpaServiceTestBase() {
@@ -132,6 +136,28 @@ class CooperativeWalletServiceTest : JpaServiceTestBase() {
                 service.updateCoopUserRoles(newCoop)
             }
             Mockito.verifyNoInteractions(mockedUserService)
+        }
+    }
+
+    @Test
+    fun mustNotGenerateTransferOwnershipToUnactivatedWallet() {
+        suppose("There is admin user wallet") {
+            createWallet(userUuid, walletAddress, WalletType.USER)
+        }
+        suppose("There is unactivated user wallet") {
+            val wallet = Wallet(
+                UUID.randomUUID(), secondUser, secondWalletAddress, WalletType.USER, Currency.EUR,
+                ZonedDateTime.now(), null, ZonedDateTime.now(), COOP, null, providerId
+            )
+            walletRepository.save(wallet)
+        }
+
+        verify("Service will throw exception for unactivated wallet") {
+            val exception = assertThrows<InvalidRequestException> {
+                val request = WalletTransferRequest(secondUser, TransferWalletType.PLATFORM_MANAGER)
+                service.generateSetTransferOwnership(createUserPrincipal(userUuid), request)
+            }
+            assertThat(exception.errorCode).isEqualTo(ErrorCode.WALLET_NOT_ACTIVATED)
         }
     }
 
