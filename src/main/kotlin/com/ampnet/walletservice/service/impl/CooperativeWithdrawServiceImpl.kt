@@ -65,10 +65,8 @@ class CooperativeWithdrawServiceImpl(
 
     @Transactional
     @Throws(
-        ResourceNotFoundException::class,
-        InvalidRequestException::class,
-        GrpcException::class,
-        GrpcHandledException::class
+        ResourceNotFoundException::class, InvalidRequestException::class,
+        GrpcException::class, GrpcHandledException::class
     )
     override fun generateBurnTransaction(withdrawId: Int, user: UserPrincipal): TransactionDataAndInfo {
         val withdraw = ServiceUtils.getWithdraw(withdrawId, withdrawRepository)
@@ -84,10 +82,8 @@ class CooperativeWithdrawServiceImpl(
 
     @Transactional
     @Throws(
-        ResourceNotFoundException::class,
-        InvalidRequestException::class,
-        GrpcException::class,
-        GrpcHandledException::class
+        ResourceNotFoundException::class, InvalidRequestException::class,
+        GrpcException::class, GrpcHandledException::class
     )
     override fun burn(signedTransaction: String, withdrawId: Int): Withdraw {
         val withdraw = ServiceUtils.getWithdraw(withdrawId, withdrawRepository)

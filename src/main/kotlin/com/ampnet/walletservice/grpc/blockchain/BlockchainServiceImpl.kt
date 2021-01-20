@@ -68,6 +68,7 @@ class BlockchainServiceImpl(
             response.balance.toLongOrNull()
         } catch (ex: StatusRuntimeException) {
             logger.warn("Could not get balance for wallet: $hash", ex)
+            // TODO: throw exception on unhandled exception and null on handled exception
             null
         }
     }
