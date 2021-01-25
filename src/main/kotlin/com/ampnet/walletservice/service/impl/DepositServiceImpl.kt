@@ -39,9 +39,9 @@ class DepositServiceImpl(
             val projectResponse = projectService.getProject(request.owner)
             ServiceUtils.validateUserIsProjectOwner(request.createdBy.uuid, projectResponse)
         }
-
+        val reference = generateUniqueReferenceForCoop(request.createdBy.coop)
         val deposit = Deposit(
-            request.owner, generateDepositReference(), request.amount,
+            request.owner, reference, request.amount,
             request.createdBy.uuid, request.type, request.createdBy.coop
         )
         depositRepository.save(deposit)
@@ -107,4 +107,12 @@ class DepositServiceImpl(
         .map { kotlin.random.Random.nextInt(0, charPool.size) }
         .map(charPool::get)
         .joinToString("")
+
+    private fun generateUniqueReferenceForCoop(coop: String): String {
+        lateinit var reference: String
+        do {
+            reference = generateDepositReference()
+        } while (ServiceUtils.wrapOptional(depositRepository.findByCoopAndReference(coop, reference)) != null)
+        return reference
+    }
 }
