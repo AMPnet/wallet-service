@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
@@ -53,7 +54,7 @@ class DepositController(private val depositService: DepositService) {
         return ResponseEntity.ok().build()
     }
 
-    @GetMapping("/deposit")
+    @GetMapping("/deposit/pending")
     fun getPendingDeposit(): ResponseEntity<DepositServiceResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to get pending deposit by user: ${userPrincipal.uuid}" }
@@ -61,6 +62,13 @@ class DepositController(private val depositService: DepositService) {
             return ResponseEntity.ok(it)
         }
         return ResponseEntity.notFound().build()
+    }
+
+    @GetMapping("/deposit")
+    fun getDeposit(@RequestParam(required = false) txHash: String?): ResponseEntity<List<DepositServiceResponse>> {
+        val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
+        logger.debug { "Received request to get deposit by user: ${userPrincipal.uuid} for txHash:$txHash" }
+        return ResponseEntity.ok(depositService.getDepositByTxHash(txHash, userPrincipal.uuid))
     }
 
     @GetMapping("/deposit/project/{projectUuid}")

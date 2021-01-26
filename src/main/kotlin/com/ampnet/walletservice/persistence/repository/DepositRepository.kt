@@ -54,4 +54,16 @@ interface DepositRepository : JpaRepository<Deposit, Int> {
             "WHERE deposit.coop = :coop"
     )
     fun findAllWithFile(coop: String): List<Deposit>
+
+    @Query(
+        "SELECT deposit FROM Deposit deposit LEFT JOIN FETCH deposit.file " +
+            "WHERE deposit.ownerUuid = :ownerUuid"
+    )
+    fun findAllByOwnerUuid(ownerUuid: UUID): List<Deposit>
+
+    @Query(
+        "SELECT deposit FROM Deposit deposit LEFT JOIN FETCH deposit.file " +
+            "WHERE deposit.txHash = :txHash AND deposit.ownerUuid = :ownerUuid"
+    )
+    fun findByTxHash(txHash: String, ownerUuid: UUID): Optional<Deposit>
 }

@@ -29,7 +29,6 @@ class PortfolioControllerTest : ControllerTestBase() {
 
     private val portfolioPath = "/portfolio"
     private val platformWalletName = "Platform"
-    private val txHash = "th_AcoXnjiXwzA6SgEirmQY9ZXv8NjbHzfxTNqoGsem3saPWWWAo"
 
     private lateinit var testContext: TestContext
 

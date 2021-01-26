@@ -211,6 +211,16 @@ include::{snippets}/DepositControllerTest/mustBeAbleToDeleteDeposit/http-request
 .Response
 include::{snippets}/DepositControllerTest/mustBeAbleToDeleteDeposit/http-response.adoc[]
 
+=== Get deposit by txHash
+`txHash` is optional, if no value provided returns a list of all user deposits. If no deposit found for
+`txHash` returns an empty list.
+
+==== User
+.Request
+include::{snippets}/DepositControllerTest/mustBeAbleToGetDepositForTxHash/http-request.adoc[]
+.Response
+include::{snippets}/DepositControllerTest/mustBeAbleToGetDepositForTxHash/http-response.adoc[]
+
 
 == Portfolio API
 All requests need header: `Authorization: Bearer JWT`.
