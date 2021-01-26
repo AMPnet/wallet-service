@@ -9,4 +9,5 @@ interface DepositService {
     fun delete(id: Int, user: UUID)
     fun getPendingForUser(user: UUID): DepositServiceResponse?
     fun getPendingForProject(project: UUID, user: UUID): DepositServiceResponse?
+    fun getDepositForUserByTxHash(user: UUID, txHash: String?): List<DepositServiceResponse>
 }

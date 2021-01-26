@@ -81,6 +81,19 @@ class DepositServiceImpl(
         }
     }
 
+    @Transactional(readOnly = true)
+    override fun getDepositForUserByTxHash(user: UUID, txHash: String?): List<DepositServiceResponse> {
+        if (txHash != null) {
+            val deposit = ServiceUtils.wrapOptional(depositRepository.findByTxHashAndOwnerUuid(txHash, user))
+            return if (deposit == null) {
+                listOf()
+            } else {
+                listOf(DepositServiceResponse(deposit, true))
+            }
+        }
+        return depositRepository.findAllByOwnerUuid(user).map { DepositServiceResponse(it, true) }
+    }
+
     private fun validateOwnerHasWallet(owner: UUID) {
         walletRepository.findByOwner(owner).orElseThrow {
             ResourceNotFoundException(ErrorCode.WALLET_MISSING, "Missing wallet for owner: $owner")

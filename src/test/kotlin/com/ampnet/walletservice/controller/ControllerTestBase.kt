@@ -63,6 +63,7 @@ abstract class ControllerTestBase : TestBase() {
     protected val walletHash = "th_K3LCJLUQ1m2EsYmcNafGnRyEdDDgfPDGfZhmZ1YgbvAG35PQu"
     protected val signedTransaction = "tx_+RFNCwH4QrhARSL55I0DqhQePPV3J4ycxHpA9OkqnncvEJrYOThmo2h...signed-tx..."
     protected val anotherCoop = "another coop"
+    protected val txHash = "th_2cNtX3hdmGPHq8sgHb6Lcu87iEc3E6feHTWczQAViQjmP7evbP"
 
     @Autowired
     protected lateinit var objectMapper: ObjectMapper
@@ -204,13 +205,14 @@ abstract class ControllerTestBase : TestBase() {
         owner: UUID,
         amount: Long = 1000,
         type: DepositWithdrawType = DepositWithdrawType.USER,
+        txHash: String = "th_ktDw9ytaQ9aSi78qgCAw2JhdzS8F7vGgzYvWeMdRtP6hJnQqG",
         coop: String = COOP
     ): Deposit {
         val document = saveFile("doc", "document-link", "type", 1, owner)
         val deposit = Deposit(
             0, owner, "S34SDGFT", amount,
-            ZonedDateTime.now(), userUuid, type, "th_ktDw9ytaQ9aSi78qgCAw2JhdzS8F7vGgzYvWeMdRtP6hJnQqG",
-            userUuid, ZonedDateTime.now(), document, null, coop
+            ZonedDateTime.now(), userUuid, type, txHash, userUuid,
+            ZonedDateTime.now(), document, null, coop
         )
         return depositRepository.save(deposit)
     }
