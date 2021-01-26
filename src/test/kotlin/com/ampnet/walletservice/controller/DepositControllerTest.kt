@@ -278,7 +278,7 @@ class DepositControllerTest : ControllerTestBase() {
         }
 
         verify("User can get pending project deposit") {
-            val result = mockMvc.perform(get("$depositPath/project/$projectUuid"))
+            val result = mockMvc.perform(get("$depositPath/project/$projectUuid/pending"))
                 .andExpect(status().isOk)
                 .andReturn()
             val deposit: DepositServiceResponse = objectMapper.readValue(result.response.contentAsString)
@@ -303,7 +303,7 @@ class DepositControllerTest : ControllerTestBase() {
         }
 
         verify("User can get pending project deposit") {
-            val result = mockMvc.perform(get("$depositPath/project/$projectUuid"))
+            val result = mockMvc.perform(get("$depositPath/project/$projectUuid/pending"))
                 .andExpect(status().isBadRequest)
                 .andReturn()
             verifyResponseErrorCode(result, ErrorCode.USER_MISSING_PRIVILEGE)

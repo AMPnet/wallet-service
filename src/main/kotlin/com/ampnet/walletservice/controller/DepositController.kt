@@ -73,7 +73,7 @@ class DepositController(private val depositService: DepositService) {
         return ResponseEntity.ok(DepositListResponse(deposits))
     }
 
-    @GetMapping("/deposit/project/{projectUuid}")
+    @GetMapping("/deposit/project/{projectUuid}/pending")
     fun getPendingProjectDeposit(@PathVariable projectUuid: UUID): ResponseEntity<DepositServiceResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to get pending deposit by user: ${userPrincipal.uuid}" }
