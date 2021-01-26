@@ -69,7 +69,7 @@ class DepositController(private val depositService: DepositService) {
     fun getDeposit(@RequestParam(required = false) txHash: String?): ResponseEntity<DepositListResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to get deposit by user: ${userPrincipal.uuid} for txHash:$txHash" }
-        val deposits = depositService.getDepositForUserByTxHash(txHash, userPrincipal.uuid)
+        val deposits = depositService.getDepositForUserByTxHash(userPrincipal.uuid, txHash)
         return ResponseEntity.ok(DepositListResponse(deposits))
     }
 
