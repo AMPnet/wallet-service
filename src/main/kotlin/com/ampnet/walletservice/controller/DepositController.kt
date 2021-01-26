@@ -1,6 +1,7 @@
 package com.ampnet.walletservice.controller
 
 import com.ampnet.walletservice.controller.pojo.request.AmountRequest
+import com.ampnet.walletservice.controller.pojo.response.DepositListResponse
 import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.service.DepositService
 import com.ampnet.walletservice.service.pojo.request.DepositCreateServiceRequest
@@ -65,10 +66,11 @@ class DepositController(private val depositService: DepositService) {
     }
 
     @GetMapping("/deposit")
-    fun getDeposit(@RequestParam(required = false) txHash: String?): ResponseEntity<List<DepositServiceResponse>> {
+    fun getDeposit(@RequestParam(required = false) txHash: String?): ResponseEntity<DepositListResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to get deposit by user: ${userPrincipal.uuid} for txHash:$txHash" }
-        return ResponseEntity.ok(depositService.getDepositByTxHash(txHash, userPrincipal.uuid))
+        val deposits = depositService.getDepositForUserByTxHash(txHash, userPrincipal.uuid)
+        return ResponseEntity.ok(DepositListResponse(deposits))
     }
 
     @GetMapping("/deposit/project/{projectUuid}")

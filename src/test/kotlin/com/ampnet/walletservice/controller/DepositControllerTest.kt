@@ -1,6 +1,7 @@
 package com.ampnet.walletservice.controller
 
 import com.ampnet.walletservice.controller.pojo.request.AmountRequest
+import com.ampnet.walletservice.controller.pojo.response.DepositListResponse
 import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.persistence.model.Deposit
@@ -161,7 +162,8 @@ class DepositControllerTest : ControllerTestBase() {
                 .andExpect(status().isOk)
                 .andReturn()
 
-            val deposits: List<DepositServiceResponse> = objectMapper.readValue(result.response.contentAsString)
+            val listResponse: DepositListResponse = objectMapper.readValue(result.response.contentAsString)
+            val deposits = listResponse.deposits
             assertThat(deposits).hasSize(1)
             val deposit = deposits.first()
             assertThat(deposit.owner).isEqualTo(userUuid)
@@ -186,7 +188,8 @@ class DepositControllerTest : ControllerTestBase() {
                 .andExpect(status().isOk)
                 .andReturn()
 
-            val deposits: List<DepositServiceResponse> = objectMapper.readValue(result.response.contentAsString)
+            val listResponse: DepositListResponse = objectMapper.readValue(result.response.contentAsString)
+            val deposits = listResponse.deposits
             assertThat(deposits).hasSize(2)
         }
     }
@@ -203,11 +206,12 @@ class DepositControllerTest : ControllerTestBase() {
     @Test
     @WithMockCrowdfoundUser
     fun mustGetEmptyListForNoDepositFoundForTxHash() {
-        verify("User gets not found for deposit not found for txHash") {
+        verify("User gets empty list for deposit not found for txHash") {
             val result = mockMvc.perform(get(depositPath).param("txHash", "txHash"))
                 .andExpect(status().isOk)
                 .andReturn()
-            val deposits: List<DepositServiceResponse> = objectMapper.readValue(result.response.contentAsString)
+            val listResponse: DepositListResponse = objectMapper.readValue(result.response.contentAsString)
+            val deposits = listResponse.deposits
             assertThat(deposits).isEmpty()
         }
     }

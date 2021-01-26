@@ -81,9 +81,9 @@ class DepositServiceImpl(
         }
     }
 
-    override fun getDepositByTxHash(txHash: String?, user: UUID): List<DepositServiceResponse> {
+    override fun getDepositForUserByTxHash(txHash: String?, user: UUID): List<DepositServiceResponse> {
         if (txHash != null) {
-            val deposit = ServiceUtils.wrapOptional(depositRepository.findByTxHash(txHash, user))
+            val deposit = ServiceUtils.wrapOptional(depositRepository.findByTxHashAndOwnerUuid(txHash, user))
             return if (deposit == null) {
                 listOf()
             } else {
