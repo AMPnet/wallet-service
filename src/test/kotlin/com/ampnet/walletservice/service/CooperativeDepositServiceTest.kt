@@ -19,7 +19,7 @@ class CooperativeDepositServiceTest : JpaServiceTestBase() {
         val storageServiceImpl = StorageServiceImpl(documentRepository, mockedCloudStorageService)
         val transactionInfoService = TransactionInfoServiceImpl(transactionInfoRepository)
         CooperativeDepositServiceImpl(
-            walletRepository, depositRepository, declinedRepository,
+            walletRepository, depositRepository,
             mockedBlockchainService, transactionInfoService, storageServiceImpl,
             mockedMailService, mockedUserService, mockedProjectService
         )
@@ -125,7 +125,7 @@ class CooperativeDepositServiceTest : JpaServiceTestBase() {
     fun mustThrowExceptionForDecliningMissingDeposit() {
         verify("Service will throw exception for declining missing deposit") {
             assertThrows<ResourceNotFoundException> {
-                cooperativeDepositService.decline(0, createUserPrincipal(userUuid), "Missing")
+                cooperativeDepositService.delete(0, createUserPrincipal(userUuid))
             }
         }
     }
@@ -138,7 +138,7 @@ class CooperativeDepositServiceTest : JpaServiceTestBase() {
 
         verify("User cannot decline minted deposit") {
             assertThrows<InvalidRequestException> {
-                cooperativeDepositService.decline(deposit.id, createUserPrincipal(userUuid), "Minted")
+                cooperativeDepositService.delete(deposit.id, createUserPrincipal(userUuid))
             }
         }
     }

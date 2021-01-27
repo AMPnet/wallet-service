@@ -391,6 +391,14 @@ include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToGenerateBurnTr
 .Response
 include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToGenerateBurnTransaction/http-response.adoc[]
 
+==== Delete
+Must have privilege: `PrivilegeType.PWA_WITHDRAW`. Burned withdrawals cannot be deleted.
+
+.Request
+include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToDeleteWithdraw/http-request.adoc[]
+.Response
+include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToDeleteWithdraw/http-response.adoc[]
+
 === Deposit
 
 ==== Get Deposits
@@ -431,7 +439,7 @@ include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToGetApprovedDepo
 .Response
 include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToGetApprovedDeposits/http-response.adoc[]
 
-==== Approve Deposit
+==== Approve
 Must have Admin role - privilege: PWA_DEPOSIT.
 User can approve the deposit multiple times because deposit is unapproved until he completes deposit process -
 generating and signing minting transaction.
@@ -441,13 +449,13 @@ include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToApproveDeposit/
 .Response
 include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToApproveDeposit/http-response.adoc[]
 
-==== Decline Deposit
-Must have Admin role - privilege: PWA_DEPOSIT. Cannot decline minted deposit.
+==== Delete
+Must have Admin role - privilege: PWA_DEPOSIT. Cannot delete a minted deposit.
 
 .Request
-include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToDeclineDeposit/http-request.adoc[]
+include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToDeleteDeposit/http-request.adoc[]
 .Response
-include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToDeclineDeposit/http-response.adoc[]
+include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToDeleteDeposit/http-response.adoc[]
 
 ==== Generate Mint transaction
 Must have Admin role - privilege: PWA_DEPOSIT

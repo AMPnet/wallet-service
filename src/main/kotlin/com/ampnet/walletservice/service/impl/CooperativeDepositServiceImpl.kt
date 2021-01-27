@@ -14,9 +14,7 @@ import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionDataAndInfo
 import com.ampnet.walletservice.grpc.mail.MailService
 import com.ampnet.walletservice.grpc.projectservice.ProjectService
 import com.ampnet.walletservice.grpc.userservice.UserService
-import com.ampnet.walletservice.persistence.model.Declined
 import com.ampnet.walletservice.persistence.model.Deposit
-import com.ampnet.walletservice.persistence.repository.DeclinedRepository
 import com.ampnet.walletservice.persistence.repository.DepositRepository
 import com.ampnet.walletservice.persistence.repository.WalletRepository
 import com.ampnet.walletservice.service.CooperativeDepositService
@@ -39,7 +37,6 @@ import java.time.ZonedDateTime
 class CooperativeDepositServiceImpl(
     private val walletRepository: WalletRepository,
     private val depositRepository: DepositRepository,
-    private val declinedRepository: DeclinedRepository,
     private val blockchainService: BlockchainService,
     private val transactionInfoService: TransactionInfoService,
     private val storageService: StorageService,
@@ -68,16 +65,14 @@ class CooperativeDepositServiceImpl(
 
     @Transactional
     @Throws(ResourceNotFoundException::class, InvalidRequestException::class)
-    override fun decline(id: Int, user: UserPrincipal, comment: String): DepositServiceResponse {
+    override fun delete(id: Int, user: UserPrincipal) {
         val deposit = getDepositForIdAndCoop(id, user.coop)
         if (deposit.txHash != null) {
             throw InvalidRequestException(ErrorCode.WALLET_DEPOSIT_MINTED, "Cannot decline minted deposit")
         }
         logger.info { "Declining deposit: $id by user: $user" }
-        val declined = Declined(comment, user.uuid)
-        deposit.declined = declinedRepository.save(declined)
+        depositRepository.delete(deposit)
         mailService.sendDepositInfo(deposit.ownerUuid, false)
-        return DepositServiceResponse(deposit, true)
     }
 
     @Transactional(readOnly = true)
@@ -144,7 +139,7 @@ class CooperativeDepositServiceImpl(
         depositRepository.countUsersWithApprovedDeposit(coop)
 
     @Transactional(readOnly = true)
-    override fun getById(coop: String, id: Int): DepositWithDataServiceResponse? =
+    override fun getByIdForCoop(coop: String, id: Int): DepositWithDataServiceResponse? =
         ServiceUtils.wrapOptional(depositRepository.findByIdAndCoop(id, coop))?.let {
             getDepositWithData(it)
         }

@@ -44,7 +44,7 @@ class WithdrawServiceImpl(
 
     @Transactional(readOnly = true)
     override fun getPendingForOwner(user: UUID): WithdrawServiceResponse? =
-        withdrawRepository.findByOwnerUuid(user).find { it.approvedTxHash == null }?.let {
+        withdrawRepository.findByOwnerUuid(user).find { it.burnedTxHash == null }?.let {
             WithdrawServiceResponse(it)
         }
 
@@ -52,7 +52,7 @@ class WithdrawServiceImpl(
     override fun getPendingForProject(project: UUID, user: UUID): WithdrawServiceResponse? {
         val projectResponse = projectService.getProject(project)
         ServiceUtils.validateUserIsProjectOwner(user, projectResponse)
-        return withdrawRepository.findByOwnerUuid(project).find { it.approvedTxHash == null }?.let {
+        return withdrawRepository.findByOwnerUuid(project).find { it.burnedTxHash == null }?.let {
             WithdrawServiceResponse(it)
         }
     }
@@ -83,10 +83,12 @@ class WithdrawServiceImpl(
 
     @Transactional
     @Throws(ResourceNotFoundException::class, InvalidRequestException::class)
-    override fun deleteWithdraw(withdrawId: Int, user: UUID) {
-        val withdraw = ServiceUtils.getWithdraw(withdrawId, withdrawRepository)
-        validateWithdrawIsNotApproved(withdraw)
-        validateUserCanEditWithdraw(withdraw, user)
+    override fun deleteWithdraw(withdrawId: Int, user: UserPrincipal) {
+        val withdraw = ServiceUtils.getWithdraw(withdrawId, user.coop, withdrawRepository)
+        validateUserCanEditWithdraw(withdraw, user.uuid)
+        withdraw.burnedTxHash?.let {
+            throw InvalidRequestException(ErrorCode.WALLET_WITHDRAW_BURNED, "Burned txHash: $it")
+        }
         logger.info { "Deleting Withdraw with id: $withdraw" }
         withdrawRepository.delete(withdraw)
         mailService.sendWithdrawInfo(withdraw.ownerUuid, false)
@@ -95,7 +97,7 @@ class WithdrawServiceImpl(
     @Transactional
     @Throws(ResourceNotFoundException::class, InvalidRequestException::class)
     override fun generateApprovalTransaction(withdrawId: Int, user: UserPrincipal): TransactionDataAndInfo {
-        val withdraw = ServiceUtils.getWithdraw(withdrawId, withdrawRepository)
+        val withdraw = ServiceUtils.getWithdraw(withdrawId, user.coop, withdrawRepository)
         validateWithdrawIsNotApproved(withdraw)
         validateUserCanEditWithdraw(withdraw, user.uuid)
         val data = getApprovalTransactionData(withdraw, user.uuid)
@@ -105,13 +107,11 @@ class WithdrawServiceImpl(
 
     @Transactional
     @Throws(
-        ResourceNotFoundException::class,
-        InvalidRequestException::class,
-        GrpcException::class,
-        GrpcHandledException::class
+        ResourceNotFoundException::class, InvalidRequestException::class,
+        GrpcException::class, GrpcHandledException::class
     )
-    override fun confirmApproval(signedTransaction: String, withdrawId: Int): Withdraw {
-        val withdraw = ServiceUtils.getWithdraw(withdrawId, withdrawRepository)
+    override fun confirmApproval(signedTransaction: String, withdrawId: Int, coop: String): Withdraw {
+        val withdraw = ServiceUtils.getWithdraw(withdrawId, coop, withdrawRepository)
         validateWithdrawIsNotApproved(withdraw)
         logger.info { "Approving Withdraw: $withdraw" }
         val approvalTxHash = blockchainService.postTransaction(signedTransaction, withdraw.coop)
@@ -184,10 +184,8 @@ class WithdrawServiceImpl(
     }
 
     private fun validateWithdrawIsNotApproved(withdraw: Withdraw) {
-        if (withdraw.approvedTxHash != null) {
-            throw InvalidRequestException(
-                ErrorCode.WALLET_WITHDRAW_APPROVED, "Approved txHash: ${withdraw.approvedTxHash}"
-            )
+        withdraw.approvedTxHash?.let {
+            throw InvalidRequestException(ErrorCode.WALLET_WITHDRAW_APPROVED, "Approved txHash: $it")
         }
     }
 }

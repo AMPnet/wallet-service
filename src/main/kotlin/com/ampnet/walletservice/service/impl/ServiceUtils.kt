@@ -26,9 +26,12 @@ internal object ServiceUtils {
     }
 
     @Throws(ResourceNotFoundException::class)
-    fun getWithdraw(withdrawId: Int, withdrawRepository: WithdrawRepository): Withdraw {
-        return withdrawRepository.findById(withdrawId).orElseThrow {
-            throw ResourceNotFoundException(ErrorCode.WALLET_WITHDRAW_MISSING, "Missing withdraw with id: $withdrawId")
+    fun getWithdraw(withdrawId: Int, coop: String, withdrawRepository: WithdrawRepository): Withdraw {
+        return withdrawRepository.findByIdAndCoop(withdrawId, coop).orElseThrow {
+            throw ResourceNotFoundException(
+                ErrorCode.WALLET_WITHDRAW_MISSING,
+                "Missing withdraw with id: $withdrawId for coop: $coop"
+            )
         }
     }
 
@@ -44,8 +47,8 @@ internal object ServiceUtils {
     }
 
     @Throws(ResourceNotFoundException::class)
-    fun getWalletByUserUuid(userUuid: UUID, walletRepository: WalletRepository):
-        Wallet = walletRepository.findByOwner(userUuid).orElseThrow {
+    fun getWalletByUserUuid(userUuid: UUID, walletRepository: WalletRepository): Wallet =
+        walletRepository.findByOwner(userUuid).orElseThrow {
             throw ResourceNotFoundException(ErrorCode.WALLET_MISSING, "Missing wallet for user with uuid: $userUuid")
         }
 

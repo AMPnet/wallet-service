@@ -11,6 +11,7 @@ import mu.KLogging
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -67,25 +68,35 @@ class CooperativeWithdrawController(
         @RequestParam("file") file: MultipartFile
     ): ResponseEntity<WithdrawServiceResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
-        logger.debug { "Adding document for withdraw" }
+        logger.info { "Adding document for withdraw" }
         val documentRequest = DocumentSaveRequest(file, userPrincipal)
         val withdraw = cooperativeWithdrawService.addDocument(id, documentRequest)
         return ResponseEntity.ok(withdraw)
     }
 
-    @GetMapping("/cooperative/withdraw/approved/{id}")
+    @GetMapping("/cooperative/withdraw/{id}")
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_WITHDRAW)")
     fun getWithdrawById(@PathVariable("id") id: Int): ResponseEntity<WithdrawWithDataServiceResponse> {
+        val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to get withdraw by id: $id" }
-        cooperativeWithdrawService.getById(id)?.let { withdrawWithData ->
+        cooperativeWithdrawService.getByIdForCoop(id, userPrincipal.coop)?.let { withdrawWithData ->
             return ResponseEntity.ok(withdrawWithData)
         }
         return ResponseEntity.notFound().build()
     }
 
+    @DeleteMapping("/cooperative/withdraw/{id}")
+    @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PWA_WITHDRAW)")
+    fun deleteWithdraw(@PathVariable("id") id: Int): ResponseEntity<Unit> {
+        val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
+        logger.info { "Received request to delete withdraw by id: $id" }
+        cooperativeWithdrawService.delete(id, userPrincipal.coop)
+        return ResponseEntity.ok().build()
+    }
+
     @GetMapping("/cooperative/withdraw/pending")
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_WITHDRAW)")
-    fun getWithdrawById(
+    fun getPendingWithdraws(
         @RequestParam("type") type: DepositWithdrawType?,
         pageable: Pageable
     ): ResponseEntity<WithdrawListServiceResponse> {
