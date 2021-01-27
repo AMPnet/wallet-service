@@ -222,11 +222,14 @@ class WithdrawControllerTest : ControllerTestBase() {
     @WithMockCrowdfoundUser
     fun mustBeAbleToGetWithdrawForTxHash() {
         suppose("User has approved withdraw") {
-            testContext.withdraw = createApprovedWithdraw(userUuid, withFile = true)
+            testContext.withdraw = createApprovedWithdraw(userUuid, txHash = txHash, withFile = true)
+        }
+        suppose("User has another withdraw") {
+            createApprovedWithdraw(userUuid, withFile = true)
         }
 
-        verify("User can get his pending withdraw") {
-            val result = mockMvc.perform(get(withdrawPath))
+        verify("User can get withdraw by tx hash") {
+            val result = mockMvc.perform(get(withdrawPath).param("txHash", txHash))
                 .andExpect(status().isOk)
                 .andReturn()
 
