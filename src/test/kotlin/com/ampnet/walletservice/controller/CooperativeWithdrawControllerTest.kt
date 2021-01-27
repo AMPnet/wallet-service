@@ -445,7 +445,7 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
     @WithMockCrowdfoundUser(privileges = [PrivilegeType.PRA_WITHDRAW])
     fun mustBeAbleToGetWithdrawById() {
         suppose("Approved user withdraw is created") {
-            testContext.withdraw = createApprovedWithdraw(userUuid)
+            testContext.withdraw = createApprovedWithdraw(userUuid, withFile = true)
         }
         suppose("Some project has approved withdraw") {
             createApprovedWithdraw(UUID.randomUUID(), type = DepositWithdrawType.PROJECT)
@@ -484,7 +484,7 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
             assertThat(withdraw.burnedAt).isNull()
             assertThat(withdraw.burnedBy).isNull()
             assertThat(withdraw.burnedTxHash).isNull()
-            assertThat(withdraw.documentResponse).isNull()
+            assertThat(withdraw.documentResponse).isNotNull
         }
     }
 

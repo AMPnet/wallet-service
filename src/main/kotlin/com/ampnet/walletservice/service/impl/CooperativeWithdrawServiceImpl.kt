@@ -111,7 +111,7 @@ class CooperativeWithdrawServiceImpl(
     @Transactional(readOnly = true)
     override fun getByIdForCoop(id: Int, coop: String): WithdrawWithDataServiceResponse? =
         ServiceUtils.wrapOptional(withdrawRepository.findByIdAndCoop(id, coop))?.let {
-            getWithdrawWithData(it)
+            getWithdrawWithData(it, true)
         }
 
     @Transactional(readOnly = true)
@@ -163,18 +163,18 @@ class CooperativeWithdrawServiceImpl(
         }
     }
 
-    private fun getWithdrawWithData(withdraw: Withdraw): WithdrawWithDataServiceResponse {
+    private fun getWithdrawWithData(withdraw: Withdraw, withDocument: Boolean): WithdrawWithDataServiceResponse {
         return when (withdraw.type) {
             DepositWithdrawType.USER -> {
                 val user = userService.getUsers(setOf(withdraw.ownerUuid)).firstOrNull()
                 val walletHash = walletService.getWallet(withdraw.ownerUuid)?.hash.orEmpty()
-                WithdrawWithDataServiceResponse(withdraw, user, null, walletHash)
+                WithdrawWithDataServiceResponse(withdraw, user, null, walletHash, withDocument)
             }
             DepositWithdrawType.PROJECT -> {
                 val user = userService.getUsers(setOf(withdraw.createdBy)).firstOrNull()
                 val project = projectService.getProjects(setOf(withdraw.ownerUuid)).firstOrNull()
                 val walletHash = walletService.getWallet(withdraw.ownerUuid)?.hash.orEmpty()
-                WithdrawWithDataServiceResponse(withdraw, user, project, walletHash)
+                WithdrawWithDataServiceResponse(withdraw, user, project, walletHash, withDocument)
             }
         }
     }
