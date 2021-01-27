@@ -79,7 +79,7 @@ class CooperativeWithdrawController(
     fun getWithdrawById(@PathVariable("id") id: Int): ResponseEntity<WithdrawWithDataServiceResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to get withdraw by id: $id" }
-        cooperativeWithdrawService.getById(id, userPrincipal.coop)?.let { withdrawWithData ->
+        cooperativeWithdrawService.getByIdForCoop(id, userPrincipal.coop)?.let { withdrawWithData ->
             return ResponseEntity.ok(withdrawWithData)
         }
         return ResponseEntity.notFound().build()

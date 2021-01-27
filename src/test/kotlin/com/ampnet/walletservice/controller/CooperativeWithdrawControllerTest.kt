@@ -554,6 +554,10 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
             mockMvc.perform(delete("$withdrawPath/$withdrawId"))
                 .andExpect(status().isOk)
         }
+        verify("Mail notification for declining deposit is sent") {
+            Mockito.verify(mailService, Mockito.times(1))
+                .sendWithdrawInfo(userUuid, false)
+        }
     }
 
     private fun createBurnedWithdraw(

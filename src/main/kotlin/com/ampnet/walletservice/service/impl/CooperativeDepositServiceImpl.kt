@@ -65,7 +65,7 @@ class CooperativeDepositServiceImpl(
 
     @Transactional
     @Throws(ResourceNotFoundException::class, InvalidRequestException::class)
-    override fun decline(id: Int, user: UserPrincipal) {
+    override fun delete(id: Int, user: UserPrincipal) {
         val deposit = getDepositForIdAndCoop(id, user.coop)
         if (deposit.txHash != null) {
             throw InvalidRequestException(ErrorCode.WALLET_DEPOSIT_MINTED, "Cannot decline minted deposit")
@@ -139,7 +139,7 @@ class CooperativeDepositServiceImpl(
         depositRepository.countUsersWithApprovedDeposit(coop)
 
     @Transactional(readOnly = true)
-    override fun getById(coop: String, id: Int): DepositWithDataServiceResponse? =
+    override fun getByIdForCoop(coop: String, id: Int): DepositWithDataServiceResponse? =
         ServiceUtils.wrapOptional(depositRepository.findByIdAndCoop(id, coop))?.let {
             getDepositWithData(it)
         }

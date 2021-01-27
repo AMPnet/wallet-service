@@ -16,7 +16,7 @@ interface CooperativeWithdrawService {
     fun generateBurnTransaction(withdrawId: Int, user: UserPrincipal): TransactionDataAndInfo
     fun burn(signedTransaction: String, withdrawId: Int, coop: String): Withdraw
     fun addDocument(withdrawId: Int, request: DocumentSaveRequest): WithdrawServiceResponse
-    fun getById(id: Int, coop: String): WithdrawWithDataServiceResponse?
+    fun getByIdForCoop(id: Int, coop: String): WithdrawWithDataServiceResponse?
     fun getPending(coop: String, type: DepositWithdrawType?, pageable: Pageable): WithdrawListServiceResponse
     fun delete(id: Int, coop: String)
 }

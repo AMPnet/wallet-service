@@ -86,13 +86,13 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
 
     @Test
     @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWA_DEPOSIT])
-    fun mustBeAbleToDeclineDeposit() {
+    fun mustBeAbleToDeleteDeposit() {
         suppose("Unapproved user deposit exists") {
             val deposit = createUnsignedDeposit(userUuid)
             testContext.deposits = mutableListOf(deposit)
         }
 
-        verify("Cooperative can decline user deposit") {
+        verify("Cooperative can delete user deposit") {
             val depositId = testContext.deposits.first().id
             mockMvc.perform(delete("$depositPath/$depositId")).andExpect(status().isOk)
         }

@@ -125,7 +125,7 @@ class CooperativeDepositServiceTest : JpaServiceTestBase() {
     fun mustThrowExceptionForDecliningMissingDeposit() {
         verify("Service will throw exception for declining missing deposit") {
             assertThrows<ResourceNotFoundException> {
-                cooperativeDepositService.decline(0, createUserPrincipal(userUuid))
+                cooperativeDepositService.delete(0, createUserPrincipal(userUuid))
             }
         }
     }
@@ -138,7 +138,7 @@ class CooperativeDepositServiceTest : JpaServiceTestBase() {
 
         verify("User cannot decline minted deposit") {
             assertThrows<InvalidRequestException> {
-                cooperativeDepositService.decline(deposit.id, createUserPrincipal(userUuid))
+                cooperativeDepositService.delete(deposit.id, createUserPrincipal(userUuid))
             }
         }
     }

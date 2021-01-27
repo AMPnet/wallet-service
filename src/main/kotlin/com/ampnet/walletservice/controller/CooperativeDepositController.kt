@@ -63,7 +63,7 @@ class CooperativeDepositController(private val cooperativeDepositService: Cooper
     fun declineDeposit(@PathVariable("id") id: Int): ResponseEntity<Unit> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.info { "Received request to decline deposit: $id by user: ${userPrincipal.uuid}" }
-        cooperativeDepositService.decline(id, userPrincipal)
+        cooperativeDepositService.delete(id, userPrincipal)
         return ResponseEntity.ok().build()
     }
 
@@ -117,7 +117,7 @@ class CooperativeDepositController(private val cooperativeDepositService: Cooper
     fun getDepositById(@PathVariable("id") id: Int): ResponseEntity<DepositWithDataServiceResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to get deposit by id: $id for coop: ${userPrincipal.coop}" }
-        cooperativeDepositService.getById(userPrincipal.coop, id)?.let { depositWithData ->
+        cooperativeDepositService.getByIdForCoop(userPrincipal.coop, id)?.let { depositWithData ->
             return ResponseEntity.ok(depositWithData)
         }
         return ResponseEntity.notFound().build()

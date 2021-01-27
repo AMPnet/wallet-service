@@ -109,7 +109,7 @@ class CooperativeWithdrawServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun getById(id: Int, coop: String): WithdrawWithDataServiceResponse? =
+    override fun getByIdForCoop(id: Int, coop: String): WithdrawWithDataServiceResponse? =
         ServiceUtils.wrapOptional(withdrawRepository.findByIdAndCoop(id, coop))?.let {
             getWithdrawWithData(it)
         }
@@ -125,6 +125,7 @@ class CooperativeWithdrawServiceImpl(
             throw InvalidRequestException(ErrorCode.WALLET_WITHDRAW_BURNED, "Burned txHash: ${withdraw.burnedTxHash}")
         }
         withdrawRepository.delete(withdraw)
+        mailService.sendWithdrawInfo(withdraw.ownerUuid, false)
     }
 
     private fun validateWithdrawForBurn(withdraw: Withdraw) {
