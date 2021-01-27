@@ -212,7 +212,7 @@ abstract class ControllerTestBase : TestBase() {
         val deposit = Deposit(
             0, owner, "S34SDGFT", amount,
             ZonedDateTime.now(), userUuid, type, txHash, userUuid,
-            ZonedDateTime.now(), document, null, coop
+            ZonedDateTime.now(), document, coop
         )
         return depositRepository.save(deposit)
     }
@@ -260,7 +260,7 @@ abstract class ControllerTestBase : TestBase() {
         val approvedAt = if (withFile) ZonedDateTime.now() else null
         val deposit = Deposit(
             0, owner, "S34SDGFT", amount,
-            ZonedDateTime.now(), userUuid, type, null, approvedBy, approvedAt, file, null, coop
+            ZonedDateTime.now(), userUuid, type, null, approvedBy, approvedAt, file, coop
         )
         return depositRepository.save(deposit)
     }

@@ -1,6 +1,5 @@
 package com.ampnet.walletservice.controller
 
-import com.ampnet.walletservice.controller.pojo.request.CommentRequest
 import com.ampnet.walletservice.controller.pojo.response.TransactionResponse
 import com.ampnet.walletservice.controller.pojo.response.UsersWithApprovedDeposit
 import com.ampnet.walletservice.enums.DepositWithdrawType
@@ -15,10 +14,10 @@ import mu.KLogging
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
@@ -59,16 +58,13 @@ class CooperativeDepositController(private val cooperativeDepositService: Cooper
         return ResponseEntity.ok(deposit)
     }
 
-    @PostMapping("/cooperative/deposit/{id}/decline")
+    @DeleteMapping("/cooperative/deposit/{id}")
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PWA_DEPOSIT)")
-    fun declineDeposit(
-        @PathVariable("id") id: Int,
-        @RequestBody request: CommentRequest
-    ): ResponseEntity<DepositServiceResponse> {
+    fun declineDeposit(@PathVariable("id") id: Int): ResponseEntity<Unit> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.info { "Received request to decline deposit: $id by user: ${userPrincipal.uuid}" }
-        val deposit = cooperativeDepositService.decline(id, userPrincipal, request.comment)
-        return ResponseEntity.ok(deposit)
+        cooperativeDepositService.decline(id, userPrincipal)
+        return ResponseEntity.ok().build()
     }
 
     @GetMapping("/cooperative/deposit/unapproved")

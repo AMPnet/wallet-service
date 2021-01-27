@@ -1,6 +1,5 @@
 package com.ampnet.walletservice.controller
 
-import com.ampnet.walletservice.controller.pojo.request.CommentRequest
 import com.ampnet.walletservice.controller.pojo.response.TransactionResponse
 import com.ampnet.walletservice.controller.pojo.response.UsersWithApprovedDeposit
 import com.ampnet.walletservice.enums.DepositWithdrawType
@@ -18,9 +17,9 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
-import org.springframework.http.MediaType
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
@@ -94,36 +93,12 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
         }
 
         verify("Cooperative can decline user deposit") {
-            val request = CommentRequest("Decline!")
             val depositId = testContext.deposits.first().id
-            val result = mockMvc.perform(
-                post("$depositPath/$depositId/decline")
-                    .content(objectMapper.writeValueAsString(request))
-                    .contentType(MediaType.APPLICATION_JSON)
-            )
-                .andExpect(status().isOk)
-                .andReturn()
-
-            val depositResponse: DepositServiceResponse = objectMapper.readValue(result.response.contentAsString)
-            assertThat(depositResponse.id).isEqualTo(depositId)
-            assertThat(depositResponse.txHash).isNull()
-            assertThat(depositResponse.declinedComment).isEqualTo(request.comment)
-            assertThat(depositResponse.declinedAt).isBeforeOrEqualTo(ZonedDateTime.now())
-            assertThat(depositResponse.coop).isEqualTo(COOP)
-            assertThat(depositResponse.documentResponse).isNull()
+            mockMvc.perform(delete("$depositPath/$depositId")).andExpect(status().isOk)
         }
-        verify("User deposit is declined") {
+        verify("User deposit is deleted") {
             val optionalDeposit = depositRepository.findById(testContext.deposits.first().id)
-            assertThat(optionalDeposit).isPresent
-            val declinedDeposit = optionalDeposit.get()
-            assertThat(declinedDeposit.txHash).isNull()
-            assertThat(declinedDeposit.approvedByUserUuid).isNull()
-            assertThat(declinedDeposit.approvedAt).isNull()
-            assertThat(declinedDeposit.coop).isEqualTo(COOP)
-            assertThat(declinedDeposit.file?.link).isNull()
-            assertThat(declinedDeposit.declined?.createdAt).isBeforeOrEqualTo(ZonedDateTime.now())
-            assertThat(declinedDeposit.declined?.createdBy).isEqualTo(userUuid)
-            assertThat(declinedDeposit.declined?.comment).isNotNull()
+            assertThat(optionalDeposit).isNotPresent
         }
         verify("Mail notification for declining deposit is sent") {
             Mockito.verify(mailService, Mockito.times(1))
@@ -163,8 +138,6 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
             assertThat(depositResponse.id).isEqualTo(depositId)
             assertThat(depositResponse.approvedAt).isNotNull()
             assertThat(depositResponse.documentResponse?.link).isEqualTo(testContext.documentLink)
-            assertThat(depositResponse.declinedComment).isNull()
-            assertThat(depositResponse.declinedAt).isNull()
             assertThat(depositResponse.coop).isEqualTo(COOP)
         }
         verify("User deposit is approved") {

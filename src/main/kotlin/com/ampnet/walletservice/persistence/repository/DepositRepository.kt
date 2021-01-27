@@ -20,10 +20,10 @@ interface DepositRepository : JpaRepository<Deposit, Int> {
 
     @Query(
         "SELECT deposit FROM Deposit deposit " +
-            "WHERE deposit.txHash IS NULL AND deposit.declined is NULL AND deposit.coop = :coop " +
+            "WHERE deposit.txHash IS NULL AND deposit.coop = :coop " +
             "AND (:type IS NULL OR deposit.type = :type)",
         countQuery = "SELECT COUNT(deposit) FROM Deposit deposit " +
-            "WHERE deposit.txHash IS NULL AND deposit.declined is NULL AND deposit.coop = :coop " +
+            "WHERE deposit.txHash IS NULL AND deposit.coop = :coop " +
             "AND (:type IS NULL OR deposit.type = :type)"
     )
     fun findAllUnapproved(coop: String, type: DepositWithdrawType?, pageable: Pageable): Page<Deposit>
@@ -33,7 +33,7 @@ interface DepositRepository : JpaRepository<Deposit, Int> {
 
     @Query(
         "SELECT deposit FROM Deposit deposit LEFT JOIN FETCH deposit.file " +
-            "WHERE deposit.ownerUuid = :ownerUuid AND deposit.txHash IS NULL AND deposit.declined is NULL"
+            "WHERE deposit.ownerUuid = :ownerUuid AND deposit.txHash IS NULL"
     )
     fun findByOwnerUuidUnsigned(ownerUuid: UUID): List<Deposit>
 

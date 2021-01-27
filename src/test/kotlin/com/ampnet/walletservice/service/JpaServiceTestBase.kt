@@ -21,7 +21,6 @@ import com.ampnet.walletservice.persistence.model.File
 import com.ampnet.walletservice.persistence.model.Wallet
 import com.ampnet.walletservice.persistence.model.Withdraw
 import com.ampnet.walletservice.persistence.repository.BankAccountRepository
-import com.ampnet.walletservice.persistence.repository.DeclinedRepository
 import com.ampnet.walletservice.persistence.repository.DepositRepository
 import com.ampnet.walletservice.persistence.repository.DocumentRepository
 import com.ampnet.walletservice.persistence.repository.PairWalletCodeRepository
@@ -67,9 +66,6 @@ abstract class JpaServiceTestBase : TestBase() {
 
     @Autowired
     protected lateinit var depositRepository: DepositRepository
-
-    @Autowired
-    protected lateinit var declinedRepository: DeclinedRepository
 
     @Autowired
     protected lateinit var bankAccountRepository: BankAccountRepository
@@ -176,7 +172,7 @@ abstract class JpaServiceTestBase : TestBase() {
         val document = saveFile(userUuid)
         val deposit = Deposit(
             0, userUuid, "S34SDGFT", 10_000,
-            ZonedDateTime.now(), userUuid, type, txHash, userUuid, ZonedDateTime.now(), document, null, coop
+            ZonedDateTime.now(), userUuid, type, txHash, userUuid, ZonedDateTime.now(), document, coop
         )
         return depositRepository.save(deposit)
     }
@@ -188,7 +184,7 @@ abstract class JpaServiceTestBase : TestBase() {
     ): Deposit {
         val deposit = Deposit(
             0, owner, "S34SDGFT", 10_000,
-            ZonedDateTime.now(), userUuid, type, null, null, null, null, null, coop
+            ZonedDateTime.now(), userUuid, type, null, null, null, null, coop
         )
         return depositRepository.save(deposit)
     }

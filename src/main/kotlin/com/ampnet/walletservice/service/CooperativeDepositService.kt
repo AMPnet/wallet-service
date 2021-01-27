@@ -13,7 +13,7 @@ import org.springframework.data.domain.Pageable
 
 interface CooperativeDepositService {
     fun approve(request: ApproveDepositRequest): DepositServiceResponse
-    fun decline(id: Int, user: UserPrincipal, comment: String): DepositServiceResponse
+    fun decline(id: Int, user: UserPrincipal)
     fun getApprovedWithDocuments(
         coop: String,
         type: DepositWithdrawType?,

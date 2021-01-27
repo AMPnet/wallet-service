@@ -15,8 +15,6 @@ data class DepositServiceResponse(
     val approvedAt: ZonedDateTime?,
     val amount: Long?,
     val txHash: String?,
-    val declinedAt: ZonedDateTime?,
-    val declinedComment: String?,
     val documentResponse: DocumentServiceResponse?,
     val coop: String
 ) {
@@ -30,8 +28,6 @@ data class DepositServiceResponse(
         deposit.approvedAt,
         deposit.amount,
         deposit.txHash,
-        deposit.declined?.createdAt,
-        deposit.declined?.comment,
         if (withDocument) deposit.file?.let { DocumentServiceResponse(it) } else null,
         deposit.coop
     )
