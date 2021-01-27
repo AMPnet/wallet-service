@@ -55,7 +55,7 @@ class WithdrawController(
         return ResponseEntity.ok(withdraw)
     }
 
-    @GetMapping("/withdraw/project/{projectUuid}")
+    @GetMapping("/withdraw/project/{projectUuid}/pending")
     fun getProjectWithdraw(@PathVariable projectUuid: UUID): ResponseEntity<WithdrawServiceResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to get my Withdraw by user: ${userPrincipal.uuid}" }

@@ -207,7 +207,7 @@ class WithdrawControllerTest : ControllerTestBase() {
         }
 
         verify("User can get pending project withdraw") {
-            val result = mockMvc.perform(get("$withdrawPath/project/$projectUuid"))
+            val result = mockMvc.perform(get("$withdrawPath/project/$projectUuid/pending"))
                 .andExpect(status().isOk)
                 .andReturn()
 
