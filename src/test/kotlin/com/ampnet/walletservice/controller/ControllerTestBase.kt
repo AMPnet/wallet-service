@@ -221,13 +221,15 @@ abstract class ControllerTestBase : TestBase() {
         owner: UUID,
         amount: Long = 1000,
         type: DepositWithdrawType = DepositWithdrawType.USER,
-        coop: String = COOP
+        txHash: String = "approved-tx",
+        coop: String = COOP,
+        withFile: Boolean = false
     ): Withdraw {
         val withdraw = Withdraw(
             0, owner, amount, ZonedDateTime.now(), userUuid, "bank-account",
-            "approved-tx", ZonedDateTime.now(),
-            null, null, null, null, type, coop
+            txHash, ZonedDateTime.now(), null, null, null, null, type, coop
         )
+        if (withFile) withdraw.file = saveFile("doc", "document-link", "type", 1, owner)
         return withdrawRepository.save(withdraw)
     }
 

@@ -2,6 +2,7 @@ package com.ampnet.walletservice.controller
 
 import com.ampnet.walletservice.controller.pojo.request.WithdrawCreateRequest
 import com.ampnet.walletservice.controller.pojo.response.TransactionResponse
+import com.ampnet.walletservice.controller.pojo.response.WithdrawListResponse
 import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.service.WithdrawService
 import com.ampnet.walletservice.service.pojo.request.WithdrawCreateServiceRequest
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 import javax.validation.Valid
@@ -24,14 +26,22 @@ class WithdrawController(
 
     companion object : KLogging()
 
-    @GetMapping("/withdraw")
-    fun getMyWithdraw(): ResponseEntity<WithdrawServiceResponse> {
+    @GetMapping("/withdraw/pending")
+    fun getPendingWithdraw(): ResponseEntity<WithdrawServiceResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to get my Withdraw by user: ${userPrincipal.uuid}" }
         withdrawService.getPendingForOwner(userPrincipal.uuid)?.let {
             return ResponseEntity.ok(it)
         }
         return ResponseEntity.notFound().build()
+    }
+
+    @GetMapping("/withdraw")
+    fun getMyWithdraw(@RequestParam(required = false) txHash: String?): ResponseEntity<WithdrawListResponse> {
+        val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
+        logger.debug { "Received request to get withdraw by user: ${userPrincipal.uuid} for txHash:$txHash" }
+        val withdraws = withdrawService.getWithdrawForUserByTxHash(userPrincipal.uuid, txHash)
+        return ResponseEntity.ok(WithdrawListResponse(withdraws))
     }
 
     @PostMapping("/withdraw")
@@ -45,7 +55,7 @@ class WithdrawController(
         return ResponseEntity.ok(withdraw)
     }
 
-    @GetMapping("/withdraw/project/{projectUuid}")
+    @GetMapping("/withdraw/project/{projectUuid}/pending")
     fun getProjectWithdraw(@PathVariable projectUuid: UUID): ResponseEntity<WithdrawServiceResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to get my Withdraw by user: ${userPrincipal.uuid}" }
