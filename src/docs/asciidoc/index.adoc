@@ -391,6 +391,14 @@ include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToGenerateBurnTr
 .Response
 include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToGenerateBurnTransaction/http-response.adoc[]
 
+==== Delete
+Must have privilege: `PrivilegeType.PWA_WITHDRAW`. Burned withdrawals cannot be deleted.
+
+.Request
+include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToDeleteWithdraw/http-request.adoc[]
+.Response
+include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToDeleteWithdraw/http-response.adoc[]
+
 === Deposit
 
 ==== Get Deposits

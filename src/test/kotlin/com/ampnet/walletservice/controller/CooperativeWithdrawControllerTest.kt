@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.fileUpload
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
@@ -461,7 +462,7 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
         verify("Cooperative can get withdraw by id") {
             val withdrawId = testContext.withdraw.id
             val result = mockMvc.perform(
-                get("$withdrawPath/approved/$withdrawId")
+                get("$withdrawPath/$withdrawId")
             )
                 .andExpect(status().isOk)
                 .andReturn()
@@ -535,6 +536,23 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
                 withdrawList.withdraws
                     .filter { it.withdraw.burnedTxHash != null && it.withdraw.documentResponse == null }
             ).hasSize(2)
+        }
+    }
+
+    @Test
+    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWA_WITHDRAW])
+    fun mustBeAbleToDeleteWithdraw() {
+        suppose("Approved user withdraw is created") {
+            testContext.withdraw = createApprovedWithdraw(userUuid)
+        }
+        suppose("Some project has approved withdraw") {
+            createApprovedWithdraw(UUID.randomUUID(), type = DepositWithdrawType.PROJECT)
+        }
+
+        verify("Cooperative can delete by id") {
+            val withdrawId = testContext.withdraw.id
+            mockMvc.perform(delete("$withdrawPath/$withdrawId"))
+                .andExpect(status().isOk)
         }
     }
 

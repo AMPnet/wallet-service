@@ -83,7 +83,7 @@ class WithdrawController(
     fun deleteWithdraw(@PathVariable("id") withdrawId: Int): ResponseEntity<Unit> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.info { "Received request to delete Withdraw: $withdrawId by user: ${userPrincipal.uuid}" }
-        withdrawService.deleteWithdraw(withdrawId, userPrincipal.uuid)
+        withdrawService.deleteWithdraw(withdrawId, userPrincipal)
         return ResponseEntity.ok().build()
     }
 

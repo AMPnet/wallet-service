@@ -107,14 +107,14 @@ class BroadcastTransactionServiceImpl(
 
     private fun confirmApprovalTransaction(transactionInfo: TransactionInfo, signedTransaction: String): String {
         val withdrawId = getIdFromCompanionData(transactionInfo)
-        val withdraw = withdrawService.confirmApproval(signedTransaction, withdrawId)
+        val withdraw = withdrawService.confirmApproval(signedTransaction, withdrawId, transactionInfo.coop)
         return withdraw.approvedTxHash
             ?: throw ResourceNotFoundException(ErrorCode.TX_MISSING, "Missing approvedTxHash for withdraw transaction")
     }
 
     private fun burnTransaction(transactionInfo: TransactionInfo, signedTransaction: String): String {
         val withdrawId = getIdFromCompanionData(transactionInfo)
-        val withdraw = cooperativeWithdrawService.burn(signedTransaction, withdrawId)
+        val withdraw = cooperativeWithdrawService.burn(signedTransaction, withdrawId, transactionInfo.coop)
         return withdraw.burnedTxHash
             ?: throw ResourceNotFoundException(ErrorCode.TX_MISSING, "Missing burnedTxHash for withdraw transaction")
     }

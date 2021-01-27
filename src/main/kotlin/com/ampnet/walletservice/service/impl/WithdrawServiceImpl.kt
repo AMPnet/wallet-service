@@ -83,9 +83,9 @@ class WithdrawServiceImpl(
 
     @Transactional
     @Throws(ResourceNotFoundException::class, InvalidRequestException::class)
-    override fun deleteWithdraw(withdrawId: Int, user: UUID) {
-        val withdraw = ServiceUtils.getWithdraw(withdrawId, withdrawRepository)
-        validateUserCanEditWithdraw(withdraw, user)
+    override fun deleteWithdraw(withdrawId: Int, user: UserPrincipal) {
+        val withdraw = ServiceUtils.getWithdraw(withdrawId, user.coop, withdrawRepository)
+        validateUserCanEditWithdraw(withdraw, user.uuid)
         withdraw.burnedTxHash?.let {
             throw InvalidRequestException(ErrorCode.WALLET_WITHDRAW_BURNED, "Burned txHash: $it")
         }
@@ -97,7 +97,7 @@ class WithdrawServiceImpl(
     @Transactional
     @Throws(ResourceNotFoundException::class, InvalidRequestException::class)
     override fun generateApprovalTransaction(withdrawId: Int, user: UserPrincipal): TransactionDataAndInfo {
-        val withdraw = ServiceUtils.getWithdraw(withdrawId, withdrawRepository)
+        val withdraw = ServiceUtils.getWithdraw(withdrawId, user.coop, withdrawRepository)
         validateWithdrawIsNotApproved(withdraw)
         validateUserCanEditWithdraw(withdraw, user.uuid)
         val data = getApprovalTransactionData(withdraw, user.uuid)
@@ -110,8 +110,8 @@ class WithdrawServiceImpl(
         ResourceNotFoundException::class, InvalidRequestException::class,
         GrpcException::class, GrpcHandledException::class
     )
-    override fun confirmApproval(signedTransaction: String, withdrawId: Int): Withdraw {
-        val withdraw = ServiceUtils.getWithdraw(withdrawId, withdrawRepository)
+    override fun confirmApproval(signedTransaction: String, withdrawId: Int, coop: String): Withdraw {
+        val withdraw = ServiceUtils.getWithdraw(withdrawId, coop, withdrawRepository)
         validateWithdrawIsNotApproved(withdraw)
         logger.info { "Approving Withdraw: $withdraw" }
         val approvalTxHash = blockchainService.postTransaction(signedTransaction, withdraw.coop)
