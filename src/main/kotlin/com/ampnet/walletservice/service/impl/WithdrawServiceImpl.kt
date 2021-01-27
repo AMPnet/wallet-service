@@ -121,6 +121,19 @@ class WithdrawServiceImpl(
         return withdraw
     }
 
+    @Transactional(readOnly = true)
+    override fun getWithdrawForUserByTxHash(user: UUID, txHash: String?): List<WithdrawServiceResponse> {
+        if (txHash != null) {
+            val withdraw = ServiceUtils.wrapOptional(withdrawRepository.findByApprovedTxHashAndOwnerUuid(txHash, user))
+            return if (withdraw == null) {
+                listOf()
+            } else {
+                listOf(WithdrawServiceResponse(withdraw, true))
+            }
+        }
+        return withdrawRepository.findAllByOwnerUuid(user).map { WithdrawServiceResponse(it, true) }
+    }
+
     private fun getApprovalTransactionData(withdraw: Withdraw, user: UUID): TransactionData {
         val userWallet = ServiceUtils.getWalletHash(user, walletRepository)
         return when (withdraw.type) {

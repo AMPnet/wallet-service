@@ -2,6 +2,7 @@ package com.ampnet.walletservice.controller
 
 import com.ampnet.walletservice.controller.pojo.request.WithdrawCreateRequest
 import com.ampnet.walletservice.controller.pojo.response.TransactionResponse
+import com.ampnet.walletservice.controller.pojo.response.WithdrawListResponse
 import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.enums.TransactionType
 import com.ampnet.walletservice.exception.ErrorCode
@@ -183,7 +184,7 @@ class WithdrawControllerTest : ControllerTestBase() {
         }
 
         verify("User can get his pending withdraw") {
-            val result = mockMvc.perform(get(withdrawPath))
+            val result = mockMvc.perform(get("$withdrawPath/pending"))
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -219,10 +220,64 @@ class WithdrawControllerTest : ControllerTestBase() {
 
     @Test
     @WithMockCrowdfoundUser
+    fun mustBeAbleToGetWithdrawForTxHash() {
+        suppose("User has approved withdraw") {
+            testContext.withdraw = createApprovedWithdraw(userUuid, withFile = true)
+        }
+
+        verify("User can get his pending withdraw") {
+            val result = mockMvc.perform(get(withdrawPath))
+                .andExpect(status().isOk)
+                .andReturn()
+
+            val withdrawResponse: WithdrawListResponse = objectMapper.readValue(result.response.contentAsString)
+            val withdraw = withdrawResponse.withdraws.first()
+            assertThat(withdraw.owner).isEqualTo(userUuid)
+            assertThat(withdraw.coop).isEqualTo(COOP)
+            assertThat(withdraw.documentResponse).isNotNull()
+        }
+    }
+
+    @Test
+    @WithMockCrowdfoundUser
+    fun mustBeAbleToGetAllWithdrawsIfTxHashIsNull() {
+        suppose("User has approved and unsigned withdraws") {
+            val approved = createApprovedWithdraw(userUuid)
+            val unsigned = createWithdraw(userUuid)
+            testContext.withdraws = listOf(approved, unsigned)
+        }
+
+        verify("User can get all withdraws it txHash is missing") {
+            val result = mockMvc.perform(get(withdrawPath))
+                .andExpect(status().isOk)
+                .andReturn()
+
+            val withdrawResponse: WithdrawListResponse = objectMapper.readValue(result.response.contentAsString)
+            val withdraws = withdrawResponse.withdraws
+            assertThat(withdraws).hasSize(2)
+        }
+    }
+
+    @Test
+    @WithMockCrowdfoundUser
     fun mustBeGetNotFoundForNoPendingWithdraw() {
         verify("User will get not found for no pending withdraw") {
-            mockMvc.perform(get(withdrawPath))
+            mockMvc.perform(get("$withdrawPath/pending"))
                 .andExpect(status().isNotFound)
+        }
+    }
+
+    @Test
+    @WithMockCrowdfoundUser
+    fun mustGetEmptyListForNoWithdrawFoundForTxHash() {
+        verify("User gets empty list for deposit not found for txHash") {
+            val result = mockMvc.perform(get(withdrawPath))
+                .andExpect(status().isOk)
+                .andReturn()
+
+            val withdrawResponse: WithdrawListResponse = objectMapper.readValue(result.response.contentAsString)
+            val withdraws = withdrawResponse.withdraws
+            assertThat(withdraws).isEmpty()
         }
     }
 
@@ -347,6 +402,7 @@ class WithdrawControllerTest : ControllerTestBase() {
         val amount = 1000L
         val bankAccount = "AL35202111090000000001234567"
         val projectWalletHash = "th_foKr5RbgAVq84nZaF6bNfPSnjmFQ39VhQeWPetgGDwv1BNAnV"
+        lateinit var withdraws: List<Withdraw>
         lateinit var withdraw: Withdraw
         lateinit var transactionData: TransactionData
     }
