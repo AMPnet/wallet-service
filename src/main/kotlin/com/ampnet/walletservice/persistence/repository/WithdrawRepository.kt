@@ -13,9 +13,9 @@ interface WithdrawRepository : JpaRepository<Withdraw, Int> {
 
     @Query(
         "SELECT withdraw FROM Withdraw withdraw " +
-            "WHERE withdraw.ownerUuid = :owner AND withdraw.file IS NULL"
+            "WHERE withdraw.ownerUuid = :owner AND withdraw.file IS NULL ORDER BY withdraw.createdAt DESC"
     )
-    fun findPendingForOwner(owner: UUID): Withdraw?
+    fun findPendingForOwner(owner: UUID): List<Withdraw>
 
     @Query(
         "SELECT withdraw FROM Withdraw withdraw " +

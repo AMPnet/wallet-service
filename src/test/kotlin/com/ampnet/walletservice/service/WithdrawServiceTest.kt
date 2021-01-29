@@ -55,7 +55,8 @@ class WithdrawServiceTest : JpaServiceTestBase() {
 
     @Test
     fun mustReturnBurnedWithdrawAsPending() {
-        suppose("Project has created withdraw") {
+        suppose("Project has burned withdrawals") {
+            createBurnedWithdraw(projectUuid, DepositWithdrawType.PROJECT)
             withdraw = createBurnedWithdraw(projectUuid, DepositWithdrawType.PROJECT)
         }
         suppose("Project service will return project") {
@@ -63,7 +64,7 @@ class WithdrawServiceTest : JpaServiceTestBase() {
                 .thenReturn(createProjectResponse(projectUuid, userUuid))
         }
 
-        verify("Service will return burned withdraw as pending") {
+        verify("Service will return last burned withdraw as pending") {
             val pendingWithdraw = withdrawService.getPendingForProject(projectUuid, userUuid)
             assertThat(pendingWithdraw?.id).isEqualTo(withdraw.id)
         }
@@ -71,11 +72,14 @@ class WithdrawServiceTest : JpaServiceTestBase() {
 
     @Test
     fun mustReturnApprovedWithdrawAsPending() {
+        suppose("User has burned withdraw") {
+            createBurnedWithdraw(userUuid)
+        }
         suppose("User has approved withdraw") {
-            withdraw = createApprovedWithdraw(userUuid, DepositWithdrawType.USER)
+            withdraw = createApprovedWithdraw(userUuid)
         }
 
-        verify("Service will return approved withdraw as pending") {
+        verify("Service will return last approved withdraw as pending") {
             val pendingWithdraw = withdrawService.getPendingForOwner(userUuid)
             assertThat(pendingWithdraw?.id).isEqualTo(withdraw.id)
         }
@@ -112,6 +116,19 @@ class WithdrawServiceTest : JpaServiceTestBase() {
     fun mustThrowExceptionIfUserHasApprovedWithdraw() {
         suppose("User has approved withdraw") {
             createApprovedWithdraw(userUuid)
+        }
+
+        verify("Service will throw exception when user tries to create new withdraw") {
+            assertThrows<ResourceAlreadyExistsException> {
+                withdrawService.createWithdraw(createUserWithdrawServiceRequest())
+            }
+        }
+    }
+
+    @Test
+    fun mustThrowExceptionIfUserHasBurnedWithdrawWithoutFile() {
+        suppose("User has burned withdraw without file") {
+            createBurnedWithdraw(userUuid)
         }
 
         verify("Service will throw exception when user tries to create new withdraw") {

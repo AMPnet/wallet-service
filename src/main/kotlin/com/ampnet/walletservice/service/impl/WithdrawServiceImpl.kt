@@ -44,7 +44,7 @@ class WithdrawServiceImpl(
 
     @Transactional(readOnly = true)
     override fun getPendingForOwner(user: UUID): WithdrawServiceResponse? =
-        withdrawRepository.findPendingForOwner(user)?.let {
+        withdrawRepository.findPendingForOwner(user).firstOrNull()?.let {
             WithdrawServiceResponse(it)
         }
 
@@ -52,7 +52,7 @@ class WithdrawServiceImpl(
     override fun getPendingForProject(project: UUID, user: UUID): WithdrawServiceResponse? {
         val projectResponse = projectService.getProject(project)
         ServiceUtils.validateUserIsProjectOwner(user, projectResponse)
-        return withdrawRepository.findPendingForOwner(project)?.let {
+        return withdrawRepository.findPendingForOwner(project).firstOrNull()?.let {
             WithdrawServiceResponse(it)
         }
     }
@@ -173,13 +173,8 @@ class WithdrawServiceImpl(
     }
 
     private fun validateOwnerDoesNotHavePendingWithdraw(user: UUID) {
-        withdrawRepository.findByOwnerUuid(user).forEach {
-            if (it.approvedTxHash == null) {
-                throw ResourceAlreadyExistsException(ErrorCode.WALLET_WITHDRAW_EXISTS, "Unapproved Withdraw: ${it.id}")
-            }
-            if (it.approvedTxHash != null && it.burnedTxHash == null) {
-                throw ResourceAlreadyExistsException(ErrorCode.WALLET_WITHDRAW_EXISTS, "Unburned Withdraw: ${it.id}")
-            }
+        withdrawRepository.findPendingForOwner(user).firstOrNull()?.let {
+            throw ResourceAlreadyExistsException(ErrorCode.WALLET_WITHDRAW_EXISTS, "Pending withdraw: ${it.id}")
         }
     }
 
