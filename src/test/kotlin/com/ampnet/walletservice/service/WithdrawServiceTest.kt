@@ -53,15 +53,43 @@ class WithdrawServiceTest : JpaServiceTestBase() {
         }
     }
 
+    @Test
+    fun mustReturnBurnedWithdrawAsPending() {
+        suppose("Project has created withdraw") {
+            withdraw = createBurnedWithdraw(projectUuid, DepositWithdrawType.PROJECT)
+        }
+        suppose("Project service will return project") {
+            Mockito.`when`(mockedProjectService.getProject(projectUuid))
+                .thenReturn(createProjectResponse(projectUuid, userUuid))
+        }
+
+        verify("Service will return burned withdraw as pending") {
+            val pendingWithdraw = withdrawService.getPendingForProject(projectUuid, userUuid)
+            assertThat(pendingWithdraw?.id).isEqualTo(withdraw.id)
+        }
+    }
+
+    @Test
+    fun mustReturnApprovedWithdrawAsPending() {
+        suppose("User has approved withdraw") {
+            withdraw = createApprovedWithdraw(userUuid, DepositWithdrawType.USER)
+        }
+
+        verify("Service will return approved withdraw as pending") {
+            val pendingWithdraw = withdrawService.getPendingForOwner(userUuid)
+            assertThat(pendingWithdraw?.id).isEqualTo(withdraw.id)
+        }
+    }
+
     /* Create */
     @Test
     fun mustThrowExceptionForInvalidIban() {
         verify("Service will throw exception for invalid IBAN") {
-            val requet = WithdrawCreateServiceRequest(
+            val request = WithdrawCreateServiceRequest(
                 userUuid, "ivalid-iban", 100L, createUserPrincipal(userUuid), DepositWithdrawType.USER
             )
             val exception = assertThrows<InvalidRequestException> {
-                withdrawService.createWithdraw(requet)
+                withdrawService.createWithdraw(request)
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.USER_BANK_INVALID)
         }
@@ -96,6 +124,7 @@ class WithdrawServiceTest : JpaServiceTestBase() {
     @Test
     fun mustThrowExceptionIfUserDoesNotHaveEnoughFunds() {
         suppose("User has a wallet") {
+            databaseCleanerService.deleteAllWallets()
             createWalletForUser(userUuid, "default-address")
         }
         suppose("User does not have enough funds") {

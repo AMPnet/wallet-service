@@ -10,6 +10,13 @@ import java.util.Optional
 import java.util.UUID
 
 interface WithdrawRepository : JpaRepository<Withdraw, Int> {
+
+    @Query(
+        "SELECT withdraw FROM Withdraw withdraw " +
+            "WHERE withdraw.ownerUuid = :owner AND withdraw.file IS NULL"
+    )
+    fun findPendingForOwner(owner: UUID): Withdraw?
+
     @Query(
         "SELECT withdraw FROM Withdraw withdraw " +
             "WHERE withdraw.approvedTxHash IS NOT NULL AND withdraw.burnedTxHash IS NULL " +
