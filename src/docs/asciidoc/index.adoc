@@ -149,6 +149,8 @@ include::{snippets}/WithdrawControllerTest/mustBeAbleToCreateProjectWithdraw/htt
 include::{snippets}/WithdrawControllerTest/mustBeAbleToCreateProjectWithdraw/http-response.adoc[]
 
 === Get pending
+Withdraw is in a pending state until the platform manager burns funds and
+uploads the document to confirm the bank transaction.
 
 ==== User
 .Request
@@ -163,6 +165,8 @@ include::{snippets}/WithdrawControllerTest/mustBeAbleToGetProjectPendingWithdraw
 include::{snippets}/WithdrawControllerTest/mustBeAbleToGetProjectPendingWithdraw/http-response.adoc[]
 
 === Delete
+User can delete the withdraw until the platform manager burns funds.
+
 .Request
 include::{snippets}/WithdrawControllerTest/mustBeAbleToDeleteWithdraw/http-request.adoc[]
 .Response

@@ -44,7 +44,7 @@ class WithdrawServiceImpl(
 
     @Transactional(readOnly = true)
     override fun getPendingForOwner(user: UUID): WithdrawServiceResponse? =
-        withdrawRepository.findByOwnerUuid(user).find { it.burnedTxHash == null }?.let {
+        withdrawRepository.findPendingForOwner(user)?.let {
             WithdrawServiceResponse(it)
         }
 
@@ -52,7 +52,7 @@ class WithdrawServiceImpl(
     override fun getPendingForProject(project: UUID, user: UUID): WithdrawServiceResponse? {
         val projectResponse = projectService.getProject(project)
         ServiceUtils.validateUserIsProjectOwner(user, projectResponse)
-        return withdrawRepository.findByOwnerUuid(project).find { it.burnedTxHash == null }?.let {
+        return withdrawRepository.findPendingForOwner(project)?.let {
             WithdrawServiceResponse(it)
         }
     }

@@ -57,11 +57,11 @@ class WithdrawServiceTest : JpaServiceTestBase() {
     @Test
     fun mustThrowExceptionForInvalidIban() {
         verify("Service will throw exception for invalid IBAN") {
-            val requet = WithdrawCreateServiceRequest(
+            val request = WithdrawCreateServiceRequest(
                 userUuid, "ivalid-iban", 100L, createUserPrincipal(userUuid), DepositWithdrawType.USER
             )
             val exception = assertThrows<InvalidRequestException> {
-                withdrawService.createWithdraw(requet)
+                withdrawService.createWithdraw(request)
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.USER_BANK_INVALID)
         }
@@ -96,6 +96,7 @@ class WithdrawServiceTest : JpaServiceTestBase() {
     @Test
     fun mustThrowExceptionIfUserDoesNotHaveEnoughFunds() {
         suppose("User has a wallet") {
+            databaseCleanerService.deleteAllWallets()
             createWalletForUser(userUuid, "default-address")
         }
         suppose("User does not have enough funds") {
