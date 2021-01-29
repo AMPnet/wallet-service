@@ -53,6 +53,34 @@ class WithdrawServiceTest : JpaServiceTestBase() {
         }
     }
 
+    @Test
+    fun mustReturnBurnedWithdrawAsPending() {
+        suppose("Project has created withdraw") {
+            withdraw = createBurnedWithdraw(projectUuid, DepositWithdrawType.PROJECT)
+        }
+        suppose("Project service will return project") {
+            Mockito.`when`(mockedProjectService.getProject(projectUuid))
+                .thenReturn(createProjectResponse(projectUuid, userUuid))
+        }
+
+        verify("Service will return burned withdraw as pending") {
+            val pendingWithdraw = withdrawService.getPendingForProject(projectUuid, userUuid)
+            assertThat(pendingWithdraw?.id).isEqualTo(withdraw.id)
+        }
+    }
+
+    @Test
+    fun mustReturnApprovedWithdrawAsPending() {
+        suppose("User has approved withdraw") {
+            withdraw = createApprovedWithdraw(userUuid, DepositWithdrawType.USER)
+        }
+
+        verify("Service will return approved withdraw as pending") {
+            val pendingWithdraw = withdrawService.getPendingForOwner(userUuid)
+            assertThat(pendingWithdraw?.id).isEqualTo(withdraw.id)
+        }
+    }
+
     /* Create */
     @Test
     fun mustThrowExceptionForInvalidIban() {
