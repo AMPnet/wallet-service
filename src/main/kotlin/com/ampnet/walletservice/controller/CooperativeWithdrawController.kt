@@ -96,7 +96,7 @@ class CooperativeWithdrawController(
 
     @GetMapping("/cooperative/withdraw/pending")
     @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_WITHDRAW)")
-    fun getPendingWithdraws(
+    fun getPendingWithdrawals(
         @RequestParam("type") type: DepositWithdrawType?,
         pageable: Pageable
     ): ResponseEntity<WithdrawListServiceResponse> {

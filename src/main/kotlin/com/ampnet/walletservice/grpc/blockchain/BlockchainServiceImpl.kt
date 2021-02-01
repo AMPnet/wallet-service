@@ -55,6 +55,7 @@ class BlockchainServiceImpl(
         BlockchainServiceGrpc.newBlockingStub(channel)
     }
 
+    @Throws(GrpcException::class)
     override fun getBalance(hash: String): Long? {
         logger.debug { "Fetching balance for hash: $hash" }
         return try {
@@ -68,7 +69,12 @@ class BlockchainServiceImpl(
             response.balance.toLongOrNull()
         } catch (ex: StatusRuntimeException) {
             logger.warn("Could not get balance for wallet: $hash", ex)
-            null
+            val grpcException =
+                generateInternalExceptionFromStatusException(ex, "Could not get balance for hash: $hash")
+            when (grpcException) {
+                is GrpcHandledException -> return null
+                else -> throw grpcException
+            }
         }
     }
 
