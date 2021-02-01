@@ -149,6 +149,8 @@ include::{snippets}/WithdrawControllerTest/mustBeAbleToCreateProjectWithdraw/htt
 include::{snippets}/WithdrawControllerTest/mustBeAbleToCreateProjectWithdraw/http-response.adoc[]
 
 === Get pending
+Withdraw is in a pending state until the platform manager burns funds and
+uploads the document to confirm the bank transaction.
 
 ==== User
 .Request
@@ -163,6 +165,8 @@ include::{snippets}/WithdrawControllerTest/mustBeAbleToGetProjectPendingWithdraw
 include::{snippets}/WithdrawControllerTest/mustBeAbleToGetProjectPendingWithdraw/http-response.adoc[]
 
 === Delete
+User can delete the withdraw until the platform manager burns funds.
+
 .Request
 include::{snippets}/WithdrawControllerTest/mustBeAbleToDeleteWithdraw/http-request.adoc[]
 .Response
@@ -173,6 +177,16 @@ include::{snippets}/WithdrawControllerTest/mustBeAbleToDeleteWithdraw/http-respo
 include::{snippets}/WithdrawControllerTest/mustBeAbleToGenerateApprovalTransaction/http-request.adoc[]
 .Response
 include::{snippets}/WithdrawControllerTest/mustBeAbleToGenerateApprovalTransaction/http-response.adoc[]
+
+=== Get withdraw by txHash
+`txHash` is optional, if no value provided returns a list of all user withdraws. If no withdraw found for
+`txHash` returns an empty list.
+
+==== User
+.Request
+include::{snippets}/WithdrawControllerTest/mustBeAbleToGetWithdrawForTxHash/http-request.adoc[]
+.Response
+include::{snippets}/WithdrawControllerTest/mustBeAbleToGetWithdrawForTxHash/http-response.adoc[]
 
 == Deposit API
 All requests need header: `Authorization: Bearer JWT`.
@@ -210,6 +224,16 @@ include::{snippets}/DepositControllerTest/mustBeAbleToGetPendingProjectDeposit/h
 include::{snippets}/DepositControllerTest/mustBeAbleToDeleteDeposit/http-request.adoc[]
 .Response
 include::{snippets}/DepositControllerTest/mustBeAbleToDeleteDeposit/http-response.adoc[]
+
+=== Get deposit by txHash
+`txHash` is optional, if no value provided returns a list of all user deposits. If no deposit found for
+`txHash` returns an empty list.
+
+==== User
+.Request
+include::{snippets}/DepositControllerTest/mustBeAbleToGetDepositForTxHash/http-request.adoc[]
+.Response
+include::{snippets}/DepositControllerTest/mustBeAbleToGetDepositForTxHash/http-response.adoc[]
 
 
 == Portfolio API
@@ -371,6 +395,14 @@ include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToGenerateBurnTr
 .Response
 include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToGenerateBurnTransaction/http-response.adoc[]
 
+==== Delete
+Must have privilege: `PrivilegeType.PWA_WITHDRAW`. Burned withdrawals cannot be deleted.
+
+.Request
+include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToDeleteWithdraw/http-request.adoc[]
+.Response
+include::{snippets}/CooperativeWithdrawControllerTest/mustBeAbleToDeleteWithdraw/http-response.adoc[]
+
 === Deposit
 
 ==== Get Deposits
@@ -411,7 +443,7 @@ include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToGetApprovedDepo
 .Response
 include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToGetApprovedDeposits/http-response.adoc[]
 
-==== Approve Deposit
+==== Approve
 Must have Admin role - privilege: PWA_DEPOSIT.
 User can approve the deposit multiple times because deposit is unapproved until he completes deposit process -
 generating and signing minting transaction.
@@ -421,13 +453,13 @@ include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToApproveDeposit/
 .Response
 include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToApproveDeposit/http-response.adoc[]
 
-==== Decline Deposit
-Must have Admin role - privilege: PWA_DEPOSIT. Cannot decline minted deposit.
+==== Delete
+Must have Admin role - privilege: PWA_DEPOSIT. Cannot delete a minted deposit.
 
 .Request
-include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToDeclineDeposit/http-request.adoc[]
+include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToDeleteDeposit/http-request.adoc[]
 .Response
-include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToDeclineDeposit/http-response.adoc[]
+include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToDeleteDeposit/http-response.adoc[]
 
 ==== Generate Mint transaction
 Must have Admin role - privilege: PWA_DEPOSIT

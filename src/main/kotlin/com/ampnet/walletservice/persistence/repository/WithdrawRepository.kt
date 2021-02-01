@@ -10,6 +10,13 @@ import java.util.Optional
 import java.util.UUID
 
 interface WithdrawRepository : JpaRepository<Withdraw, Int> {
+
+    @Query(
+        "SELECT withdraw FROM Withdraw withdraw " +
+            "WHERE withdraw.ownerUuid = :owner AND withdraw.file IS NULL ORDER BY withdraw.createdAt DESC"
+    )
+    fun findPendingForOwner(owner: UUID): List<Withdraw>
+
     @Query(
         "SELECT withdraw FROM Withdraw withdraw " +
             "WHERE withdraw.approvedTxHash IS NOT NULL AND withdraw.burnedTxHash IS NULL " +
@@ -41,4 +48,16 @@ interface WithdrawRepository : JpaRepository<Withdraw, Int> {
             "AND withdraw.coop = :coop AND (:type IS NULL OR withdraw.type = :type)"
     )
     fun findAllPending(coop: String, type: DepositWithdrawType?, pageable: Pageable): Page<Withdraw>
+
+    @Query(
+        "SELECT withdraw FROM Withdraw withdraw LEFT JOIN FETCH withdraw.file " +
+            "WHERE withdraw.approvedTxHash = :txHash AND withdraw.ownerUuid = :ownerUuid"
+    )
+    fun findByApprovedTxHashAndOwnerUuid(txHash: String, ownerUuid: UUID): Optional<Withdraw>
+
+    @Query(
+        "SELECT withdraw FROM Withdraw withdraw LEFT JOIN FETCH withdraw.file " +
+            "WHERE withdraw.ownerUuid = :ownerUuid"
+    )
+    fun findAllByOwnerUuid(ownerUuid: UUID): List<Withdraw>
 }

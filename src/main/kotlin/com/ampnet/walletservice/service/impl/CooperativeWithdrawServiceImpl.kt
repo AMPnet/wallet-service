@@ -69,7 +69,7 @@ class CooperativeWithdrawServiceImpl(
         GrpcException::class, GrpcHandledException::class
     )
     override fun generateBurnTransaction(withdrawId: Int, user: UserPrincipal): TransactionDataAndInfo {
-        val withdraw = ServiceUtils.getWithdraw(withdrawId, withdrawRepository)
+        val withdraw = ServiceUtils.getWithdraw(withdrawId, user.coop, withdrawRepository)
         logger.info { "Generating Burn transaction for withdraw: $withdraw" }
         validateWithdrawForBurn(withdraw)
         val ownerWallet = ServiceUtils.getWalletHash(withdraw.ownerUuid, walletRepository)
@@ -85,8 +85,8 @@ class CooperativeWithdrawServiceImpl(
         ResourceNotFoundException::class, InvalidRequestException::class,
         GrpcException::class, GrpcHandledException::class
     )
-    override fun burn(signedTransaction: String, withdrawId: Int): Withdraw {
-        val withdraw = ServiceUtils.getWithdraw(withdrawId, withdrawRepository)
+    override fun burn(signedTransaction: String, withdrawId: Int, coop: String): Withdraw {
+        val withdraw = ServiceUtils.getWithdraw(withdrawId, coop, withdrawRepository)
         validateWithdrawForBurn(withdraw)
         logger.info { "Burning Withdraw: $withdraw" }
         val burnedTxHash = blockchainService.postTransaction(signedTransaction, withdraw.coop)
@@ -109,14 +109,24 @@ class CooperativeWithdrawServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun getById(id: Int): WithdrawWithDataServiceResponse? =
-        ServiceUtils.wrapOptional(withdrawRepository.findById(id))?.let {
-            getWithdrawWithData(it)
+    override fun getByIdForCoop(id: Int, coop: String): WithdrawWithDataServiceResponse? =
+        ServiceUtils.wrapOptional(withdrawRepository.findByIdAndCoop(id, coop))?.let {
+            getWithdrawWithData(it, true)
         }
 
     @Transactional(readOnly = true)
     override fun getPending(coop: String, type: DepositWithdrawType?, pageable: Pageable): WithdrawListServiceResponse =
         generateWithdrawListResponse(withdrawRepository.findAllPending(coop, type, pageable))
+
+    @Transactional
+    override fun delete(id: Int, coop: String) {
+        val withdraw = ServiceUtils.getWithdrawForIdAndCoop(id, coop, withdrawRepository)
+        if (withdraw.burnedTxHash != null) {
+            throw InvalidRequestException(ErrorCode.WALLET_WITHDRAW_BURNED, "Burned txHash: ${withdraw.burnedTxHash}")
+        }
+        withdrawRepository.delete(withdraw)
+        mailService.sendWithdrawInfo(withdraw.ownerUuid, false)
+    }
 
     private fun validateWithdrawForBurn(withdraw: Withdraw) {
         if (withdraw.approvedTxHash == null) {
@@ -153,18 +163,18 @@ class CooperativeWithdrawServiceImpl(
         }
     }
 
-    private fun getWithdrawWithData(withdraw: Withdraw): WithdrawWithDataServiceResponse {
+    private fun getWithdrawWithData(withdraw: Withdraw, withDocument: Boolean): WithdrawWithDataServiceResponse {
         return when (withdraw.type) {
             DepositWithdrawType.USER -> {
                 val user = userService.getUsers(setOf(withdraw.ownerUuid)).firstOrNull()
                 val walletHash = walletService.getWallet(withdraw.ownerUuid)?.hash.orEmpty()
-                WithdrawWithDataServiceResponse(withdraw, user, null, walletHash)
+                WithdrawWithDataServiceResponse(withdraw, user, null, walletHash, withDocument)
             }
             DepositWithdrawType.PROJECT -> {
                 val user = userService.getUsers(setOf(withdraw.createdBy)).firstOrNull()
                 val project = projectService.getProjects(setOf(withdraw.ownerUuid)).firstOrNull()
                 val walletHash = walletService.getWallet(withdraw.ownerUuid)?.hash.orEmpty()
-                WithdrawWithDataServiceResponse(withdraw, user, project, walletHash)
+                WithdrawWithDataServiceResponse(withdraw, user, project, walletHash, withDocument)
             }
         }
     }

@@ -1,6 +1,7 @@
 package com.ampnet.walletservice.controller
 
 import com.ampnet.walletservice.controller.pojo.request.AmountRequest
+import com.ampnet.walletservice.controller.pojo.response.DepositListResponse
 import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.persistence.model.Deposit
@@ -135,7 +136,7 @@ class DepositControllerTest : ControllerTestBase() {
         }
 
         verify("User can get his pending deposit") {
-            val result = mockMvc.perform(get(depositPath))
+            val result = mockMvc.perform(get("$depositPath/pending"))
                 .andExpect(status().isOk)
                 .andReturn()
 
@@ -150,10 +151,68 @@ class DepositControllerTest : ControllerTestBase() {
 
     @Test
     @WithMockCrowdfoundUser
+    fun mustBeAbleToGetDepositForTxHash() {
+        suppose("User deposit exists") {
+            val deposit = createApprovedDeposit(userUuid, txHash = txHash)
+            testContext.deposits = listOf(deposit)
+        }
+
+        verify("User can get his deposit by txHash") {
+            val result = mockMvc.perform(get(depositPath).param("txHash", txHash))
+                .andExpect(status().isOk)
+                .andReturn()
+
+            val listResponse: DepositListResponse = objectMapper.readValue(result.response.contentAsString)
+            val deposits = listResponse.deposits
+            assertThat(deposits).hasSize(1)
+            val deposit = deposits.first()
+            assertThat(deposit.owner).isEqualTo(userUuid)
+            assertThat(deposit.coop).isEqualTo(COOP)
+            assertThat(deposit.documentResponse).isNotNull
+            val savedDeposit = testContext.deposits.first()
+            assertThat(deposit.id).isEqualTo(savedDeposit.id)
+        }
+    }
+
+    @Test
+    @WithMockCrowdfoundUser
+    fun mustBeAbleToGetAllDepositsIfTxHashIsNull() {
+        suppose("User deposits exists") {
+            val approved = createApprovedDeposit(userUuid, txHash = txHash)
+            val unsigned = createUnsignedDeposit(userUuid, withFile = true)
+            testContext.deposits = listOf(approved, unsigned)
+        }
+
+        verify("User can get all deposits it txHash is missing") {
+            val result = mockMvc.perform(get(depositPath))
+                .andExpect(status().isOk)
+                .andReturn()
+
+            val listResponse: DepositListResponse = objectMapper.readValue(result.response.contentAsString)
+            val deposits = listResponse.deposits
+            assertThat(deposits).hasSize(2)
+        }
+    }
+
+    @Test
+    @WithMockCrowdfoundUser
     fun mustGetNotFoundForNoPendingDeposit() {
         verify("User gets not found for non pending deposit") {
-            mockMvc.perform(get(depositPath))
+            mockMvc.perform(get("$depositPath/pending"))
                 .andExpect(status().isNotFound)
+        }
+    }
+
+    @Test
+    @WithMockCrowdfoundUser
+    fun mustGetEmptyListForNoDepositFoundForTxHash() {
+        verify("User gets empty list for deposit not found for txHash") {
+            val result = mockMvc.perform(get(depositPath).param("txHash", "txHash"))
+                .andExpect(status().isOk)
+                .andReturn()
+            val listResponse: DepositListResponse = objectMapper.readValue(result.response.contentAsString)
+            val deposits = listResponse.deposits
+            assertThat(deposits).isEmpty()
         }
     }
 
@@ -219,7 +278,7 @@ class DepositControllerTest : ControllerTestBase() {
         }
 
         verify("User can get pending project deposit") {
-            val result = mockMvc.perform(get("$depositPath/project/$projectUuid"))
+            val result = mockMvc.perform(get("$depositPath/project/$projectUuid/pending"))
                 .andExpect(status().isOk)
                 .andReturn()
             val deposit: DepositServiceResponse = objectMapper.readValue(result.response.contentAsString)
@@ -244,7 +303,7 @@ class DepositControllerTest : ControllerTestBase() {
         }
 
         verify("User can get pending project deposit") {
-            val result = mockMvc.perform(get("$depositPath/project/$projectUuid"))
+            val result = mockMvc.perform(get("$depositPath/project/$projectUuid/pending"))
                 .andExpect(status().isBadRequest)
                 .andReturn()
             verifyResponseErrorCode(result, ErrorCode.USER_MISSING_PRIVILEGE)

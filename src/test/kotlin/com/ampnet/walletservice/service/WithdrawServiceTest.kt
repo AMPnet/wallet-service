@@ -26,6 +26,7 @@ class WithdrawServiceTest : JpaServiceTestBase() {
             mockedMailService, mockedProjectService, bankAccountService
         )
     }
+    private val userPrincipal = createUserPrincipal(userUuid)
     private lateinit var withdraw: Withdraw
 
     @BeforeEach
@@ -52,15 +53,47 @@ class WithdrawServiceTest : JpaServiceTestBase() {
         }
     }
 
+    @Test
+    fun mustReturnBurnedWithdrawAsPending() {
+        suppose("Project has burned withdrawals") {
+            createBurnedWithdraw(projectUuid, DepositWithdrawType.PROJECT)
+            withdraw = createBurnedWithdraw(projectUuid, DepositWithdrawType.PROJECT)
+        }
+        suppose("Project service will return project") {
+            Mockito.`when`(mockedProjectService.getProject(projectUuid))
+                .thenReturn(createProjectResponse(projectUuid, userUuid))
+        }
+
+        verify("Service will return last burned withdraw as pending") {
+            val pendingWithdraw = withdrawService.getPendingForProject(projectUuid, userUuid)
+            assertThat(pendingWithdraw?.id).isEqualTo(withdraw.id)
+        }
+    }
+
+    @Test
+    fun mustReturnApprovedWithdrawAsPending() {
+        suppose("User has burned withdraw") {
+            createBurnedWithdraw(userUuid)
+        }
+        suppose("User has approved withdraw") {
+            withdraw = createApprovedWithdraw(userUuid)
+        }
+
+        verify("Service will return last approved withdraw as pending") {
+            val pendingWithdraw = withdrawService.getPendingForOwner(userUuid)
+            assertThat(pendingWithdraw?.id).isEqualTo(withdraw.id)
+        }
+    }
+
     /* Create */
     @Test
     fun mustThrowExceptionForInvalidIban() {
         verify("Service will throw exception for invalid IBAN") {
-            val requet = WithdrawCreateServiceRequest(
+            val request = WithdrawCreateServiceRequest(
                 userUuid, "ivalid-iban", 100L, createUserPrincipal(userUuid), DepositWithdrawType.USER
             )
             val exception = assertThrows<InvalidRequestException> {
-                withdrawService.createWithdraw(requet)
+                withdrawService.createWithdraw(request)
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.USER_BANK_INVALID)
         }
@@ -93,8 +126,22 @@ class WithdrawServiceTest : JpaServiceTestBase() {
     }
 
     @Test
+    fun mustThrowExceptionIfUserHasBurnedWithdrawWithoutFile() {
+        suppose("User has burned withdraw without file") {
+            createBurnedWithdraw(userUuid)
+        }
+
+        verify("Service will throw exception when user tries to create new withdraw") {
+            assertThrows<ResourceAlreadyExistsException> {
+                withdrawService.createWithdraw(createUserWithdrawServiceRequest())
+            }
+        }
+    }
+
+    @Test
     fun mustThrowExceptionIfUserDoesNotHaveEnoughFunds() {
         suppose("User has a wallet") {
+            databaseCleanerService.deleteAllWallets()
             createWalletForUser(userUuid, "default-address")
         }
         suppose("User does not have enough funds") {
@@ -135,16 +182,30 @@ class WithdrawServiceTest : JpaServiceTestBase() {
 
     /* Delete */
     @Test
-    fun mustThrowExceptionForDeletingApprovedWithdraw() {
+    fun deleteApprovedWithdraw() {
         suppose("Burned withdraw is created") {
             withdraw = createApprovedWithdraw(userUuid)
         }
 
+        verify("User can delete approved withdraw") {
+            withdrawService.deleteWithdraw(withdraw.id, userPrincipal)
+        }
+        verify("Withdraw is deleted") {
+            assertThat(withdrawRepository.findById(withdraw.id)).isNotPresent
+        }
+    }
+
+    @Test
+    fun mustThrowExceptionForDeletingBurnedWithdraw() {
+        suppose("Burned withdraw is created") {
+            withdraw = createBurnedWithdraw(userUuid)
+        }
+
         verify("Service will throw exception when user tries to delete burned withdraw") {
             val exception = assertThrows<InvalidRequestException> {
-                withdrawService.deleteWithdraw(withdraw.id, userUuid)
+                withdrawService.deleteWithdraw(withdraw.id, userPrincipal)
             }
-            assertThat(exception.errorCode).isEqualTo(ErrorCode.WALLET_WITHDRAW_APPROVED)
+            assertThat(exception.errorCode).isEqualTo(ErrorCode.WALLET_WITHDRAW_BURNED)
         }
     }
 
@@ -156,7 +217,7 @@ class WithdrawServiceTest : JpaServiceTestBase() {
 
         verify("Service will throw exception when user tries to delete others withdraw") {
             val exception = assertThrows<InvalidRequestException> {
-                withdrawService.deleteWithdraw(withdraw.id, userUuid)
+                withdrawService.deleteWithdraw(withdraw.id, userPrincipal)
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.USER_MISSING_PRIVILEGE)
         }
@@ -174,7 +235,7 @@ class WithdrawServiceTest : JpaServiceTestBase() {
 
         verify("Service will throw exception when user tries to delete others project withdraw") {
             val exception = assertThrows<InvalidRequestException> {
-                withdrawService.deleteWithdraw(withdraw.id, UUID.randomUUID())
+                withdrawService.deleteWithdraw(withdraw.id, createUserPrincipal(UUID.randomUUID()))
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.PRJ_MISSING_PRIVILEGE)
         }
@@ -235,7 +296,7 @@ class WithdrawServiceTest : JpaServiceTestBase() {
 
         verify("Service will throw exception when user tries to confirm already approved tx") {
             val exception = assertThrows<InvalidRequestException> {
-                withdrawService.confirmApproval("signed-transaction", withdraw.id)
+                withdrawService.confirmApproval("signed-transaction", withdraw.id, withdraw.coop)
             }
             assertThat(exception.errorCode).isEqualTo(ErrorCode.WALLET_WITHDRAW_APPROVED)
         }

@@ -39,9 +39,9 @@ class DepositServiceImpl(
             val projectResponse = projectService.getProject(request.owner)
             ServiceUtils.validateUserIsProjectOwner(request.createdBy.uuid, projectResponse)
         }
-
+        val reference = generateUniqueReferenceForCoop(request.createdBy.coop)
         val deposit = Deposit(
-            request.owner, generateDepositReference(), request.amount,
+            request.owner, reference, request.amount,
             request.createdBy.uuid, request.type, request.createdBy.coop
         )
         depositRepository.save(deposit)
@@ -81,6 +81,19 @@ class DepositServiceImpl(
         }
     }
 
+    @Transactional(readOnly = true)
+    override fun getDepositForUserByTxHash(user: UUID, txHash: String?): List<DepositServiceResponse> {
+        if (txHash != null) {
+            val deposit = ServiceUtils.wrapOptional(depositRepository.findByTxHashAndOwnerUuid(txHash, user))
+            return if (deposit == null) {
+                listOf()
+            } else {
+                listOf(DepositServiceResponse(deposit, true))
+            }
+        }
+        return depositRepository.findAllByOwnerUuid(user).map { DepositServiceResponse(it, true) }
+    }
+
     private fun validateOwnerHasWallet(owner: UUID) {
         walletRepository.findByOwner(owner).orElseThrow {
             ResourceNotFoundException(ErrorCode.WALLET_MISSING, "Missing wallet for owner: $owner")
@@ -107,4 +120,12 @@ class DepositServiceImpl(
         .map { kotlin.random.Random.nextInt(0, charPool.size) }
         .map(charPool::get)
         .joinToString("")
+
+    private fun generateUniqueReferenceForCoop(coop: String): String {
+        lateinit var reference: String
+        do {
+            reference = generateDepositReference()
+        } while (ServiceUtils.wrapOptional(depositRepository.findByCoopAndReference(coop, reference)) != null)
+        return reference
+    }
 }

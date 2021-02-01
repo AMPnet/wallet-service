@@ -55,10 +55,6 @@ class Deposit(
     @JoinColumn(name = "file_id")
     var file: File?,
 
-    @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "declined_id")
-    var declined: Declined?,
-
     @Column(nullable = false)
     var coop: String
 ) {
@@ -71,6 +67,6 @@ class Deposit(
         coop: String
     ) : this(
         0, ownerUuid, reference, amount, ZonedDateTime.now(), createdBy, type,
-        null, null, null, null, null, coop
+        null, null, null, null, coop
     )
 }

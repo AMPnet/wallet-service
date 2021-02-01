@@ -11,7 +11,8 @@ interface WithdrawService {
     fun getPendingForOwner(user: UUID): WithdrawServiceResponse?
     fun getPendingForProject(project: UUID, user: UUID): WithdrawServiceResponse?
     fun createWithdraw(request: WithdrawCreateServiceRequest): WithdrawServiceResponse
-    fun deleteWithdraw(withdrawId: Int, user: UUID)
+    fun deleteWithdraw(withdrawId: Int, user: UserPrincipal)
     fun generateApprovalTransaction(withdrawId: Int, user: UserPrincipal): TransactionDataAndInfo
-    fun confirmApproval(signedTransaction: String, withdrawId: Int): Withdraw
+    fun confirmApproval(signedTransaction: String, withdrawId: Int, coop: String): Withdraw
+    fun getWithdrawForUserByTxHash(user: UUID, txHash: String?): List<WithdrawServiceResponse>
 }

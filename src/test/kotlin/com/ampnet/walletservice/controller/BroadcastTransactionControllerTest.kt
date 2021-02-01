@@ -26,7 +26,6 @@ import com.ampnet.mailservice.proto.WalletType as WalletTypeProto
 class BroadcastTransactionControllerTest : ControllerTestBase() {
 
     private val broadcastPath = "/tx_broadcast"
-    private val txHash = "th_2cNtX3hdmGPHq8sgHb6Lcu87iEc3E6feHTWczQAViQjmP7evbP"
     private val activationData = "activation_data"
     private val walletAddress = "ak_2rTBMSCJgbeQoSt3MzSk93kAaYKjuTFyyfcMbhp62e2JJCTiSS"
 

@@ -1,6 +1,7 @@
 package com.ampnet.walletservice.controller
 
 import com.ampnet.walletservice.controller.pojo.request.AmountRequest
+import com.ampnet.walletservice.controller.pojo.response.DepositListResponse
 import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.service.DepositService
 import com.ampnet.walletservice.service.pojo.request.DepositCreateServiceRequest
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
@@ -53,7 +55,7 @@ class DepositController(private val depositService: DepositService) {
         return ResponseEntity.ok().build()
     }
 
-    @GetMapping("/deposit")
+    @GetMapping("/deposit/pending")
     fun getPendingDeposit(): ResponseEntity<DepositServiceResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to get pending deposit by user: ${userPrincipal.uuid}" }
@@ -63,7 +65,15 @@ class DepositController(private val depositService: DepositService) {
         return ResponseEntity.notFound().build()
     }
 
-    @GetMapping("/deposit/project/{projectUuid}")
+    @GetMapping("/deposit")
+    fun getDeposit(@RequestParam(required = false) txHash: String?): ResponseEntity<DepositListResponse> {
+        val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
+        logger.debug { "Received request to get deposit by user: ${userPrincipal.uuid} for txHash:$txHash" }
+        val deposits = depositService.getDepositForUserByTxHash(userPrincipal.uuid, txHash)
+        return ResponseEntity.ok(DepositListResponse(deposits))
+    }
+
+    @GetMapping("/deposit/project/{projectUuid}/pending")
     fun getPendingProjectDeposit(@PathVariable projectUuid: UUID): ResponseEntity<DepositServiceResponse> {
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to get pending deposit by user: ${userPrincipal.uuid}" }
