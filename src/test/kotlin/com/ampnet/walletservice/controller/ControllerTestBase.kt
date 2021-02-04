@@ -64,6 +64,7 @@ abstract class ControllerTestBase : TestBase() {
     protected val signedTransaction = "tx_+RFNCwH4QrhARSL55I0DqhQePPV3J4ycxHpA9OkqnncvEJrYOThmo2h...signed-tx..."
     protected val anotherCoop = "another coop"
     protected val txHash = "th_2cNtX3hdmGPHq8sgHb6Lcu87iEc3E6feHTWczQAViQjmP7evbP"
+    protected val bankCode = "DABAIE2D"
 
     @Autowired
     protected lateinit var objectMapper: ObjectMapper
@@ -227,7 +228,7 @@ abstract class ControllerTestBase : TestBase() {
     ): Withdraw {
         val withdraw = Withdraw(
             0, owner, amount, ZonedDateTime.now(), userUuid, "bank-account",
-            txHash, ZonedDateTime.now(), null, null, null, null, type, coop
+            txHash, ZonedDateTime.now(), null, null, null, null, type, coop, bankCode
         )
         if (withFile) withdraw.file = saveFile("doc", "document-link", "type", 1, owner)
         return withdrawRepository.save(withdraw)
@@ -243,7 +244,7 @@ abstract class ControllerTestBase : TestBase() {
         val user = userUuid ?: owner
         val withdraw = Withdraw(
             0, owner, amount, ZonedDateTime.now(), user, "bank-account", null,
-            null, null, null, null, null, type, coop
+            null, null, null, null, null, type, coop, bankCode
         )
         return withdrawRepository.save(withdraw)
     }

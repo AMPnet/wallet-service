@@ -9,5 +9,6 @@ data class WithdrawCreateServiceRequest(
     val bankAccount: String,
     val amount: Long,
     val createBy: UserPrincipal,
-    val type: DepositWithdrawType
+    val type: DepositWithdrawType,
+    val bankCode: String?
 )

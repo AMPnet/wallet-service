@@ -47,7 +47,7 @@ class WithdrawControllerTest : ControllerTestBase() {
         }
 
         verify("User can create Withdraw") {
-            val request = WithdrawCreateRequest(testContext.amount, testContext.bankAccount)
+            val request = WithdrawCreateRequest(testContext.amount, testContext.bankAccount, testContext.bankCode)
             val result = mockMvc.perform(
                 post(withdrawPath)
                     .content(objectMapper.writeValueAsString(request))
@@ -69,6 +69,7 @@ class WithdrawControllerTest : ControllerTestBase() {
             assertThat(withdrawResponse.burnedBy).isNull()
             assertThat(withdrawResponse.documentResponse).isNull()
             assertThat(withdrawResponse.coop).isEqualTo(COOP)
+            assertThat(withdrawResponse.bankCode).isEqualTo(testContext.bankCode)
         }
         verify("Withdraw is created") {
             val withdraws = withdrawRepository.findAllWithFile(COOP)
@@ -86,6 +87,7 @@ class WithdrawControllerTest : ControllerTestBase() {
             assertThat(withdraw.burnedBy).isNull()
             assertThat(withdraw.file).isNull()
             assertThat(withdraw.coop).isEqualTo(COOP)
+            assertThat(withdraw.bankCode).isEqualTo(testContext.bankCode)
         }
         verify("Mail notification for created withdraw is sent") {
             Mockito.verify(mailService, Mockito.times(1))
@@ -110,7 +112,7 @@ class WithdrawControllerTest : ControllerTestBase() {
         }
 
         verify("User can create Project Withdraw") {
-            val request = WithdrawCreateRequest(testContext.amount, testContext.bankAccount)
+            val request = WithdrawCreateRequest(testContext.amount, testContext.bankAccount, testContext.bankCode)
             val result = mockMvc.perform(
                 post("$withdrawPath/project/$projectUuid")
                     .content(objectMapper.writeValueAsString(request))
@@ -132,6 +134,7 @@ class WithdrawControllerTest : ControllerTestBase() {
             assertThat(withdrawResponse.burnedBy).isNull()
             assertThat(withdrawResponse.documentResponse).isNull()
             assertThat(withdrawResponse.coop).isEqualTo(COOP)
+            assertThat(withdrawResponse.bankCode).isEqualTo(testContext.bankCode)
         }
         verify("Withdraw is created") {
             val withdraws = withdrawRepository.findAllWithFile(COOP)
@@ -149,6 +152,7 @@ class WithdrawControllerTest : ControllerTestBase() {
             assertThat(withdraw.burnedBy).isNull()
             assertThat(withdraw.file).isNull()
             assertThat(withdraw.coop).isEqualTo(COOP)
+            assertThat(withdraw.bankCode).isEqualTo(testContext.bankCode)
         }
         verify("Mail notification for created project withdraw to user is sent") {
             Mockito.verify(mailService, Mockito.times(1))
@@ -164,7 +168,7 @@ class WithdrawControllerTest : ControllerTestBase() {
         }
 
         verify("Controller will return bad request if user is missing wallet") {
-            val request = WithdrawCreateRequest(testContext.amount, testContext.bankAccount)
+            val request = WithdrawCreateRequest(testContext.amount, testContext.bankAccount, null)
             val result = mockMvc.perform(
                 post(withdrawPath)
                     .content(objectMapper.writeValueAsString(request))
@@ -263,7 +267,7 @@ class WithdrawControllerTest : ControllerTestBase() {
 
     @Test
     @WithMockCrowdfoundUser
-    fun mustBeGetNotFoundForNoPendingWithdraw() {
+    fun mustGetNotFoundForNoPendingWithdraw() {
         verify("User will get not found for no pending withdraw") {
             mockMvc.perform(get("$withdrawPath/pending"))
                 .andExpect(status().isNotFound)
@@ -405,6 +409,7 @@ class WithdrawControllerTest : ControllerTestBase() {
         val amount = 1000L
         val bankAccount = "AL35202111090000000001234567"
         val projectWalletHash = "th_foKr5RbgAVq84nZaF6bNfPSnjmFQ39VhQeWPetgGDwv1BNAnV"
+        val bankCode = "BACXROBU"
         lateinit var withdraws: List<Withdraw>
         lateinit var withdraw: Withdraw
         lateinit var transactionData: TransactionData

@@ -86,6 +86,7 @@ abstract class JpaServiceTestBase : TestBase() {
     protected val txHash = "tx-hash"
     protected val transactionData = TransactionData("data")
     protected val bankAccount = "AL35202111090000000001234567"
+    protected val bankCode = "BACXROBU"
     protected val providerId = "provider_id"
     protected val defaultAddressHash = "th_4e4ee58ff3a9e9e78c2dfdbac0d1518e4e1039f9189267e1dc8d3e35cbdf7892"
     protected val defaultPublicKey = "th_C2D7CF95645D33006175B78989035C7c9061d3F9"
@@ -133,8 +134,8 @@ abstract class JpaServiceTestBase : TestBase() {
     ): Withdraw {
         val withdraw = Withdraw(
             0, user, 100L, ZonedDateTime.now(), user, bankAccount,
-            "approved-tx", ZonedDateTime.now(),
-            "burned-tx", ZonedDateTime.now(), UUID.randomUUID(), null, type, coop
+            "approved-tx", ZonedDateTime.now(), "burned-tx",
+            ZonedDateTime.now(), UUID.randomUUID(), null, type, coop, bankCode
         )
         return withdrawRepository.save(withdraw)
     }
@@ -146,8 +147,8 @@ abstract class JpaServiceTestBase : TestBase() {
     ): Withdraw {
         val withdraw = Withdraw(
             0, user, 100L, ZonedDateTime.now(), user, bankAccount,
-            "approved-tx", ZonedDateTime.now(),
-            null, null, null, null, type, coop
+            "approved-tx", ZonedDateTime.now(), null, null,
+            null, null, type, coop, bankCode
         )
         return withdrawRepository.save(withdraw)
     }
@@ -159,7 +160,7 @@ abstract class JpaServiceTestBase : TestBase() {
     ): Withdraw {
         val withdraw = Withdraw(
             0, user, 100L, ZonedDateTime.now(), userUuid, bankAccount, null,
-            null, null, null, null, null, type, coop
+            null, null, null, null, null, type, coop, bankCode
         )
         return withdrawRepository.save(withdraw)
     }

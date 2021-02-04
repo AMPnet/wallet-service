@@ -90,7 +90,20 @@ class WithdrawServiceTest : JpaServiceTestBase() {
     fun mustThrowExceptionForInvalidIban() {
         verify("Service will throw exception for invalid IBAN") {
             val request = WithdrawCreateServiceRequest(
-                userUuid, "ivalid-iban", 100L, createUserPrincipal(userUuid), DepositWithdrawType.USER
+                userUuid, "ivalid-iban", 100L, createUserPrincipal(userUuid), DepositWithdrawType.USER, null
+            )
+            val exception = assertThrows<InvalidRequestException> {
+                withdrawService.createWithdraw(request)
+            }
+            assertThat(exception.errorCode).isEqualTo(ErrorCode.USER_BANK_INVALID)
+        }
+    }
+
+    @Test
+    fun mustThrowExceptionForInvalidBankCode() {
+        verify("Service will throw exception for invalid bank code") {
+            val request = WithdrawCreateServiceRequest(
+                userUuid, bankAccount, 100L, createUserPrincipal(userUuid), DepositWithdrawType.USER, "inalid-bankCode"
             )
             val exception = assertThrows<InvalidRequestException> {
                 withdrawService.createWithdraw(request)
@@ -172,7 +185,7 @@ class WithdrawServiceTest : JpaServiceTestBase() {
         verify("Service will throw exception missing privilege for project") {
             val exception = assertThrows<InvalidRequestException> {
                 val request = WithdrawCreateServiceRequest(
-                    projectUuid, bankAccount, 100L, createUserPrincipal(userUuid), DepositWithdrawType.PROJECT
+                    projectUuid, bankAccount, 100L, createUserPrincipal(userUuid), DepositWithdrawType.PROJECT, null
                 )
                 withdrawService.createWithdraw(request)
             }
@@ -303,5 +316,5 @@ class WithdrawServiceTest : JpaServiceTestBase() {
     }
 
     private fun createUserWithdrawServiceRequest() =
-        WithdrawCreateServiceRequest(userUuid, bankAccount, 100L, createUserPrincipal(userUuid), DepositWithdrawType.USER)
+        WithdrawCreateServiceRequest(userUuid, bankAccount, 100L, createUserPrincipal(userUuid), DepositWithdrawType.USER, bankCode)
 }

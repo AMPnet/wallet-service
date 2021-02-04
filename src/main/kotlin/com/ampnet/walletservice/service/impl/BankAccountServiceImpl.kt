@@ -48,7 +48,7 @@ class BankAccountServiceImpl(private val bankAccountRepository: BankAccountRepos
         }
     }
 
-    private fun validateBankCode(bankCode: String) {
+    override fun validateBankCode(bankCode: String) {
         try {
             BicUtil.validate(bankCode)
         } catch (ex: BicFormatException) {

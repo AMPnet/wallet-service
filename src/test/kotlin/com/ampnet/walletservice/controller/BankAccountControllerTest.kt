@@ -26,7 +26,6 @@ class BankAccountControllerTest : ControllerTestBase() {
 
     private val bankAccountPath = "/bank-account"
     private val iban = "HR1723600001101234565"
-    private val bankCode = "DABAIE2D"
     private val alias = "alias"
     private lateinit var bankAccount: BankAccount
 
