@@ -100,6 +100,19 @@ class WithdrawServiceTest : JpaServiceTestBase() {
     }
 
     @Test
+    fun mustThrowExceptionForInvalidBankCode() {
+        verify("Service will throw exception for invalid bank code") {
+            val request = WithdrawCreateServiceRequest(
+                userUuid, bankAccount, 100L, createUserPrincipal(userUuid), DepositWithdrawType.USER, "inalid-bankCode"
+            )
+            val exception = assertThrows<InvalidRequestException> {
+                withdrawService.createWithdraw(request)
+            }
+            assertThat(exception.errorCode).isEqualTo(ErrorCode.USER_BANK_INVALID)
+        }
+    }
+
+    @Test
     fun mustThrowExceptionIfUserHasUnapprovedWithdraw() {
         suppose("User has created withdraw") {
             createWithdraw(userUuid)

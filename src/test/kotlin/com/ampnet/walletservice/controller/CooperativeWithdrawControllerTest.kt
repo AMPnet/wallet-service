@@ -574,7 +574,7 @@ class CooperativeWithdrawControllerTest : ControllerTestBase() {
         val withdraw = Withdraw(
             0, owner, testContext.amount, ZonedDateTime.now(), userUuid, testContext.bankAccount,
             testContext.approvedTx, ZonedDateTime.now(),
-            testContext.burnedTx, ZonedDateTime.now(), UUID.randomUUID(), document, type, coop, null
+            testContext.burnedTx, ZonedDateTime.now(), UUID.randomUUID(), document, type, coop, bankCode
         )
         return withdrawRepository.save(withdraw)
     }

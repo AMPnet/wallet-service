@@ -61,6 +61,7 @@ class WithdrawServiceImpl(
     @Throws(ResourceAlreadyExistsException::class, InvalidRequestException::class)
     override fun createWithdraw(request: WithdrawCreateServiceRequest): WithdrawServiceResponse {
         bankAccountService.validateIban(request.bankAccount)
+        request.bankCode?.let { bankAccountService.validateBankCode(it) }
         validateOwnerDoesNotHavePendingWithdraw(request.owner)
         checkIfOwnerHasEnoughFunds(request.owner, request.amount)
         if (request.type == DepositWithdrawType.PROJECT) {

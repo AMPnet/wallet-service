@@ -9,4 +9,5 @@ interface BankAccountService {
     fun createBankAccount(user: UserPrincipal, request: BankAccountCreateRequest): BankAccount
     fun deleteBankAccount(id: Int)
     fun validateIban(iban: String)
+    fun validateBankCode(bankCode: String)
 }
