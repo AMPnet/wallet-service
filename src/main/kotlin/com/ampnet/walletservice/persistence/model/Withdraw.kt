@@ -62,5 +62,9 @@ class Withdraw(
     val type: DepositWithdrawType,
 
     @Column(nullable = false)
-    var coop: String
+    var coop: String,
+
+    @Column(length = 16)
+    val bankCode: String?
+
 )

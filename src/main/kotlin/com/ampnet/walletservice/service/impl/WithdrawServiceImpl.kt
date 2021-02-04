@@ -70,7 +70,7 @@ class WithdrawServiceImpl(
         val withdraw = Withdraw(
             0, request.owner, request.amount, ZonedDateTime.now(), request.createBy.uuid, request.bankAccount,
             null, null, null, null, null, null,
-            type = request.type, coop = request.createBy.coop
+            request.type, request.createBy.coop, request.bankCode
         )
         withdrawRepository.save(withdraw)
         mailService.sendWithdrawRequest(request.createBy.uuid, request.amount)

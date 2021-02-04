@@ -49,7 +49,8 @@ class WithdrawController(
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.debug { "Received request to create Withdraw:$request by user: ${userPrincipal.uuid}" }
         val serviceRequest = WithdrawCreateServiceRequest(
-            userPrincipal.uuid, request.bankAccount, request.amount, userPrincipal, DepositWithdrawType.USER
+            userPrincipal.uuid, request.bankAccount, request.amount, userPrincipal,
+            DepositWithdrawType.USER, request.bankCode
         )
         val withdraw = withdrawService.createWithdraw(serviceRequest)
         return ResponseEntity.ok(withdraw)
@@ -73,7 +74,8 @@ class WithdrawController(
         val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
         logger.info { "Received request to create project withdraw:$request by user: ${userPrincipal.uuid}" }
         val serviceRequest = WithdrawCreateServiceRequest(
-            projectUuid, request.bankAccount, request.amount, userPrincipal, DepositWithdrawType.PROJECT
+            projectUuid, request.bankAccount, request.amount, userPrincipal,
+            DepositWithdrawType.PROJECT, request.bankCode
         )
         val withdraw = withdrawService.createWithdraw(serviceRequest)
         return ResponseEntity.ok(withdraw)

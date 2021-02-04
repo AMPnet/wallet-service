@@ -227,7 +227,7 @@ abstract class ControllerTestBase : TestBase() {
     ): Withdraw {
         val withdraw = Withdraw(
             0, owner, amount, ZonedDateTime.now(), userUuid, "bank-account",
-            txHash, ZonedDateTime.now(), null, null, null, null, type, coop
+            txHash, ZonedDateTime.now(), null, null, null, null, type, coop, null
         )
         if (withFile) withdraw.file = saveFile("doc", "document-link", "type", 1, owner)
         return withdrawRepository.save(withdraw)
@@ -238,12 +238,13 @@ abstract class ControllerTestBase : TestBase() {
         amount: Long = 1000,
         type: DepositWithdrawType = DepositWithdrawType.USER,
         userUuid: UUID? = null,
-        coop: String = COOP
+        coop: String = COOP,
+        bankCode: String? = null
     ): Withdraw {
         val user = userUuid ?: owner
         val withdraw = Withdraw(
             0, owner, amount, ZonedDateTime.now(), user, "bank-account", null,
-            null, null, null, null, null, type, coop
+            null, null, null, null, null, type, coop, bankCode
         )
         return withdrawRepository.save(withdraw)
     }

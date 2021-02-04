@@ -1,0 +1,1 @@
+ALTER TABLE withdraw ADD COLUMN bank_code VARCHAR(16);
