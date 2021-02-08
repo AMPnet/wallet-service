@@ -1,5 +1,6 @@
 package com.ampnet.walletservice.config
 
+import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.PropertyNamingStrategy
 import com.fasterxml.jackson.databind.SerializationFeature
@@ -17,6 +18,8 @@ class JsonConfig {
         mapper.propertyNamingStrategy = PropertyNamingStrategy.SNAKE_CASE
         mapper.registerModule(JavaTimeModule())
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+        mapper.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false)
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
         return mapper.registerModule(KotlinModule())
     }
 }

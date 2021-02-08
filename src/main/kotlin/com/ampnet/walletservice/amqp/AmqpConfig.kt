@@ -1,4 +1,4 @@
-package com.ampnet.projectservice.amqp
+package com.ampnet.walletservice.amqp
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.amqp.rabbit.connection.ConnectionFactory

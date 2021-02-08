@@ -1,6 +1,7 @@
 package com.ampnet.walletservice.amqp.mailservice
 
 import mu.KLogging
+import org.springframework.amqp.AmqpException
 import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.stereotype.Service
 import java.util.UUID
@@ -12,32 +13,36 @@ class MailServiceQueueSender(private val rabbitTemplate: RabbitTemplate) : MailS
 
     override fun sendDepositInfo(user: UUID, minted: Boolean) {
         val message = DepositInfoRequest(user, minted)
-        logger.debug { "Sending mail deposit info: $message" }
-        rabbitTemplate.convertAndSend(QUEUE_MAIL_DEPOSIT, message)
+        sendMessage(QUEUE_MAIL_DEPOSIT, message)
     }
 
     override fun sendWithdrawRequest(user: UUID, amount: Long) {
         val message = WithdrawRequest(user, amount)
-        logger.debug { "Sending mail withdraw request: $message" }
-        rabbitTemplate.convertAndSend(QUEUE_MAIL_WITHDRAW, message)
+        sendMessage(QUEUE_MAIL_WITHDRAW, message)
     }
 
     override fun sendWithdrawInfo(user: UUID, burned: Boolean) {
         val message = WithdrawInfoRequest(user, burned)
-        logger.debug { "Sending mail withdraw info: $message" }
-        rabbitTemplate.convertAndSend(QUEUE_MAIL_WITHDRAW_INFO, message)
+        sendMessage(QUEUE_MAIL_WITHDRAW_INFO, message)
     }
 
     override fun sendWalletActivated(walletType: WalletTypeAmqp, walletOwner: UUID, activationData: String) {
         val message = WalletActivatedRequest(walletType, walletOwner, activationData)
-        logger.debug { "Sending mail wallet activated: $message" }
-        rabbitTemplate.convertAndSend(QUEUE_MAIL_WALLET_ACTIVATED, message)
+        sendMessage(QUEUE_MAIL_WALLET_ACTIVATED, message)
     }
 
     override fun sendNewWalletMail(walletType: WalletTypeAmqp, coop: String, activationData: String) {
         val message = NewWalletRequest(walletType, coop, activationData)
-        logger.debug { "Sending mail new wallet: $message" }
-        rabbitTemplate.convertAndSend(QUEUE_MAIL_WALLET_NEW, message)
+        sendMessage(QUEUE_MAIL_WALLET_NEW, message)
+    }
+
+    private fun sendMessage(queue: String, message: Any) {
+        try {
+            logger.debug { "Sending to queue: $queue, message: $message" }
+            rabbitTemplate.convertAndSend(queue, message)
+        } catch (ex: AmqpException) {
+            logger.warn(ex) { "Failed to send AMQP message to queue: $queue" }
+        }
     }
 }
 
