@@ -1,6 +1,8 @@
 package com.ampnet.walletservice.service.impl
 
 import com.ampnet.core.jwt.UserPrincipal
+import com.ampnet.walletservice.amqp.mailservice.MailService
+import com.ampnet.walletservice.amqp.mailservice.WalletTypeAmqp
 import com.ampnet.walletservice.controller.pojo.request.WalletCreateRequest
 import com.ampnet.walletservice.enums.Currency
 import com.ampnet.walletservice.enums.PrivilegeType
@@ -13,7 +15,6 @@ import com.ampnet.walletservice.exception.ResourceAlreadyExistsException
 import com.ampnet.walletservice.grpc.blockchain.BlockchainService
 import com.ampnet.walletservice.grpc.blockchain.pojo.GenerateProjectWalletRequest
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionDataAndInfo
-import com.ampnet.walletservice.grpc.mail.MailService
 import com.ampnet.walletservice.grpc.projectservice.ProjectService
 import com.ampnet.walletservice.persistence.model.PairWalletCode
 import com.ampnet.walletservice.persistence.model.Wallet
@@ -26,7 +27,6 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.ZonedDateTime
 import java.util.UUID
-import com.ampnet.mailservice.proto.WalletType as WalletTypeProto
 
 @Service
 @Suppress("TooManyFunctions")
@@ -68,7 +68,7 @@ class WalletServiceImpl(
         if (user.authorities.contains(PrivilegeType.PWA_COOP.name)) {
             blockchainService.deployCoopContract(user.coop, wallet.activationData)
         }
-        mailService.sendNewWalletMail(WalletTypeProto.USER, user.coop, request.publicKey)
+        mailService.sendNewWalletMail(WalletTypeAmqp.USER, user.coop, request.publicKey)
         return wallet
     }
 
@@ -106,7 +106,7 @@ class WalletServiceImpl(
         val txHash = blockchainService.postTransaction(signedTransaction, coop)
         val wallet = createWallet(project, txHash, WalletType.PROJECT, coop)
         logger.debug { "Created wallet for project: $project" }
-        mailService.sendNewWalletMail(WalletTypeProto.PROJECT, coop, txHash)
+        mailService.sendNewWalletMail(WalletTypeAmqp.PROJECT, coop, txHash)
         return wallet
     }
 
@@ -146,7 +146,7 @@ class WalletServiceImpl(
         val txHash = blockchainService.postTransaction(signedTransaction, coop)
         val wallet = createWallet(organization, txHash, WalletType.ORG, coop)
         logger.debug { "Created wallet for organization: $organization" }
-        mailService.sendNewWalletMail(WalletTypeProto.ORGANIZATION, coop, txHash)
+        mailService.sendNewWalletMail(WalletTypeAmqp.ORGANIZATION, coop, txHash)
         return wallet
     }
 

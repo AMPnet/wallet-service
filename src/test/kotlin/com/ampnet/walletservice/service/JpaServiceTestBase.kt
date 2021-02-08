@@ -3,6 +3,8 @@ package com.ampnet.walletservice.service
 import com.ampnet.core.jwt.UserPrincipal
 import com.ampnet.projectservice.proto.OrganizationMembershipResponse
 import com.ampnet.walletservice.TestBase
+import com.ampnet.walletservice.amqp.mailservice.MailService
+import com.ampnet.walletservice.amqp.mailservice.MailServiceQueueSender
 import com.ampnet.walletservice.config.ApplicationProperties
 import com.ampnet.walletservice.config.DatabaseCleanerService
 import com.ampnet.walletservice.controller.COOP
@@ -11,8 +13,6 @@ import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.enums.WalletType
 import com.ampnet.walletservice.grpc.blockchain.BlockchainService
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionData
-import com.ampnet.walletservice.grpc.mail.MailService
-import com.ampnet.walletservice.grpc.mail.MailServiceImpl
 import com.ampnet.walletservice.grpc.projectservice.ProjectService
 import com.ampnet.walletservice.grpc.projectservice.ProjectServiceImpl
 import com.ampnet.walletservice.grpc.userservice.UserService
@@ -70,12 +70,9 @@ abstract class JpaServiceTestBase : TestBase() {
     @Autowired
     protected lateinit var bankAccountRepository: BankAccountRepository
 
-    @Autowired
-    protected lateinit var applicationProperties: ApplicationProperties
-
     protected val mockedBlockchainService: BlockchainService = Mockito.mock(BlockchainService::class.java)
     protected val mockedCloudStorageService: CloudStorageServiceImpl = Mockito.mock(CloudStorageServiceImpl::class.java)
-    protected val mockedMailService: MailService = Mockito.mock(MailServiceImpl::class.java)
+    protected val mockedMailService: MailService = Mockito.mock(MailServiceQueueSender::class.java)
     protected val mockedProjectService: ProjectService = Mockito.mock(ProjectServiceImpl::class.java)
     protected val mockedUserService: UserService = Mockito.mock(UserService::class.java)
     protected val mockedWalletService: WalletService = Mockito.mock(WalletService::class.java)

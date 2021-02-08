@@ -1,6 +1,7 @@
 package com.ampnet.walletservice.service.impl
 
 import com.ampnet.core.jwt.UserPrincipal
+import com.ampnet.walletservice.amqp.mailservice.MailService
 import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.exception.GrpcException
@@ -12,7 +13,6 @@ import com.ampnet.walletservice.grpc.blockchain.BlockchainService
 import com.ampnet.walletservice.grpc.blockchain.pojo.ApproveProjectBurnTransactionRequest
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionData
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionDataAndInfo
-import com.ampnet.walletservice.grpc.mail.MailService
 import com.ampnet.walletservice.grpc.projectservice.ProjectService
 import com.ampnet.walletservice.persistence.model.Withdraw
 import com.ampnet.walletservice.persistence.repository.WalletRepository

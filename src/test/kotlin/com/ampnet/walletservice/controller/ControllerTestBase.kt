@@ -2,6 +2,7 @@ package com.ampnet.walletservice.controller
 
 import com.ampnet.projectservice.proto.OrganizationMembershipResponse
 import com.ampnet.walletservice.TestBase
+import com.ampnet.walletservice.amqp.mailservice.MailService
 import com.ampnet.walletservice.config.DatabaseCleanerService
 import com.ampnet.walletservice.enums.Currency
 import com.ampnet.walletservice.enums.DepositWithdrawType
@@ -9,7 +10,6 @@ import com.ampnet.walletservice.enums.WalletType
 import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.exception.ErrorResponse
 import com.ampnet.walletservice.grpc.blockchain.BlockchainService
-import com.ampnet.walletservice.grpc.mail.MailService
 import com.ampnet.walletservice.grpc.projectservice.ProjectService
 import com.ampnet.walletservice.grpc.userservice.UserService
 import com.ampnet.walletservice.persistence.model.BankAccount

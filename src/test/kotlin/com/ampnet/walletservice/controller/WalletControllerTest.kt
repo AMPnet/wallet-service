@@ -1,5 +1,6 @@
 package com.ampnet.walletservice.controller
 
+import com.ampnet.walletservice.amqp.mailservice.WalletTypeAmqp
 import com.ampnet.walletservice.controller.pojo.request.WalletCreateRequest
 import com.ampnet.walletservice.controller.pojo.request.WalletPairRequest
 import com.ampnet.walletservice.controller.pojo.response.PairWalletResponse
@@ -26,7 +27,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.time.ZonedDateTime
 import java.util.UUID
-import com.ampnet.mailservice.proto.WalletType as WalletTypeProto
 
 class WalletControllerTest : ControllerTestBase() {
 
@@ -185,7 +185,8 @@ class WalletControllerTest : ControllerTestBase() {
             assertThat(wallet.coop).isEqualTo(COOP)
         }
         verify("Mail notification for created wallet") {
-            Mockito.verify(mailService, Mockito.times(1)).sendNewWalletMail(WalletTypeProto.USER, COOP, testContext.publicKey)
+            Mockito.verify(mailService, Mockito.times(1))
+                .sendNewWalletMail(WalletTypeAmqp.USER, COOP, testContext.publicKey)
         }
     }
 
