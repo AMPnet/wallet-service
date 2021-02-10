@@ -2,7 +2,9 @@ package com.ampnet.walletservice.amqp.mailservice
 
 import mu.KLogging
 import org.springframework.amqp.AmqpException
+import org.springframework.amqp.core.Queue
 import org.springframework.amqp.rabbit.core.RabbitTemplate
+import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Service
 import java.util.UUID
 
@@ -10,6 +12,18 @@ import java.util.UUID
 class MailServiceQueueSender(private val rabbitTemplate: RabbitTemplate) : MailService {
 
     companion object : KLogging()
+
+    @Bean
+    fun mailDeposit(): Queue = Queue(QUEUE_MAIL_DEPOSIT)
+
+    @Bean
+    fun mailWithdraw(): Queue = Queue(QUEUE_MAIL_WITHDRAW)
+
+    @Bean
+    fun mailWithdrawInfo(): Queue = Queue(QUEUE_MAIL_WITHDRAW_INFO)
+
+    @Bean
+    fun mailWalletActivated(): Queue = Queue(QUEUE_MAIL_WALLET_ACTIVATED)
 
     override fun sendDepositInfo(user: UUID, minted: Boolean) {
         val message = DepositInfoRequest(user, minted)

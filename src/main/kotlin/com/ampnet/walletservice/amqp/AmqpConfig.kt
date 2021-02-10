@@ -12,14 +12,9 @@ import org.springframework.context.annotation.Configuration
 class AmqpConfig(private val objectMapper: ObjectMapper) {
 
     @Bean
-    fun rabbitTemplate(connectionFactory: ConnectionFactory): RabbitTemplate {
-        val template = RabbitTemplate(connectionFactory)
-        template.messageConverter = jsonConverter()
-        return template
-    }
+    fun rabbitTemplate(connectionFactory: ConnectionFactory): RabbitTemplate =
+        RabbitTemplate(connectionFactory).apply { messageConverter = jsonConverter() }
 
     @Bean
-    fun jsonConverter(): MessageConverter {
-        return Jackson2JsonMessageConverter(objectMapper)
-    }
+    fun jsonConverter(): MessageConverter = Jackson2JsonMessageConverter(objectMapper)
 }
