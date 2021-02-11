@@ -9,18 +9,18 @@ import java.text.SimpleDateFormat
 import java.util.Date
 
 plugins {
-    val kotlinVersion = "1.3.72"
+    val kotlinVersion = "1.4.21"
     kotlin("plugin.jpa") version kotlinVersion
     kotlin("jvm") version kotlinVersion
     kotlin("plugin.spring") version kotlinVersion
 
-    id("org.springframework.boot") version "2.3.5.RELEASE"
-    id("io.spring.dependency-management") version "1.0.10.RELEASE"
-    id("com.google.cloud.tools.jib") version "2.6.0"
+    id("org.springframework.boot") version "2.4.2"
+    id("io.spring.dependency-management") version "1.0.11.RELEASE"
     id("org.asciidoctor.convert") version "1.5.8"
-    id("org.jlleitschuh.gradle.ktlint") version "9.3.0"
-    id("io.gitlab.arturbosch.detekt").version("1.9.0")
-    id("com.google.protobuf") version "0.8.13"
+    id("com.google.cloud.tools.jib") version "2.7.1"
+    id("org.jlleitschuh.gradle.ktlint") version "10.0.0"
+    id("io.gitlab.arturbosch.detekt").version("1.15.0")
+    id("com.google.protobuf") version "0.8.14"
     idea
     jacoco
 }
@@ -32,7 +32,7 @@ allOpen {
 }
 
 group = "com.ampnet"
-version = "0.13.5"
+version = "0.14.0"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
@@ -55,13 +55,13 @@ dependencies {
     implementation("org.flywaydb:flyway-core")
     runtimeOnly("org.postgresql:postgresql")
 
-    implementation("io.github.microutils:kotlin-logging:1.11.5")
+    implementation("io.github.microutils:kotlin-logging:2.0.4")
     implementation("net.devh:grpc-spring-boot-starter:2.10.1.RELEASE")
-    implementation("software.amazon.awssdk:s3:2.5.27")
-    implementation("com.github.AMPnet:jwt:0.2.0")
     implementation("org.iban4j:iban4j:3.2.1")
+    implementation("com.github.AMPnet:jwt:0.2.0")
+    implementation("software.amazon.awssdk:s3:2.15.79")
 
-    val sentryVersion = "3.2.0"
+    val sentryVersion = "4.1.0"
     implementation("io.sentry:sentry-spring-boot-starter:$sentryVersion")
     implementation("io.sentry:sentry-logback:$sentryVersion")
 
