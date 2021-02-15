@@ -67,7 +67,7 @@ class PortfolioServiceImpl(
         val earnings = sumTransactionForType(transactions, TransactionType.SHARE_PAYOUT)
         val dateOfFirstInvestment = transactions
             .filter { it.type == TransactionType.INVEST }
-            .minBy { it.date }?.date
+            .minByOrNull { it.date }?.date
         return PortfolioStats(investments - cancelInvestments, earnings, dateOfFirstInvestment)
     }
 
