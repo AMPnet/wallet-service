@@ -1,5 +1,6 @@
 package com.ampnet.walletservice.service
 
+import com.ampnet.walletservice.amqp.mailservice.WalletTypeAmqp
 import com.ampnet.walletservice.controller.COOP
 import com.ampnet.walletservice.controller.pojo.request.WalletCreateRequest
 import com.ampnet.walletservice.enums.Currency
@@ -20,7 +21,6 @@ import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
 import java.time.ZonedDateTime
 import java.util.UUID
-import com.ampnet.mailservice.proto.WalletType as WalletTypeProto
 
 class WalletServiceTest : JpaServiceTestBase() {
 
@@ -87,7 +87,7 @@ class WalletServiceTest : JpaServiceTestBase() {
         }
         verify("Mail notification for created wallet") {
             Mockito.verify(mockedMailService, Mockito.times(1))
-                .sendNewWalletMail(WalletTypeProto.USER, COOP, defaultPublicKey)
+                .sendNewWalletMail(WalletTypeAmqp.USER, COOP, defaultPublicKey)
         }
         verify("Deploy coop contract is not called") {
             Mockito.verify(mockedBlockchainService, Mockito.never())
@@ -122,7 +122,7 @@ class WalletServiceTest : JpaServiceTestBase() {
         }
         verify("Mail notification for created wallet") {
             Mockito.verify(mockedMailService, Mockito.times(1))
-                .sendNewWalletMail(WalletTypeProto.PROJECT, COOP, defaultAddressHash)
+                .sendNewWalletMail(WalletTypeAmqp.PROJECT, COOP, defaultAddressHash)
         }
     }
 
@@ -268,7 +268,7 @@ class WalletServiceTest : JpaServiceTestBase() {
         }
         verify("Mail notification for created wallet") {
             Mockito.verify(mockedMailService, Mockito.times(1))
-                .sendNewWalletMail(WalletTypeProto.ORGANIZATION, COOP, defaultAddressHash)
+                .sendNewWalletMail(WalletTypeAmqp.ORGANIZATION, COOP, defaultAddressHash)
         }
     }
 

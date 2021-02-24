@@ -1,5 +1,6 @@
 package com.ampnet.walletservice.controller
 
+import com.ampnet.walletservice.amqp.mailservice.WalletTypeAmqp
 import com.ampnet.walletservice.controller.pojo.request.TxBroadcastRequest
 import com.ampnet.walletservice.controller.pojo.response.TxHashResponse
 import com.ampnet.walletservice.enums.Currency
@@ -21,7 +22,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.time.ZonedDateTime
 import java.util.UUID
-import com.ampnet.mailservice.proto.WalletType as WalletTypeProto
 
 class BroadcastTransactionControllerTest : ControllerTestBase() {
 
@@ -90,7 +90,7 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
         }
         verify("Mail notification for user wallet approved") {
             Mockito.verify(mailService, Mockito.times(1))
-                .sendWalletActivated(WalletTypeProto.USER, testContext.wallet.owner.toString(), testContext.wallet.activationData)
+                .sendWalletActivated(WalletTypeAmqp.USER, testContext.wallet.owner, testContext.wallet.activationData)
         }
     }
 
@@ -196,7 +196,8 @@ class BroadcastTransactionControllerTest : ControllerTestBase() {
             assertThat(transactionInfo).isNotPresent
         }
         verify("Mail notification for created project wallet") {
-            Mockito.verify(mailService, Mockito.times(1)).sendNewWalletMail(WalletTypeProto.PROJECT, COOP, activationData)
+            Mockito.verify(mailService, Mockito.times(1))
+                .sendNewWalletMail(WalletTypeAmqp.PROJECT, COOP, activationData)
         }
     }
 

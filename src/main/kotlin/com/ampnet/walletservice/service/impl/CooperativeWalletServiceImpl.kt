@@ -2,6 +2,8 @@ package com.ampnet.walletservice.service.impl
 
 import com.ampnet.core.jwt.UserPrincipal
 import com.ampnet.userservice.proto.SetRoleRequest
+import com.ampnet.walletservice.amqp.mailservice.MailService
+import com.ampnet.walletservice.amqp.mailservice.WalletTypeAmqp
 import com.ampnet.walletservice.controller.pojo.request.WalletTransferRequest
 import com.ampnet.walletservice.enums.TransferWalletType
 import com.ampnet.walletservice.enums.WalletType
@@ -12,7 +14,6 @@ import com.ampnet.walletservice.exception.InvalidRequestException
 import com.ampnet.walletservice.exception.ResourceNotFoundException
 import com.ampnet.walletservice.grpc.blockchain.BlockchainService
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionDataAndInfo
-import com.ampnet.walletservice.grpc.mail.MailService
 import com.ampnet.walletservice.grpc.projectservice.ProjectService
 import com.ampnet.walletservice.grpc.userservice.UserService
 import com.ampnet.walletservice.persistence.model.Wallet
@@ -30,7 +31,6 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.ZonedDateTime
 import java.util.UUID
-import com.ampnet.mailservice.proto.WalletType as WalletTypeProto
 
 @Service
 @Suppress("TooManyFunctions")
@@ -60,7 +60,7 @@ class CooperativeWalletServiceImpl(
         val wallet = getWalletByUuid(walletUuid)
         wallet.hash = blockchainService.postTransaction(signedTransaction, wallet.coop)
         wallet.activatedAt = ZonedDateTime.now()
-        mailService.sendWalletActivated(getWalletType(wallet.type), wallet.owner.toString(), wallet.activationData)
+        mailService.sendWalletActivated(getWalletType(wallet.type), wallet.owner, wallet.activationData)
         return wallet
     }
 
@@ -175,11 +175,11 @@ class CooperativeWalletServiceImpl(
             )
         }
 
-    private fun getWalletType(type: WalletType): WalletTypeProto {
+    private fun getWalletType(type: WalletType): WalletTypeAmqp {
         return when (type) {
-            WalletType.USER -> WalletTypeProto.USER
-            WalletType.PROJECT -> WalletTypeProto.PROJECT
-            WalletType.ORG -> WalletTypeProto.ORGANIZATION
+            WalletType.USER -> WalletTypeAmqp.USER
+            WalletType.PROJECT -> WalletTypeAmqp.PROJECT
+            WalletType.ORG -> WalletTypeAmqp.ORGANIZATION
         }
     }
 }
