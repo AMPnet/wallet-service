@@ -3,15 +3,11 @@ package com.ampnet.walletservice.grpc
 import com.ampnet.walletservice.enums.WalletType
 import com.ampnet.walletservice.persistence.model.Wallet
 import com.ampnet.walletservice.persistence.repository.WalletRepository
-import com.ampnet.walletservice.proto.ActivateWalletRequest
-import com.ampnet.walletservice.proto.CoopRequest
-import com.ampnet.walletservice.proto.Empty
 import com.ampnet.walletservice.proto.GetWalletsByHashRequest
 import com.ampnet.walletservice.proto.GetWalletsByOwnerRequest
 import com.ampnet.walletservice.proto.WalletResponse
 import com.ampnet.walletservice.proto.WalletServiceGrpc
 import com.ampnet.walletservice.proto.WalletsResponse
-import com.ampnet.walletservice.service.CooperativeWalletService
 import io.grpc.stub.StreamObserver
 import mu.KLogging
 import net.devh.boot.grpc.server.service.GrpcService
@@ -19,8 +15,7 @@ import java.util.UUID
 
 @GrpcService
 class GrpcWalletServer(
-    private val walletRepository: WalletRepository,
-    private val cooperativeWalletService: CooperativeWalletService
+    private val walletRepository: WalletRepository
 ) : WalletServiceGrpc.WalletServiceImplBase() {
 
     companion object : KLogging()
@@ -57,20 +52,6 @@ class GrpcWalletServer(
             .addAllWallets(wallets)
             .build()
         responseObserver.onNext(response)
-        responseObserver.onCompleted()
-    }
-
-    override fun activateWallet(request: ActivateWalletRequest, responseObserver: StreamObserver<Empty>) {
-        logger.info { "Received gRPC request to active admin account. $request" }
-        cooperativeWalletService.activateAdminWallet(request.address, request.coop, request.hash)
-        responseObserver.onNext(Empty.newBuilder().build())
-        responseObserver.onCompleted()
-    }
-
-    override fun updateCoopRoles(request: CoopRequest, responseObserver: StreamObserver<Empty>) {
-        logger.info { "Received gRPC request to update user roles for coop: ${request.coop}" }
-        cooperativeWalletService.updateCoopUserRoles(request.coop)
-        responseObserver.onNext(Empty.newBuilder().build())
         responseObserver.onCompleted()
     }
 

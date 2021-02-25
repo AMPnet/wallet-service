@@ -9,7 +9,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 
 plugins {
-    val kotlinVersion = "1.4.21"
+    val kotlinVersion = "1.4.22"
     kotlin("plugin.jpa") version kotlinVersion
     kotlin("jvm") version kotlinVersion
     kotlin("plugin.spring") version kotlinVersion

@@ -29,22 +29,7 @@ message WalletsResponse {
     repeated WalletResponse wallets = 1;
 }
 
-message ActivateWalletRequest {
-    string address = 1;
-    string coop = 2;
-    string hash = 3;
-}
-
-message CoopRequest {
-    string coop = 1;
-}
-
-message Empty {
-}
-
 service WalletService {
     rpc GetWalletsByOwner (GetWalletsByOwnerRequest) returns (WalletsResponse);
     rpc GetWalletsByHash (GetWalletsByHashRequest) returns (WalletsResponse);
-    rpc ActivateWallet (ActivateWalletRequest) returns (Empty);
-    rpc UpdateCoopRoles (CoopRequest) returns (Empty);
 }
