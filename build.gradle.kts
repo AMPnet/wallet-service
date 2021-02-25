@@ -9,7 +9,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 
 plugins {
-    val kotlinVersion = "1.4.22"
+    val kotlinVersion = "1.4.21"
     kotlin("plugin.jpa") version kotlinVersion
     kotlin("jvm") version kotlinVersion
     kotlin("plugin.spring") version kotlinVersion
@@ -32,7 +32,7 @@ allOpen {
 }
 
 group = "com.ampnet"
-version = "0.14.0"
+version = "0.14.1"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
