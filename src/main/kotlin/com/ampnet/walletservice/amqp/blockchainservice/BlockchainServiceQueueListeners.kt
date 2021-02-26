@@ -20,13 +20,13 @@ class BlockchainServiceQueueListeners(private val cooperativeWalletService: Coop
 
     @RabbitListener(queues = [QUEUE_MIDDLEWARE_ACTIVATE_WALLET])
     fun handleActivateWallet(message: ActivateWalletMessage) {
-        logger.debug { "Received message: $message" }
+        logger.info { "Received message: $message" }
         cooperativeWalletService.activateAdminWallet(message.address, message.coop, message.hash)
     }
 
     @RabbitListener(queues = [QUEUE_MIDDLEWARE_UPDATE_COOP_ROLES])
     fun handleUpdateCoopRoles(message: UpdateCoopRolesMessage) {
-        logger.debug { "Received message: $message" }
+        logger.info { "Received message: $message" }
         cooperativeWalletService.updateCoopUserRoles(message.coop)
     }
 }
