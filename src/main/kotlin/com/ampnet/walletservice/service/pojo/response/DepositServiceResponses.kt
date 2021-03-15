@@ -16,7 +16,8 @@ data class DepositServiceResponse(
     val amount: Long?,
     val txHash: String?,
     val documentResponse: DocumentServiceResponse?,
-    val coop: String
+    val coop: String,
+    val userConfirmation: Boolean
 ) {
     constructor(deposit: Deposit, withDocument: Boolean = false) : this(
         deposit.id,
@@ -29,7 +30,8 @@ data class DepositServiceResponse(
         deposit.amount,
         deposit.txHash,
         if (withDocument) deposit.file?.let { DocumentServiceResponse(it) } else null,
-        deposit.coop
+        deposit.coop,
+        deposit.userConfirmation
     )
 }
 

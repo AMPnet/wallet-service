@@ -10,4 +10,5 @@ interface DepositService {
     fun getPendingForUser(user: UUID): DepositServiceResponse?
     fun getPendingForProject(project: UUID, user: UUID): DepositServiceResponse?
     fun getDepositForUserByTxHash(user: UUID, txHash: String?): List<DepositServiceResponse>
+    fun confirm(id: Int): DepositServiceResponse
 }

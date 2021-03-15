@@ -94,6 +94,15 @@ class DepositServiceImpl(
         return depositRepository.findAllByOwnerUuid(user).map { DepositServiceResponse(it, true) }
     }
 
+    @Transactional
+    override fun confirm(id: Int): DepositServiceResponse {
+        val deposit = depositRepository.findById(id).orElseThrow {
+            ResourceNotFoundException(ErrorCode.WALLET_DEPOSIT_MISSING, "Missing deposit with id: $id")
+        }
+        deposit.userConfirmation = true
+        return DepositServiceResponse(deposit)
+    }
+
     private fun validateOwnerHasWallet(owner: UUID) {
         walletRepository.findByOwner(owner).orElseThrow {
             ResourceNotFoundException(ErrorCode.WALLET_MISSING, "Missing wallet for owner: $owner")

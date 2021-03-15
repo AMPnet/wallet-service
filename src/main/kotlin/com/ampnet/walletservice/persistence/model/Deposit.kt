@@ -56,7 +56,11 @@ class Deposit(
     var file: File?,
 
     @Column(nullable = false)
-    var coop: String
+    var coop: String,
+
+    @Column(nullable = false)
+    var userConfirmation: Boolean
+
 ) {
     constructor(
         ownerUuid: UUID,
@@ -67,6 +71,6 @@ class Deposit(
         coop: String
     ) : this(
         0, ownerUuid, reference, amount, ZonedDateTime.now(), createdBy, type,
-        null, null, null, null, coop
+        null, null, null, null, coop, false
     )
 }

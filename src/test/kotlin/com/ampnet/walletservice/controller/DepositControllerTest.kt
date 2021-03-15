@@ -310,8 +310,32 @@ class DepositControllerTest : ControllerTestBase() {
         }
     }
 
+    @Test
+    @WithMockCrowdfoundUser
+    fun mustBeAbleToConfirmDeposit() {
+        suppose("There is a deposit") {
+            databaseCleanerService.deleteAllDeposits()
+            testContext.deposit = createApprovedDeposit(userUuid)
+        }
+
+        verify("User can confirm deposit") {
+            val result = mockMvc.perform(post("$depositPath/${testContext.deposit.id}/confirm"))
+                .andExpect(status().isOk)
+                .andReturn()
+            val deposit: DepositServiceResponse = objectMapper.readValue(result.response.contentAsString)
+            assertThat(deposit.id).isEqualTo(testContext.deposit.id)
+            assertThat(deposit.userConfirmation).isEqualTo(true)
+        }
+        verify("Deposit is stored in the database") {
+            val deposit = depositRepository.findById(testContext.deposit.id).get()
+            assertThat(deposit.id).isEqualTo(testContext.deposit.id)
+            assertThat(deposit.userConfirmation).isEqualTo(true)
+        }
+    }
+
     private class TestContext {
         val amount = 30_000L
         var deposits = listOf<Deposit>()
+        lateinit var deposit: Deposit
     }
 }

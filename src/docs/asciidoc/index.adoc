@@ -7,6 +7,7 @@ Version {version}, {date}
 :source-highlighter: prettify
 :docinfo: shared
 :icons: font
+:icons: font
 
 == Introduction
 This document contains generated documentation for `AMPnet wallet service`. Wallet service contains all endpoints
@@ -235,6 +236,11 @@ include::{snippets}/DepositControllerTest/mustBeAbleToGetDepositForTxHash/http-r
 .Response
 include::{snippets}/DepositControllerTest/mustBeAbleToGetDepositForTxHash/http-response.adoc[]
 
+==== Confirm
+.Request
+include::{snippets}/DepositControllerTest/mustBeAbleToConfirmDeposit/http-request.adoc[]
+.Response
+include::{snippets}/DepositControllerTest/mustBeAbleToConfirmDeposit/http-response.adoc[]
 
 == Portfolio API
 All requests need header: `Authorization: Bearer JWT`.

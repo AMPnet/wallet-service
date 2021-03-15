@@ -170,7 +170,7 @@ abstract class JpaServiceTestBase : TestBase() {
         val document = saveFile(userUuid)
         val deposit = Deposit(
             0, userUuid, "S34SDGFT", 10_000,
-            ZonedDateTime.now(), userUuid, type, txHash, userUuid, ZonedDateTime.now(), document, coop
+            ZonedDateTime.now(), userUuid, type, txHash, userUuid, ZonedDateTime.now(), document, coop, false
         )
         return depositRepository.save(deposit)
     }
@@ -182,7 +182,7 @@ abstract class JpaServiceTestBase : TestBase() {
     ): Deposit {
         val deposit = Deposit(
             0, owner, "S34SDGFT", 10_000,
-            ZonedDateTime.now(), userUuid, type, null, null, null, null, coop
+            ZonedDateTime.now(), userUuid, type, null, null, null, null, coop, false
         )
         return depositRepository.save(deposit)
     }
