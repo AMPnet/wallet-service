@@ -310,8 +310,71 @@ class DepositControllerTest : ControllerTestBase() {
         }
     }
 
+    @Test
+    @WithMockCrowdfoundUser
+    fun mustBeAbleToConfirmUserDeposit() {
+        suppose("There is user deposit") {
+            databaseCleanerService.deleteAllDeposits()
+            testContext.deposit = createApprovedDeposit(userUuid)
+        }
+
+        verify("User can confirm deposit") {
+            val result = mockMvc.perform(post("$depositPath/${testContext.deposit.id}/confirm"))
+                .andExpect(status().isOk)
+                .andReturn()
+            val deposit: DepositServiceResponse = objectMapper.readValue(result.response.contentAsString)
+            assertThat(deposit.id).isEqualTo(testContext.deposit.id)
+            assertThat(deposit.userConfirmation).isEqualTo(true)
+        }
+        verify("Deposit is stored in the database") {
+            val deposit = depositRepository.findById(testContext.deposit.id).get()
+            assertThat(deposit.id).isEqualTo(testContext.deposit.id)
+            assertThat(deposit.userConfirmation).isEqualTo(true)
+        }
+    }
+
+    @Test
+    @WithMockCrowdfoundUser
+    fun mustBeAbleToConfirmProjectDeposit() {
+        suppose("There is a project deposit") {
+            databaseCleanerService.deleteAllDeposits()
+            testContext.deposit = createApprovedDeposit(projectUuid, type = DepositWithdrawType.PROJECT)
+        }
+
+        verify("User can confirm project deposit") {
+            val result = mockMvc.perform(post("$depositPath/${testContext.deposit.id}/confirm"))
+                .andExpect(status().isOk)
+                .andReturn()
+            val deposit: DepositServiceResponse = objectMapper.readValue(result.response.contentAsString)
+            assertThat(deposit.id).isEqualTo(testContext.deposit.id)
+            assertThat(deposit.userConfirmation).isEqualTo(true)
+        }
+        verify("Deposit is stored in the database") {
+            val deposit = depositRepository.findById(testContext.deposit.id).get()
+            assertThat(deposit.id).isEqualTo(testContext.deposit.id)
+            assertThat(deposit.userConfirmation).isEqualTo(true)
+        }
+    }
+
+    @Test
+    @WithMockCrowdfoundUser(uuid = "98986187-c870-4339-be4e-a597146f1428")
+    fun mustNotBeAbleToConfirmDepositIfNotCreatedByUser() {
+        suppose("There is a user deposit") {
+            databaseCleanerService.deleteAllDeposits()
+            testContext.deposit = createApprovedDeposit(userUuid)
+        }
+
+        verify("User cannot confirm deposit he did not create") {
+            val result = mockMvc.perform(post("$depositPath/${testContext.deposit.id}/confirm"))
+                .andExpect(status().isBadRequest)
+                .andReturn()
+            verifyResponseErrorCode(result, ErrorCode.WALLET_DEPOSIT_MISSING)
+        }
+    }
+
     private class TestContext {
         val amount = 30_000L
         var deposits = listOf<Deposit>()
+        lateinit var deposit: Deposit
     }
 }

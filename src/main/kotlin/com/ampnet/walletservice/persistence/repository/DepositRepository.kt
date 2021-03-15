@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query
 import java.util.Optional
 import java.util.UUID
 
+@Suppress("TooManyFunctions")
 interface DepositRepository : JpaRepository<Deposit, Int> {
     @Query(
         "SELECT deposit FROM Deposit deposit LEFT JOIN FETCH deposit.file " +
@@ -66,4 +67,6 @@ interface DepositRepository : JpaRepository<Deposit, Int> {
             "WHERE deposit.txHash = :txHash AND deposit.ownerUuid = :ownerUuid"
     )
     fun findByTxHashAndOwnerUuid(txHash: String, ownerUuid: UUID): Optional<Deposit>
+
+    fun findByIdAndCreatedBy(id: Int, createdBy: UUID): Optional<Deposit>
 }
