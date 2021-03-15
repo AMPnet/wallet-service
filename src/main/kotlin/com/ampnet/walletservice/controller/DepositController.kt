@@ -85,7 +85,8 @@ class DepositController(private val depositService: DepositService) {
 
     @PostMapping("/deposit/{id}/confirm")
     fun confirm(@PathVariable id: Int): ResponseEntity<DepositServiceResponse> {
-        logger.debug { "Received request to confirm deposit: $id" }
-        return ResponseEntity.ok(depositService.confirm(id))
+        val userPrincipal = ControllerUtils.getUserPrincipalFromSecurityContext()
+        logger.debug { "Received request to confirm deposit: $id, for user: $userPrincipal.uuid" }
+        return ResponseEntity.ok(depositService.confirm(id, userPrincipal.uuid))
     }
 }

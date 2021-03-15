@@ -95,9 +95,12 @@ class DepositServiceImpl(
     }
 
     @Transactional
-    override fun confirm(id: Int): DepositServiceResponse {
-        val deposit = depositRepository.findById(id).orElseThrow {
-            ResourceNotFoundException(ErrorCode.WALLET_DEPOSIT_MISSING, "Missing deposit with id: $id")
+    override fun confirm(id: Int, userUuid: UUID): DepositServiceResponse {
+        val deposit = depositRepository.findByIdAndOwnerUuid(id, userUuid).orElseThrow {
+            ResourceNotFoundException(
+                ErrorCode.WALLET_DEPOSIT_MISSING,
+                "Missing deposit with id: $id, for user: $userUuid"
+            )
         }
         deposit.userConfirmation = true
         return DepositServiceResponse(deposit)
