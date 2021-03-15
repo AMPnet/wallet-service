@@ -68,5 +68,5 @@ interface DepositRepository : JpaRepository<Deposit, Int> {
     )
     fun findByTxHashAndOwnerUuid(txHash: String, ownerUuid: UUID): Optional<Deposit>
 
-    fun findByIdAndOwnerUuid(id: Int, ownerUuid: UUID): Optional<Deposit>
+    fun findByIdAndCreatedBy(id: Int, createdBy: UUID): Optional<Deposit>
 }

@@ -207,12 +207,13 @@ abstract class ControllerTestBase : TestBase() {
         amount: Long = 1000,
         type: DepositWithdrawType = DepositWithdrawType.USER,
         txHash: String = "th_ktDw9ytaQ9aSi78qgCAw2JhdzS8F7vGgzYvWeMdRtP6hJnQqG",
-        coop: String = COOP
+        coop: String = COOP,
+        createdBy: UUID = userUuid
     ): Deposit {
         val document = saveFile("doc", "document-link", "type", 1, owner)
         val deposit = Deposit(
             0, owner, "S34SDGFT", amount,
-            ZonedDateTime.now(), userUuid, type, txHash, userUuid,
+            ZonedDateTime.now(), userUuid, type, txHash, createdBy,
             ZonedDateTime.now(), document, coop, false
         )
         return depositRepository.save(deposit)
