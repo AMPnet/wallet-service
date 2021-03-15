@@ -356,6 +356,22 @@ class DepositControllerTest : ControllerTestBase() {
         }
     }
 
+    @Test
+    @WithMockCrowdfoundUser(uuid = "98986187-c870-4339-be4e-a597146f1428")
+    fun mustNotBeAbleToConfirmDepositIfNotCreatedByUser() {
+        suppose("There is a user deposit") {
+            databaseCleanerService.deleteAllDeposits()
+            testContext.deposit = createApprovedDeposit(userUuid)
+        }
+
+        verify("User cannot confirm deposit he did not create") {
+            val result = mockMvc.perform(post("$depositPath/${testContext.deposit.id}/confirm"))
+                .andExpect(status().isBadRequest)
+                .andReturn()
+            verifyResponseErrorCode(result, ErrorCode.WALLET_DEPOSIT_MISSING)
+        }
+    }
+
     private class TestContext {
         val amount = 30_000L
         var deposits = listOf<Deposit>()

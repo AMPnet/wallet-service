@@ -213,7 +213,7 @@ abstract class ControllerTestBase : TestBase() {
         val document = saveFile("doc", "document-link", "type", 1, owner)
         val deposit = Deposit(
             0, owner, "S34SDGFT", amount,
-            ZonedDateTime.now(), userUuid, type, txHash, createdBy,
+            ZonedDateTime.now(), createdBy, type, txHash, userUuid,
             ZonedDateTime.now(), document, coop, false
         )
         return depositRepository.save(deposit)
