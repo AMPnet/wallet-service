@@ -235,13 +235,14 @@ include::{snippets}/DepositControllerTest/mustBeAbleToGetDepositForTxHash/http-r
 .Response
 include::{snippets}/DepositControllerTest/mustBeAbleToGetDepositForTxHash/http-response.adoc[]
 
-==== Confirm
-Used to confirm both project and user deposits.
+=== Confirm
+User can confirm the deposit to indicate that he has completed the payment.
+This route is used for both user and project deposits.
 
 .Request
-include::{snippets}/DepositControllerTest/mustBeAbleToConfirmDeposit/http-request.adoc[]
+include::{snippets}/DepositControllerTest/mustBeAbleToConfirmUserDeposit/http-request.adoc[]
 .Response
-include::{snippets}/DepositControllerTest/mustBeAbleToConfirmDeposit/http-response.adoc[]
+include::{snippets}/DepositControllerTest/mustBeAbleToConfirmUserDeposit/http-response.adoc[]
 
 == Portfolio API
 All requests need header: `Authorization: Bearer JWT`.
