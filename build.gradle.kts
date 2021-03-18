@@ -9,18 +9,18 @@ import java.text.SimpleDateFormat
 import java.util.Date
 
 plugins {
-    val kotlinVersion = "1.4.21"
-    kotlin("plugin.jpa") version kotlinVersion
+    val kotlinVersion = "1.4.31"
     kotlin("jvm") version kotlinVersion
+    kotlin("plugin.jpa") version kotlinVersion
     kotlin("plugin.spring") version kotlinVersion
 
-    id("org.springframework.boot") version "2.4.2"
+    id("org.springframework.boot") version "2.4.4"
     id("io.spring.dependency-management") version "1.0.11.RELEASE"
-    id("org.asciidoctor.convert") version "1.5.8"
-    id("com.google.cloud.tools.jib") version "2.7.1"
+    id("com.google.cloud.tools.jib") version "2.8.0"
     id("org.jlleitschuh.gradle.ktlint") version "10.0.0"
-    id("io.gitlab.arturbosch.detekt").version("1.15.0")
-    id("com.google.protobuf") version "0.8.14"
+    id("io.gitlab.arturbosch.detekt").version("1.16.0")
+    id("org.asciidoctor.convert") version "1.5.8"
+    id("com.google.protobuf") version "0.8.15"
     idea
     jacoco
 }
@@ -32,7 +32,7 @@ allOpen {
 }
 
 group = "com.ampnet"
-version = "0.14.2"
+version = "0.14.3"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
@@ -56,8 +56,8 @@ dependencies {
     implementation("org.flywaydb:flyway-core")
     runtimeOnly("org.postgresql:postgresql")
 
-    implementation("io.github.microutils:kotlin-logging:2.0.4")
-    implementation("net.devh:grpc-spring-boot-starter:2.10.1.RELEASE")
+    implementation("io.github.microutils:kotlin-logging:2.0.5")
+    implementation("net.devh:grpc-spring-boot-starter:2.11.0.RELEASE")
     implementation("org.iban4j:iban4j:3.2.1")
     implementation("com.github.AMPnet:jwt:0.2.0")
     implementation("software.amazon.awssdk:s3:2.15.79")
@@ -84,11 +84,11 @@ tasks.test {
 
 protobuf {
     protoc {
-        artifact = "com.google.protobuf:protoc:3.12.4"
+        artifact = "com.google.protobuf:protoc:3.14.0"
     }
     plugins {
         id("grpc") {
-            artifact = "io.grpc:protoc-gen-grpc-java:1.31.1"
+            artifact = "io.grpc:protoc-gen-grpc-java:1.35.0"
         }
     }
     generateProtoTasks {
