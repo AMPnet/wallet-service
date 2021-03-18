@@ -35,7 +35,7 @@ class GrpcWalletServer(
         }.toSet()
         val wallets = walletRepository.findByOwnerIn(uuids)
             .map { generateWalletResponseFromWallet(it) }
-        logger.debug { "Wallets response: $wallets" }
+        logger.debug { "Wallets response: ${wallets.size}" }
         val response = WalletsResponse.newBuilder()
             .addAllWallets(wallets)
             .build()
@@ -47,7 +47,7 @@ class GrpcWalletServer(
         logger.debug { "Received gRPC request: getWalletsByHash = ${request.hashesList}" }
         val wallets = walletRepository.findByHashes(request.hashesList)
             .map { generateWalletResponseFromWallet(it) }
-        logger.debug { "Wallets response: $wallets" }
+        logger.debug { "Wallets response: ${wallets.size}" }
         val response = WalletsResponse.newBuilder()
             .addAllWallets(wallets)
             .build()
