@@ -7,12 +7,18 @@ data class BankAccountResponse(
     val iban: String,
     val bankCode: String,
     val alias: String?,
-    val coop: String
+    val coop: String,
+    val bankName: String?,
+    val bankAddress: String?,
+    val beneficiaryName: String?
 ) {
     constructor(bankAccount: BankAccount) : this(
         bankAccount.id, bankAccount.iban,
         bankAccount.bankCode, bankAccount.alias,
-        bankAccount.coop
+        bankAccount.coop,
+        bankAccount.bankName,
+        bankAccount.bankAddress,
+        bankAccount.beneficiaryName
     )
 }
 

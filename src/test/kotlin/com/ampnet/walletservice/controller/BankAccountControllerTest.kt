@@ -27,6 +27,9 @@ class BankAccountControllerTest : ControllerTestBase() {
     private val bankAccountPath = "/bank-account"
     private val iban = "HR1723600001101234565"
     private val alias = "alias"
+    private val bankName = "XYZ bank"
+    private val bankAddress = "XYZ address"
+    private val beneficiaryName = "ampnet coop"
     private lateinit var bankAccount: BankAccount
 
     @BeforeEach
@@ -38,11 +41,20 @@ class BankAccountControllerTest : ControllerTestBase() {
     @WithMockCrowdfoundUser
     fun mustBeAbleToGetAllBankAccounts() {
         suppose("There are two bank accounts") {
-            createBankAccount(iban, bankCode, userUuid, alias, COOP)
-            createBankAccount("AL47212110090000000235698741", "AKIVALTR", userUuid, "albalias", COOP)
+            createBankAccount(
+                iban, bankCode, userUuid, alias, COOP,
+                bankName, bankAddress, beneficiaryName
+            )
+            createBankAccount(
+                "AL47212110090000000235698741", "AKIVALTR", userUuid,
+                "albalias", COOP, "name", "address", "ben"
+            )
         }
         suppose("There is bank account from another cooperative") {
-            createBankAccount("AL47212110090000000235698742", "AKIVBLTR", userUuid, alias, anotherCoop)
+            createBankAccount(
+                "AL47212110090000000235698742", "AKIVBLTR",
+                userUuid, alias, anotherCoop, bankName, bankAddress, beneficiaryName
+            )
         }
 
         verify("User can get bank accounts") {
@@ -58,6 +70,9 @@ class BankAccountControllerTest : ControllerTestBase() {
             assertThat(bankAccount.bankCode).isEqualTo(bankAccount.bankCode)
             assertThat(bankAccount.alias).isEqualTo(alias)
             assertThat(bankAccount.coop).isEqualTo(COOP)
+            assertThat(bankAccount.bankName).isEqualTo(bankName)
+            assertThat(bankAccount.bankAddress).isEqualTo(bankAddress)
+            assertThat(bankAccount.beneficiaryName).isEqualTo(beneficiaryName)
         }
     }
 
@@ -65,7 +80,9 @@ class BankAccountControllerTest : ControllerTestBase() {
     @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWA_DEPOSIT])
     fun mustBeAbleToCreateBankAccount() {
         verify("Admin can create bank account") {
-            val request = BankAccountCreateRequest(iban, bankCode, alias)
+            val request = BankAccountCreateRequest(
+                iban, bankCode, alias, bankName, bankAddress, beneficiaryName
+            )
             val result = mockMvc.perform(
                 post(bankAccountPath)
                     .contentType(MediaType.APPLICATION_JSON)
@@ -79,6 +96,9 @@ class BankAccountControllerTest : ControllerTestBase() {
             assertThat(bankAccount.bankCode).isEqualTo(bankAccount.bankCode)
             assertThat(bankAccount.alias).isEqualTo(alias)
             assertThat(bankAccount.coop).isEqualTo(COOP)
+            assertThat(bankAccount.bankName).isEqualTo(bankName)
+            assertThat(bankAccount.bankAddress).isEqualTo(bankAddress)
+            assertThat(bankAccount.beneficiaryName).isEqualTo(beneficiaryName)
         }
         verify("Bank account is created") {
             val bankAccount = bankAccountRepository.findAll().first()
@@ -87,6 +107,9 @@ class BankAccountControllerTest : ControllerTestBase() {
             assertThat(bankAccount.alias).isEqualTo(alias)
             assertThat(bankAccount.createdBy).isEqualTo(userUuid)
             assertThat(bankAccount.coop).isEqualTo(COOP)
+            assertThat(bankAccount.bankName).isEqualTo(bankName)
+            assertThat(bankAccount.bankAddress).isEqualTo(bankAddress)
+            assertThat(bankAccount.beneficiaryName).isEqualTo(beneficiaryName)
         }
     }
 
@@ -94,7 +117,9 @@ class BankAccountControllerTest : ControllerTestBase() {
     @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWA_DEPOSIT])
     fun mustThrowExceptionForTooLongBankAccountAlias() {
         verify("Admin can create bank account") {
-            val request = BankAccountCreateRequest(iban, bankCode, "aaa".repeat(55))
+            val request = BankAccountCreateRequest(
+                iban, bankCode, "aaa".repeat(55), bankName, bankAddress, beneficiaryName
+            )
             val result = mockMvc.perform(
                 post(bankAccountPath)
                     .contentType(MediaType.APPLICATION_JSON)
@@ -111,7 +136,9 @@ class BankAccountControllerTest : ControllerTestBase() {
     @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWA_DEPOSIT])
     fun mustBeAbleToDeleteBankAccount() {
         suppose("There is bank account") {
-            bankAccount = BankAccount(iban, bankCode, userUuid, alias, COOP)
+            bankAccount = BankAccount(
+                iban, bankCode, userUuid, alias, COOP, bankName, bankAddress, beneficiaryName
+            )
             bankAccountRepository.save(bankAccount)
         }
 
@@ -129,7 +156,9 @@ class BankAccountControllerTest : ControllerTestBase() {
     @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWA_DEPOSIT])
     fun mustNotBeAbleToCreateBankAccountWithInvalidBankCode() {
         verify("Admin cannot create bank account with invalid bank code") {
-            val request = BankAccountCreateRequest(iban, "invalid", alias)
+            val request = BankAccountCreateRequest(
+                iban, "invalid", alias, bankName, bankAddress, beneficiaryName
+            )
             val result = mockMvc.perform(
                 post(bankAccountPath)
                     .contentType(MediaType.APPLICATION_JSON)
@@ -145,7 +174,9 @@ class BankAccountControllerTest : ControllerTestBase() {
     @Test
     @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWA_DEPOSIT])
     fun mustNotBeAbleToCreateBankAccountWithInvalidIban() {
-        val request = BankAccountCreateRequest("invalid-iban", bankCode, alias)
+        val request = BankAccountCreateRequest(
+            "invalid-iban", bankCode, alias, bankName, bankAddress, beneficiaryName
+        )
         val result = mockMvc.perform(
             post(bankAccountPath)
                 .contentType(MediaType.APPLICATION_JSON)

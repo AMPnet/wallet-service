@@ -11,6 +11,7 @@ import javax.persistence.Table
 
 @Entity
 @Table(name = "bank_account")
+@Suppress("LongParameterList")
 class BankAccount(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,9 +33,28 @@ class BankAccount(
     val alias: String?,
 
     @Column(nullable = false)
-    var coop: String
+    var coop: String,
+
+    @Column(nullable = true, length = 128)
+    val bankName: String?,
+
+    @Column(nullable = true, length = 128)
+    val bankAddress: String?,
+
+    @Column(nullable = true, length = 128)
+    val beneficiaryName: String?
 ) {
-    constructor(iban: String, bankCode: String, createdBy: UUID, alias: String?, coop: String) : this(
-        0, iban, bankCode, createdBy, ZonedDateTime.now(), alias, coop
+    constructor(
+        iban: String,
+        bankCode: String,
+        createdBy: UUID,
+        alias: String?,
+        coop: String,
+        bankName: String?,
+        bankAddress: String?,
+        beneficiaryName: String?
+    ) : this(
+        0, iban, bankCode, createdBy, ZonedDateTime.now(),
+        alias, coop, bankName, bankAddress, beneficiaryName
     )
 }
