@@ -508,6 +508,8 @@ include::{snippets}/BankAccountControllerTest/mustBeAbleToGetAllBankAccounts/htt
 include::{snippets}/BankAccountControllerTest/mustBeAbleToGetAllBankAccounts/http-response.adoc[]
 
 === Create
+TIP: `alias`, `bank_name`, `bank_address` and `beneficiary_name` data is optional.
+
 Must have privilege - `PWA_DEPOSIT`
 
 .Request

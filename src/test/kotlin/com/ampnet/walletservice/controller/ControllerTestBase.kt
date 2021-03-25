@@ -288,9 +288,12 @@ abstract class ControllerTestBase : TestBase() {
         bankCode: String,
         createdBy: UUID,
         alias: String,
-        coop: String = COOP
+        coop: String = COOP,
+        bankName: String,
+        bankAddress: String,
+        beneficiaryName: String
     ): BankAccount {
-        val bankAccount = BankAccount(iban, bankCode, createdBy, alias, coop)
+        val bankAccount = BankAccount(iban, bankCode, createdBy, alias, coop, bankName, bankAddress, beneficiaryName)
         return bankAccountRepository.save(bankAccount)
     }
 
