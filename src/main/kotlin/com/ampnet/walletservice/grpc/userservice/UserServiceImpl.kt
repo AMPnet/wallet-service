@@ -28,6 +28,7 @@ class UserServiceImpl(
     }
 
     override fun getUsers(uuids: Set<UUID>): List<UserServiceResponse> {
+        if (uuids.isEmpty()) return emptyList()
         logger.debug { "Fetching users: $uuids" }
         try {
             val request = GetUsersRequest.newBuilder()
