@@ -9,7 +9,6 @@ class ApplicationProperties {
     val jwt: JwtProperties = JwtProperties()
     val fileStorage: FileStorageProperties = FileStorageProperties()
     val grpc: GrpcProperties = GrpcProperties()
-    val mail: MailProperties = MailProperties()
     val coop: CoopProperties = CoopProperties()
 }
 
@@ -28,13 +27,8 @@ class GrpcProperties {
     var blockchainServiceMaxRetries: Int = 3
     var blockchainServiceRetryDelay: Long = 1000
     var blockchainServiceTimeout: Long = 3000
-    var mailServiceTimeout: Long = 1000
     var projectServiceTimeout: Long = 1000
     var userServiceTimeout: Long = 1000
-}
-
-class MailProperties {
-    var sendNotification = true
 }
 
 class CoopProperties {
