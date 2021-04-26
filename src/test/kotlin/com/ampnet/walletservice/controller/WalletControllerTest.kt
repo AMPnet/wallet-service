@@ -246,7 +246,9 @@ class WalletControllerTest : ControllerTestBase() {
             val userWalletHash = getWalletHash(userUuid)
             testContext.transactionData = TransactionData(signedTransaction)
             val request = GenerateProjectWalletRequest(
-                userWalletHash, orgWalletHash, testContext.projectServiceResponse
+                userWalletHash, orgWalletHash, testContext.projectServiceResponse.maxPerUser!!,
+                testContext.projectServiceResponse.minPerUser!!, testContext.projectServiceResponse.expectedFunding!!,
+                testContext.projectServiceResponse.endDate!!.toInstant().toEpochMilli()
             )
             Mockito.`when`(
                 blockchainService.generateProjectWalletTransaction(request)

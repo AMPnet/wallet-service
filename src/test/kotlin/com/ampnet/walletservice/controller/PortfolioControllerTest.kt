@@ -434,9 +434,9 @@ class PortfolioControllerTest : ControllerTestBase() {
             ZonedDateTime.now(), TransactionState.MINED, txHash
         )
 
-    private fun getShare(projectFunding: Long, amount: Long): String {
+    private fun getShare(projectFunding: Long?, amount: Long): String {
         return amount.toBigDecimal().divide(
-            projectFunding.toBigDecimal(), 10, RoundingMode.HALF_UP
+            projectFunding?.toBigDecimal(), 10, RoundingMode.HALF_UP
         ).toPlainString()
     }
 

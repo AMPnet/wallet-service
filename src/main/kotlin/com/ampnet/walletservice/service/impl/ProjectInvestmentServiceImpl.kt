@@ -14,7 +14,6 @@ import com.ampnet.walletservice.persistence.repository.WalletRepository
 import com.ampnet.walletservice.service.ProjectInvestmentService
 import com.ampnet.walletservice.service.TransactionInfoService
 import com.ampnet.walletservice.service.pojo.request.ProjectInvestmentRequest
-import com.ampnet.walletservice.service.pojo.response.ProjectServiceResponse
 import mu.KLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -42,8 +41,13 @@ class ProjectInvestmentServiceImpl(
     override fun generateInvestInProjectTransaction(request: ProjectInvestmentRequest): TransactionDataAndInfo {
         logger.debug { "Generating Investment in project for request: $request" }
         val projectResponse = projectService.getProject(request.projectUuid)
-        verifyProjectIsStillActive(projectResponse)
-        verifyInvestmentAmountIsValid(projectResponse, request.amount)
+        if (projectResponse.expectedFunding == null || projectResponse.maxPerUser == null ||
+            projectResponse.endDate == null
+        ) throw InvalidRequestException(
+            ErrorCode.PRJ_MISSING_INFO, "Project:$projectResponse is missing information to place investment."
+        )
+        verifyProjectIsStillActive(projectResponse.active, projectResponse.endDate)
+        verifyInvestmentAmountIsValid(request.amount, projectResponse.maxPerUser)
 
         val userWalletHash = ServiceUtils.getWalletHash(request.investor.uuid, walletRepository)
         verifyUserHasEnoughFunds(userWalletHash, request.amount)
@@ -94,22 +98,22 @@ class ProjectInvestmentServiceImpl(
     override fun cancelInvestmentsInProject(signedTransaction: String, coop: String): String =
         blockchainService.postTransaction(signedTransaction, coop)
 
-    private fun verifyProjectIsStillActive(project: ProjectServiceResponse) {
-        if (project.active.not()) {
+    private fun verifyProjectIsStillActive(active: Boolean, endDate: ZonedDateTime) {
+        if (active.not()) {
             throw InvalidRequestException(ErrorCode.PRJ_NOT_ACTIVE, "Project is not active")
         }
-        if (project.endDate.isBefore(ZonedDateTime.now())) {
+        if (endDate.isBefore(ZonedDateTime.now())) {
             val dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy.")
-            val endDate = project.endDate.format(dateFormatter)
-            throw InvalidRequestException(ErrorCode.PRJ_DATE_EXPIRED, "Project has expired at: $endDate")
+            val endDateFormatted = endDate.format(dateFormatter)
+            throw InvalidRequestException(ErrorCode.PRJ_DATE_EXPIRED, "Project has expired at: $endDateFormatted")
         }
     }
 
-    private fun verifyInvestmentAmountIsValid(project: ProjectServiceResponse, amount: Long) {
-        if (amount > project.maxPerUser) {
+    private fun verifyInvestmentAmountIsValid(amount: Long, maxPerUser: Long) {
+        if (amount > maxPerUser) {
             throw InvalidRequestException(
                 ErrorCode.PRJ_MAX_PER_USER,
-                "User can invest max ${project.maxPerUser.toEurAmount()}"
+                "User can invest max ${maxPerUser.toEurAmount()}"
             )
         }
     }

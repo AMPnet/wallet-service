@@ -29,7 +29,7 @@ import java.time.ZonedDateTime
 import java.util.UUID
 
 @Service
-@Suppress("TooManyFunctions")
+@Suppress("TooManyFunctions", "LongParameterList")
 class WalletServiceImpl(
     private val walletRepository: WalletRepository,
     private val pairWalletCodeRepository: PairWalletCodeRepository,
@@ -86,12 +86,16 @@ class WalletServiceImpl(
         logger.debug { "Generating create wallet transaction for project: $project" }
         val projectResponse = projectService.getProject(project)
         ServiceUtils.validateUserIsProjectOwner(user.uuid, projectResponse)
+        if (projectResponse.expectedFunding == null || projectResponse.minPerUser == null ||
+            projectResponse.maxPerUser == null || projectResponse.endDate == null
+        ) throw InvalidRequestException(
+            ErrorCode.PRJ_MISSING_INFO, "Project: $projectResponse is missing info to create project wallet"
+        )
 
         val organizationWalletHash = ServiceUtils.getWalletHash(projectResponse.organizationUuid, walletRepository)
         val request = GenerateProjectWalletRequest(
-            userWalletHash,
-            organizationWalletHash,
-            projectResponse
+            userWalletHash, organizationWalletHash, projectResponse.maxPerUser, projectResponse.minPerUser,
+            projectResponse.expectedFunding, projectResponse.endDate.toInstant().toEpochMilli()
         )
         val data = blockchainService.generateProjectWalletTransaction(request)
         val info = transactionInfoService.createProjectTransaction(project, projectResponse.name, user)

@@ -35,6 +35,7 @@ enum class ErrorCode(val categoryCode: String, var specificCode: String, var mes
     PRJ_MAX_FUNDS("07", "06", "Project has reached expected funding"),
     PRJ_NOT_ACTIVE("07", "07", "Project is not active"),
     PRJ_MISSING_PRIVILEGE("07", "12", "Missing project owner privilege"),
+    PRJ_MISSING_INFO("07", "14", "Missing project information"),
 
     // Internal: 08
     INT_FILE_STORAGE("08", "01", "Could not upload document on cloud file storage"),
