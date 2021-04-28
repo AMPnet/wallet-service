@@ -1,5 +1,6 @@
 package com.ampnet.walletservice.persistence.model
 
+import com.ampnet.walletservice.controller.pojo.request.BankAccountCreateRequest
 import java.time.ZonedDateTime
 import java.util.UUID
 import javax.persistence.Column
@@ -42,19 +43,20 @@ class BankAccount(
     val bankAddress: String?,
 
     @Column(nullable = true, length = 128)
-    val beneficiaryName: String?
+    val beneficiaryName: String?,
+
+    @Column(nullable = true, length = 256)
+    val beneficiaryAddress: String?,
+
+    @Column(nullable = true, length = 64)
+    val beneficiaryCity: String?,
+
+    @Column(nullable = true, length = 64)
+    val beneficiaryCountry: String?
 ) {
-    constructor(
-        iban: String,
-        bankCode: String,
-        createdBy: UUID,
-        alias: String?,
-        coop: String,
-        bankName: String?,
-        bankAddress: String?,
-        beneficiaryName: String?
-    ) : this(
-        0, iban, bankCode, createdBy, ZonedDateTime.now(),
-        alias, coop, bankName, bankAddress, beneficiaryName
+    constructor(request: BankAccountCreateRequest, createdBy: UUID, coop: String) : this(
+        0, request.iban, request.bankCode, createdBy, ZonedDateTime.now(),
+        request.alias, coop, request.bankName, request.bankAddress, request.beneficiaryName,
+        request.beneficiaryAddress, request.beneficiaryCity, request.beneficiaryCountry
     )
 }

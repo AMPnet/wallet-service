@@ -30,6 +30,9 @@ class BankAccountControllerTest : ControllerTestBase() {
     private val bankName = "XYZ bank"
     private val bankAddress = "XYZ address"
     private val beneficiaryName = "ampnet coop"
+    private val beneficiaryAddress = "Beneficiary address"
+    private val beneficiaryCity = "Beneficiary city"
+    private val beneficiaryCountry = "Beneficiary country"
     private lateinit var bankAccount: BankAccount
 
     @BeforeEach
@@ -81,7 +84,7 @@ class BankAccountControllerTest : ControllerTestBase() {
     fun mustBeAbleToCreateBankAccount() {
         verify("Admin can create bank account") {
             val request = BankAccountCreateRequest(
-                iban, bankCode, alias, bankName, bankAddress, beneficiaryName
+                iban, bankCode, alias, bankName, bankAddress, beneficiaryName, beneficiaryAddress, null, null
             )
             val result = mockMvc.perform(
                 post(bankAccountPath)
@@ -99,6 +102,9 @@ class BankAccountControllerTest : ControllerTestBase() {
             assertThat(bankAccount.bankName).isEqualTo(bankName)
             assertThat(bankAccount.bankAddress).isEqualTo(bankAddress)
             assertThat(bankAccount.beneficiaryName).isEqualTo(beneficiaryName)
+            assertThat(bankAccount.beneficiaryAddress).isEqualTo(beneficiaryAddress)
+            assertThat(bankAccount.beneficiaryCity).isNull()
+            assertThat(bankAccount.beneficiaryCountry).isNull()
         }
         verify("Bank account is created") {
             val bankAccount = bankAccountRepository.findAll().first()
@@ -110,6 +116,8 @@ class BankAccountControllerTest : ControllerTestBase() {
             assertThat(bankAccount.bankName).isEqualTo(bankName)
             assertThat(bankAccount.bankAddress).isEqualTo(bankAddress)
             assertThat(bankAccount.beneficiaryName).isEqualTo(beneficiaryName)
+            assertThat(bankAccount.beneficiaryAddress).isEqualTo(beneficiaryAddress)
+            assertThat(bankAccount.beneficiaryCity).isNull()
         }
     }
 
@@ -118,7 +126,7 @@ class BankAccountControllerTest : ControllerTestBase() {
     fun mustThrowExceptionForTooLongBankAccountAlias() {
         verify("Admin can create bank account") {
             val request = BankAccountCreateRequest(
-                iban, bankCode, "aaa".repeat(55), bankName, bankAddress, beneficiaryName
+                iban, bankCode, "aaa".repeat(55), bankName, bankAddress, beneficiaryName, null, null, null
             )
             val result = mockMvc.perform(
                 post(bankAccountPath)
@@ -136,9 +144,11 @@ class BankAccountControllerTest : ControllerTestBase() {
     @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWA_DEPOSIT])
     fun mustBeAbleToDeleteBankAccount() {
         suppose("There is bank account") {
-            bankAccount = BankAccount(
-                iban, bankCode, userUuid, alias, COOP, bankName, bankAddress, beneficiaryName
+            val request = BankAccountCreateRequest(
+                iban, bankCode, alias, bankName, bankAddress, beneficiaryName,
+                null, null, null
             )
+            bankAccount = BankAccount(request, userUuid, COOP)
             bankAccountRepository.save(bankAccount)
         }
 
@@ -157,7 +167,7 @@ class BankAccountControllerTest : ControllerTestBase() {
     fun mustNotBeAbleToCreateBankAccountWithInvalidBankCode() {
         verify("Admin cannot create bank account with invalid bank code") {
             val request = BankAccountCreateRequest(
-                iban, "invalid", alias, bankName, bankAddress, beneficiaryName
+                iban, "invalid", alias, bankName, bankAddress, beneficiaryName, null, null, null
             )
             val result = mockMvc.perform(
                 post(bankAccountPath)
@@ -175,7 +185,7 @@ class BankAccountControllerTest : ControllerTestBase() {
     @WithMockCrowdfoundUser(privileges = [PrivilegeType.PWA_DEPOSIT])
     fun mustNotBeAbleToCreateBankAccountWithInvalidIban() {
         val request = BankAccountCreateRequest(
-            "invalid-iban", bankCode, alias, bankName, bankAddress, beneficiaryName
+            "invalid-iban", bankCode, alias, bankName, bankAddress, beneficiaryName, null, null, null
         )
         val result = mockMvc.perform(
             post(bankAccountPath)
