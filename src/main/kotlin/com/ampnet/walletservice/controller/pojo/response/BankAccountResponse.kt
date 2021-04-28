@@ -10,15 +10,15 @@ data class BankAccountResponse(
     val coop: String,
     val bankName: String?,
     val bankAddress: String?,
-    val beneficiaryName: String?
+    val beneficiaryName: String?,
+    val beneficiaryAddress: String?,
+    val beneficiaryCity: String?,
+    val beneficiaryCountry: String?,
 ) {
     constructor(bankAccount: BankAccount) : this(
-        bankAccount.id, bankAccount.iban,
-        bankAccount.bankCode, bankAccount.alias,
-        bankAccount.coop,
-        bankAccount.bankName,
-        bankAccount.bankAddress,
-        bankAccount.beneficiaryName
+        bankAccount.id, bankAccount.iban, bankAccount.bankCode, bankAccount.alias, bankAccount.coop,
+        bankAccount.bankName, bankAccount.bankAddress, bankAccount.beneficiaryName, bankAccount.beneficiaryAddress,
+        bankAccount.beneficiaryCity, bankAccount.beneficiaryCountry
     )
 }
 

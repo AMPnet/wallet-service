@@ -29,10 +29,7 @@ class BankAccountServiceImpl(private val bankAccountRepository: BankAccountRepos
         validateBankCode(request.bankCode)
         validateIban(request.iban)
         logger.info { "Creating new bank account: $request" }
-        val bankAccount = BankAccount(
-            request.iban, request.bankCode, user.uuid, request.alias, user.coop,
-            request.bankName, request.bankAddress, request.beneficiaryName
-        )
+        val bankAccount = BankAccount(request, user.uuid, user.coop)
         return bankAccountRepository.save(bankAccount)
     }
 

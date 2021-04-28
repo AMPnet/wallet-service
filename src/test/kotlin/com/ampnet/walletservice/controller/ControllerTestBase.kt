@@ -4,6 +4,7 @@ import com.ampnet.projectservice.proto.OrganizationMembershipResponse
 import com.ampnet.walletservice.TestBase
 import com.ampnet.walletservice.amqp.mailservice.MailService
 import com.ampnet.walletservice.config.DatabaseCleanerService
+import com.ampnet.walletservice.controller.pojo.request.BankAccountCreateRequest
 import com.ampnet.walletservice.enums.Currency
 import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.enums.WalletType
@@ -293,7 +294,11 @@ abstract class ControllerTestBase : TestBase() {
         bankAddress: String,
         beneficiaryName: String
     ): BankAccount {
-        val bankAccount = BankAccount(iban, bankCode, createdBy, alias, coop, bankName, bankAddress, beneficiaryName)
+        val request = BankAccountCreateRequest(
+            iban, bankCode, alias, bankName, bankAddress, beneficiaryName,
+            null, null, null
+        )
+        val bankAccount = BankAccount(request, createdBy, coop)
         return bankAccountRepository.save(bankAccount)
     }
 
