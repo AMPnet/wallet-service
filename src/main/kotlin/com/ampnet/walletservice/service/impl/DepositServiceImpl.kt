@@ -26,7 +26,7 @@ class DepositServiceImpl(
 
     companion object {
         private val logger = KotlinLogging.logger {}
-        private val charPool: List<Char> = ('A'..'Z') + ('0'..'9')
+        private val charPool: List<Char> = ('A'..'N') + ('P'..'Z') + ('1'..'9')
         private const val DEPOSIT_REFERENCE_LENGTH = 8
     }
 
