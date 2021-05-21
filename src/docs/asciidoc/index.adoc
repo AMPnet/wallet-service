@@ -477,14 +477,6 @@ include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToGenerateMintTra
 .Response
 include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToGenerateMintTransaction/http-response.adoc[]
 
-=== Count users with approved deposit
-Count all users with at least one approved deposit
-
-.Request
-include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToCountUsersWithApprovedDeposit/http-request.adoc[]
-.Response
-include::{snippets}/CooperativeDepositControllerTest/mustBeAbleToCountUsersWithApprovedDeposit/http-response.adoc[]
-
 == Revenue
 
 === Generate transaction for revenue payout
@@ -531,3 +523,11 @@ include::{snippets}/BankAccountControllerTest/mustBeAbleToDeleteBankAccount/http
 include::{snippets}/SellOfferControllerTest/mustBeAbleToGetSellOffers/http-request.adoc[]
 .Response
 include::{snippets}/SellOfferControllerTest/mustBeAbleToGetSellOffers/http-response.adoc[]
+
+== Stats
+Must have privilege - `PRA_DEPOSIT`
+
+.Request
+include::{snippets}/AdminStatsControllerTest/mustBeAbleToGetStats/http-request.adoc[]
+.Response
+include::{snippets}/AdminStatsControllerTest/mustBeAbleToGetStats/http-response.adoc[]

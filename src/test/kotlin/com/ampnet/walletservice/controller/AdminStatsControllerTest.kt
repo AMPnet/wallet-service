@@ -1,0 +1,60 @@
+package com.ampnet.walletservice.controller
+
+import com.ampnet.walletservice.enums.PrivilegeType
+import com.ampnet.walletservice.security.WithMockCrowdfoundUser
+import com.ampnet.walletservice.service.pojo.response.StatsResponse
+import com.fasterxml.jackson.module.kotlin.readValue
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers
+import java.util.UUID
+
+class AdminStatsControllerTest : ControllerTestBase() {
+
+    private val statsPath = "/admin/stats"
+
+    @BeforeEach
+    fun init() {
+        databaseCleanerService.deleteAllWallets()
+        databaseCleanerService.deleteAllDeposits()
+    }
+
+    @Test
+    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PRA_DEPOSIT])
+    fun mustBeAbleToGetStats() {
+        suppose("There is unapproved deposit") {
+            createUnsignedDeposit(UUID.randomUUID())
+        }
+        suppose("There is approved deposit") {
+            createApprovedDeposit(UUID.randomUUID())
+        }
+        suppose("There are approved deposits for the same user") {
+            val user = UUID.randomUUID()
+            createApprovedDeposit(user)
+            createApprovedDeposit(user)
+            createApprovedDeposit(user)
+        }
+        suppose("There is approved deposit from another coop") {
+            createApprovedDeposit(UUID.randomUUID(), coop = anotherCoop)
+        }
+        suppose("Some wallets are initialized") {
+            createWalletForUser(UUID.randomUUID(), "some-hash")
+            createWalletForOrganization(UUID.randomUUID(), "org-hash")
+            createWalletForProject(UUID.randomUUID(), "project-hash")
+        }
+
+        verify("Cooperative user can get statistics about counted users with approved deposit") {
+            val result = mockMvc.perform(MockMvcRequestBuilders.get(statsPath))
+                .andExpect(MockMvcResultMatchers.status().isOk)
+                .andReturn()
+
+            val stats: StatsResponse = objectMapper.readValue(result.response.contentAsString)
+            assertThat(stats.usersDeposited).isEqualTo(2)
+            assertThat(stats.walletsInitialized).isEqualTo(1)
+            assertThat(stats.usersInvested).isEqualTo(0)
+        }
+    }
+
+}

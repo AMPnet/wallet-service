@@ -1,7 +1,6 @@
 package com.ampnet.walletservice.controller
 
 import com.ampnet.walletservice.controller.pojo.response.TransactionResponse
-import com.ampnet.walletservice.controller.pojo.response.UsersWithApprovedDeposit
 import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.service.CooperativeDepositService
 import com.ampnet.walletservice.service.pojo.request.ApproveDepositRequest
@@ -101,15 +100,6 @@ class CooperativeDepositController(private val cooperativeDepositService: Cooper
         val serviceRequest = MintServiceRequest(id, userPrincipal)
         val transactionDataAndInfo = cooperativeDepositService.generateMintTransaction(serviceRequest)
         return ResponseEntity.ok(TransactionResponse(transactionDataAndInfo))
-    }
-
-    @GetMapping("/cooperative/deposit/count")
-    @PreAuthorize("hasAuthority(T(com.ampnet.walletservice.enums.PrivilegeType).PRA_DEPOSIT)")
-    fun countUsersWithApprovedDeposit(): ResponseEntity<UsersWithApprovedDeposit> {
-        val user = ControllerUtils.getUserPrincipalFromSecurityContext()
-        logger.debug { "Received request to count users with approved deposit from cooperative with id: ${user.coop}" }
-        val counted = cooperativeDepositService.countUsersWithApprovedDeposit(user.coop)
-        return ResponseEntity.ok(UsersWithApprovedDeposit(counted, user.coop))
     }
 
     @GetMapping("/cooperative/deposit/{id}")

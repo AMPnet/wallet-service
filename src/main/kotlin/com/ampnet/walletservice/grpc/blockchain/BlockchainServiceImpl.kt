@@ -461,6 +461,19 @@ class BlockchainServiceImpl(
         }
     }
 
+//    @Throws(GrpcException::class, GrpcHandledException::class)
+//    override fun getInvestedAccounts(coop: String): List<BlockchainWalletResposne> {
+//        logger.debug { "Received request to get invested wallets" }
+//        try {
+//            val request = CreateCooperativeRequest.newBuilder()
+//                .setCoop(coop)
+//                .build()
+//            serviceBlockingStub.createCooperative(request)
+//        } catch (ex: StatusRuntimeException) {
+//            throw generateInternalExceptionFromStatusException(ex, "Could not invested wallets")
+//        }
+//    }
+
     private fun serviceWithTimeout() = serviceBlockingStub
         .withDeadlineAfter(applicationProperties.grpc.blockchainServiceTimeout, TimeUnit.MILLISECONDS)
 
