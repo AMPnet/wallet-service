@@ -29,7 +29,16 @@ message WalletsResponse {
     repeated WalletResponse wallets = 1;
 }
 
+message CoopRequest {
+    string coop = 1;
+}
+
+message OwnersResponse {
+    repeated string owners_uuids = 1;
+}
+
 service WalletService {
     rpc GetWalletsByOwner (GetWalletsByOwnerRequest) returns (WalletsResponse);
     rpc GetWalletsByHash (GetWalletsByHashRequest) returns (WalletsResponse);
+    rpc GetOwnersWithDeposit (CoopRequest) returns (OwnersResponse);
 }
