@@ -21,7 +21,10 @@ import com.ampnet.crowdfunding.proto.PlatformManagerRequest
 import com.ampnet.crowdfunding.proto.PortfolioRequest
 import com.ampnet.crowdfunding.proto.PostTxRequest
 import com.ampnet.crowdfunding.proto.TokenIssuerRequest
+import com.ampnet.crowdfunding.proto.TransactionType
 import com.ampnet.crowdfunding.proto.TransactionsRequest
+import com.ampnet.crowdfunding.proto.UserWalletsForCoopAndTxTypeRequest
+import com.ampnet.crowdfunding.proto.UserWalletsForCoopAndTxTypeResponse
 import com.ampnet.walletservice.config.ApplicationProperties
 import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.exception.GrpcException
@@ -461,18 +464,25 @@ class BlockchainServiceImpl(
         }
     }
 
-//    @Throws(GrpcException::class, GrpcHandledException::class)
-//    override fun getInvestedAccounts(coop: String): List<BlockchainWalletResposne> {
-//        logger.debug { "Received request to get invested wallets" }
-//        try {
-//            val request = CreateCooperativeRequest.newBuilder()
-//                .setCoop(coop)
-//                .build()
-//            serviceBlockingStub.createCooperative(request)
-//        } catch (ex: StatusRuntimeException) {
-//            throw generateInternalExceptionFromStatusException(ex, "Could not invested wallets")
-//        }
-//    }
+    @Throws(GrpcException::class, GrpcHandledException::class)
+    override fun getUserWalletsWithInvestment(coop: String): List<UserWalletsForCoopAndTxTypeResponse.WalletWithHash> {
+        logger.debug { "Get user wallets with investment for coop: $coop" }
+        try {
+            val response = serviceWithTimeout()
+                .getUserWalletsForCoopAndTxType(
+                    UserWalletsForCoopAndTxTypeRequest.newBuilder()
+                        .setCoop(coop)
+                        .setType(TransactionType.INVEST)
+                        .build()
+                )
+            logger.debug { "TransactionInfoResponse response: $response" }
+            return response.walletsList
+        } catch (ex: StatusRuntimeException) {
+            throw generateInternalExceptionFromStatusException(
+                ex, "Could not get user wallets with investment for coop: $coop"
+            )
+        }
+    }
 
     private fun serviceWithTimeout() = serviceBlockingStub
         .withDeadlineAfter(applicationProperties.grpc.blockchainServiceTimeout, TimeUnit.MILLISECONDS)

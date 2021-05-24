@@ -1,127 +1,96 @@
 syntax = "proto3";
 option java_multiple_files = true;
 package com.ampnet.crowdfunding.proto;
-
 /********** IMPORTANT NOTE:***************
 All amount (fiat) values in request and response messages are x100 format integers,
 for example amount: 1550 is actually 15.50 EUR.
 ******************************************/
-
 //////// General calls messages //////////////
-
 message CreateCooperativeRequest {
     string coop = 1;
     string wallet = 2;
 }
-
 //////// Cooperative contract messages ///////
-
 message GenerateAddWalletTxRequest {
     string wallet = 1;
     string coop = 2;
 }
-
 message WalletActiveRequest {
     string wallet_tx_hash = 1;
 }
-
 message WalletActiveResponse {
     bool active = 1;
 }
-
 message PlatformManagerRequest {
     string coop = 1;
 }
-
 message PlatformManagerResponse {
     string wallet = 1;
 }
-
 message GenerateTransferPlatformManagerOwnershipTxRequest {
     string new_owner_wallet = 1;
     string coop = 2;
 }
-
 ///////// EUR contract messages //////////
-
 message BalanceRequest {
     string wallet_tx_hash = 1;
 }
-
 message BalanceResponse {
     string balance = 1;
 }
-
 message GenerateMintTxRequest {
     string to_tx_hash = 1;
     string amount = 2;
 }
-
 message GenerateBurnFromTxRequest {
     string burn_from_tx_hash = 1;
 }
-
 message GenerateApproveWithdrawTxRequest {
     string from_tx_hash = 1;
     string amount = 2;
 }
-
 message GenerateInvestTxRequest {
     string from_tx_hash = 1;
     string project_tx_hash = 2;
     string amount = 3;
 }
-
 message TokenIssuerRequest {
     string coop = 1;
 }
-
 message TokenIssuerResponse {
     string wallet = 1;
 }
-
 message GenerateTransferTokenIssuerOwnershipTxRequest {
     string new_owner_wallet = 1;
     string coop = 2;
 }
-
 ///////// Organization contract //////////
-
 ///////// Project contract ///////////////
-
 message GenerateStartRevenueSharesPayoutTxRequest {
     string from_tx_hash = 1;
     string project_tx_hash = 2;
     string revenue = 3;
 }
-
 message GenerateApproveProjectWithdrawTxRequest {
     string from_tx_hash = 1;
     string project_tx_hash = 2;
     string amount = 3;
 }
-
 message GenerateCancelInvestmentTxRequest {
     string from_tx_hash = 1;
     string project_tx_hash = 2;
 }
-
-
 ////////// Transaction messages //////////
-
 message PostTxRequest {
     string data = 1;
     string coop = 2;
 }
-
 message PostTxResponse {
     string tx_hash = 1;
 }
-
 message PortfolioRequest {
     string tx_hash = 1;
 }
-
 message PortfolioResponse {
     message Investment {
         string project_tx_hash = 1;
@@ -129,22 +98,18 @@ message PortfolioResponse {
     }
     repeated Investment portfolio = 1;
 }
-
 message TransactionsRequest {
     string wallet_hash = 1;
 }
-
 message InvestmentsInProjectRequest {
     string from_address = 1;
     string project_tx_hash = 2;
 }
-
 message TransactionInfoRequest {
     string tx_hash = 1;
     string from = 2;
     string to = 3;
 }
-
 message TransactionInfo {
     string from_tx_hash = 1;
     string to_tx_hash = 2;
@@ -155,15 +120,12 @@ message TransactionInfo {
     string tx_hash = 7;
     SupervisorStatus supervisor_status = 8;
 }
-
 message TransactionsResponse {
     repeated TransactionInfo transactions = 1;
 }
-
 message ActiveSellOffersRequest {
     string coop = 1;
 }
-
 message ActiveSellOffersResponse {
     message CounterOffer {
         string buyer_tx_hash = 1;
@@ -178,13 +140,21 @@ message ActiveSellOffersResponse {
     }
     repeated SellOffer offers = 1;
 }
-
+message UserWalletsForCoopAndTxTypeRequest {
+    string coop = 1;
+    TransactionType type = 2;
+}
+message UserWalletsForCoopAndTxTypeResponse {
+    message WalletWithHash {
+        string wallet = 1;
+        string wallet_tx_hash = 2;
+    }
+    repeated WalletWithHash wallets = 1;
+}
 ///////// Contract create messages /////////
-
 message GenerateCreateOrganizationTxRequest {
     string from_tx_hash = 1;
 }
-
 message GenerateCreateProjectTxRequest {
     string from_tx_hash = 1;
     string organization_tx_hash = 2;
@@ -193,31 +163,23 @@ message GenerateCreateProjectTxRequest {
     string investment_cap = 5;
     string end_investment_time = 6;
 }
-
 ////////// Generic messages ////////////////
-
 message RawTxResponse {
     string tx = 1;
 }
-
 message Empty {
-
 }
-
 ////////// Types ///////////////////////////
-
 enum SupervisorStatus {
     NOT_REQUIRED = 0;
     REQUIRED = 1;
     PROCESSED = 2;
 }
-
 enum TransactionState {
     MINED = 0;
     PENDING = 1;
     FAILED = 2;
 }
-
 enum TransactionType {
     DEPOSIT = 0;
     WITHDRAW = 1;
@@ -239,51 +201,37 @@ enum TransactionType {
     COUNTER_OFFER_REMOVED = 17;
     SHARES_SOLD = 18;
 }
-
 ///////// Service definition ////////////////
-
 service BlockchainService {
-
     // General calls
-
-    rpc CreateCooperative (CreateCooperativeRequest) returns (Empty);
-
+    rpc CreateCooperative(CreateCooperativeRequest) returns (Empty);
     // Cooperative
-
-    rpc GenerateAddWalletTx (GenerateAddWalletTxRequest) returns (RawTxResponse);
-    rpc IsWalletActive (WalletActiveRequest) returns (WalletActiveResponse);
-    rpc GetPlatformManager (PlatformManagerRequest) returns (PlatformManagerResponse);
-    rpc GenerateTransferPlatformManagerOwnershipTx (GenerateTransferPlatformManagerOwnershipTxRequest) returns (RawTxResponse);
-
+    rpc GenerateAddWalletTx(GenerateAddWalletTxRequest) returns (RawTxResponse);
+    rpc IsWalletActive(WalletActiveRequest) returns (WalletActiveResponse);
+    rpc GetPlatformManager(PlatformManagerRequest) returns (PlatformManagerResponse);
+    rpc GenerateTransferPlatformManagerOwnershipTx(GenerateTransferPlatformManagerOwnershipTxRequest) returns (RawTxResponse);
     // EUR
-
-    rpc GenerateMintTx (GenerateMintTxRequest) returns (RawTxResponse);
-    rpc GenerateBurnFromTx (GenerateBurnFromTxRequest) returns (RawTxResponse);
-    rpc GenerateApproveWithdrawTx (GenerateApproveWithdrawTxRequest) returns (RawTxResponse);
-    rpc GenerateInvestTx (GenerateInvestTxRequest) returns (RawTxResponse);
-    rpc GetBalance (BalanceRequest) returns (BalanceResponse);
-    rpc GetTokenIssuer (TokenIssuerRequest) returns (TokenIssuerResponse);
-    rpc GenerateTransferTokenIssuerOwnershipTx (GenerateTransferTokenIssuerOwnershipTxRequest) returns (RawTxResponse);
-
+    rpc GenerateMintTx(GenerateMintTxRequest) returns (RawTxResponse);
+    rpc GenerateBurnFromTx(GenerateBurnFromTxRequest) returns (RawTxResponse);
+    rpc GenerateApproveWithdrawTx(GenerateApproveWithdrawTxRequest) returns (RawTxResponse);
+    rpc GenerateInvestTx(GenerateInvestTxRequest) returns (RawTxResponse);
+    rpc GetBalance(BalanceRequest) returns (BalanceResponse);
+    rpc GetTokenIssuer(TokenIssuerRequest) returns (TokenIssuerResponse);
+    rpc GenerateTransferTokenIssuerOwnershipTx(GenerateTransferTokenIssuerOwnershipTxRequest) returns (RawTxResponse);
     // Organization
-
     // Project
-
-    rpc GenerateApproveProjectWithdrawTx (GenerateApproveProjectWithdrawTxRequest) returns (RawTxResponse);
-    rpc GenerateCancelInvestmentTx (GenerateCancelInvestmentTxRequest) returns (RawTxResponse);
-    rpc GenerateStartRevenueSharesPayoutTx (GenerateStartRevenueSharesPayoutTxRequest) returns (RawTxResponse);
-
+    rpc GenerateApproveProjectWithdrawTx(GenerateApproveProjectWithdrawTxRequest) returns (RawTxResponse);
+    rpc GenerateCancelInvestmentTx(GenerateCancelInvestmentTxRequest) returns (RawTxResponse);
+    rpc GenerateStartRevenueSharesPayoutTx(GenerateStartRevenueSharesPayoutTxRequest) returns (RawTxResponse);
     // Contract create
-
-    rpc GenerateCreateOrganizationTx (GenerateCreateOrganizationTxRequest) returns (RawTxResponse);
-    rpc GenerateCreateProjectTx (GenerateCreateProjectTxRequest) returns (RawTxResponse);
-
+    rpc GenerateCreateOrganizationTx(GenerateCreateOrganizationTxRequest) returns (RawTxResponse);
+    rpc GenerateCreateProjectTx(GenerateCreateProjectTxRequest) returns (RawTxResponse);
     // Transactions
-
-    rpc PostTransaction (PostTxRequest) returns (PostTxResponse);
-    rpc GetPortfolio (PortfolioRequest) returns (PortfolioResponse);
-    rpc GetTransactions (TransactionsRequest) returns (TransactionsResponse);
-    rpc GetInvestmentsInProject (InvestmentsInProjectRequest) returns (TransactionsResponse);
-    rpc GetTransactionInfo (TransactionInfoRequest) returns (TransactionInfo);
-    rpc GetActiveSellOffers (ActiveSellOffersRequest) returns (ActiveSellOffersResponse);
+    rpc PostTransaction(PostTxRequest) returns (PostTxResponse);
+    rpc GetPortfolio(PortfolioRequest) returns (PortfolioResponse);
+    rpc GetTransactions(TransactionsRequest) returns (TransactionsResponse);
+    rpc GetInvestmentsInProject(InvestmentsInProjectRequest) returns (TransactionsResponse);
+    rpc GetTransactionInfo(TransactionInfoRequest) returns (TransactionInfo);
+    rpc GetActiveSellOffers(ActiveSellOffersRequest) returns (ActiveSellOffersResponse);
+    rpc GetUserWalletsForCoopAndTxType(UserWalletsForCoopAndTxTypeRequest) returns (UserWalletsForCoopAndTxTypeResponse);
 }

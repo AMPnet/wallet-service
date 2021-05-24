@@ -1,5 +1,6 @@
 package com.ampnet.walletservice.controller
 
+import com.ampnet.crowdfunding.proto.UserWalletsForCoopAndTxTypeResponse
 import com.ampnet.walletservice.enums.PrivilegeType
 import com.ampnet.walletservice.security.WithMockCrowdfoundUser
 import com.ampnet.walletservice.service.pojo.response.StatsResponse
@@ -7,6 +8,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.BDDMockito
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import java.util.UUID
@@ -44,6 +46,14 @@ class AdminStatsControllerTest : ControllerTestBase() {
             createWalletForOrganization(UUID.randomUUID(), "org-hash")
             createWalletForProject(UUID.randomUUID(), "project-hash")
         }
+        suppose("Blockchain service will return a list of wallets") {
+            val response = UserWalletsForCoopAndTxTypeResponse.WalletWithHash.newBuilder()
+                .setWallet("activation-data")
+                .setWalletTxHash("some-hash")
+                .build()
+            BDDMockito.given(blockchainService.getUserWalletsWithInvestment(COOP))
+                .willReturn(listOf(response))
+        }
 
         verify("Cooperative user can get statistics about counted users with approved deposit") {
             val result = mockMvc.perform(MockMvcRequestBuilders.get(statsPath))
@@ -53,8 +63,7 @@ class AdminStatsControllerTest : ControllerTestBase() {
             val stats: StatsResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(stats.usersDeposited).isEqualTo(2)
             assertThat(stats.walletsInitialized).isEqualTo(1)
-            assertThat(stats.usersInvested).isEqualTo(0)
+            assertThat(stats.usersInvested).isEqualTo(1)
         }
     }
-
 }

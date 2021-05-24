@@ -9,12 +9,12 @@ import com.ampnet.walletservice.persistence.model.Deposit
 import com.ampnet.walletservice.persistence.model.Wallet
 import com.ampnet.walletservice.persistence.repository.DepositRepository
 import com.ampnet.walletservice.persistence.repository.WalletRepository
+import com.ampnet.walletservice.proto.CoopRequest
 import com.ampnet.walletservice.proto.GetWalletsByHashRequest
 import com.ampnet.walletservice.proto.GetWalletsByOwnerRequest
+import com.ampnet.walletservice.proto.OwnersResponse
 import com.ampnet.walletservice.proto.WalletResponse
 import com.ampnet.walletservice.proto.WalletsResponse
-import com.ampnet.walletservice.proto.OwnersResponse
-import com.ampnet.walletservice.proto.CoopRequest
 import io.grpc.stub.StreamObserver
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test

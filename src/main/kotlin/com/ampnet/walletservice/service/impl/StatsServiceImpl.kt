@@ -19,8 +19,7 @@ class StatsServiceImpl(
     override fun getStats(coop: String): StatsResponse {
         val initializedWallets = walletRepository.findActivatedByType(WalletType.USER, coop, Pageable.unpaged()).size
         val approvedDeposits = depositRepository.countUsersWithApprovedDeposit(coop)
-//        val investedWallets = blockchainService.getInvestedAccounts(coop)
-        val investedUsers = 0
-        return StatsResponse(initializedWallets, approvedDeposits, investedUsers)
+        val investedWallets = blockchainService.getUserWalletsWithInvestment(coop).size
+        return StatsResponse(initializedWallets, approvedDeposits, investedWallets)
     }
 }
