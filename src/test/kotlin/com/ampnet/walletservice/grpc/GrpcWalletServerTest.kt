@@ -18,6 +18,7 @@ import com.ampnet.walletservice.proto.WalletsResponse
 import io.grpc.stub.StreamObserver
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.BDDMockito
 import org.mockito.Mockito
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
@@ -95,9 +96,9 @@ class GrpcWalletServerTest : TestBase() {
         suppose("Wallets exist") {
             testContext.uuids = listOf(UUID.randomUUID(), UUID.randomUUID())
             testContext.deposits = testContext.uuids.map { createDeposit(it) }
-            Mockito.`when`(
+            BDDMockito.given(
                 mockedDepositRepository.findAllApprovedWithFile(COOP, DepositWithdrawType.USER, Pageable.unpaged())
-            ).thenReturn(PageImpl(testContext.deposits))
+            ).willReturn(PageImpl(testContext.deposits))
         }
 
         verify("Grpc service will owners") {
@@ -111,9 +112,9 @@ class GrpcWalletServerTest : TestBase() {
             val response = OwnersResponse.newBuilder()
                 .addAllOwnersUuids(testContext.uuids.map { it.toString() })
                 .build()
-            Mockito.verify(streamObserver).onNext(response)
-            Mockito.verify(streamObserver).onCompleted()
-            Mockito.verify(streamObserver, Mockito.never()).onError(Mockito.any())
+            BDDMockito.then(streamObserver).should(BDDMockito.atLeastOnce()).onNext(response)
+            BDDMockito.then(streamObserver).should(BDDMockito.atLeastOnce()).onCompleted()
+            BDDMockito.then(streamObserver).should(BDDMockito.never()).onError(BDDMockito.any())
         }
     }
 
