@@ -1,7 +1,10 @@
 package com.ampnet.walletservice.controller
 
 import com.ampnet.crowdfunding.proto.UserWalletsForCoopAndTxTypeResponse
+import com.ampnet.walletservice.enums.Currency
 import com.ampnet.walletservice.enums.PrivilegeType
+import com.ampnet.walletservice.enums.WalletType
+import com.ampnet.walletservice.persistence.model.Wallet
 import com.ampnet.walletservice.security.WithMockCrowdfoundUser
 import com.ampnet.walletservice.service.pojo.response.StatsResponse
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -46,6 +49,10 @@ class AdminStatsControllerTest : ControllerTestBase() {
             createWalletForOrganization(UUID.randomUUID(), "org-hash")
             createWalletForProject(UUID.randomUUID(), "project-hash")
         }
+        suppose("There is unapproved user wallet") {
+            val wallet = Wallet(UUID.randomUUID(), "activationData", WalletType.USER, Currency.EUR, COOP)
+            walletRepository.save(wallet)
+        }
         suppose("Blockchain service will return a list of wallets") {
             val response = UserWalletsForCoopAndTxTypeResponse.WalletWithHash.newBuilder()
                 .setWallet("activation-data")
@@ -62,7 +69,7 @@ class AdminStatsControllerTest : ControllerTestBase() {
 
             val stats: StatsResponse = objectMapper.readValue(result.response.contentAsString)
             assertThat(stats.usersDeposited).isEqualTo(2)
-            assertThat(stats.walletsInitialized).isEqualTo(1)
+            assertThat(stats.walletsInitialized).isEqualTo(2)
             assertThat(stats.usersInvested).isEqualTo(1)
         }
     }
