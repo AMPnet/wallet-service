@@ -1,18 +1,27 @@
 package com.ampnet.walletservice.grpc
 
 import com.ampnet.walletservice.TestBase
+import com.ampnet.walletservice.controller.COOP
 import com.ampnet.walletservice.enums.Currency
+import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.enums.WalletType
+import com.ampnet.walletservice.persistence.model.Deposit
 import com.ampnet.walletservice.persistence.model.Wallet
+import com.ampnet.walletservice.persistence.repository.DepositRepository
 import com.ampnet.walletservice.persistence.repository.WalletRepository
+import com.ampnet.walletservice.proto.CoopRequest
 import com.ampnet.walletservice.proto.GetWalletsByHashRequest
 import com.ampnet.walletservice.proto.GetWalletsByOwnerRequest
+import com.ampnet.walletservice.proto.OwnersResponse
 import com.ampnet.walletservice.proto.WalletResponse
 import com.ampnet.walletservice.proto.WalletsResponse
 import io.grpc.stub.StreamObserver
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.BDDMockito
 import org.mockito.Mockito
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.Pageable
 import java.util.UUID
 
 class GrpcWalletServerTest : TestBase() {
@@ -20,6 +29,7 @@ class GrpcWalletServerTest : TestBase() {
     private val coop = "ampnet"
 
     private val mockedWalletRepository = Mockito.mock(WalletRepository::class.java)
+    private val mockedDepositRepository = Mockito.mock(DepositRepository::class.java)
 
     private lateinit var grpcServer: GrpcWalletServer
     private lateinit var testContext: TestContext
@@ -27,7 +37,8 @@ class GrpcWalletServerTest : TestBase() {
     @BeforeEach
     fun init() {
         Mockito.reset(mockedWalletRepository)
-        grpcServer = GrpcWalletServer(mockedWalletRepository)
+        Mockito.reset(mockedDepositRepository)
+        grpcServer = GrpcWalletServer(mockedWalletRepository, mockedDepositRepository)
         testContext = TestContext()
     }
 
@@ -80,6 +91,33 @@ class GrpcWalletServerTest : TestBase() {
         }
     }
 
+    @Test
+    fun mustReturnOwnersOfApprovedDeposits() {
+        suppose("Wallets exist") {
+            testContext.uuids = listOf(UUID.randomUUID(), UUID.randomUUID())
+            testContext.deposits = testContext.uuids.map { createDeposit(it) }
+            BDDMockito.given(
+                mockedDepositRepository.findAllApprovedWithFile(COOP, DepositWithdrawType.USER, Pageable.unpaged())
+            ).willReturn(PageImpl(testContext.deposits))
+        }
+
+        verify("Grpc service will owners") {
+            val request = CoopRequest.newBuilder()
+                .setCoop(COOP)
+                .build()
+
+            @Suppress("UNCHECKED_CAST")
+            val streamObserver = Mockito.mock(StreamObserver::class.java) as StreamObserver<OwnersResponse>
+            grpcServer.getOwnersWithDeposit(request, streamObserver)
+            val response = OwnersResponse.newBuilder()
+                .addAllOwnersUuids(testContext.uuids.map { it.toString() })
+                .build()
+            BDDMockito.then(streamObserver).should(BDDMockito.atLeastOnce()).onNext(response)
+            BDDMockito.then(streamObserver).should(BDDMockito.atLeastOnce()).onCompleted()
+            BDDMockito.then(streamObserver).should(BDDMockito.never()).onError(BDDMockito.any())
+        }
+    }
+
     private fun generateWalletsResponse(wallets: List<Wallet>): List<WalletResponse> =
         wallets.map {
             WalletResponse.newBuilder()
@@ -105,9 +143,13 @@ class GrpcWalletServerTest : TestBase() {
         }
     }
 
+    private fun createDeposit(owner: UUID): Deposit =
+        Deposit(owner, "reference", 1000L, owner, DepositWithdrawType.USER, COOP)
+
     private class TestContext {
         lateinit var uuids: List<UUID>
         lateinit var wallets: List<Wallet>
         lateinit var hashes: List<String>
+        lateinit var deposits: List<Deposit>
     }
 }

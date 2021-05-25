@@ -21,7 +21,9 @@ import com.ampnet.crowdfunding.proto.PlatformManagerRequest
 import com.ampnet.crowdfunding.proto.PortfolioRequest
 import com.ampnet.crowdfunding.proto.PostTxRequest
 import com.ampnet.crowdfunding.proto.TokenIssuerRequest
+import com.ampnet.crowdfunding.proto.TransactionType
 import com.ampnet.crowdfunding.proto.TransactionsRequest
+import com.ampnet.crowdfunding.proto.UserWalletsForCoopAndTxTypeRequest
 import com.ampnet.walletservice.config.ApplicationProperties
 import com.ampnet.walletservice.exception.ErrorCode
 import com.ampnet.walletservice.exception.GrpcException
@@ -41,6 +43,7 @@ import net.devh.boot.grpc.client.channelfactory.GrpcChannelFactory
 import org.springframework.stereotype.Service
 import java.lang.Thread.sleep
 import java.util.concurrent.TimeUnit
+import com.ampnet.crowdfunding.proto.UserWalletsForCoopAndTxTypeResponse.WalletWithHash as WalletWithHash
 
 @Service
 class BlockchainServiceImpl(
@@ -458,6 +461,26 @@ class BlockchainServiceImpl(
             serviceBlockingStub.createCooperative(request)
         } catch (ex: StatusRuntimeException) {
             throw generateInternalExceptionFromStatusException(ex, "Could not get active sell offers")
+        }
+    }
+
+    @Throws(GrpcException::class, GrpcHandledException::class)
+    override fun getUserWalletsWithInvestment(coop: String): List<WalletWithHash> {
+        logger.debug { "Get user wallets with investment for coop: $coop" }
+        try {
+            val response = serviceWithTimeout()
+                .getUserWalletsForCoopAndTxType(
+                    UserWalletsForCoopAndTxTypeRequest.newBuilder()
+                        .setCoop(coop)
+                        .setType(TransactionType.INVEST)
+                        .build()
+                )
+            logger.debug { "TransactionInfoResponse response: $response" }
+            return response.walletsList
+        } catch (ex: StatusRuntimeException) {
+            throw generateInternalExceptionFromStatusException(
+                ex, "Could not get user wallets with investment for coop: $coop"
+            )
         }
     }
 

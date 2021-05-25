@@ -8,6 +8,7 @@ import com.ampnet.walletservice.grpc.blockchain.pojo.ProjectInvestmentTxRequest
 import com.ampnet.walletservice.grpc.blockchain.pojo.RevenuePayoutTxRequest
 import com.ampnet.walletservice.grpc.blockchain.pojo.SellOfferData
 import com.ampnet.walletservice.grpc.blockchain.pojo.TransactionData
+import com.ampnet.crowdfunding.proto.UserWalletsForCoopAndTxTypeResponse.WalletWithHash as WalletWithHash
 
 interface BlockchainService {
     fun getBalance(hash: String): Long?
@@ -31,4 +32,5 @@ interface BlockchainService {
     fun generateTransferPlatformManager(address: String, coop: String): TransactionData
     fun getSellOffers(coop: String): List<SellOfferData>
     fun deployCoopContract(coop: String, address: String)
+    fun getUserWalletsWithInvestment(coop: String): List<WalletWithHash>
 }

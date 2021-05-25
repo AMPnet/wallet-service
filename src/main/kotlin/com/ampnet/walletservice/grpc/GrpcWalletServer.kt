@@ -1,21 +1,27 @@
 package com.ampnet.walletservice.grpc
 
+import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.enums.WalletType
 import com.ampnet.walletservice.persistence.model.Wallet
+import com.ampnet.walletservice.persistence.repository.DepositRepository
 import com.ampnet.walletservice.persistence.repository.WalletRepository
+import com.ampnet.walletservice.proto.CoopRequest
 import com.ampnet.walletservice.proto.GetWalletsByHashRequest
 import com.ampnet.walletservice.proto.GetWalletsByOwnerRequest
+import com.ampnet.walletservice.proto.OwnersResponse
 import com.ampnet.walletservice.proto.WalletResponse
 import com.ampnet.walletservice.proto.WalletServiceGrpc
 import com.ampnet.walletservice.proto.WalletsResponse
 import io.grpc.stub.StreamObserver
 import mu.KLogging
 import net.devh.boot.grpc.server.service.GrpcService
+import org.springframework.data.domain.Pageable
 import java.util.UUID
 
 @GrpcService
 class GrpcWalletServer(
-    private val walletRepository: WalletRepository
+    private val walletRepository: WalletRepository,
+    private val depositRepository: DepositRepository
 ) : WalletServiceGrpc.WalletServiceImplBase() {
 
     companion object : KLogging()
@@ -50,6 +56,18 @@ class GrpcWalletServer(
         logger.debug { "Wallets response: ${wallets.size}" }
         val response = WalletsResponse.newBuilder()
             .addAllWallets(wallets)
+            .build()
+        responseObserver.onNext(response)
+        responseObserver.onCompleted()
+    }
+
+    override fun getOwnersWithDeposit(request: CoopRequest, responseObserver: StreamObserver<OwnersResponse>) {
+        logger.debug { "Received gRPC request: getOwnersWithDeposit for coop = ${request.coop}" }
+        val owners = depositRepository
+            .findAllApprovedWithFile(request.coop, DepositWithdrawType.USER, Pageable.unpaged())
+            .map { it.ownerUuid.toString() }
+        val response = OwnersResponse.newBuilder()
+            .addAllOwnersUuids(owners)
             .build()
         responseObserver.onNext(response)
         responseObserver.onCompleted()

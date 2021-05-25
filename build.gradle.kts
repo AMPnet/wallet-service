@@ -32,7 +32,7 @@ allOpen {
 }
 
 group = "com.ampnet"
-version = "0.14.5"
+version = "0.15.0"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 repositories {

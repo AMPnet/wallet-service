@@ -1,7 +1,6 @@
 package com.ampnet.walletservice.controller
 
 import com.ampnet.walletservice.controller.pojo.response.TransactionResponse
-import com.ampnet.walletservice.controller.pojo.response.UsersWithApprovedDeposit
 import com.ampnet.walletservice.enums.DepositWithdrawType
 import com.ampnet.walletservice.enums.PrivilegeType
 import com.ampnet.walletservice.enums.TransactionType
@@ -24,7 +23,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.time.ZonedDateTime
-import java.util.UUID
 
 class CooperativeDepositControllerTest : ControllerTestBase() {
 
@@ -486,36 +484,6 @@ class CooperativeDepositControllerTest : ControllerTestBase() {
             assertThat(transactionInfo.type).isEqualTo(TransactionType.MINT)
             assertThat(transactionInfo.userUuid).isEqualTo(userUuid)
             assertThat(transactionInfo.coop).isEqualTo(COOP)
-        }
-    }
-
-    @Test
-    @WithMockCrowdfoundUser(privileges = [PrivilegeType.PRA_DEPOSIT])
-    fun mustBeAbleToCountUsersWithApprovedDeposit() {
-        suppose("There is unapproved deposit") {
-            createUnsignedDeposit(UUID.randomUUID())
-        }
-        suppose("There is approved deposit") {
-            createApprovedDeposit(UUID.randomUUID())
-        }
-        suppose("There are approved deposits for the same user") {
-            val user = UUID.randomUUID()
-            createApprovedDeposit(user)
-            createApprovedDeposit(user)
-            createApprovedDeposit(user)
-        }
-        suppose("There is approved deposit from another coop") {
-            createApprovedDeposit(UUID.randomUUID(), coop = anotherCoop)
-        }
-
-        verify("Cooperative user can get statistics about counted users with approved deposit") {
-            val result = mockMvc.perform(get("$depositPath/count"))
-                .andExpect(status().isOk)
-                .andReturn()
-
-            val counted: UsersWithApprovedDeposit = objectMapper.readValue(result.response.contentAsString)
-            assertThat(counted.usersWithApprovedDeposit).isEqualTo(2)
-            assertThat(counted.coop).isEqualTo(COOP)
         }
     }
 
